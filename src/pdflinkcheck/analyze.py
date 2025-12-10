@@ -564,5 +564,8 @@ def call_v7():
     else:
         print(f"\nNo hyperlinks or link remnants of any type were found in {pdf_file}.")
 
-if __name__ == "__main__":
+def call_stable():
     call_v7()
+
+if __name__ == "__main__":
+    call_stable()
