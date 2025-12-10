@@ -4,8 +4,14 @@ import logging
 from pprint import pprint
 # Configure logging to suppress low-level pdfminer messages
 logging.getLogger("fitz").setLevel(logging.ERROR) 
-import fitz # PyMuPDF
+import pyhabitat as ph
 
+if not ph.on_termux():
+    import fitz # PyMuPDF
+else:
+    print("Sorry. The PyMuPDF library does not install cleanly on Termux.")
+    print("Please use the pdfplumber library, and the alternative analysis file, rise2.py")
+    sys.exit(1)
 from pdflinkcheck.remnants import find_link_remnants
 
 """
@@ -296,11 +302,94 @@ def call_v7():
 
     print_structural_toc(structural_toc)
 
+def call_v8(): 
+
+    pdf_file = get_pdf_file()
+    # 1. Extract all active links (now with link_text)
+    extracted_links, structural_toc = inspect_pdf_hyperlinks_fitz(pdf_file) 
+
+    toc_entry_count = len(structural_toc)
     
+    # 2. Find link remnants
+    remnants = find_link_remnants(pdf_file, extracted_links) # Pass active links to exclude them
+
+    if extracted_links or remnants:
+        # Separate the lists based on the 'type' key
+        uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
+        goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
+        resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
+        other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
+
+        total_internal_links = len(goto_links) + len(resolved_action_links)
+        
+        print(f"\n--- Link Analysis Results for {Path(pdf_file).name} ---")
+        print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
+        print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
+        print(f"Total **potential missing links** found: {len(remnants)}")
+        print("-" * 50)
+
+        # Combine URI and Other links for the first table
+        uri_and_other = uri_links + other_links
+        
+        # ------------------- Section 1: ACTIVE URI LINKS (With Anchor Text) -------------------
+        # --- UPDATED HEADER WITH COUNT ---
+        print(f"\n## 🔗 Active URI Links (External & Other) - {len(uri_and_other)} found") 
+        
+        # --- UPDATED TABLE HEADERS ---
+        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
+        print("-" * 75)
+        
+        if uri_and_other:
+            # --- UPDATED LOOP FOR ENUMERATION ---
+            for i, link in enumerate(uri_and_other, 1):
+                target = link.get('url') or link.get('remote_file') or link.get('target')
+                link_text = link.get('link_text', 'N/A')
+                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
+        else: 
+            print("  No external or 'Other' links found.")
+
+
+        # ------------------- Section 2: ACTIVE INTERNAL JUMPS -------------------
+        # --- UPDATED HEADER WITH COUNT ---
+        print(f"\n## 🖱️ Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
+        
+        # --- UPDATED TABLE HEADERS ---
+        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
+        print("-" * 75)
+        
+        if total_internal_links > 0:
+            all_internal = goto_links + resolved_action_links
+            # --- UPDATED LOOP FOR ENUMERATION ---
+            for i, link in enumerate(all_internal, 1):
+                link_text = link.get('link_text', 'N/A')
+                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
+        else:
+            print("  No internal GoTo or Resolved Action links found.")
+            
+        # ------------------- Section 3: REMNANTS (Missing Links) -------------------
+        # --- UPDATED HEADER WITH COUNT ---
+        print("\n" + "=" * 70)
+        print(f"## ⚠️ Link Remnants (Potential Missing Links to Fix) - {len(remnants)} found")
+        print("=" * 70)
+        
+        if remnants:
+            # --- UPDATED TABLE HEADERS ---
+            print("{:<5} | {:<5} | {:<15} | {}".format("Idx", "Page", "Remnant Type", "Text Found (Needs Hyperlink)"))
+            print("-" * 75)
+            # --- UPDATED LOOP FOR ENUMERATION ---
+            for i, remnant in enumerate(remnants, 1):
+                print("{:<5} | {:<5} | {:<15} | {}".format(i, remnant['page'], remnant['type'], remnant['text']))
+        else:
+            print("  No URI or Email remnants found that are not already active links.")
+            
+        print_structural_toc(structural_toc)
+    else:
+        print(f"\nNo hyperlinks or link remnants of any type were found in {pdf_file}.")
+
 
 def call_stable():
     print("Begin analysis...")
-    call_v7()
+    call_v8()
     print("Analysis complete.")
 
 if __name__ == "__main__":
