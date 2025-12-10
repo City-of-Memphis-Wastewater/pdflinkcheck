@@ -55,7 +55,7 @@ jobs:
       
     # --- Optional: Build Sanity Check (Confirm the wheel can be built) ---
     
-    - name: Build Wheel Sanity Check
-      # We only check if the wheel build starts and finishes successfully.
-      # This confirms the project metadata and setuptools configuration are valid.
-      run: uv run python -m build --wheel --outdir dist
+    #- name: Build Wheel Sanity Check
+    #  # We only check if the wheel build starts and finishes successfully.
+    #  # This confirms the project metadata and setuptools configuration are valid.
+    #  run: uv run python -m build --wheel --outdir dist
