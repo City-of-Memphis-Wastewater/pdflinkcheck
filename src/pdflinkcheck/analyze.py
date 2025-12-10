@@ -4,19 +4,31 @@ import logging
 from pprint import pprint
 # Configure logging to suppress low-level pdfminer messages
 logging.getLogger("fitz").setLevel(logging.ERROR) 
-import pyhabitat as ph
+from typing import Dict, Any
 
-if not ph.on_termux():
-    import fitz # PyMuPDF
-else:
-    print("Sorry. The PyMuPDF library does not install cleanly on Termux.")
-    print("Please use the pdfplumber library, and the alternative analysis file, rise2.py")
-    sys.exit(1)
+import fitz # PyMuPDF
 from pdflinkcheck.remnants import find_link_remnants
 
 """
 Inspect target PDF for both URI links and for GoTo links.
 """
+
+
+def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[str, Any]:
+    """
+    Placeholder for the core PDF analysis logic using PyMuPDF.
+    """
+    # This is where you will add your PyMuPDF code from the previous sessions
+    # For now, return dummy data to test the CLI
+    print(f"Running PyMuPDF analysis on {pdf_path}...")
+
+    # Placeholder result structure
+    return {
+        "external_links": ["http://example.com"] if check_remnants else [],
+        "internal_links": ["page 5"],
+        "remnants": ["info@test.org"] if check_remnants else [],
+        "toc": []
+    }
 
 # Helper function: Prioritize 'from'
 def get_link_rect(link_dict):
@@ -232,164 +244,103 @@ def print_structural_toc(structural_toc):
 
     print("-" * 50)
 
-def call_v7(): 
+def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[str, Any]:
+    """
+    Core PDF analysis logic using PyMuPDF. Extracts links, remnants, and TOC.
+    The printing is now done inside this function based on your call_v8 logic.
+    """
+    
+    print(f"Running PyMuPDF analysis on {Path(pdf_path).name}...")
 
-    pdf_file = get_pdf_file()
-    # 1. Extract all active links (now with link_text)
-    extracted_links, structural_toc = inspect_pdf_hyperlinks_fitz(pdf_file) 
+    # 1. Extract all active links and TOC
+    extracted_links, structural_toc = inspect_pdf_hyperlinks_fitz(pdf_path) 
     toc_entry_count = len(structural_toc)
     
-    
     # 2. Find link remnants
-    remnants = find_link_remnants(pdf_file, extracted_links) # Pass active links to exclude them
+    remnants = []
+    if check_remnants:
+        remnants = find_link_remnants(pdf_path, extracted_links) # Pass active links to exclude them
 
-    if extracted_links or remnants:
-        # Separate the lists based on the 'type' key
-        uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
-        goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
-        resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
-        other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
+    if not extracted_links and not remnants and not structural_toc:
+         print(f"\nNo hyperlinks, remnants, or structural TOC found in {Path(pdf_path).name}.")
+         return {}
+         
+    # 3. Separate the lists based on the 'type' key
+    uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
+    goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
+    resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
+    other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
 
-        total_internal_links = len(goto_links) + len(resolved_action_links)
-        
-        print(f"\n--- Link Analysis Results for {Path(pdf_file).name} ---")
-        print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
-        print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}") 
-        print(f"Total **potential missing links** found: {len(remnants)}")
-        print("-" * 50)
+    total_internal_links = len(goto_links) + len(resolved_action_links)
+    
+    # --- ANALYSIS SUMMARY (Using your print logic) ---
+    print(f"\n--- Link Analysis Results for {Path(pdf_path).name} ---")
+    print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
+    print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
+    print(f"Total **potential missing links** found: {len(remnants)}")
+    print("-" * 50)
 
-        # ------------------- Section 1: ACTIVE LINKS (With Anchor Text) -------------------
-        print("\n## 🔗 Active URI Links (External & Other)")
-        print("{:<5} | {:<40} | {}".format("Page", "Anchor Text", "Target URI/Action"))
-        print("-" * 70)
-        
-        uri_and_other = uri_links + other_links
-        for link in uri_and_other:
+    uri_and_other = uri_links + other_links
+    
+    # --- Section 1: ACTIVE URI LINKS ---
+    print(f"\n## 🔗 Active URI Links (External & Other) - {len(uri_and_other)} found") 
+    print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
+    print("-" * 75)
+    
+    if uri_and_other:
+        for i, link in enumerate(uri_and_other[:max_links], 1):
             target = link.get('url') or link.get('remote_file') or link.get('target')
             link_text = link.get('link_text', 'N/A')
-            print("{:<5} | {:<40} | {}".format(link['page'], link_text[:40], target))
-        if not uri_and_other: print("  No external or 'Other' links found.")
+            print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
+        if len(uri_and_other) > max_links:
+            print(f"... and {len(uri_and_other) - max_links} more links (use --max-links to see all).")
+    else: 
+        print("  No external or 'Other' links found.")
 
-
-        print("\n## 🖱️ Active Internal Jumps (GoTo & Resolved Actions)")
-        print("{:<5} | {:<40} | {}".format("Page", "Anchor Text", "Jumps To Page"))
-        print("-" * 70)
-        
-        if total_internal_links > 0:
-            all_internal = goto_links + resolved_action_links
-            for link in all_internal:
-                link_text = link.get('link_text', 'N/A')
-                print("{:<5} | {:<40} | {}".format(link['page'], link_text[:40], link['destination_page']))
-        else:
-            print("  No internal GoTo or Resolved Action links found.")
-            
-        # ------------------- Section 2: REMNANTS (Missing Links) -------------------
-        print("\n" + "=" * 70)
-        print("## ⚠️ Link Remnants (Potential Missing Links to Fix)")
-        print("=" * 70)
-        
-        if remnants:
-            print("{:<5} | {:<15} | {}".format("Page", "Remnant Type", "Text Found (Needs Hyperlink)"))
-            print("-" * 70)
-            for remnant in remnants:
-                print("{:<5} | {:<15} | {}".format(remnant['page'], remnant['type'], remnant['text']))
-        else:
-            print("  No URI or Email remnants found that are not already active links.")
-            
-
-    else:
-        print(f"\nNo hyperlinks or link remnants of any type were found in {pdf_file}.")
-
-    print_structural_toc(structural_toc)
-
-def call_v8(): 
-
-    pdf_file = get_pdf_file()
-    # 1. Extract all active links (now with link_text)
-    extracted_links, structural_toc = inspect_pdf_hyperlinks_fitz(pdf_file) 
-
-    toc_entry_count = len(structural_toc)
+    # --- Section 2: ACTIVE INTERNAL JUMPS ---
+    print(f"\n## 🖱️ Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
+    print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
+    print("-" * 75)
     
-    # 2. Find link remnants
-    remnants = find_link_remnants(pdf_file, extracted_links) # Pass active links to exclude them
-
-    if extracted_links or remnants:
-        # Separate the lists based on the 'type' key
-        uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
-        goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
-        resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
-        other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
-
-        total_internal_links = len(goto_links) + len(resolved_action_links)
-        
-        print(f"\n--- Link Analysis Results for {Path(pdf_file).name} ---")
-        print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
-        print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
-        print(f"Total **potential missing links** found: {len(remnants)}")
-        print("-" * 50)
-
-        # Combine URI and Other links for the first table
-        uri_and_other = uri_links + other_links
-        
-        # ------------------- Section 1: ACTIVE URI LINKS (With Anchor Text) -------------------
-        # --- UPDATED HEADER WITH COUNT ---
-        print(f"\n## 🔗 Active URI Links (External & Other) - {len(uri_and_other)} found") 
-        
-        # --- UPDATED TABLE HEADERS ---
-        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
-        print("-" * 75)
-        
-        if uri_and_other:
-            # --- UPDATED LOOP FOR ENUMERATION ---
-            for i, link in enumerate(uri_and_other, 1):
-                target = link.get('url') or link.get('remote_file') or link.get('target')
-                link_text = link.get('link_text', 'N/A')
-                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
-        else: 
-            print("  No external or 'Other' links found.")
-
-
-        # ------------------- Section 2: ACTIVE INTERNAL JUMPS -------------------
-        # --- UPDATED HEADER WITH COUNT ---
-        print(f"\n## 🖱️ Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
-        
-        # --- UPDATED TABLE HEADERS ---
-        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
-        print("-" * 75)
-        
-        if total_internal_links > 0:
-            all_internal = goto_links + resolved_action_links
-            # --- UPDATED LOOP FOR ENUMERATION ---
-            for i, link in enumerate(all_internal, 1):
-                link_text = link.get('link_text', 'N/A')
-                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
-        else:
-            print("  No internal GoTo or Resolved Action links found.")
-            
-        # ------------------- Section 3: REMNANTS (Missing Links) -------------------
-        # --- UPDATED HEADER WITH COUNT ---
-        print("\n" + "=" * 70)
-        print(f"## ⚠️ Link Remnants (Potential Missing Links to Fix) - {len(remnants)} found")
-        print("=" * 70)
-        
-        if remnants:
-            # --- UPDATED TABLE HEADERS ---
-            print("{:<5} | {:<5} | {:<15} | {}".format("Idx", "Page", "Remnant Type", "Text Found (Needs Hyperlink)"))
-            print("-" * 75)
-            # --- UPDATED LOOP FOR ENUMERATION ---
-            for i, remnant in enumerate(remnants, 1):
-                print("{:<5} | {:<5} | {:<15} | {}".format(i, remnant['page'], remnant['type'], remnant['text']))
-        else:
-            print("  No URI or Email remnants found that are not already active links.")
-            
-        print_structural_toc(structural_toc)
+    all_internal = goto_links + resolved_action_links
+    if total_internal_links > 0:
+        for i, link in enumerate(all_internal[:max_links], 1):
+            link_text = link.get('link_text', 'N/A')
+            print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
+        if len(all_internal) > max_links:
+             print(f"... and {len(all_internal) - max_links} more links (use --max-links to see all).")
     else:
-        print(f"\nNo hyperlinks or link remnants of any type were found in {pdf_file}.")
-
+        print("  No internal GoTo or Resolved Action links found.")
+        
+    # --- Section 3: REMNANTS ---
+    print("\n" + "=" * 70)
+    print(f"## ⚠️ Link Remnants (Potential Missing Links to Fix) - {len(remnants)} found")
+    print("=" * 70)
+    
+    if remnants:
+        print("{:<5} | {:<5} | {:<15} | {}".format("Idx", "Page", "Remnant Type", "Text Found (Needs Hyperlink)"))
+        print("-" * 75)
+        for i, remnant in enumerate(remnants[:max_links], 1):
+            print("{:<5} | {:<5} | {:<15} | {}".format(i, remnant['page'], remnant['type'], remnant['text']))
+        if len(remnants) > max_links:
+             print(f"... and {len(remnants) - max_links} more remnants (use --max-links to see all).")
+    else:
+        print("  No URI or Email remnants found that are not already active links.")
+        
+    # --- Section 4: TOC ---
+    print_structural_toc(structural_toc)
+    
+    # Return the collected data for potential future JSON/other output
+    return {
+        "external_links": uri_links,
+        "internal_links": all_internal,
+        "remnants": remnants,
+        "toc": structural_toc
+    }
 
 def call_stable():
     print("Begin analysis...")
-    call_v8()
+    run_analysis()
     print("Analysis complete.")
 
 if __name__ == "__main__":

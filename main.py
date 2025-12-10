@@ -1,6 +1,5 @@
-def main():
-    print("Hello from pdflinkcheck!")
-
+# main.py
+from src.pdflinkcheck.cli import app
 
 if __name__ == "__main__":
-    main()
+    app()

@@ -49,7 +49,6 @@ name = "pdflinkcheck"
 version = "0.1.3"
 source = { editable = "." }
 dependencies = [
-    { name = "pyhabitat" },
     { name = "pymupdf" },
     { name = "rich" },
     { name = "typer" },
@@ -57,7 +56,6 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "pyhabitat", specifier = ">=1.0.51" },
     { name = "pymupdf", specifier = ">=1.26.6" },
     { name = "rich", specifier = ">=14.2.0" },
     { name = "typer", specifier = ">=0.20.0" },
@@ -70,15 +68,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
-]
-
-[[package]]
-name = "pyhabitat"
-version = "1.0.51"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/18/cd/2fc89cc76a5e72d258fc31a017af911f06d09371c1acdb9a226103ba08b0/pyhabitat-1.0.51.tar.gz", hash = "sha256:784f06f741e59ac74a3c9e3b8a3c9f09628e11c5046e461808763c8300739087", size = 26895, upload-time = "2025-12-10T08:34:59.054Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5c/bf/5bbe4364a46c5a9fa3635231b5d9192e843fa01d6bde05ba8eb2f4b829bd/pyhabitat-1.0.51-py3-none-any.whl", hash = "sha256:5436fdb4909e2ce56eb327fc77e4e0d1f62ae9fd7108bed0d0b8151e2c62d4cb", size = 24016, upload-time = "2025-12-10T08:34:57.56Z" },
 ]
 
 [[package]]
