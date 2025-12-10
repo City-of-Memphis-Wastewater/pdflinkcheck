@@ -2,7 +2,7 @@
 import typer
 from rich.console import Console
 from pathlib import Path
-from .analyze import run_analysis # Assuming core logic moves here
+from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
 
 # Initialize the rich console for output
 console = Console()
@@ -31,8 +31,8 @@ def analyze_pdf( # Renamed function for clarity
     max_links: int = typer.Option(
         50,
         "--max-links",
-        min=1,
-        help="Maximum number of links/remnants to display in the report."
+        min=0,
+        help="Maximum number of links/remnants to display in the report. Use 0 to show all."
     )
 ):
     """
@@ -44,6 +44,9 @@ def analyze_pdf( # Renamed function for clarity
         check_remnants=check_remnants,
         max_links=max_links
     )
+
+def gui():
+    from pdflinkcheck.gui import start_gui
 
     # Placeholder for running the app
 if __name__ == "__main__":

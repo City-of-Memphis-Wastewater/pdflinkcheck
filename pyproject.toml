@@ -1,6 +1,6 @@
 [project]
 name = "pdflinkcheck"
-version = "0.1.4"
+version = "0.1.5"
 description = "A purpose-built PDF link analysis reporting tool."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -12,6 +12,7 @@ dependencies = [
 
 [project.scripts]
 pdflinkcheck = "pdflinkcheck.cli:app"
+pdflinkcheck-gui = "pdflinkcheck.gui:start_gui"
 
 [tool.setuptools.packages.find]
 where = ["src"]  

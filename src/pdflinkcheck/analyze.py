@@ -226,7 +226,8 @@ def print_structural_toc(structural_toc):
 def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[str, Any]:
     """
     Core PDF analysis logic using PyMuPDF. Extracts links, remnants, and TOC.
-    The printing is now done inside this function based on your call_v8 logic.
+    The printing is done inside this function.
+    max_links: If <= 0, all links will be displayed.
     """
     
     print(f"Running PyMuPDF analysis on {Path(pdf_path).name}...")
@@ -259,6 +260,8 @@ def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[st
     print(f"Total **potential missing links** found: {len(remnants)}")
     print("-" * 50)
 
+    limit = max_links if max_links > 0 else None
+
     uri_and_other = uri_links + other_links
     
     # --- Section 1: ACTIVE URI LINKS ---
@@ -267,12 +270,13 @@ def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[st
     print("-" * 75)
     
     if uri_and_other:
-        for i, link in enumerate(uri_and_other[:max_links], 1):
+        for i, link in enumerate(uri_and_other[:limit], 1):
             target = link.get('url') or link.get('remote_file') or link.get('target')
             link_text = link.get('link_text', 'N/A')
             print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
-        if len(uri_and_other) > max_links:
-            print(f"... and {len(uri_and_other) - max_links} more links (use --max-links to see all).")
+        if limit is not None and len(uri_and_other) > limit:
+            print(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+
     else: 
         print("  No external or 'Other' links found.")
 
@@ -283,11 +287,12 @@ def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[st
     
     all_internal = goto_links + resolved_action_links
     if total_internal_links > 0:
-        for i, link in enumerate(all_internal[:max_links], 1):
+        for i, link in enumerate(all_internal[:limit], 1):
             link_text = link.get('link_text', 'N/A')
             print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
-        if len(all_internal) > max_links:
-             print(f"... and {len(all_internal) - max_links} more links (use --max-links to see all).")
+
+        if limit is not None and len(all_internal) > limit:
+             print(f"... and {len(all_internal) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
     else:
         print("  No internal GoTo or Resolved Action links found.")
         
