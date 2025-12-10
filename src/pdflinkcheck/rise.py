@@ -1,0 +1,155 @@
+import sys
+from pathlib import Path
+import re
+import pdfplumber
+
+# -------------------------------
+# Regex Patterns (same as before)
+# -------------------------------
+URI_PATTERN = re.compile(
+    r'(?:https?|ftp|mhtml|file)://\S+|www\.\S+', re.IGNORECASE
+)
+EMAIL_PATTERN = re.compile(
+    r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', re.IGNORECASE
+)
+
+def get_pdf_file():
+    example = "/mnt/c/Users/george.bennett/Downloads/TE Maxson WWTF O&M Manual DRAFT - Sections 1-6 - April 2025 (3).pdf"
+    example='TE Maxson WWTF O&M Manual.pdf'
+    pdf_file = input(f"Paste PDF path (or press Enter for example):\n  {example}\n> ").strip()
+    if not pdf_file:
+        pdf_file = example
+    if not Path(pdf_file).exists():
+        print("File not found!")
+        sys.exit(1)
+    return pdf_file
+
+def extract_active_links(pdf_path):
+    """Extract all hyperlinks + anchor text using pdfplumber"""
+    links = []
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_num, page in enumerate(pdf.pages, start=1):
+            # Extract annotations (includes links)
+            for annot in page.annots or []:
+                print(f"list(annot) = {list(annot)}")
+                if annot["object_type"] != "annot" or annot["subtype"] != "/Link":
+                    continue
+
+                # Get destination
+                action = annot.get("A") or {}
+                uri = action.get("URI")
+                dest_page = None
+                if "D" in action:
+                    dest = action["D"]
+                    if isinstance(dest, list) and len(dest) > 0:
+                        # Resolve named destinations roughly
+                        try:
+                            dest_page = pdf.pages.index(pdf.doc.resolve_dest(dest[0])[0]) + 1
+                        except:
+                            pass
+
+                # Get bounding box and anchor text
+                rect = annot["rect"]  # (x0, top, x1, bottom)
+                x0, top, x1, bottom = rect
+                text = page.crop((x0, top, x1, bottom)).extract_text() or "N/A"
+                text = " ".join(text.split())[:50]
+
+                link = {
+                    "page": page_num,
+                    "rect": rect,
+                    "link_text": text,
+                }
+
+                if uri:
+                    link.update({
+                        "type": "External (URI)",
+                        "url": uri.decode() if isinstance(uri, bytes) else uri,
+                    })
+                elif dest_page:
+                    link.update({
+                        "type": "Internal (GoTo/Dest)",
+                        "destination_page": dest_page,
+                    })
+                else:
+                    link.update({
+                        "type": "Other Action",
+                        "target": str(action.get("S") or action),
+                    })
+
+                links.append(link)
+    return links
+
+def find_link_remnants(pdf_path, active_links):
+    """Find unlinked URLs/emails in text"""
+    active_rects = {
+        tuple(link["rect"]) for link in active_links if "rect" in link
+    }
+
+    remnants = []
+    with pdfplumber.open(pdf_path) as pdf:
+        for page_num, page in enumerate(pdf.pages, start=1):
+            text = page.extract_text() or ""
+            for match, pattern_type in [(m, "URI") for m in URI_PATTERN.finditer(text)] + \
+                                       [(m, "Email") for m in EMAIL_PATTERN.finditer(text)]:
+                remnant_text = match.group(0)
+                # Search for visual location
+                instances = page.search(remnant_text, regex=True)
+                for inst in instances:
+                    rect = (inst["x0"], inst["top"], inst["x1"], inst["bottom"])
+                    rect_tuple = tuple(round(x, 2) for x in rect)
+                    if rect_tuple not in active_rects:
+                        remnants.append({
+                            "page": page_num,
+                            "type": f"{pattern_type} Remnant",
+                            "text": remnant_text,
+                            "rect": rect,
+                        })
+                        active_rects.add(rect_tuple)  # avoid dupes
+    return remnants
+
+def call_stable():
+    pdf_file = get_pdf_file()
+    print(f"Analyzing: {Path(pdf_file).name}\n")
+
+    active_links = extract_active_links(pdf_file)
+    remnants = find_link_remnants(pdf_file, active_links)
+
+    # Categorize
+    uri_links = [l for l in active_links if l["type"] == "External (URI)"]
+    internal_links = [l for l in active_links if "Internal" in l["type"]]
+    other_links = [l for l in active_links if l not in uri_links + internal_links]
+
+    print(f"Active links: {len(active_links)} (External: {len(uri_links)}, Internal: {len(internal_links)}, Other: {len(other_links)})")
+    print(f"Potential missing links: {len(remnants)}")
+    print("=" * 80)
+
+    # Active Links
+    print("\nActive URI Links")
+    print("{:<5} | {:<40} | {}".format("Page", "Anchor Text", "URL"))
+    print("-" * 80)
+    for l in uri_links + other_links:
+        print("{:<5} | {:<40} | {}".format(l["page"], l["link_text"], l.get("url") or l.get("target", "")))
+    if not (uri_links + other_links):
+        print("  None found.")
+
+    print("\nActive Internal Jumps")
+    print("{:<5} | {:<40} | {}".format("Page", "Anchor Text", "→ Page"))
+    print("-" * 80)
+    for l in internal_links:
+        print("{:<5} | {:<40} | → {}".format(l["page"], l["link_text"], l.get("destination_page", "Unknown")))
+    if not internal_links:
+        print("  None found.")
+
+    # Remnants
+    print("\n" + "Link Remnants (Potential Missing Links)".center(80, " "))
+    print("=" * 80)
+    if remnants:
+        print("{:<5} | {:<15} | {}".format("Page", "Type", "Unlinked Text"))
+        print("-" * 80)
+        for r in remnants:
+            print("{:<5} | {:<15} | {}".format(r["page"], r["type"], r["text"]))
+    else:
+        print("  No unlinked URLs or emails found — great job!")
+
+if __name__ == "__main__":
+    call_stable()

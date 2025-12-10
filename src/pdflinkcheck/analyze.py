@@ -30,7 +30,7 @@ def get_link_rect(link_dict):
     return None
 
 def get_pdf_file():
-    example_path = f"/mnt/c/Users/george.bennett/Downloads/TE Maxson WWTF O&M Manual DRAFT - Sections 1-6 - April 2025 (3).pdf"
+    example_path = f"TE Maxson WWTF O&M Manual.pdf"
     
     pdf_file = example_path
     if not pdf_file:
