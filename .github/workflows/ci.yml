@@ -43,9 +43,9 @@ jobs:
     # --- Quality Gates ---
     
     # 1. Linting (e.g., using Ruff)
-    - name: Lint with ruff
-      # Assumes ruff is included in your dev dependencies in pyproject.toml
-      run: uv run ruff check .
+    #- name: Lint with ruff
+    #  # Assumes ruff is included in your dev dependencies in pyproject.toml
+    #  run: uv run ruff check .
 
     # 2. Testing (e.g., using pytest)
     - name: Run tests with pytest

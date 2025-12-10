@@ -1,10 +1,9 @@
 import sys
 from pathlib import Path
 import logging
-from pprint import pprint
+from typing import Dict, Any
 # Configure logging to suppress low-level pdfminer messages
 logging.getLogger("fitz").setLevel(logging.ERROR) 
-from typing import Dict, Any
 import fitz # PyMuPDF
 
 from pdflinkcheck.remnants import find_link_remnants

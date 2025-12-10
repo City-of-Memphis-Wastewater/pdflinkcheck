@@ -3,7 +3,6 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 import sys
 from pathlib import Path
-import io
 
 # Import the core analysis function
 from pdflinkcheck.analyze import run_analysis 

@@ -4,6 +4,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.4] – 2025-12-010
+### Added: 
+- build_executable.py.
+- ci.yml
+
+---
+
 ## [1.1.3] – 2025-12-010
 ### Fixed:
 - Reference to GUI screenshot now uses `raw.githubusercontent` format to enable image content on PyPI.

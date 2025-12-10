@@ -3,7 +3,7 @@ import typer
 from rich.console import Console
 from pathlib import Path
 from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
-
+from typing import Dict
 # Initialize the rich console for output
 console = Console()
 app = typer.Typer(
@@ -54,8 +54,8 @@ def gui():
     try:
         start_gui()
     except Exception as e:
-        typer.echo(f"GUI failed to launch")
-        typer.echo(f"Ensure tkinter is available, especially if using WSLg.")
+        typer.echo("GUI failed to launch")
+        typer.echo("Ensure tkinter is available, especially if using WSLg.")
         typer.echo(f"Error: {e}")
 
     # Placeholder for running the app
