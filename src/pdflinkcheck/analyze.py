@@ -3,7 +3,6 @@ from pathlib import Path
 import logging
 # Configure logging to suppress low-level pdfminer messages
 logging.getLogger("fitz").setLevel(logging.ERROR) 
-
 import fitz # PyMuPDF
 
 from pdflinkcheck.remnants import find_link_remnants
@@ -30,15 +29,19 @@ def get_link_rect(link_dict):
     return None
 
 def get_pdf_file():
-    example_path = f"TE Maxson WWTF O&M Manual.pdf"
-    
-    pdf_file = example_path
+
+    example_path = f"/mnt/c/Users/george.bennett/Downloads/TE Maxson WWTF O&M Manual DRAFT - Sections 1-6 - April 2025 (3).pdf"
+    example_path = "TE Maxson WWTF O&M Manual.pdf"
+    print(f"example path = {example_path}")
+    pdf_file = input(f"Paste path to PDF file (or press Enter to accept example): ")
     if not pdf_file:
-        print(fr"If running in WSL, use a Linux path like: {example_path}")
-        pdf_file = str(Path(input('Paste a PDF file path: ')))
+        pdf_file = example_path
+    if not Path(pdf_file).exists:
+        print("File not found!")
+        sys.exit(1)
+ 
     return pdf_file
 
-import fitz # PyMuPDF
 
 def get_anchor_text(page, link_rect):
     """
@@ -109,7 +112,6 @@ def inspect_pdf_hyperlinks_fitz(pdf_path):
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
             
-            
             for link in page.get_links():
 
                 page_obj = doc.load_page(page_num)
@@ -122,10 +124,12 @@ def inspect_pdf_hyperlinks_fitz(pdf_path):
                 
                 # try to see all possible keys for link
 
+                # --- Examples of various keys associated with various link instances ---
                 #print(f"keys: list(link) = {list(link)}")
                 # keys: list(link) = ['kind', 'xref', 'from', 'page', 'viewrect', 'id']
                 # keys: list(link) = ['kind', 'xref', 'from', 'uri', 'id']
                 # keys: list(link) = ['kind', 'xref', 'from', 'page', 'view', 'id']
+
                 # 1. Extract the anchor text
                 anchor_text = get_anchor_text(page_obj, link_rect)
 
@@ -250,67 +254,6 @@ def inspect_pdf_hyperlinks_fitz_stable(pdf_path):
         print(f"An error occurred: {e}", file=sys.stderr)
     return links_data
 
-def inspect_pdf_hyperlinks_fitz_0(pdf_path):
-    links_data = []
-    try:
-        doc = fitz.open(pdf_path)
-
-        for page_num in range(doc.page_count):
-            page = doc.load_page(page_num)
-            
-            for link in page.get_links():
-                link_dict = {
-                    'page': int(page_num) + 1,
-                    'rect': link.get('rect')
-                }
-
-                if link['kind'] == fitz.LINK_URI:
-                    link_dict.update({
-                        'type': 'External (URI)',
-                        'url': link.get('uri')
-                    })
-                
-                elif link['kind'] == fitz.LINK_GOTO:
-                    link_dict.update({
-                        'type': 'Internal (GoTo/Dest)',
-                        'destination_page': int(link.get('page')) + 1,
-                        'destination_view': link.get('to')
-                    })
-                
-                elif link['kind'] == fitz.LINK_GOTOR:
-                    link_dict.update({
-                        'type': 'Remote (GoToR)',
-                        'remote_file': link.get('file'),
-                        'destination': link.get('to')
-                    })
-                
-                # --- NEW/UPDATED LOGIC: Catching the Internal Jumps that are not LINK_GOTO ---
-                elif link.get('page') is not None and link['kind'] != fitz.LINK_GOTO: 
-                    # If it has a target page index but wasn't caught as LINK_GOTO (kind 2), 
-                    # it must be a Named/Action-based internal jump that fitz resolved partially.
-                    link_dict.update({
-                        'type': 'Internal (Resolved Action)',
-                        'destination_page': int(link.get('page')) + 1,
-                        'destination_view': link.get('to'),
-                        'source_kind': link.get('kind') # Keep original kind for debugging
-                    })
-                    
-                else:
-                    # Handle everything else (mailto, launch, generic actions)
-                    target = link.get('url') or link.get('remote_file') or link.get('target')
-                    link_dict.update({
-                        'type': 'Other Action',
-                        'action_kind': link.get('kind'),
-                        'target': target
-                    })
-                
-                links_data.append(link_dict)
-
-        doc.close()
-    except Exception as e:
-        print(f"An error occurred: {e}", file=sys.stderr)
-    return links_data
-
 def call_v4_stable():
 
     pdf_file = get_pdf_file()
@@ -361,142 +304,6 @@ def call_v4_stable():
     else:
         print(f"\nNo hyperlinks of any type were found in {pdf_file}.")
 
-
-def call_v5():
-
-    pdf_file = get_pdf_file()
-    extracted_links = inspect_pdf_hyperlinks_fitz(pdf_file)
-
-    if extracted_links:
-        # Separate the lists based on the new 'type' key
-        uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
-        goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
-        resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)'] # <-- NEW RESOLVED LIST
-        other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
-
-
-        total_internal_links = len(goto_links) + len(resolved_action_links)
-
-        print(f"\n--- Link Analysis Results for {pdf_file} ---")
-        print(f"Total links found: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
-
-        print("\n## External URI Links (Checkable)")
-        if uri_links:
-            for link in uri_links:
-                print(f" Page {link['page']}: {link['url']}")
-        else:
-            print(" No external URI links found.")
-
-        print("\n## Internal Jumps (GoTo & Resolved Actions)")
-        if total_internal_links > 0:
-            count = 1
-            
-            # Helper function to print the detailed line
-            def print_internal_link(link, is_goto=False):
-                type_str = "GoTo" if is_goto else "Action/Dest"
-                # PyMuPDF Rect object format: (x0, y0, x1, y1)
-                rect_str = f"({int(link['rect'][0])}, {int(link['rect'][1])}) to ({int(link['rect'][2])}, {int(link['rect'][3])})" if link['rect'] else 'N/A'
-                
-                print(f" {count}. Page {link['page']} (Rect: {rect_str}): Jumps via {type_str} to Page {link['destination_page']}")
-                # Only show destination view if it's not the default (often None or empty list)
-                if link['destination_view']:
-                    print(f"     -> View: {link['destination_view']}")
-
-
-            # Report simple GoTo links
-            for link in goto_links:
-                print_internal_link(link, is_goto=True)
-                count+=1
-            
-            # Report resolved action links (the 247 links)
-            for link in resolved_action_links:
-                print_internal_link(link, is_goto=False)
-                count+=1
-        else:
-            print(" No internal GoTo or Resolved Action links found.")
-
-        print("\n## Other Links (mailto, tel, GoToR)")
-        if other_links:
-            for link in other_links:
-                target = link.get('url') or link.get('remote_file') or link.get('target')
-                print(f" Page {link['page']}: {link['type']} -> {target}")
-        else:
-            print(" No other link types found.")
-
-    else:
-        print(f"\nNo hyperlinks of any type were found in {pdf_file}.")
-
-def call_v6(): # <--- ITERATED TO V6
-
-    pdf_file = get_pdf_file()
-    extracted_links = inspect_pdf_hyperlinks_fitz(pdf_file)
-
-    if extracted_links:
-        # Separate the lists based on the 'type' key
-        uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
-        goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
-        resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
-        other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
-
-        
-        total_internal_links = len(goto_links) + len(resolved_action_links)
-        
-        print(f"\n--- Link Analysis Results for {pdf_file} ---")
-        print(f"Total links found: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
-
-        print("\n## External URI Links (Checkable)")
-        if uri_links:
-            for link in uri_links:
-                print(f"  Page {link['page']}: {link['url']}")
-        else:
-            print("  No external URI links found.")
-
-        print("\n## Internal Jumps (GoTo & Resolved Actions)")
-        if total_internal_links > 0:
-            count = 1
-            
-            # Helper function to print the detailed line - UPDATED TO HANDLE fitz.Rect
-            def print_internal_link(link, is_goto=False):
-                type_str = "GoTo" if is_goto else "Action/Dest"
-                
-                # Access the fitz.Rect object attributes directly
-                rect = link['rect']
-                if rect and not rect.is_empty:
-                    # Use integer coordinates for a cleaner look
-                    rect_str = f"({int(rect.x0)}, {int(rect.y0)}) to ({int(rect.x1)}, {int(rect.y1)})"
-                else:
-                    rect_str = 'N/A'
-                
-                # Print the main link line
-                print(f" {count}. Page {link['page']} (Rect: {rect_str}): Jumps via {type_str} to Page {link['destination_page']}")
-                
-                # Only show destination view if it's not the default
-                if link['destination_view'] and link['destination_view'] != [fitz.PDF_ANY_DEST]:
-                    print(f"     -> View: {link['destination_view']}")
-
-
-            # Report simple GoTo links
-            for link in goto_links:
-                print_internal_link(link, is_goto=True)
-                count+=1
-            
-            # Report resolved action links
-            for link in resolved_action_links:
-                print_internal_link(link, is_goto=False)
-                count+=1
-        else:
-            print("  No internal GoTo or Resolved Action links found.")
-
-        print("\n## Other Links (mailto, tel, GoToR)")
-        if other_links:
-            for link in other_links:
-                target = link.get('url') or link.get('remote_file') or link.get('target')
-                print(f"  Page {link['page']}: {link['type']} -> {target}")
-        else:
-            print("  No other link types found.")
-
-    else:
-        print(f"\nNo hyperlinks of any type were found in {pdf_file}.")
 
 
 def call_v7(): 
