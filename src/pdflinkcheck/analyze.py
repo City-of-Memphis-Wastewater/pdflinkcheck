@@ -5,30 +5,14 @@ from pprint import pprint
 # Configure logging to suppress low-level pdfminer messages
 logging.getLogger("fitz").setLevel(logging.ERROR) 
 from typing import Dict, Any
-
 import fitz # PyMuPDF
+
 from pdflinkcheck.remnants import find_link_remnants
 
 """
 Inspect target PDF for both URI links and for GoTo links.
 """
 
-
-def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[str, Any]:
-    """
-    Placeholder for the core PDF analysis logic using PyMuPDF.
-    """
-    # This is where you will add your PyMuPDF code from the previous sessions
-    # For now, return dummy data to test the CLI
-    print(f"Running PyMuPDF analysis on {pdf_path}...")
-
-    # Placeholder result structure
-    return {
-        "external_links": ["http://example.com"] if check_remnants else [],
-        "internal_links": ["page 5"],
-        "remnants": ["info@test.org"] if check_remnants else [],
-        "toc": []
-    }
 
 # Helper function: Prioritize 'from'
 def get_link_rect(link_dict):
@@ -122,10 +106,6 @@ def analyze_toc_fitz(doc):
         
     return toc_data
 
-# ... in your main function, you would call this:
-# doc = fitz.open(pdf_file)
-# structural_toc = analyze_toc_fitz(doc)
-# doc.close()
 
 # 2. Updated Main Inspection Function to Include Text Extraction
 def inspect_pdf_hyperlinks_fitz(pdf_path):
@@ -148,7 +128,6 @@ def inspect_pdf_hyperlinks_fitz(pdf_path):
                 #print(f"rect_obj = {rect_obj}")
                 #print(f"xref = {xref}")
                 
-                # try to see all possible keys for link
 
                 # --- Examples of various keys associated with various link instances ---
                 #print(f"keys: list(link) = {list(link)}")
