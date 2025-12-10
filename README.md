@@ -8,7 +8,7 @@ Use the CLI or the GUI.
 
 The tool can be run using a simple cross-platform graphical interface (Tkinter):
 
-![Screenshot of the pdflinkcheck GUI](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/blob/main/assets/pdflinkcheck_gui.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui.png)
 
 To launch the GUI, use the command: `pdflinkcheck-gui`
 
