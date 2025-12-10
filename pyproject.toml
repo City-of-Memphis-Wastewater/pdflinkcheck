@@ -10,6 +10,9 @@ dependencies = [
     "typer>=0.20.0",
 ]
 
+[project.scripts]
+pdflinkcheck = "pdflinkcheck.cli:app"
+
 [tool.setuptools.packages.find]
 where = ["src"]  
 

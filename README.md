@@ -1,3 +1,60 @@
+# pdflinkcheck
+A purpose-built command-line tool for comprehensive analysis of hyperlinks and link remnants within PDF documents, primarily using the PyMuPDF library.
+
+---
+
+### ✨ Features
+
+* **Active Link Extraction:** Identifies and categorizes all programmed links (External URIs, Internal GoTo/Destinations, Remote Jumps).
+* **Anchor Text Retrieval:** Extracts the visible text corresponding to each link's bounding box.
+* **Remnant Detection:** Scans the document's text layer for unlinked URIs and email addresses that should potentially be converted into active links.
+* **Structural TOC:** Extracts the PDF's internal Table of Contents (bookmarks/outline).
+
+---
+
+### 📥 Installation (Recommended via `pipx`)
+
+The recommended way to install `pdflinkcheck` is using `pipx`, which installs Python applications in isolated environments, preventing dependency conflicts.
+
+```bash
+# Ensure you have pipx installed first (if not, run: pip install pipx)
+pipx install pdflinkcheck
+```
+
+
+**Note for Developers:** If you prefer a traditional virtual environment or are developing locally, use `pip`:
+```bash
+# From the root of the project
+pip install .
+```
+
+---
+
+### 🚀 Usage
+
+The main command is `pdflinkcheck analyze`.
+
+
+```bash
+# Basic usage: Analyze a PDF and check for remnants (default behavior)
+pdflinkcheck analyze "path/to/my/document.pdf"
+```
+
+#### Command Options
+
+|**Option**|**Description**|**Default**|
+|---|---|---|
+|`<PDF_PATH>`|**Required.** The path to the PDF file to analyze.|N/A|
+|`--check-remnants / --no-check-remnants`|Toggle scanning the text layer for unlinked URLs/Emails.|`--check-remnants`|
+|`--max-links INTEGER`|Maximum number of links/remnants to display in the detailed report sections.|`50`|
+|`--help`|Show command help and exit.|N/A|
+
+#### Example Run
+
+```bash
+pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
+```
+
 # Run from source
 ```
 git clone http://github.com/city-of-memphis-wastewater/pdflinkcheck.git
@@ -5,8 +62,6 @@ cd pdflinkcheck
 uv sync
 python src/pdflinkcheck/analyze.py
 ```
-
-When prompted, paste the path to your PDF.
 
 ---
 
