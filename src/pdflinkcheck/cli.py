@@ -9,8 +9,31 @@ console = Console()
 app = typer.Typer(
     name="pdflinkcheck",
     help="A command-line tool for comprehensive PDF link analysis and reporting.",
-    add_completion=False
+    add_completion=False,
+    invoke_without_command = True,
+    no_args_is_help=False,
 )
+
+app.callback()
+def main(ctx: typer.Context):
+    """
+    If no subcommand is provided, launch the GUI.
+    """
+    if ctx.invoked_subcommand is None:
+        # No subcommand → launch GUI
+        try:
+            from pdflinkcheck.gui import start_gui
+            start_gui()
+        except ImportError as e:
+            console.print("[red]GUI dependencies not available.[/red]")
+            console.print("Install with: pip install pdflinkcheck[gui]")
+            console.print(f"Details: {e}")
+            raise typer.Exit(code=1)
+        except Exception as e:
+            console.print("[bold red]GUI failed to launch[/bold red]")
+            console.print("Make sure tkinter is available (especially on WSL).")
+            console.print(f"Error: {e}")
+            raise typer.Exit(code=1)
 
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity

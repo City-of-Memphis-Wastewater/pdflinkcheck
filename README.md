@@ -10,8 +10,10 @@ The tool can be run using a simple cross-platform graphical interface (Tkinter):
 
 ![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui.png)
 
-To launch the GUI, use the command: `pdflinkcheck-gui`
-
+To launch the GUI:
+A. Install from pipx using `pipx install pdflinkcheck`, and then use the command: `pdflinkcheck-gui`
+or
+B. Download and double-click the latest PYZ, EXE, or ELF binary from https://github/com/City-of-Memphis-Wastewater/pdflinkcheck/releases/
 ---
 
 ### ✨ Features

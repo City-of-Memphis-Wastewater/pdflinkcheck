@@ -12,7 +12,7 @@ SITE_PACKAGES_PATH = site.getsitepackages()[0]
 
 # --- Configuration for pdflinkcheck ---
 PROJECT_NAME = "pdflinkcheck"
-ENTRY_POINT = "pdflinkcheck.cli:app" 
+ENTRY_POINT = "pdflinkcheck.cli:app"
 DIST_DIR = Path("dist")
 
 # --- TOML Parsing Helper ---
