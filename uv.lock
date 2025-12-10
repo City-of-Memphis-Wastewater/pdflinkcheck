@@ -46,7 +46,7 @@ wheels = [
 
 [[package]]
 name = "pdflinkcheck"
-version = "0.1.5"
+version = "1.1.1"
 source = { editable = "." }
 dependencies = [
     { name = "pymupdf" },
