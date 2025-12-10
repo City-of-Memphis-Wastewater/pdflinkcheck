@@ -1,0 +1,17 @@
+[project]
+name = "pdflinkcheck"
+version = "0.1.1"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "pdfminer-six>=20251107",
+    "pymupdf>=1.26.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]  
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
