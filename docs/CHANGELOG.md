@@ -4,6 +4,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.1] – 2025-12-09
+### Added:
+- Add detail to gui command in CLI.
+- Add and stabilize build_pyz.py.
+
+Hooray, 1.1.1 indicates a stable public release.
+
+---
+
 ## [0.1.5] – 2025-12-09
 ### Added:
 - gui.py, for tkinter gui. Ensure you have `sudo apt install python3-tk tk-dev if using wslg`

@@ -45,8 +45,18 @@ def analyze_pdf( # Renamed function for clarity
         max_links=max_links
     )
 
+@app.command(name="gui") 
 def gui():
+    """
+    Launch tkinter-based GUI.
+    """
     from pdflinkcheck.gui import start_gui
+    try:
+        start_gui()
+    except Exception as e:
+        typer.echo(f"GUI failed to launch")
+        typer.echo(f"Ensure tkinter is available, especially if using WSLg.")
+        typer.echo(f"Error: {e}")
 
     # Placeholder for running the app
 if __name__ == "__main__":
