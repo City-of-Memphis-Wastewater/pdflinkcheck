@@ -17,6 +17,14 @@ pdflinkcheck-gui = "pdflinkcheck.gui:start_gui"
 [tool.setuptools.packages.find]
 where = ["src"]  
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.1.13",
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    # Add any other development tools here (e.g., build, shiv, etc., if you want them tracked here)
+]
+
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
