@@ -1,5 +1,16 @@
 # pdflinkcheck
-A purpose-built command-line tool for comprehensive analysis of hyperlinks and link remnants within PDF documents, primarily using the PyMuPDF library.
+A purpose-built tool for comprehensive analysis of hyperlinks and link remnants within PDF documents, primarily using the PyMuPDF library.
+Use the CLI or the GUI.
+
+---
+
+### Graphical User Interface (GUI)
+
+The tool can be run using a simple cross-platform graphical interface (Tkinter):
+
+![Screenshot of the pdflinkcheck GUI](assets/pdflinkcheck_gui.png)
+
+To launch the GUI, use the command: `pdflinkcheck-gui`
 
 ---
 
