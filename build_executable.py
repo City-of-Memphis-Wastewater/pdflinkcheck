@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import re
 import site # For site-packages path if needed, though not strictly required for pyinstaller here
+import pyhabitat
 
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
@@ -18,7 +19,7 @@ DIST_DIR = Path("dist")
 BUILD_DIR = Path("build/pyinstaller_work")
 RC_TEMPLATE = Path('version.rc.template') # Assume this template exists for Windows
 RC_FILE = Path('version.rc')
-IS_WINDOWS_BUILD = sys.platform.startswith('win')
+IS_WINDOWS_BUILD = pyhabitat.on_windows()
 
 # --- Version Info Helper (From successful build_pyz.py) ---
 def find_pyproject(start: Path) -> Path | None:
@@ -41,8 +42,8 @@ def get_version_for_build() -> str:
 # --- Dynamic Naming Placeholder (Simplified version for this context) ---
 def form_dynamic_binary_name(pkg_name: str, version: str) -> str:
     """Creates a standardized binary name descriptor."""
-    os_tag = 'win' if IS_WINDOWS_BUILD else 'linux'
-    arch = os.uname().machine if not IS_WINDOWS_BUILD else 'amd64' # Placeholder for Windows arch
+    os_tag = pyhabitat.SystemInfo().get_os_tag()
+    arch = pyhabitat.SystemInfo().get_arch()
     py_ver = f"py{sys.version_info.major}{sys.version_info.minor}"
     return f"{pkg_name}-{version}-{py_ver}-{os_tag}-{arch}"
 

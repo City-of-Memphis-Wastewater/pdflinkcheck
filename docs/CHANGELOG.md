@@ -4,14 +4,23 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.4] – 2025-12-010
+## [1.1.4] – 2025-12-10
+### Fixed:
+- Improve arch and os tagging in build_executable.py by leveraging pyhabitat.SystemInfo().
+
+### Added:
+- Add pyhabitat>=1.0.52 to the pyproject.toml as a dependency. This isnthe firsr version which exposes the SystemInfo class in pyhabitat/__init__.py.
+
+---
+
+## [1.1.4] – 2025-12-10
 ### Added: 
 - build_executable.py.
 - ci.yml
 
 ---
 
-## [1.1.3] – 2025-12-010
+## [1.1.3] – 2025-12-10
 ### Fixed:
 - Reference to GUI screenshot now uses `raw.githubusercontent` format to enable image content on PyPI.
 
