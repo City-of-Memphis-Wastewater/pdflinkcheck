@@ -4,7 +4,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.4] – 2025-12-10
+## [1.1.6] – 2025-12-10
+### Changed:
+- In build_executable.py, change form_dynamic_binary_name() to form_dynamic_name().
+- Import form_dynamic_name() from build_executable.py into build_pyz.py, so that the PYZ filename can be associated with it's OS and processir architecture. This is important because the pymupdf package has a corw which is not pure Python, ergo PYZ builds of pdflinkcheck are not cross platform. 
+
+---
+
+## [1.1.5] – 2025-12-10
 ### Fixed:
 - Improve arch and os tagging in build_executable.py by leveraging pyhabitat.SystemInfo().
 

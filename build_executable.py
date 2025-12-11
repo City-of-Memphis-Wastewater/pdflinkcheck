@@ -40,7 +40,7 @@ def get_version_for_build() -> str:
     return match.group(1) if match else "0.0.0"
 
 # --- Dynamic Naming Placeholder (Simplified version for this context) ---
-def form_dynamic_binary_name(pkg_name: str, version: str) -> str:
+def form_dynamic_name(pkg_name: str, version: str) -> str:
     """Creates a standardized binary name descriptor."""
     os_tag = pyhabitat.SystemInfo().get_os_tag()
     arch = pyhabitat.SystemInfo().get_arch()
@@ -156,7 +156,7 @@ if __name__ == "__main__":
         generate_rc_file(package_version)
 
         # 3. Determine the executable name (without the extension)
-        executable_descriptor = form_dynamic_binary_name(PROJECT_NAME, package_version)
+        executable_descriptor = form_dynamic_name(PROJECT_NAME, package_version)
 
         # 4. Run the installer
         run_pyinstaller(executable_descriptor, CLI_MAIN_FILE)
