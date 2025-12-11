@@ -4,11 +4,20 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.8] – 2025-12-11
+## [1.1.8] - 2025-12-11
 ### Fixed
-- CLI Default Action (GUI Launch):** Fixed an issue where running the CLI with no arguments (e.g., `uv run python -m pdflinkcheck.cli`) resulted in a silent exit instead of executing the default GUI launch logic defined in the `main` callback.
-    - This was due to missing at symbol in the decorator `@app.callback()`, on `def main(ctx: typer.Context)`.
-    - I worked really hard on the bug report, with several levels on investigation. It is now unnecessary to share with FastAPI/Typer, but I have kept it as a portfolio piece here: [Debugging the CLI Dispatcher, or, The Tale of The Missing @ Symbol](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/wiki/Debugging-the-CLI-Dispatcher,-or,-The-Tale-of-The-Missing-@-Symbol)
+- CLI Default Action (GUI Launch): Fixed an issue where running the CLI with no arguments (e.g., `uv run python -m pdflinkcheck.cli`) resulted in a silent exit instead of executing the default GUI launch logic defined in the `main` callback.
+    - This was due to a **missing decorator symbol** in `app.callback()` on `def main(ctx: typer.Context)`. The correct decorator syntax `@app.callback()` is now in use.
+    - The manual `sys.argv` workaround to launch the GUI is now removed from `src/pdflinkcheck/cli.py` as it is no longer necessary.
+    - The detailed investigation into this issue is documented here: [Debugging the CLI Dispatcher, or, The Tale of The Missing @ Symbol](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/wiki/Debugging-the-CLI-Dispatcher,-or,-The-Tale-of-The-Missing-@-Symbol)
+
+### Changed
+- Migrated default CLI application logic from a pure Click implementation back to the preferred Typer implementation in `src/pdflinkcheck/cli.py`.
+- Updated `.gitignore` to correctly exclude sandbox and defunct testing files.
+- Updated core dependency pins: Typer minimum version is now set to `0.20.0`.
+
+### Added
+- Created foundational GitHub Actions workflow (`.github/workflows/build.yml`) for automated testing and releases.
 
 ---
 
