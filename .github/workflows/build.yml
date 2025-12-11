@@ -48,10 +48,13 @@ jobs:
       - name: Collect artifacts
         run: |
           mkdir -p dist/upload
-          cp dist/*.whl dist/upload/ 2>/dev/null || true
-          cp dist/*.tar.gz dist/upload/ 2>/dev/null || true
-          cp dist/*.pyz dist/upload/ 2>/dev/null || true
-          cp dist/*.exe dist/upload/ 2>/dev/null || true
+          # Use Copy-Item with -ErrorAction SilentlyContinue 
+          # and the standard path separator (which Windows handles correctly)
+          # Bash recognizes cp as copy, and it ignores the PowerShell-specific argument -ErrorAction SilentlyContinue
+          cp dist/*.whl dist/upload/ -ErrorAction SilentlyContinue
+          cp dist/*.tar.gz dist/upload/ -ErrorAction SilentlyContinue
+          cp dist/*.pyz dist/upload/ -ErrorAction SilentlyContinue
+          cp dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4

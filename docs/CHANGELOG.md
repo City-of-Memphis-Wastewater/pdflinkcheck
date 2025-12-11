@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.12] - 2025-12-11
+### Fixed:
+- In `build.yml`, Use the PowerShell-safe syntax (-ErrorAction SilentlyContinue) which ensures the step runs successfully on all three operating systems, regardless of which file types were created on that specific runner. This is an alterative to `2>/dev/null || true`, which cannot be used in Windows.
+
+---
+
 ## [1.1.11] - 2025-12-11
 ### Fixed:
 - Removed ✅ `\u2705` from build_pyz.py due to Windows CI failure in `.github/workflows/build.yml`.
