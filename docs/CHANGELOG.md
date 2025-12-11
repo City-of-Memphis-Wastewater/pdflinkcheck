@@ -4,14 +4,22 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.4] – 2025-12-010
+## [1.1.5b] – 2025-12-11
+### Fixed
+- CLI Default Action (GUI Launch):** Fixed an issue where running the CLI with no arguments (e.g., `uv run python -m pdflinkcheck.cli`) resulted in a silent exit instead of executing the default GUI launch logic defined in the `main` callback.
+    - This was due to missing at symbol in the decorator `@app.callback()`, on `def main(ctx: typer.Context)`.
+    - I worked really hard on the bug report, with several levels on investigation. It is now unnecessary to share with FastAPI/Typer, but I have kept it as a portfolio piece here: [Debugging the CLI Dispatcher, or, The Tale of The Missing @ Symbol](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/wiki/Debugging-the-CLI-Dispatcher,-or,-The-Tale-of-The-Missing-@-Symbol)
+
+---
+
+## [1.1.4] – 2025-12-10
 ### Added: 
 - build_executable.py.
 - ci.yml
 
 ---
 
-## [1.1.3] – 2025-12-010
+## [1.1.3] – 2025-12-10
 ### Fixed:
 - Reference to GUI screenshot now uses `raw.githubusercontent` format to enable image content on PyPI.
 

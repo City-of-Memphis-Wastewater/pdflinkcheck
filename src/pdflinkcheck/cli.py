@@ -1,39 +1,57 @@
-# src/pdflinkcheck/cli.py
+# src/bug_record/cli_typer_no_args_no_gui_silent (defunct, kept as a bug record, associated with FastAPI/Typer issue # x)
 import typer
 from rich.console import Console
 from pathlib import Path
 from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
 from typing import Dict
-# Initialize the rich console for output
-console = Console()
+import logging
+import pyhabitat
+import sys
+import os
+
+console = Console() # to be above the tkinter check, in case of console.print
+
+if pyhabitat.tkinter_is_available():
+    from pdflinkcheck.gui import start_gui
+else:
+    start_gui = None
+    console.print("Tkinter is not available on this system.")
+
+
 app = typer.Typer(
     name="pdflinkcheck",
     help="A command-line tool for comprehensive PDF link analysis and reporting.",
     add_completion=False,
-    invoke_without_command = True,
-    no_args_is_help=False,
+    invoke_without_command = True, 
+    no_args_is_help = False,
 )
 
-app.callback()
+@app.callback()
 def main(ctx: typer.Context):
     """
-    If no subcommand is provided, launch the GUI.
+    If no subcommand is provided, launch the GUI <- Is the idea. However.
+    This is not functioning today.
+    Work around: non-typer-app _launch_default_gui() called in __main__ block if len(sys.argv) <= 1.
     """
+
     if ctx.invoked_subcommand is None:
+
         # No subcommand → launch GUI
-        try:
-            from pdflinkcheck.gui import start_gui
-            start_gui()
-        except ImportError as e:
-            console.print("[red]GUI dependencies not available.[/red]")
-            console.print("Install with: pip install pdflinkcheck[gui]")
-            console.print(f"Details: {e}")
+        if not start_gui:
+            _gui_failure_msg()
             raise typer.Exit(code=1)
-        except Exception as e:
-            console.print("[bold red]GUI failed to launch[/bold red]")
-            console.print("Make sure tkinter is available (especially on WSL).")
-            console.print(f"Error: {e}")
-            raise typer.Exit(code=1)
+        
+        start_gui()
+
+        raise typer.Exit(code=0)
+    
+    # 1. Access the list of all command-line arguments
+    full_command_list = sys.argv
+    # 2. Join the list into a single string to recreate the command
+    command_string = " ".join(full_command_list)
+    # 3. Print the command
+    typer.echo(f"command:\n{command_string}\n")
+
 
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity
@@ -69,18 +87,42 @@ def analyze_pdf( # Renamed function for clarity
     )
 
 @app.command(name="gui") 
-def gui():
+def gui_command()->None:
     """
     Launch tkinter-based GUI.
     """
-    from pdflinkcheck.gui import start_gui
-    try:
-        start_gui()
-    except Exception as e:
-        typer.echo("GUI failed to launch")
-        typer.echo("Ensure tkinter is available, especially if using WSLg.")
-        typer.echo(f"Error: {e}")
+    if not start_gui:
+        _gui_failure_msg()
+        return
+    start_gui()
 
-    # Placeholder for running the app
+        
+def _launch_default_gui():
+    """
+    Logic to launch GUI and handle failure, used in __main__.
+    This should not be necessary, but when no args are provided the gui does not launch without it.
+    """
+    # 1. Ensure that gui is available
+    if not start_gui:
+        _gui_failure_msg()
+        sys.exit(1)
+    
+    # 2. Call the core function which blocks
+    start_gui()
+    
+    # 3. Exit cleanly after the GUI window is closed
+    sys.exit(0)
+        
+
+# --- Helper, consistent gui failure message. --- 
+def _gui_failure_msg():
+    console.print("[bold red]GUI failed to launch[/bold red]")
+    console.print("Ensure pdflinkcheck dependecies are installed and the venv is activated (the dependecies are managed by uv).")
+    console.print("The dependecies for pdflinkcheck are managed by uv.")
+    console.print("Ensure tkinter is available, especially if using WSLg.")
+    console.print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
+    pass
+
 if __name__ == "__main__":
+
     app()

@@ -10,3 +10,9 @@ wheels/
 .venv/
 
 .ipynb_checkpoints/
+
+# Samples, examples, sandbox
+src/sample/
+src/example/
+src/sandbox/
+src/defunct/

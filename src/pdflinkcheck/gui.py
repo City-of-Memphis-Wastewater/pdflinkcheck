@@ -158,8 +158,10 @@ class PDFLinkCheckerApp(tk.Tk):
 
 def start_gui():
     """Entry point function to launch the application."""
-    app = PDFLinkCheckerApp()
-    app.mainloop()
+    print("pdflinkcheck: start_gui ...")
+    tk_app = PDFLinkCheckerApp()
+    tk_app.mainloop()
+    print("pdflinkcheck: gui closed.")
 
 if __name__ == "__main__":
     start_gui()

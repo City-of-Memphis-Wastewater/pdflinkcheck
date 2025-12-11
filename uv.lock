@@ -141,6 +141,8 @@ name = "pdflinkcheck"
 version = "1.1.5"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
+    { name = "pyhabitat" },
     { name = "pymupdf" },
     { name = "rich" },
     { name = "typer" },
@@ -155,6 +157,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.3.1" },
+    { name = "pyhabitat", specifier = ">=1.0.53" },
     { name = "pymupdf", specifier = ">=1.26.6" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.1.0" },
@@ -180,6 +184,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b0/77/a5b8c569bf593b0140bde72ea885a803b82086995367bf2037de0159d924/pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887", size = 4968631, upload-time = "2025-06-21T13:39:12.283Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/21/705964c7812476f378728bdf590ca4b771ec72385c533964653c68e86bdc/pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b", size = 1225217, upload-time = "2025-06-21T13:39:07.939Z" },
+]
+
+[[package]]
+name = "pyhabitat"
+version = "1.0.53"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/25/c5/93ccdad25d0e40b72d8d86bb617e756f5296963cc5fcfdad1194f818da6a/pyhabitat-1.0.53.tar.gz", hash = "sha256:ecf8d7ee483e919d7f6999e3e07809009134c34384e83ccc06cd900fcef42f83", size = 26806, upload-time = "2025-12-11T06:04:48.293Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/73/09/2f4815503e2005a5d7b7c2345a304d506a909cbb47f7d167ac351687cda2/pyhabitat-1.0.53-py3-none-any.whl", hash = "sha256:11c7282971ffc779a41de8f9a6f48476a2a2eaca725fb93602ae9a1c0758b66b", size = 24037, upload-time = "2025-12-11T06:04:46.807Z" },
 ]
 
 [[package]]

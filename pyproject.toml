@@ -5,9 +5,11 @@ description = "A purpose-built PDF link analysis reporting tool."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "pyhabitat>=1.0.53",
     "pymupdf>=1.26.6",
     "rich>=14.2.0",
     "typer>=0.20.0",
+    "click>=8.3.1" 
 ]
 
 [project.scripts]
