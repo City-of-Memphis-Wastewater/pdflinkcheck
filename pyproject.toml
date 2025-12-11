@@ -9,7 +9,6 @@ dependencies = [
     "pymupdf>=1.26.6",
     "rich>=14.2.0",
     "typer>=0.20.0",
-    "pyhabitat>=1.0.52",
 ]
 
 [project.scripts]
