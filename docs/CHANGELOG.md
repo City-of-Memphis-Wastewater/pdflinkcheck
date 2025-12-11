@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.1.14] - 2025-12-11
+### CI: Fix(Permissions) Release Upload
+- Grant 'contents: write' permission to the 'attach-to-release' job's GITHUB_TOKEN to fix the artifact upload failure ('Resource not accessible by integration').
 ---
 
 ## [1.1.13] - 2025-12-11

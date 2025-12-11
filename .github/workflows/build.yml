@@ -79,6 +79,9 @@ jobs:
     name: Attach artifacts to GitHub Release
     needs: build
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
     
     steps:
       - name: Download all artifacts
