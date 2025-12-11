@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.7] – 2025-12-11
+### Fixed:
+- Fix erroneous relative import from build_executable by removing the leading dot.
+
+---
+
 ## [1.1.6] – 2025-12-10
 ### Changed:
 - In build_executable.py, change form_dynamic_binary_name() to form_dynamic_name().
