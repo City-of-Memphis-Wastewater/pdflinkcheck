@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.13] - 2025-12-11
+### Fixed:
+- Assumption in 1.1.12 was wrong, that bash could handle and safely ignore the PowerShell flags for the cp command. Now, in `build.yml`, have two sections `Collect Windows artifacts` and `Collect Unix artifacts`, the first with PowerShell-safe syntax (-ErrorAction SilentlyContinue) and the second with `2>/dev/null || true`, which cannot be used in Windows but is correct for unix systems. The good news is that now all sysmtes have succeeded at least once in Github Actions.
+
+---
+
 ## [1.1.12] - 2025-12-11
 ### Fixed:
 - In `build.yml`, Use the PowerShell-safe syntax (-ErrorAction SilentlyContinue) which ensures the step runs successfully on all three operating systems, regardless of which file types were created on that specific runner. This is an alterative to `2>/dev/null || true`, which cannot be used in Windows.
