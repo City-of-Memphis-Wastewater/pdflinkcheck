@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 import site
 
+from build_executable import form_dynamic_name
+
 # Get the one site-packages path where packages are installed in the venv
 SITE_PACKAGES_PATH = site.getsitepackages()[0]
 
@@ -135,8 +137,8 @@ def build_shiv_pyz():
 
     # 3. Find the resulting wheel file
     wheel_path = find_latest_wheel(DIST_DIR, version)
-    
-    output_filename = f"{PROJECT_NAME}-{version}-shiv.pyz" 
+    dynamic_name = form_dynamic_name(PROJECT_NAME, version)
+    output_filename = f"{dynamic_name}-shiv.pyz" 
     output_path = DIST_DIR / output_filename
     if output_path.exists():
         output_path.unlink()

@@ -1,6 +1,6 @@
 [project]
 name = "pdflinkcheck"
-version = "1.1.5"
+version = "1.1.8"
 description = "A purpose-built PDF link analysis reporting tool."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -9,7 +9,7 @@ dependencies = [
     "pymupdf>=1.26.6",
     "rich>=14.2.0",
     "typer>=0.20.0",
-    "click>=8.3.1" 
+    "pyhabitat>=1.0.52",
 ]
 
 [project.scripts]

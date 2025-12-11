@@ -4,11 +4,33 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.5b] – 2025-12-11
+## [1.1.8] – 2025-12-11
 ### Fixed
 - CLI Default Action (GUI Launch):** Fixed an issue where running the CLI with no arguments (e.g., `uv run python -m pdflinkcheck.cli`) resulted in a silent exit instead of executing the default GUI launch logic defined in the `main` callback.
     - This was due to missing at symbol in the decorator `@app.callback()`, on `def main(ctx: typer.Context)`.
     - I worked really hard on the bug report, with several levels on investigation. It is now unnecessary to share with FastAPI/Typer, but I have kept it as a portfolio piece here: [Debugging the CLI Dispatcher, or, The Tale of The Missing @ Symbol](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/wiki/Debugging-the-CLI-Dispatcher,-or,-The-Tale-of-The-Missing-@-Symbol)
+
+---
+
+## [1.1.7] – 2025-12-11
+### Fixed:
+- Fix erroneous relative import from build_executable by removing the leading dot.
+
+---
+
+## [1.1.6] – 2025-12-10
+### Changed:
+- In build_executable.py, change form_dynamic_binary_name() to form_dynamic_name().
+- Import form_dynamic_name() from build_executable.py into build_pyz.py, so that the PYZ filename can be associated with it's OS and processir architecture. This is important because the pymupdf package has a corw which is not pure Python, ergo PYZ builds of pdflinkcheck are not cross platform. 
+
+---
+
+## [1.1.5] – 2025-12-10
+### Fixed:
+- Improve arch and os tagging in build_executable.py by leveraging pyhabitat.SystemInfo().
+
+### Added:
+- Add pyhabitat>=1.0.52 to the pyproject.toml as a dependency. This isnthe firsr version which exposes the SystemInfo class in pyhabitat/__init__.py.
 
 ---
 
