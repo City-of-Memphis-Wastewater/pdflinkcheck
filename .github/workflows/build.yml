@@ -25,20 +25,17 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          # This ensures the created venv is activated implicitly
+          cache: pip
 
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
           pip install shiv pyinstaller build
-
-      - name: Install project dependencies (for build scripts)
-        # This installs pdflinkcheck (the package) in editable mode,
-        # which pulls in all of its required dependencies (like pyhabitat)
-        run: pip install -e . 
-
+          pip install -e . 
 
       - name: Build wheel & sdist
-        run: python -m build
+        run: python -m build --sdist
 
       - name: Build PYZ (shiv)
         run: |

@@ -1,4 +1,4 @@
-# build_pyz.py (Final with explicit 'build' installation)
+# build_pyz.py 
 #!/usr/bin/env python3
 import subprocess
 import sys
@@ -97,25 +97,34 @@ def build_wheel():
 
 def ensure_dependencies_and_shiv():
     """Ensures 'shiv', 'build', and all runtime dependencies are installed via uv."""
-    print("\n2. Ensuring 'shiv', 'build', and runtime dependencies are installed via uv...")
 
+    if os.environ.get("CI") == "true":
+        print("\n2. Skipping dependency check/install inside CI environment.")
+        # We rely on the build.yml workflow to have already installed shiv, build, and project dependencies.
+        # This prevents the script from calling 'uv' which isn't available.
+        return
+    
+    print("\n2. Ensuring 'shiv', 'build', and runtime dependencies are installed via uv...")
     # 2a. Check/Install 'build' package (using the activated python, which works in your venv)
     try:
         run_command([sys.executable, "-m", "build", "--version"], check=True)
     except subprocess.CalledProcessError:
-        print("Installing 'build' using uv...")
-        run_command(["uv", "pip", "install", "build"])
+        print("Installing 'build' ...")
+        run_command([sys.executable, "-m", "pip", "install", "build"])
+        #run_command(["uv", "pip", "install", "build"])
 
     # 2b. INSTALL/SYNC ALL PROJECT DEPENDENCIES (The Fix)
     print("Installing all project dependencies via uv pip install -e .")
-    run_command(["uv", "pip", "install", "-e", "."]) # <-- FIX: Use -e . to get all dependencies
+    #run_command(["uv", "pip", "install", "-e", "."]) # <-- FIX: Use -e . to get all dependencies
+    run_command([sys.executable, "-m", "pip", "install", "-e", "."])
     
     # 2c. Ensure shiv is installed
     try:
         run_command(["shiv", "--version"], check=True) 
     except subprocess.CalledProcessError:
-        print("Installing 'shiv' using uv...")
-        run_command(["uv", "pip", "install", "shiv"])
+        print("Installing 'shiv' ...")
+        #run_command(["uv", "pip", "install", "shiv"])
+        run_command([sys.executable, "-m", "pip", "install", "shiv"])
     
     print("Dependencies and shiv ready.")
 

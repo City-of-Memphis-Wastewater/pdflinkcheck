@@ -2,18 +2,28 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.1.10] - 2025-12-11
+### Changed
+- **CI Artifact Generation:** Modified the Continuous Integration (CI) workflow (`.github/workflows/build.yml`) to isolate the creation of the Source Distribution (`sdist`) from other artifacts.
+    - The general build step now explicitly runs **`python -m build --sdist`** to produce only the `.tar.gz` file for release.
+    - This ensures the generic build process does not create a default `.whl` file, which guarantees that the custom PYZ build script (`build_pyz.py`) always generates and uses a fresh, explicitly customized wheel file immediately before packaging the `.pyz` artifact.
+
+### Fixed
+- **CI Dependency Failure:** Resolved the CI workflow failure caused by an inability to find the `uv` executable.
+    - The redundant dependency installation logic (the **`ensure_dependencies_and_shiv()`** function) was removed from `build_pyz.py`.
+    - The custom scripts now rely entirely on the robust, standard `pip install` commands executed by the CI workflow, eliminating the `uv: command not found` error and simplifying the local build scripts.
 
 ---
 
 ## [1.1.9] - 2025-12-11
-### Fixed
+### Fixed:
 - **Build Workflow:** Remove explicit `shell: bash` declaration from `.github/workflows/build.yml`, to work cross-platform.
 - **Build Workflow:** Add `Install project dependencies (for build scripts)` section in `build.yml`, to ensure dependecies are available; dependencies were missing on the first run of `build.yaml`, during `build_pyz.py` when it tried to import `pyhabitat`.
 
 ---
 
 ## [1.1.8] - 2025-12-11
-### Fixed
+### Fixed:
 - CLI Default Action (GUI Launch): Fixed an issue where running the CLI with no arguments (e.g., `uv run python -m pdflinkcheck.cli`) resulted in a silent exit instead of executing the default GUI launch logic defined in the `main` callback.
     - This was due to a **missing decorator symbol** in `app.callback()` on `def main(ctx: typer.Context)`. The correct decorator syntax `@app.callback()` is now in use.
     - The manual `sys.argv` workaround to launch the GUI is now removed from `src/pdflinkcheck/cli.py` as it is no longer necessary.
