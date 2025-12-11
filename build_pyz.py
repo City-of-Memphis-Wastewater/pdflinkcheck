@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 import site
 
-from .build_executable import form_dynamic_name
+from build_executable import form_dynamic_name
 
 # Get the one site-packages path where packages are installed in the venv
 SITE_PACKAGES_PATH = site.getsitepackages()[0]
