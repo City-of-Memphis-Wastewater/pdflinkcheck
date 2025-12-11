@@ -31,18 +31,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install shiv pyinstaller build
 
+      - name: Install project dependencies (for build scripts)
+        # This installs pdflinkcheck (the package) in editable mode,
+        # which pulls in all of its required dependencies (like pyhabitat)
+        run: pip install -e . 
+
+
       - name: Build wheel & sdist
         run: python -m build
 
       - name: Build PYZ (shiv)
         run: |
           python build_pyz.py
-        shell: bash
 
       - name: Build executable (PyInstaller)
         run: |
           python build_executable.py
-        shell: bash
 
       - name: Collect artifacts
         run: |

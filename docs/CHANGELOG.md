@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.1.9] - 2025-12-11
+### Fixed
+- **Build Workflow:** Remove explicit `shell: bash` declaration from `.github/workflows/build.yml`, to work cross-platform.
+- **Build Workflow:** Add `Install project dependencies (for build scripts)` section in `build.yml`, to ensure dependecies are available; dependencies were missing on the first run of `build.yaml`, during `build_pyz.py` when it tried to import `pyhabitat`.
+
 ---
 
 ## [1.1.8] - 2025-12-11
