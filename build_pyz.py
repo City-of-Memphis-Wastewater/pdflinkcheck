@@ -172,7 +172,7 @@ def build_shiv_pyz():
     
     output_path.chmod(0o755)
     
-    print(f"\n✅ Build successful! Portable PYZ: {output_path.resolve()}")
+    print(f"\nBuild successful! Portable PYZ: {output_path.resolve()}")
 
 if __name__ == "__main__":
     try:

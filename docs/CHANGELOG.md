@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.1.11] - 2025-12-11
+### Fixed:
+- Removed ✅ `\u2705` from build_pyz.py due to Windows CI failure in `.github/workflows/build.yml`.
+
+---
+
 ## [1.1.10] - 2025-12-11
 ### Changed
 - **CI Artifact Generation:** Modified the Continuous Integration (CI) workflow (`.github/workflows/build.yml`) to isolate the creation of the Source Distribution (`sdist`) from other artifacts.
