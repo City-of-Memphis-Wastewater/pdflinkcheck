@@ -4,6 +4,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.24] - 2025-12-11
+### Fixed:
+- CI/Workflow: Resolved build errors on the Windows runner by splitting the directory cleanup step and using the native PowerShell command (Remove-Item -Recurse -Force) instead of the Unix rm -rf.
+- CI/Workflow: Fixed artifact staging failure (cp: directory dist/upload does not exist) by moving the staging directory creation (mkdir -p dist/upload) to run after the actions/checkout@v4 step, ensuring the directory is available before artifacts are copied.
+- CI/Artifacts: Ensured the staging directory creation (mkdir -p dist/upload) is explicitly present in all platform-specific artifact collection steps for maximum robustness.
+
+---
+
 ## [1.1.23] - 2025-12-11
 ### Fixed:
 - **ELF File Inclusion:** Linux and MacOS PyInstaller builds were not being copied. This is because they do not have a file extension, which build.yml relied on. 
@@ -11,6 +19,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
     - Key known assumptions:
         - The three runners do not share the same directory or file system.
         - ELF binaries have no extension.
+- Separate Windows and non-Windows cleaning logic in build.yml
 
 ---
 

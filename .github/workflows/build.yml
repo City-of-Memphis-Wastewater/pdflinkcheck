@@ -23,8 +23,7 @@ jobs:
         run: |
           echo "Cleaning build directories..."
           rm -rf dist/ build/ *.egg-info
-          mkdir -p dist/upload
-          echo "Clean complete. Staging directory dist/upload ready."
+          echo "Clean complete."
           
       - name: Clean Build Directories (Windows)
         if: runner.os == 'Windows'
@@ -33,8 +32,7 @@ jobs:
           echo "Cleaning build directories..."
           # Use Remove-Item with -Recurse and -Force (PowerShell native)
           Remove-Item -Path dist/, build/, *.egg-info -Recurse -Force -ErrorAction SilentlyContinue
-          mkdir -p dist/upload
-          echo "Clean complete. Staging directory dist/upload ready."
+          echo "Clean complete."
           
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -66,13 +64,16 @@ jobs:
       - name: Collect Windows artifacts
         if: runner.os == 'Windows'
         run: |
-          #cp dist/*.pyz dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now
-          #cp dist/*.bat dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now 
-          cp dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
+          New-Item -Path dist/upload -ItemType Directory -ErrorAction Stop
+          
+          #Copy-Item dist/*.pyz dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now
+          #Copy-Item dist/*.bat dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now 
+          Copy-Item dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
       
       - name: Collect Unix artifacts
         if: runner.os != 'Windows'
-        run: |
+        run: |  
+          mkdir -p dist/upload
 
           # The 'dist/' directory now only contains files from the current build.
 
