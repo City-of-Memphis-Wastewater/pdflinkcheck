@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.18] - 2025-12-11
+### Fixed:
+- Correct formatting in pyproject.toml for author tables, project.urls section, and remove the gui entry point as a separate command.
+
+---
+
 ## [1.1.16] - 2025-12-11
 ### Fixed:
 - Refactoring cli.py to use lazy execution for the pyhabitat GUI check, to increase the speed of PYZ launch. Pyhabitat uses the cache decorator internally, so the check will be non-redundant after the first time.

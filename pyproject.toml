@@ -1,6 +1,6 @@
 [project]
 name = "pdflinkcheck"
-version = "1.1.17"
+version = "1.1.18"
 description = "A purpose-built PDF link analysis reporting tool, with GUI and CLI entry."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -22,13 +22,16 @@ classifiers=[
     "Development Status :: 4 - Beta",
     #"Development Status :: 5 - Production/Stable",
 ]
-authors = ["George Clayton Bennett <george.bennett@memphistn.gov>"]
-homepage = "https://github.com/city-of-memphis-wastewater/pdflinkcheck"
-repository = "https://github.com/city-of-memphis-wastewater/pdflinkcheck"
+authors = [
+    {name = "George Clayton Bennett", email = "george.bennett@memphistn.gov"},
+]
+
+[project.urls]
+Homepage = "https://github.com/city-of-memphis-wastewater/pdflinkcheck"
+Repository = "https://github.com/city-of-memphis-wastewater/pdflinkcheck"
 
 [project.scripts]
 pdflinkcheck = "pdflinkcheck.cli:app"
-pdflinkcheck-gui = "pdflinkcheck.gui:start_gui" 
 
 [tool.setuptools.packages.find]
 where = ["src"]  
