@@ -8,7 +8,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.1.15] - 2025-12-11
 ### Fixed:
-- Remove redundant uploading of .whl and .tar.gz from the multiple build. Favor the Ubuntu .whl and .tar.gz.
+- Remove redundant uploading of .whl and .tar.gz from the multiple builds in build.yml. Favor the Ubuntu .whl and .tar.gz.
 
 ---
 
