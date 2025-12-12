@@ -163,8 +163,8 @@ def build_shiv_pyz():
         "-e", ENTRY_POINT,
         "--compressed",
         "--no-cache", 
-        "--python", sys.executable,
-        "--site-packages", SITE_PACKAGES_PATH,
+        #"--python", sys.executable, # removed for cross-platform robustness
+        #"--site-packages", SITE_PACKAGES_PATH, # removed to prevent editable install conflicts
     ]
     
     # Pass the current, activated environment

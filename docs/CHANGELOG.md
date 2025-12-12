@@ -4,6 +4,18 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.19] - 2025-12-11
+### Success:
+- Windows EXE performs well. It is true, it does not work as a CLI to print to the console, though commands are accepted, just silent.
+
+### Fixed: 
+- The Windows BAT did not show up and the Windows PYZ works are neither a gui nor a CLI:
+    - Add line `cp dist/*.bat dist/upload/ -ErrorAction SilentlyContinue` to the Windows section of build.yml, to ensure the BAT is uploaded to the release.
+    - In build_pyz.py, remove the `--site-packages` flag. This is removed to prevent editable install conflicts.
+    - In build_pyz.py, remove the  `--python` flag. This is removed for cross-platform robustness.
+
+---
+
 ## [1.1.18] - 2025-12-11
 ### Fixed:
 - Correct formatting in pyproject.toml for author tables, project.urls section, and remove the gui entry point as a separate command.

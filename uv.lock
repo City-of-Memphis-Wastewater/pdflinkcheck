@@ -138,10 +138,9 @@ wheels = [
 
 [[package]]
 name = "pdflinkcheck"
-version = "1.1.5"
+version = "1.1.18"
 source = { editable = "." }
 dependencies = [
-    { name = "click" },
     { name = "pyhabitat" },
     { name = "pymupdf" },
     { name = "rich" },
@@ -157,7 +156,6 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "click", specifier = ">=8.3.1" },
     { name = "pyhabitat", specifier = ">=1.0.53" },
     { name = "pymupdf", specifier = ">=1.26.6" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0.0" },
