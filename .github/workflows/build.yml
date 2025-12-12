@@ -18,6 +18,13 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
+      - name: Clean Build Directories
+        run: |
+          echo "Cleaning build directories..."
+          rm -rf dist/ build/ *.egg-info
+          mkdir -p dist/upload
+          echo "Clean complete. Staging directory dist/upload ready."
+          
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -48,24 +55,26 @@ jobs:
       - name: Collect Windows artifacts
         if: runner.os == 'Windows'
         run: |
-          mkdir -p dist/upload
-          # Use Copy-Item with -ErrorAction SilentlyContinue 
-
           #cp dist/*.pyz dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now
           #cp dist/*.bat dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now 
           cp dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
       
       - name: Collect Unix artifacts
         if: runner.os != 'Windows'
+        shell: bash
         run: |
-          mkdir -p dist/upload
-          # Use Copy-Item with -ErrorAction SilentlyContinue 
-          # and the standard path separator (which Windows handles correctly)
 
-          cp dist/*.pyz dist/upload/ 2>/dev/null || true
-          cp dist/*.exe dist/upload/ 2>/dev/null || true
+          # The 'dist/' directory now only contains files from the current build.
 
-          # Only copy generic artifacts (tar.gz, whl) on ONE runner (e.g., Ubuntu)
+          # 1. Copy all artifacts EXCEPT the sdist (.tar.gz) and wheel (.whl)
+          echo "Staging platform-specific artifacts (PYZ, ELF, etc.)..."
+          find dist/ -maxdepth 1 \
+            -type f \
+            ! -name "*.tar.gz" \
+            ! -name "*.whl" \
+            -exec cp {} dist/upload/ \;
+
+          # 2. Only copy generic artifacts (tar.gz, whl) on ONE runner (e.g., Ubuntu), to avoid redundant copying.
           if [ "${{ runner.os }}" == "Linux" ]; then
             cp dist/*.tar.gz dist/upload/ 2>/dev/null || true
             cp dist/*.whl dist/upload/ 2>/dev/null || true
