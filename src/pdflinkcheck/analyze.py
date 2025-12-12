@@ -12,7 +12,6 @@ from pdflinkcheck.remnants import find_link_remnants
 Inspect target PDF for both URI links and for GoTo links.
 """
 
-
 # Helper function: Prioritize 'from'
 def get_link_rect(link_dict):
     """
@@ -29,21 +28,6 @@ def get_link_rect(link_dict):
     
     # 3. Fallback to None if 'from' is missing
     return None
-
-def get_pdf_file():
-
-    example_path = f"/mnt/c/Users/george.bennett/Downloads/TE Maxson WWTF O&M Manual DRAFT - Sections 1-6 - April 2025 (3).pdf"
-    example_path = "TE Maxson WWTF O&M Manual.pdf"
-    print(f"example path = {example_path}")
-    pdf_file = input(f"Paste path to PDF file (or press Enter to accept example): ")
-    if not pdf_file:
-        pdf_file = example_path
-    if not Path(pdf_file).exists:
-        print("File not found!")
-        sys.exit(1)
- 
-    return pdf_file
-
 
 def get_anchor_text(page, link_rect):
     """

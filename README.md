@@ -101,7 +101,7 @@ This license has significant implications for **distribution and network use**, 
 
 ### ⚠️ Compatibility Notes
 
-  * **Platform Compatibility:** This tool relies on the `PyMuPDF` library. It is **not officially supported** and may fail to run on environments like **Termux (Android)** due to underlying C/C++ library compilation issues with PyMuPDF. It is recommended for use on standard Linux, macOS, or Windows operating systems.
+  * **Platform Compatibility:** This tool relies on the `PyMuPDF` library. All testing has failed to run in a **Termux (Android)** environment due to underlying C/C++ library compilation issues with PyMuPDF. It is recommended for use on standard Linux, macOS, or Windows operating systems.
   * **Document Compatibility:** While `pdflinkcheck` uses the robust PyMuPDF library, not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
     Processing may fail or yield incomplete results for:
       * **Scanned PDFs** (images of text) that lack an accessible text layer.
