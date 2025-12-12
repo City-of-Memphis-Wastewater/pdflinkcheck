@@ -18,10 +18,21 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
 
     steps:
-      - name: Clean Build Directories
+      - name: Clean Build Directories (Unix/macOS)
+        if: runner.os != 'Windows'
         run: |
           echo "Cleaning build directories..."
           rm -rf dist/ build/ *.egg-info
+          mkdir -p dist/upload
+          echo "Clean complete. Staging directory dist/upload ready."
+          
+      - name: Clean Build Directories (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          echo "Cleaning build directories..."
+          # Use Remove-Item with -Recurse and -Force (PowerShell native)
+          Remove-Item -Path dist/, build/, *.egg-info -Recurse -Force -ErrorAction SilentlyContinue
           mkdir -p dist/upload
           echo "Clean complete. Staging directory dist/upload ready."
           
@@ -61,7 +72,6 @@ jobs:
       
       - name: Collect Unix artifacts
         if: runner.os != 'Windows'
-        shell: bash
         run: |
 
           # The 'dist/' directory now only contains files from the current build.

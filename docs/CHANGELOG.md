@@ -3,7 +3,8 @@ All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
-## [1.1.22] - 2025-12-11
+
+## [1.1.23] - 2025-12-11
 ### Fixed:
 - **ELF File Inclusion:** Linux and MacOS PyInstaller builds were not being copied. This is because they do not have a file extension, which build.yml relied on. 
 - Now, the dist/ and build/ folders are wiped in build.yml before building. Then, for non-Windows systems, all files in dist/ are copied except for .whl and .tar.gz, which are handled once on the Ubuntu build.
