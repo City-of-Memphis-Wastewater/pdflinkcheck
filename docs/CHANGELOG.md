@@ -3,11 +3,21 @@ All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 
+
+---
+
+## [1.1.15] - 2025-12-11
+### Fixed:
+- Remove redundant uploading of .whl and .tar.gz from the multiple build. Favor the Ubuntu .whl and .tar.gz.
+
 ---
 
 ## [1.1.14] - 2025-12-11
 ### CI: Fix(Permissions) Release Upload
 - Grant 'contents: write' permission to the 'attach-to-release' job's GITHUB_TOKEN to fix the artifact upload failure ('Resource not accessible by integration').
+- The softprops/action-gh-release action failed with 'Resource not accessible by integration' when attempting to upload build artifacts.
+- This was due to the default GitHub Actions token lacking the necessary scope to update a release. The fix explicitly adds the 'permissions: contents: write' block to the 'attach-to-release' job, granting the token sufficient authority to upload the built binaries (EXE, PYZ, etc.).
+
 ---
 
 ## [1.1.13] - 2025-12-11
