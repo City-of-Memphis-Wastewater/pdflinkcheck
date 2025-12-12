@@ -4,6 +4,10 @@ A purpose-built tool for comprehensive analysis of hyperlinks and link remnants 
 
 -----
 
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui.png)
+
+-----
+
 ## 📥 Access and Installation
 
 The recommended way to use `pdflinkcheck` is to either install with `pipx` for a managed environment or to download the appropriate latest binary for your system from [Releases](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/releases/).
