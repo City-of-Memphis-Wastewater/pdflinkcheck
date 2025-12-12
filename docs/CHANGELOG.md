@@ -2,7 +2,18 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
 
+## [1.1.16] - 2025-12-11
+### Fixed:
+- Refactoring cli.py to use lazy execution for the pyhabitat GUI check, to increase the speed of PYZ launch. Pyhabitat uses the cache decorator internally, so the check will be non-redundant after the first time.
+
+### Changed:
+- Update classifers in pyproject.toml, for accuracy.
+- **Favor GUI for PyInstaller Builds:** Add `--noconsole` flag to Pyinstaller command in build_execuable.py. This might render the Typer CLI non-functional when calling binaries from the command line: ergo, for CLI, users are encouraged to use the PYZ, which the binaries will favor a smooth GUI experience without any suprising console window.
+
+### Added:
+- Include a BAT in the build_pyz.py, only for Windows. Filename should match the Windows PYZ, plus a "-gui" ending, because that is the purpose.
 
 ---
 

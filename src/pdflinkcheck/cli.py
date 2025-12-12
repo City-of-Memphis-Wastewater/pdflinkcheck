@@ -1,22 +1,13 @@
-# src/bug_record/cli_typer_no_args_no_gui_silent (defunct, kept as a bug record, associated with FastAPI/Typer issue # x)
+# src/bug_record/cli.py
 import typer
 from rich.console import Console
 from pathlib import Path
 from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
 from typing import Dict
-import logging
 import pyhabitat
 import sys
-import os
 
 console = Console() # to be above the tkinter check, in case of console.print
-
-if pyhabitat.tkinter_is_available():
-    from pdflinkcheck.gui import start_gui
-else:
-    start_gui = None
-    console.print("Tkinter is not available on this system.")
-
 
 app = typer.Typer(
     name="pdflinkcheck",
@@ -29,20 +20,11 @@ app = typer.Typer(
 @app.callback()
 def main(ctx: typer.Context):
     """
-    If no subcommand is provided, launch the GUI <- Is the idea. However.
-    This is not functioning today.
-    Work around: non-typer-app _launch_default_gui() called in __main__ block if len(sys.argv) <= 1.
+    If no subcommand is provided, launch the GUI.
     """
 
     if ctx.invoked_subcommand is None:
-
-        # No subcommand → launch GUI
-        if not start_gui:
-            _gui_failure_msg()
-            raise typer.Exit(code=1)
-        
-        start_gui()
-
+        gui_command()
         raise typer.Exit(code=0)
     
     # 1. Access the list of all command-line arguments
@@ -91,28 +73,13 @@ def gui_command()->None:
     """
     Launch tkinter-based GUI.
     """
-    if not start_gui:
+
+    if not pyhabitat.tkinter_is_available():
         _gui_failure_msg()
         return
+    from pdflinkcheck.gui import start_gui
     start_gui()
 
-        
-def _launch_default_gui():
-    """
-    Logic to launch GUI and handle failure, used in __main__.
-    This should not be necessary, but when no args are provided the gui does not launch without it.
-    """
-    # 1. Ensure that gui is available
-    if not start_gui:
-        _gui_failure_msg()
-        sys.exit(1)
-    
-    # 2. Call the core function which blocks
-    start_gui()
-    
-    # 3. Exit cleanly after the GUI window is closed
-    sys.exit(0)
-        
 
 # --- Helper, consistent gui failure message. --- 
 def _gui_failure_msg():

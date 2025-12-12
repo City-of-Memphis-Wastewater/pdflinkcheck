@@ -101,6 +101,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         '--noconfirm',
         '--clean',
         '--onefile',
+        '--noconsole', # Worth it for GUI launch experience. Typer CLI might not work or show help. Encourage users who want the CLI to use the PYZ.
         f'--name={dynamic_exe_name}',
         
         # Output paths

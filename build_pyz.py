@@ -147,12 +147,12 @@ def build_shiv_pyz():
     # 3. Find the resulting wheel file
     wheel_path = find_latest_wheel(DIST_DIR, version)
     dynamic_name = form_dynamic_name(PROJECT_NAME, version)
-    output_filename = f"{dynamic_name}-shiv.pyz" 
-    output_path = DIST_DIR / output_filename
+    pyz_filename = f"{dynamic_name}-shiv.pyz" 
+    output_path = DIST_DIR / pyz_filename
     if output_path.exists():
         output_path.unlink()
         
-    print(f"\n3. Building PYZ using shiv from Wheel: {output_filename}")
+    print(f"\n3. Building PYZ using shiv from Wheel: {pyz_filename}")
 
     # SHIV COMMAND
     cmd = [
@@ -173,6 +173,35 @@ def build_shiv_pyz():
     output_path.chmod(0o755)
     
     print(f"\nBuild successful! Portable PYZ: {output_path.resolve()}")
+
+    # 4. CREATE THE WINDOWS LAUNCHER (New Step)
+    create_windows_bat_launcher(pyz_filename, DIST_DIR)
+
+def create_windows_bat_launcher(pyz_filename: str, output_dir: Path):
+    """
+    Creates a Windows BAT file to launch the PYZ with the 'gui' command.
+    Only runs if the current OS is Windows.
+    """
+    if os.name != 'nt': # 'nt' is the name for Windows
+        return
+    
+    bat_filename = pyz_filename.replace(".pyz", "-gui.bat")
+    bat_path = output_dir / bat_filename
+    
+    # The content of the batch file
+    # @echo off: Hides the commands themselves
+    # python "%~dp0{pyz_filename}" gui: Executes the PYZ with the 'gui' command.
+    # %~dp0 ensures the path to the PYZ is correct regardless of where the bat is launched from.
+    bat_content = f"""@echo off
+rem Launch {pyz_filename} with the 'gui' command using the system's python.
+python "%~dp0{pyz_filename}" gui
+"""
+    
+    try:
+        bat_path.write_text(bat_content, encoding="utf-8")
+        print(f"Created Windows BAT launcher: {bat_path.name}")
+    except Exception as e:
+        print(f"WARNING: Failed to create BAT launcher: {e}", file=sys.stderr)
 
 if __name__ == "__main__":
     try:
