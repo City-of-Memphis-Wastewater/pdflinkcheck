@@ -4,6 +4,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.20] - 2025-12-11
+### Idea:
+- Build: Suppress non-running windows PYZ and requisite BAT for now, in build.yml.
+
+### Try:
+- Leave the Windows BAT and PYZ on with the `--site-packages` flag but not the `--python` flag.
+
+---
+
 ## [1.1.19] - 2025-12-11
 ### Success:
 - Windows EXE performs well. It is true, it does not work as a CLI to print to the console, though commands are accepted, just silent.

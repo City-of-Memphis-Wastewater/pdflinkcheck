@@ -51,8 +51,8 @@ jobs:
           mkdir -p dist/upload
           # Use Copy-Item with -ErrorAction SilentlyContinue 
 
-          cp dist/*.pyz dist/upload/ -ErrorAction SilentlyContinue
-          cp dist/*.bat dist/upload/ -ErrorAction SilentlyContinue
+          cp dist/*.pyz dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now
+          cp dist/*.bat dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now 
           cp dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
       
       - name: Collect Unix artifacts
