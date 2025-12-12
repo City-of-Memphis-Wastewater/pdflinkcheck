@@ -4,6 +4,17 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.21] - 2025-12-11
+### Fixed:
+- Build: Suppress non-running windows PYZ and requisite BAT for now, in build.yml.
+- In build_pyz.py, remove the `--site-packages` flag. This is removed to prevent editable install conflicts.
+- In build_pyz.py, remove the  `--python` flag. This is removed for cross-platform robustness.
+
+### Tests:
+- The Windows BAT did not show up and the Windows PYZ works are neither a gui nor a CLI:
+
+---
+
 ## [1.1.20] - 2025-12-11
 ### Idea:
 - Build: Suppress non-running windows PYZ and requisite BAT for now, in build.yml.
@@ -17,7 +28,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Success:
 - Windows EXE performs well. It is true, it does not work as a CLI to print to the console, though commands are accepted, just silent.
 
-### Fixed: 
+### Attempt: 
 - The Windows BAT did not show up and the Windows PYZ works are neither a gui nor a CLI:
     - Add line `cp dist/*.bat dist/upload/ -ErrorAction SilentlyContinue` to the Windows section of build.yml, to ensure the BAT is uploaded to the release.
     - In build_pyz.py, remove the `--site-packages` flag. This is removed to prevent editable install conflicts.

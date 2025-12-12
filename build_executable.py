@@ -9,7 +9,6 @@ import sys
 import os
 from pathlib import Path
 import re
-import site # For site-packages path if needed, though not strictly required for pyinstaller here
 import pyhabitat
 
 # --- Configuration ---
