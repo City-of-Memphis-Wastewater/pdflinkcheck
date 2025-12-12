@@ -1,9 +1,9 @@
 [project]
 name = "pdflinkcheck"
-version = "1.1.24"
-description = "A purpose-built PDF link analysis reporting tool, with GUI and CLI entry."
+version = "1.1.25"
+description = "A purpose-built PDF link analysis and reporting tool with GUI and CLI."
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.9"
 dependencies = [
     "pyhabitat>=1.0.53",
     "pymupdf>=1.26.6",
@@ -13,12 +13,27 @@ dependencies = [
 
 classifiers=[
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",   
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
     "Operating System :: OS Independent",
     "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers", # library and documentation
+    "Intended Audience :: Science/Research", # Technical manuals, engineering
+    "Intended Audience :: Other Audience", # Government/engineering docs
     "Topic :: File Formats",
     "Topic :: Office/Business",
+    "Topic :: Text Processing :: General",
+    "Topic :: Scientific/Engineering :: Information Analysis",
     "Environment :: Console",
+    "Environment :: MacOS",
+    "Environment :: X11 Applications",
+    "Environment :: Win32 (MS Windows)",
+    "Typing :: Typed",
     "Development Status :: 4 - Beta",
     #"Development Status :: 5 - Production/Stable",
 ]

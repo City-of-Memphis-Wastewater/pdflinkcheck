@@ -6,7 +6,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and link remnants 
 
 ## 📥 Access and Installation
 
-The recommended way to use `pdflinkcheck` is to either install with `pipx` for a managed environment or to download the appropriate latest binary for your system from [Releases](https://www.google.com/search?q=https://github/com/City-of-Memphis-Wastewater/pdflinkcheck/releases/).
+The recommended way to use `pdflinkcheck` is to either install with `pipx` for a managed environment or to download the appropriate latest binary for your system from [Releases](https://github/com/City-of-Memphis-Wastewater/pdflinkcheck/releases/).
 
 ### 🚀 Recommended Access (Binary Files)
 
