@@ -8,6 +8,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - Correct formatting in pyproject.toml for author tables, project.urls section, and remove the gui entry point as a separate command.
 
+### Changed:
+- Improved the README.
+
+### Added:
+- README section about the AGPL.
+
 ---
 
 ## [1.1.16] - 2025-12-11

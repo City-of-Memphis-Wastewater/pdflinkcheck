@@ -1,66 +1,73 @@
 # pdflinkcheck
-A purpose-built tool for comprehensive analysis of hyperlinks and link remnants within PDF documents, primarily using the PyMuPDF library.
-Use the CLI or the GUI.
 
----
+A purpose-built tool for comprehensive analysis of hyperlinks and link remnants within PDF documents, primarily using the PyMuPDF library. Use the CLI or the GUI.
 
-### Graphical User Interface (GUI)
+-----
 
-The tool can be run using a simple cross-platform graphical interface (Tkinter):
+## 📥 Access and Installation
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui.png)
+The recommended way to use `pdflinkcheck` is to either install with `pipx` for a managed environment or to download the appropriate latest binary for your system from [Releases](https://www.google.com/search?q=https://github/com/City-of-Memphis-Wastewater/pdflinkcheck/releases/).
 
-To launch the GUI:
-A. Install from pipx using `pipx install pdflinkcheck`, and then use the command: `pdflinkcheck-gui`
-or
-B. Download and double-click the latest PYZ, EXE, or ELF binary from https://github/com/City-of-Memphis-Wastewater/pdflinkcheck/releases/
----
+### 🚀 Recommended Access (Binary Files)
 
-### ✨ Features
+For the fastest, most reliable experience, download the single-file binary matching your OS.
 
-* **Active Link Extraction:** Identifies and categorizes all programmed links (External URIs, Internal GoTo/Destinations, Remote Jumps).
-* **Anchor Text Retrieval:** Extracts the visible text corresponding to each link's bounding box.
-* **Remnant Detection:** Scans the document's text layer for unlinked URIs and email addresses that should potentially be converted into active links.
-* **Structural TOC:** Extracts the PDF's internal Table of Contents (bookmarks/outline).
+| **File Type** | **Primary Use Case** | **Recommended Launch Method** |
+| :--- | :--- | :--- |
+| **Executable (.exe, .elf, .pyz)** | **GUI (Double-Click)** | Double-click the file (use the accompanying `.bat` file on Windows). |
+| **PYZ (Python Zip App)** | **CLI (Terminal)** | Run using your system's `python` command: `python pdflinkcheck-VERSION.pyz analyze ...` |
 
----
+### Installation via pipx
 
-### 📥 Installation (Recommended via `pipx`)
-
-The recommended way to install `pdflinkcheck` is using `pipx`, which installs Python applications in isolated environments, preventing dependency conflicts.
+For an isolated environment where you can access `pdflinkcheck` from any terminal:
 
 ```bash
 # Ensure you have pipx installed first (if not, run: pip install pipx)
 pipx install pdflinkcheck
 ```
 
+-----
 
-**Note for Developers:** If you prefer a traditional virtual environment or are developing locally, use `pip`:
-```bash
-# From the root of the project
-pip install .
-```
+## 💻 Graphical User Interface (GUI)
 
----
+The tool can be run as simple cross-platform graphical interface (Tkinter).
 
-### 🚀 Usage
+### Launching the GUI
+
+There are three ways to launch the GUI interface:
+
+1.  **Implicit Launch:** Run the main command with no arguments, subcommands, or flags (`pdflinkcheck`).
+2.  **Explicit Command:** Use the dedicated GUI subcommand (`pdflinkcheck gui`).
+3.  **Binary Double-Click:**
+      * **Windows:** Double-click the `pdflinkcheck-VERSION-gui.bat` file.
+      * **macOS/Linux:** Double-click the downloaded `.pyz` or `.elf` file.
+
+### Planned GUI Updates
+
+We are actively working on the following enhancements:
+
+  * **Report Export:** Functionality to export the full analysis report to a plain text file.
+  * **License Visibility:** A dedicated "License Info" button within the GUI to display the terms of the AGPLv3+ license.
+
+-----
+
+### 🚀 CLI Usage
 
 The main command is `pdflinkcheck analyze`.
-
 
 ```bash
 # Basic usage: Analyze a PDF and check for remnants (default behavior)
 pdflinkcheck analyze "path/to/my/document.pdf"
 ```
 
-#### Command Options
+#### Analyze Command Options
 
-|**Option**|**Description**|**Default**|
-|---|---|---|
-|`<PDF_PATH>`|**Required.** The path to the PDF file to analyze.|N/A|
-|`--check-remnants / --no-check-remnants`|Toggle scanning the text layer for unlinked URLs/Emails.|`--check-remnants`|
-|`--max-links INTEGER`|Maximum number of links/remnants to display in the detailed report sections.|`50`|
-|`--help`|Show command help and exit.|N/A|
+| **Option** | **Description** | **Default** |
+| :--- | :--- | :--- |
+| `<PDF_PATH>` | **Required.** The path to the PDF file to analyze. | N/A |
+| `--check-remnants / --no-check-remnants` | Toggle scanning the text layer for unlinked URLs/Emails. | `--check-remnants` |
+| `--max-links INTEGER` | Set the maximum number of links/remnants to display in the detailed report sections. Use 0 to show all. | `50` |
+| `--help` | Show command help and exit. | N/A |
 
 #### Example Run
 
@@ -68,29 +75,46 @@ pdflinkcheck analyze "path/to/my/document.pdf"
 pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
 ```
 
-# Run from source
-```
+-----
+
+### ✨ Features
+
+  * **Active Link Extraction:** Identifies and categorizes all programmed links (External URIs, Internal GoTo/Destinations, Remote Jumps).
+  * **Anchor Text Retrieval:** Extracts the visible text corresponding to each link's bounding box.
+  * **Remnant Detection:** Scans the document's text layer for unlinked URIs and email addresses that should potentially be converted into active links.
+  * **Structural TOC:** Extracts the PDF's internal Table of Contents (bookmarks/outline).
+
+-----
+
+### 📜 License Implications (AGPLv3+)
+
+**pdflinkcheck is licensed under the GNU Affero General Public License version 3 or later (AGPLv3+).**
+
+This license has significant implications for **distribution and network use**, particularly for organizations:
+
+  * **Source Code Provision:** If you distribute this tool (modified or unmodified) to anyone, you **must** provide the full source code under the same license.
+  * **Network Interaction (Affero Clause):** If you modify this tool and make the modified version available to users over a computer network (e.g., as a web service or backend), you **must** also offer the source code to those network users.
+
+> **Before deploying or modifying this tool for organizational use, especially for internal web services or distribution, please ensure compliance with the AGPLv3+ terms.**
+
+-----
+
+### ⚠️ Compatibility Notes
+
+  * **Platform Compatibility:** This tool relies on the `PyMuPDF` library. It is **not officially supported** and may fail to run on environments like **Termux (Android)** due to underlying C/C++ library compilation issues with PyMuPDF. It is recommended for use on standard Linux, macOS, or Windows operating systems.
+  * **Document Compatibility:** While `pdflinkcheck` uses the robust PyMuPDF library, not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
+    Processing may fail or yield incomplete results for:
+      * **Scanned PDFs** (images of text) that lack an accessible text layer.
+      * **Encrypted or Password-Protected** documents.
+      * **Malformed or non-standard** PDF files.
+
+-----
+
+### Run from Source (Developers)
+
+```bash
 git clone http://github.com/city-of-memphis-wastewater/pdflinkcheck.git
 cd pdflinkcheck
 uv sync
-python src/pdflinkcheck/analyze.py
+uv run python src/pdflinkcheck/cli.py --help
 ```
-
----
-
-### ⚠️ Platform Compatibility Note
-
-This tool relies on the `PyMuPDF` library, which requires specific native dependencies (like MuPDF) that may not be available on all platforms.
-
-**Known Incompatibility:** This tool is **not officially supported** and may fail to run on environments like **Termux (Android)** due to underlying C/C++ library compilation issues with PyMuPDF. It is recommended for use on standard Linux, macOS, or Windows operating systems.
-
----
-
-### Document Compatibility
-
-While `pdflinkcheck` uses the robust PyMuPDF library, not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
-
-Processing may fail or yield incomplete results for:
-* **Scanned PDFs** (images of text) that lack an accessible text layer.
-* **Encrypted or Password-Protected** documents.
-* **Malformed or non-standard** PDF files.
