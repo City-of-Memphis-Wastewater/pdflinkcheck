@@ -4,6 +4,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.29] - 2025-12-15
+### Fixed:
+- **Automated Artifact Building for Windows:** Correct the build.yml to run build_executable but not build_pyz for Windows.
+- **Automated Artifact Testing:** Move post-build tests outside of the 'try' block to see more detailed failure information.
+
+---
+
 ## [1.1.28] - 2025-12-15
 ### Fixed:
 - **Artifact GUI testing:** Tkinter is not expected to be available on the github workflow systems, so use pyhabitat.tkinter_is_available() in build_pyz and build_executable to check for the automated GUI testing.

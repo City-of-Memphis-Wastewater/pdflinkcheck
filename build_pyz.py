@@ -210,13 +210,6 @@ if __name__ == "__main__":
     try:
         # NOTE: This script is intended to be run via: uv run python build_pyz.py
         path = build_shiv_pyz()
-
-        #   Test for success
-        print("Testing the artifact...")
-        run_command([sys.executable, str(path), "--help"], check=True)
-        if pyhabitat.tkinter_is_available():
-            run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
-        print("Testing complete.")
     except subprocess.CalledProcessError as e:
         print(f"\nFATAL ERROR: A subprocess failed with exit code {e.returncode}.", file=sys.stderr)
         print("Review the stderr output above for details (often a dependency issue).", file=sys.stderr)
@@ -224,3 +217,11 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\nFATAL ERROR during PYZ build: {e}", file=sys.stderr)
         sys.exit(1)
+
+    #   Test for success
+    print("Testing the artifact...")
+    run_command([sys.executable, str(path), "--help"], check=True)
+    if pyhabitat.tkinter_is_available():
+        run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
+    print("Testing complete.")
+    

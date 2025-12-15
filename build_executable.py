@@ -162,15 +162,15 @@ if __name__ == "__main__":
         # 4. Run the installer
         path = run_pyinstaller(executable_descriptor, CLI_MAIN_FILE)
         
-        # 5. Test for success
-        print("Testing the artifact...")
-        subprocess.run([str(path), "--help"])
-        if pyhabitat.tkinter_is_available():
-            subprocess.run([str(path), "gui", "--auto-close", "1000"])
-        print("Testing complete.")
-
     except SystemExit:
         pass
     except Exception as e:
         print(f"An unhandled error occurred: {e}", file=sys.stderr)
         sys.exit(1)
+
+    # 5. Test for success
+    print("Testing the artifact...")
+    subprocess.run([str(path), "--help"])
+    if pyhabitat.tkinter_is_available():
+        subprocess.run([str(path), "gui", "--auto-close", "1000"])
+    print("Testing complete.")
