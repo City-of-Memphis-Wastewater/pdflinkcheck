@@ -156,12 +156,35 @@ class PDFLinkCheckerApp(tk.Tk):
         self.output_text.config(state=tk.DISABLED)
 
 
-def start_gui():
-    """Entry point function to launch the application."""
+def auto_close_window(root, delay_ms):
+    """
+    Schedules the Tkinter window to be destroyed after a specified delay.
+
+    Args:
+        root (tk.Tk or tk.Toplevel): The window instance to close.
+        delay_ms (int): The delay time in milliseconds (e.g., 5000 for 5 seconds).
+    """
+    if delay_ms is not None:
+        print(f"Window is set to automatically close in {delay_ms/1000} seconds.")
+        # The after(delay_ms, function) schedules a function call.
+        # root.destroy is the function that closes the window.
+        root.after(delay_ms, root.destroy)
+    else:
+        return
+
+
+def start_gui(time_auto_close:int=None):
+    """
+    Entry point function to launch the application.
+    args: time_auto_close (milliseconds, interger), if None, stays open
+    """
     print("pdflinkcheck: start_gui ...")
     tk_app = PDFLinkCheckerApp()
+
+    auto_close_window(tk_app, time_auto_close)
+
     tk_app.mainloop()
     print("pdflinkcheck: gui closed.")
 
 if __name__ == "__main__":
-    start_gui()
+    start_gui(time_auto_close = 5000)

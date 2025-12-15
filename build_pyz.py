@@ -177,6 +177,8 @@ def build_shiv_pyz():
     # 4. CREATE THE WINDOWS LAUNCHER (New Step)
     create_windows_bat_launcher(pyz_filename, DIST_DIR)
 
+    return output_path
+
 def create_windows_bat_launcher(pyz_filename: str, output_dir: Path):
     """
     Creates a Windows BAT file to launch the PYZ with the 'gui' command.
@@ -206,7 +208,13 @@ python "%~dp0{pyz_filename}" gui
 if __name__ == "__main__":
     try:
         # NOTE: This script is intended to be run via: uv run python build_pyz.py
-        build_shiv_pyz()
+        path = build_shiv_pyz()
+
+        #   Test for success
+        print("Testing the artifact...")
+        run_command([sys.executable, str(path), "--help"], check=True)
+        run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
+        print("Testing complete.")
     except subprocess.CalledProcessError as e:
         print(f"\nFATAL ERROR: A subprocess failed with exit code {e.returncode}.", file=sys.stderr)
         print("Review the stderr output above for details (often a dependency issue).", file=sys.stderr)

@@ -140,6 +140,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     ext = '.exe' if IS_WINDOWS_BUILD else ''
     final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
     print(f"Executable is located at: {final_path.resolve()}")
+    return run_pyinstaller
 
 
 if __name__ == "__main__":
@@ -159,7 +160,13 @@ if __name__ == "__main__":
         executable_descriptor = form_dynamic_name(PROJECT_NAME, package_version)
 
         # 4. Run the installer
-        run_pyinstaller(executable_descriptor, CLI_MAIN_FILE)
+        path = run_pyinstaller(executable_descriptor, CLI_MAIN_FILE)
+        
+        # 5. Test for success
+        print("Testing the artifact...")
+        subprocess.run([str(path), "--help"])
+        subprocess.run([str(path), "gui", "--auto-close", "1000"])
+        print("Testing complete.")
 
     except SystemExit:
         pass

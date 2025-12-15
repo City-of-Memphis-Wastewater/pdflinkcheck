@@ -69,7 +69,9 @@ def analyze_pdf( # Renamed function for clarity
     )
 
 @app.command(name="gui") 
-def gui_command()->None:
+def gui_command(
+    auto_close: int = typer.Option(None, "--auto-close", "-c", help = "If a non-None value is provided, the GUI window will close on its own. This is for automated testing.")
+    )->None:
     """
     Launch tkinter-based GUI.
     """
@@ -78,7 +80,7 @@ def gui_command()->None:
         _gui_failure_msg()
         return
     from pdflinkcheck.gui import start_gui
-    start_gui()
+    start_gui(time_auto_close = auto_close)
 
 
 # --- Helper, consistent gui failure message. --- 
