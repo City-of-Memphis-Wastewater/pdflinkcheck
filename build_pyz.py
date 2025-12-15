@@ -223,6 +223,7 @@ if __name__ == "__main__":
         print("Testing the Shiv artifact...")
         run_command([sys.executable, str(path), "--help"], check=True)
         if pyhabitat.tkinter_is_available():
+            print(f"Testing GUI for {str(path)}...")
             run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
         print("Testing complete.")
     except Exception as e:
