@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.28] - 2025-12-15
+### Fixed:
+- **Artifact GUI testing:** Tkinter is not expected to be available on the github workflow systems, so use pyhabitat.tkinter_is_available() in build_pyz and build_executable to check for the automated GUI testing.
+
+---
+
 ## [1.1.27] - 2025-12-15
 ### Added:
 - **GUI Autoclose:** Add autoclose logic to gui, for testing. 

@@ -165,7 +165,8 @@ if __name__ == "__main__":
         # 5. Test for success
         print("Testing the artifact...")
         subprocess.run([str(path), "--help"])
-        subprocess.run([str(path), "gui", "--auto-close", "1000"])
+        if pyhabitat.tkinter_is_available():
+            subprocess.run([str(path), "gui", "--auto-close", "1000"])
         print("Testing complete.")
 
     except SystemExit:

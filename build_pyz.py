@@ -6,6 +6,7 @@ import re
 import os 
 from pathlib import Path
 import site
+import pyhabitat
 
 from build_executable import form_dynamic_name
 
@@ -213,7 +214,8 @@ if __name__ == "__main__":
         #   Test for success
         print("Testing the artifact...")
         run_command([sys.executable, str(path), "--help"], check=True)
-        run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
+        if pyhabitat.tkinter_is_available():
+            run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
         print("Testing complete.")
     except subprocess.CalledProcessError as e:
         print(f"\nFATAL ERROR: A subprocess failed with exit code {e.returncode}.", file=sys.stderr)
