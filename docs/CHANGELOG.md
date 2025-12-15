@@ -4,6 +4,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.30] - 2025-12-15
+### Fixed:
+- **Automated PyInstaller Artifact Testing:** Correct build_executable.py run_pyinstaller() function to return the resolved final path.
+- **Automated Artifact Testing:** Move post-build tests for build_pyz and build_executable into 'try' blocks of their own to see more detailed failure information.
+
+---
+
 ## [1.1.29] - 2025-12-15
 ### Fixed:
 - **Automated Artifact Building for Windows:** Correct the build.yml to run build_executable but not build_pyz for Windows.

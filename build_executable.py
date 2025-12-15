@@ -140,7 +140,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     ext = '.exe' if IS_WINDOWS_BUILD else ''
     final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
     print(f"Executable is located at: {final_path.resolve()}")
-    return run_pyinstaller
+    return final_path.resolve()
 
 
 if __name__ == "__main__":
@@ -169,8 +169,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # 5. Test for success
-    print("Testing the artifact...")
-    subprocess.run([str(path), "--help"])
-    if pyhabitat.tkinter_is_available():
-        subprocess.run([str(path), "gui", "--auto-close", "1000"])
-    print("Testing complete.")
+    try:
+        print("Testing the PyInstaller artifact...")
+        subprocess.run([str(path), "--help"])
+        if pyhabitat.tkinter_is_available():
+            subprocess.run([str(path), "gui", "--auto-close", "1000"])
+        print("Testing complete.")
+    except Exception as e:
+        print(f"\n ERROR during PyInstaller post-build test: {e}", file=sys.stderr)
+        sys.exit(1)

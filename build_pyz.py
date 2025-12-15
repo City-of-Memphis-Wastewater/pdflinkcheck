@@ -219,9 +219,13 @@ if __name__ == "__main__":
         sys.exit(1)
 
     #   Test for success
-    print("Testing the artifact...")
-    run_command([sys.executable, str(path), "--help"], check=True)
-    if pyhabitat.tkinter_is_available():
-        run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
-    print("Testing complete.")
+    try:
+        print("Testing the Shiv artifact...")
+        run_command([sys.executable, str(path), "--help"], check=True)
+        if pyhabitat.tkinter_is_available():
+            run_command([sys.executable, str(path), "gui", "--auto-close", "1000"], check=True)
+        print("Testing complete.")
+    except Exception as e:
+        print(f"\n ERROR during PYZ post-build test: {e}", file=sys.stderr)
+        sys.exit(1)
     
