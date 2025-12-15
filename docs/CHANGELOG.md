@@ -4,6 +4,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.27] - 2025-12-15
+### Added:
+- **GUI Autoclose:** Add autoclose logic to gui, for testing. 
+- **Artifact testing:** Add test logic to build_pyz and build_executable, to ensure only functional builds succeed in the CI pipeline.
+
+---
+
 ## [1.1.24] - 2025-12-11
 ### Fixed:
 - CI/Workflow: Resolved build errors on the Windows runner by splitting the directory cleanup step and using the native PowerShell command (Remove-Item -Recurse -Force) instead of the Unix rm -rf.
