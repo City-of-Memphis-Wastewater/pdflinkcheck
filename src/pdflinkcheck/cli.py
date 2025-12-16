@@ -167,7 +167,7 @@ def analyze_pdf( # Renamed function for clarity
         resolve_path=True,
         help="The path to the PDF file to analyze."
     ),
-    export_format: str = typer.Option("JSON", "--export-format","-e", help="Set the export format for the report. Currently supported: json. When None, the report wll be printed but not exported. "
+    export_format: str = typer.Option("JSON", "--export-format","-e", help="Set the export format for the report. Currently supported: JSON. When None, the report will be printed but not exported. "
     ),
     max_links: int = typer.Option(
         0,
