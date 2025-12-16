@@ -19,7 +19,7 @@ For the most user-typical experience, download the single-file binary matching y
 | **File Type** | **Primary Use Case** | **Recommended Launch Method** |
 | :--- | :--- | :--- |
 | **Executable (.exe, .elf)** | **GUI** | Double-click the file. |
-| **PYZ (Python Zip App)** | **CLI ** | Run using your system's `python` command: `python pdflinkcheck-VERSION.pyz analyze ...` |
+| **PYZ (Python Zip App)** | **CLI** | Run using your system's `python` command: `python pdflinkcheck-VERSION.pyz analyze ...` |
 
 ### Installation via pipx
 
