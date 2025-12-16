@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.45] - 2025-12-16
+### Added:
+- Easter egg: Add elements to the pdflinkcheck/__init__.py, to enable start_gui() to be imported as a library function if the `PDFLINKCHECK_GUI_EASTEREGG` env var is set.
+
+---
+
 ## [1.1.44] - 2025-12-16
 ### Added:
 - Add detail to compatibility section in README explaining our typical Termux compatibility goals.
