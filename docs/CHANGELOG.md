@@ -4,6 +4,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.47] - 2025-12-16
+### Fixed:
+- **Reporting Accuracy:** All reports containing internal page jumps (TOC links, table references, etc.) now show the correct destination page number. Previously, these links were incorrectly reported as pointing to the following page (e.g., a link to page 57 was reported as page 58). This is now fixed across all inspected files.
+- ** fitz.Point object serialization:** analyze.serialize_fitz_object() helper function implemented to avoid unexpected IO errors that result in analysis failure.
+
+---
+
 ## [1.1.46] - 2025-12-16
 ### Fixed:
 - analyze.py: Remove redundant call to get structural_toc

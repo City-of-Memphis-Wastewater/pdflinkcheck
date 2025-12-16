@@ -92,7 +92,6 @@ def get_anchor_text(page, link_rect):
         return "N/A: Rect Error"
 
 
-#def analyze_toc_fitz(doc):
 def analyze_toc_fitz(doc):
     """
     Extracts the structural Table of Contents (PDF Bookmarks/Outline) 
@@ -137,7 +136,35 @@ def extract_toc(pdf_path):
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)
     return structural_toc
+
+
+def serialize_fitz_object(obj):
+    """Converts a fitz object (Point, Rect, Matrix) to a serializable type."""
+    # Meant to avoid known Point errors like: '[ERROR] An unexpected error occurred during analysis: Report export failed due to an I/O error: Object of type Point is not JSON serializable'
+    if obj is None:
+        return None
+    
+    # 1. Handle fitz.Point (has x, y)
+    if hasattr(obj, 'x') and hasattr(obj, 'y') and not hasattr(obj, 'x0'):
+        return (obj.x, obj.y)
         
+    # 2. Handle fitz.Rect and fitz.IRect (has x0, y0)
+    if hasattr(obj, 'x0') and hasattr(obj, 'y0'):
+        return (obj.x0, obj.y0, obj.x1, obj.y1)
+        
+    # 3. Handle fitz.Matrix (has a, b, c, d, e, f)
+    if hasattr(obj, 'a') and hasattr(obj, 'b') and hasattr(obj, 'c'):
+        return (obj.a, obj.b, obj.c, obj.d, obj.e, obj.f)
+        
+    # 4. Fallback: If it's still not a primitive type, convert it to a string
+    if not isinstance(obj, (str, int, float, bool, list, tuple, dict)):
+        # Examples: hasattr(value, 'rect') and hasattr(value, 'point'):
+        # This handles Rect and Point objects that may slip through
+        return str(obj)
+        
+    # Otherwise, return the object as is (it's already primitive)
+    return obj
+
 def extract_links(pdf_path):
     """
     Opens a PDF, iterates through all pages and extracts all link annotations. 
@@ -184,13 +211,22 @@ def extract_links(pdf_path):
                 
                 
                 link_dict = {
-                    'page': int(page_num) + 1,
+                    'page': int(page_num) + 1, # accurate for link location, add 1
                     'rect': link_rect,
                     'link_text': anchor_text,
                     'xref':xref
                 }
                 
-                
+                # A. Clean Geom. Objects: Use the helper function on 'to' / 'destination'
+                # Use the clean serialize_fitz_object() helper function on all keys that might contain objects
+                destination_view = serialize_fitz_object(link.get('to'))
+
+                # B. Correct Internal Link Page Numbering (The -1 correction hack)
+                # This will be skipped by URI, which is not expected to have a page key
+                target_page_num_reported = "N/A"
+                if link.get('page') is not None:
+                    target_page_num_reported = int(link.get('page')) # accurate for link target, don't add 1 (weird)
+
                 if link['kind'] == fitz.LINK_URI:
                     target =  link.get('uri', 'URI (Unknown Target)')
                     link_dict.update({
@@ -200,12 +236,11 @@ def extract_links(pdf_path):
                     })
                 
                 elif link['kind'] == fitz.LINK_GOTO:
-                    target_page_num = link.get('page') + 1 # fitz pages are 0-indexed
-                    target = f"Page {target_page_num}"
+                    target = f"Page {target_page_num_reported}"
                     link_dict.update({
                         'type': 'Internal (GoTo/Dest)',
-                        'destination_page': int(link.get('page')) + 1,
-                        'destination_view': link.get('to'),
+                        'destination_page': target_page_num_reported,
+                        'destination_view': destination_view,
                         'target': target
                     })
                 
@@ -213,15 +248,17 @@ def extract_links(pdf_path):
                     link_dict.update({
                         'type': 'Remote (GoToR)',
                         'remote_file': link.get('file'),
-                        'destination': link.get('to')
+                        'destination': destination_view
                     })
                 
                 elif link.get('page') is not None and link['kind'] != fitz.LINK_GOTO: 
+                    target = f"Page {target_page_num_reported}"
                     link_dict.update({
                         'type': 'Internal (Resolved Action)',
-                        'destination_page': int(link.get('page')) + 1,
-                        'destination_view': link.get('to'),
-                        'source_kind': link.get('kind')
+                        'destination_page': target_page_num_reported,
+                        'destination_view': destination_view,
+                        'source_kind': link.get('kind'),
+                        'target': target
                     })
                     
                 else:
@@ -231,6 +268,13 @@ def extract_links(pdf_path):
                         'action_kind': link.get('kind'),
                         'target': target
                     })
+
+                ## --- General Serialization Cleaner ---
+                #for key, value in link_dict.items():
+                #    if hasattr(value, 'rect') and hasattr(value, 'point'):
+                #        # This handles Rect and Point objects that may slip through
+                #        link_dict[key] = str(value)
+                ## --- End Cleaner ---
                     
                 links_data.append(link_dict)
 
