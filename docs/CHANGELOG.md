@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.1.38] - 2025-12-15
+### Added:
+- README: Update the GUI to include the license command and the gui command features. 
+- README: Document the library commands.
+
 ---
 
 ## [1.1.37] - 2025-12-15
