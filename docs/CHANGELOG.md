@@ -4,7 +4,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.48] - 2025-12-16
+## [1.1.49] - 2025-12-16
 ### Fixed:
 - Revert page numbering correction factor to use +1
 - Revert / unsuppress `self.text_widget.update_idletasks()`, for immediate feedback when a new file is checked.
