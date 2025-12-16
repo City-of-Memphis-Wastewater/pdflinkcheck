@@ -11,6 +11,8 @@ from pathlib import Path
 import re
 import pyhabitat
 
+from pdflinkcheck.build import ensure_data_files_for_build()
+
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
 CLI_MAIN_FILE = Path(f'src/{PROJECT_NAME}/cli.py')
@@ -21,6 +23,8 @@ RC_FILE = Path('version.rc')
 IS_WINDOWS_BUILD = pyhabitat.on_windows()
 PROJECT_ROOT = Path(__file__).resolve().parent
 HOOKS_DIR_ABS = PROJECT_ROOT / "pyinstaller_hooks"
+
+
 
 # --- Version Info Helper (From successful build_pyz.py) ---
 def find_pyproject(start: Path) -> Path | None:
@@ -155,7 +159,10 @@ if __name__ == "__main__":
         if package_version == "0.0.0":
             print("FATAL: Cannot find package version in pyproject.toml.", file=sys.stderr)
             sys.exit(1)
-            
+        
+        # 0. Ensure data files are available to build package
+        ensure_data_files_for_build()
+
         # 1. Ensure PyInstaller is installed (if you haven't done it manually)
         # uv run python -m pip install pyinstaller 
         

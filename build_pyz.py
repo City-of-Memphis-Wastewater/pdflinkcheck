@@ -9,6 +9,7 @@ import site
 import pyhabitat
 
 from build_executable import form_dynamic_name
+from pdflinkcheck.build import ensure_data_files_for_build
 
 # Get the one site-packages path where packages are installed in the venv
 SITE_PACKAGES_PATH = site.getsitepackages()[0]
@@ -17,6 +18,7 @@ SITE_PACKAGES_PATH = site.getsitepackages()[0]
 PROJECT_NAME = "pdflinkcheck"
 ENTRY_POINT = "pdflinkcheck.cli:app"
 DIST_DIR = Path("dist")
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 # --- TOML Parsing Helper ---
 def find_pyproject(start: Path) -> Path | None:
@@ -209,6 +211,8 @@ python "%~dp0{pyz_filename}" gui
 
 if __name__ == "__main__":
     try:
+        # Ensure data files are available to build package
+        ensure_data_files_for_build()
         # NOTE: This script is intended to be run via: uv run python build_pyz.py
         path = build_shiv_pyz()
     except subprocess.CalledProcessError as e:
