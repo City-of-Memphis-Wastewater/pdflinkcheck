@@ -1,3 +1,17 @@
+# src/pdflinkcheck/__init__.py
+# License information
+"""
+pdflinkcheck - A PDF Link Checker
+Copyright (C) 2025 George Clayton Bennett
+source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
+
+This program is free software: You can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.                    
+
+The AGPL3+ is required because it uses PyMuPDF, which is licensed under the AGPL3.
+"""
 # Library functions
 from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
 
