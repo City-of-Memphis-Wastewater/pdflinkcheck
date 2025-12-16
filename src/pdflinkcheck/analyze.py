@@ -2,11 +2,10 @@ import sys
 from pathlib import Path
 import logging
 from typing import Dict, Any, Optional, List
-# ... other imports ...
-# Configure logging to suppress low-level pdfminer messages
+
 logging.getLogger("fitz").setLevel(logging.ERROR) 
+
 import fitz # PyMuPDF
-import pypdf
 from pypdf import PdfReader
 from pypdf.generic import Destination, NameObject, ArrayObject, IndirectObject
 

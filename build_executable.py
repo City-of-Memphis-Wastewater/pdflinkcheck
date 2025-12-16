@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 import pyhabitat
 
-from pdflinkcheck.datacopy import ensure_data_files_for_build()
+from pdflinkcheck.datacopy import ensure_data_files_for_build
 
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
