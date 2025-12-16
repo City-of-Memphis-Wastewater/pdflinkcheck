@@ -225,9 +225,11 @@ uv run python src/pdflinkcheck/cli.py --help
 
 ---
 
-pdflinkcheck - A PDF Link Checker
+pdflinkcheck - A PDF Link Checker 
+
 Copyright (C) 2025 George Clayton Bennett
-source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
+
+Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
 
 This program is free software: You can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
