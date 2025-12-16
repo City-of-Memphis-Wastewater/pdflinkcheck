@@ -4,7 +4,7 @@ from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
 from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
-from typing import Dict
+from typing import Dict, Optional
 import pyhabitat
 import sys
 from importlib.resources import files
@@ -37,26 +37,53 @@ def main(ctx: typer.Context):
     # 3. Print the command
     typer.echo(f"command:\n{command_string}\n")
     
+@app.command(name="docs", help="Show the docs for this software.")
+def docs_command(
+    license: Optional[bool] = typer.Option(
+        None, "--license", "-l", help="Show the full AGPLv3 license text."
+    ),
+    readme: Optional[bool] = typer.Option(
+        None, "--readme", "-r", help="Show the full README.md content."
+    ),
+):
+    """
+    Handles the pdflinkcheck docs command, either with flags or by showing help.
+    """
+    if not license and not readme:
+        # If no flags are provided, show the help message for the docs subcommand.
+        # Use ctx.invoke(ctx.command.get_help, ctx) if you want to print help immediately.
+        # Otherwise, the default behavior (showing help) works fine, but we'll add a message.
+        console.print("[yellow]Please use either the --license or --readme flag.[/yellow]")
+        return # Typer will automatically show the help message.
 
-@app.command(name="license", help="Show the full license (AGPLv3) for this software.")
-def license_command():
-    """
-    Reads and prints the contents of the embedded LICENSE file.
-    """
-    try:
-        # Use importlib.resources.files to locate the LICENSE file within the installed package
-        license_path = files("pdflinkcheck.data") / "LICENSE"
-        license_text = license_path.read_text(encoding="utf-8")
-        
-        # Use rich console for clean, direct output
-        console.print('='*70)
-        console.print(license_text, highlight=False)
-        
-    except FileNotFoundError:
-        # This handles cases where the license file might be missing (e.g., failed sdist build)
-        console.print("[bold red]Error:[/bold red] The embedded license file could not be found.")
-        raise typer.Exit(code=1)
-        
+    # --- Handle --license flag ---
+    if license:
+        try:
+            license_path = files("pdflinkcheck.data") / "LICENSE"
+            license_text = license_path.read_text(encoding="utf-8")
+            
+            console.print(f"\n[bold green]=== GNU AFFERO GENERAL PUBLIC LICENSE V3+ ===[/bold green]")
+            console.print(license_text, highlight=False)
+            
+        except FileNotFoundError:
+            console.print("[bold red]Error:[/bold red] The embedded license file could not be found.")
+            raise typer.Exit(code=1)
+
+    # --- Handle --readme flag ---
+    if readme:
+        try:
+            readme_path = files("pdflinkcheck.data") / "README.md"
+            readme_text = readme_path.read_text(encoding="utf-8")
+            
+            # Using rich's Panel can frame the readme text nicely
+            console.print(f"\n[bold green]=== pdflinkcheck README ===[/bold green]")
+            console.print(readme_text, highlight=False)
+            
+        except FileNotFoundError:
+            console.print("[bold red]Error:[/bold red] The embedded README.md file could not be found.")
+            raise typer.Exit(code=1)
+    
+    # Exit successfully if any flag was processed
     raise typer.Exit(code=0)
 
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
