@@ -225,7 +225,7 @@ def extract_links(pdf_path):
                 # This will be skipped by URI, which is not expected to have a page key
                 target_page_num_reported = "N/A"
                 if link.get('page') is not None:
-                    target_page_num_reported = int(link.get('page')) # accurate for link target, don't add 1 (weird)
+                    target_page_num_reported = int(link.get('page'))+1 # accurate for link target, don't add 1 (weird)
 
                 if link['kind'] == fitz.LINK_URI:
                     target =  link.get('uri', 'URI (Unknown Target)')

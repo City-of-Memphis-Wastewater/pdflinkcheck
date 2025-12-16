@@ -18,7 +18,7 @@ class RedirectText:
         """Insert the incoming string into the Text widget."""
         self.text_widget.insert(tk.END, string)
         self.text_widget.see(tk.END) # Scroll to the end
-        ## self.text_widget.update_idletasks() # Refresh GUI << Suppress: The mainloop will handle updates efficiently without forcing them.
+        self.text_widget.update_idletasks() # Refresh GUI to allow real timie updates << If suppress: The mainloop will handle updates efficiently without forcing them, , but info appears outdated when a new file is analyzed. Immediate feedback is better.
 
     def flush(self, *args):
         """Required for file-like objects, but does nothing here."""
@@ -53,7 +53,26 @@ class PDFLinkCheckerApp(tk.Tk):
         self._toggle_max_links_entry() 
         self._toggle_export_report()
         
+    # In class PDFLinkCheckerApp:
 
+    def _copy_pdf_path(self):
+        """Copies the current PDF path from the Entry widget to the system clipboard."""
+        path_to_copy = self.pdf_path.get()
+        
+        if path_to_copy:
+            try:
+                # Clear the clipboard
+                self.clipboard_clear()
+                # Append the path string to the clipboard
+                self.clipboard_append(path_to_copy)
+                # Notify the user (optional, but good UX)
+                messagebox.showinfo("Copied", "PDF Path copied to clipboard.")
+            except tk.TclError as e:
+                # Handle cases where clipboard access might be blocked
+                messagebox.showerror("Copy Error", f"Failed to access the system clipboard: {e}")
+        else:
+            messagebox.showwarning("Copy Failed", "The PDF Path field is empty.")
+            
     def _show_license(self):
         """
         Reads the embedded LICENSE file (AGPLv3) and displays its content in a new modal window.
@@ -103,9 +122,36 @@ class PDFLinkCheckerApp(tk.Tk):
         control_frame.pack(fill='x')
 
         # Row 0: File Selection
-        ttk.Label(control_frame, text="PDF Path:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
-        ttk.Entry(control_frame, textvariable=self.pdf_path, width=60).grid(row=0, column=1, padx=5, pady=5, sticky='ew')
-        ttk.Button(control_frame, text="Browse...", command=self._select_pdf).grid(row=0, column=2, padx=5, pady=5)
+
+        # === File Selection Frame (Row 0) ===
+        file_selection_frame = ttk.Frame(control_frame)
+        file_selection_frame.grid(row=0, column=0, columnspan=3, padx=0, pady=5, sticky='ew')
+        
+        # Elements are now packed/gridded within file_selection_frame
+        
+        # Label
+        ttk.Label(file_selection_frame, text="PDF Path:").pack(side=tk.LEFT, padx=(0, 5))
+        
+        # Entry (Path Display)
+        ttk.Entry(file_selection_frame, textvariable=self.pdf_path, width=50).pack(side=tk.LEFT, fill='x', expand=True, padx=5)
+        
+        # Browse Button
+        ttk.Button(file_selection_frame, text="Browse...", command=self._select_pdf).pack(side=tk.LEFT, padx=(5, 5))
+        
+        # Copy Button
+        # NOTE: Removed leading spaces from " Copy Path"
+        ttk.Button(file_selection_frame, text="Copy Path", command=self._copy_pdf_path).pack(side=tk.LEFT, padx=(0, 0))
+        
+        # The Entry field (column 1) must expand horizontally within its frame
+        # Since we are using PACK for this frame, we use fill='x', expand=True on the Entry.
+        
+        # === END: File Selection Frame ===
+
+        #ttk.Label(control_frame, text="PDF Path:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
+        #ttk.Entry(control_frame, textvariable=self.pdf_path, width=60).grid(row=0, column=1, padx=5, pady=5, sticky='ew')
+        #ttk.Button(control_frame, text="Browse...", command=self._select_pdf).grid(row=0, column=2, padx=5, pady=5)
+        #ttk.Button(control_frame, text="Copy Path", command=self._copy_pdf_path).grid(row=0, column=3, padx=5, pady=5)
+        #control_frame.grid_columnconfigure(1, weight=1)
 
         # Row 1: Remnants and Max Links Label/Entry
         ttk.Checkbutton(
