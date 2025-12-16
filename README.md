@@ -130,19 +130,6 @@ from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
 
 -----
 
-## 📜 License Implications (AGPLv3+)
-
-**pdflinkcheck is licensed under the GNU Affero General Public License version 3 or later (AGPLv3+).**
-
-This license has significant implications for **distribution and network use**, particularly for organizations:
-
-  * **Source Code Provision:** If you distribute this tool (modified or unmodified) to anyone, you **must** provide the full source code under the same license.
-  * **Network Interaction (Affero Clause):** If you modify this tool and make the modified version available to users over a computer network (e.g., as a web service or backend), you **must** also offer the source code to those network users.
-
-> **Before deploying or modifying this tool for organizational use, especially for internal web services or distribution, please ensure compliance with the AGPLv3+ terms.**
-
------
-
 ## 🥚 Optional REPL‑Friendly GUI Access (Easter Egg)
 
 For users who prefer exploring tools interactively—especially those coming from MATLAB or other REPL‑first environments—`pdflinkcheck` includes an optional Easter egg that exposes the GUI launcher directly in the library namespace.
@@ -223,17 +210,22 @@ uv sync
 uv run python src/pdflinkcheck/cli.py --help
 ```
 
----
+-----
 
-pdflinkcheck - A PDF Link Checker 
+## 📜 License Implications (AGPLv3+)
 
-Copyright (C) 2025 George Clayton Bennett
-
-Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
-
-This program is free software: You can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.                    
+**pdflinkcheck is licensed under the GNU Affero General Public License version 3 or later (AGPLv3+).**
 
 The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed under the AGPL3.
+
+This license has significant implications for **distribution and network use**, particularly for organizations:
+
+  * **Source Code Provision:** If you distribute this tool (modified or unmodified) to anyone, you **must** provide the full source code under the same license.
+  * **Network Interaction (Affero Clause):** If you modify this tool and make the modified version available to users over a computer network (e.g., as a web service or backend), you **must** also offer the source code to those network users.
+
+> **Before deploying or modifying this tool for organizational use, especially for internal web services or distribution, please ensure compliance with the AGPLv3+ terms.**
+
+Copyright &copy; 2025 George Clayton Bennett
+
+- Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
+- Official AGPLv3 Text (FSF): https://www.gnu.org/licenses/agpl-3.0.html
