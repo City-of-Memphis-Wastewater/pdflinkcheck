@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.40] - 2025-12-15
+### Added:
+- **Dockerization:** docker.yaml in github workflows and Docker.multi-dev in root, basically copied from the pyhabitat repository. This is meant to build on tag push.
+
+---
+
 ## [1.1.39] - 2025-12-15
 ### Added:
 - Update license information to include links to dependency source code.
