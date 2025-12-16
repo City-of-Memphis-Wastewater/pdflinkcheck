@@ -225,7 +225,8 @@ This license has significant implications for **distribution and network use**, 
 
 > **Before deploying or modifying this tool for organizational use, especially for internal web services or distribution, please ensure compliance with the AGPLv3+ terms.**
 
-Copyright &copy; 2025 George Clayton Bennett
-
+Links
 - Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/  
 - Official AGPLv3 Text (FSF): https://www.gnu.org/licenses/agpl-3.0.html
+
+Copyright &copy; 2025 George Clayton Bennett
