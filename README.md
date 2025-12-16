@@ -12,14 +12,14 @@ A purpose-built tool for comprehensive analysis of hyperlinks and link remnants 
 
 The recommended way to use `pdflinkcheck` is to either install the CLI with `pipx` or to download the appropriate latest binary for your system from [Releases](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/releases/).
 
-### 🚀 Recommended Access (Binary Files)
+### 🚀 Release Artifact Files (EXE, PYZ, ELF)
 
 For the most user-typical experience, download the single-file binary matching your OS.
 
 | **File Type** | **Primary Use Case** | **Recommended Launch Method** |
 | :--- | :--- | :--- |
-| **Executable (.exe, .elf, .pyz)** | **GUI (Double-Click)** | Double-click the file (use the accompanying `.bat` file on Windows). |
-| **PYZ (Python Zip App)** | **CLI (Terminal)** | Run using your system's `python` command: `python pdflinkcheck-VERSION.pyz analyze ...` |
+| **Executable (.exe, .elf)** | **GUI** | Double-click the file. |
+| **PYZ (Python Zip App)** | **CLI ** | Run using your system's `python` command: `python pdflinkcheck-VERSION.pyz analyze ...` |
 
 ### Installation via pipx
 
