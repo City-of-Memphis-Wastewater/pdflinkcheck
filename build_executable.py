@@ -19,6 +19,7 @@ BUILD_DIR = Path("build/pyinstaller_work")
 RC_TEMPLATE = Path('version.rc.template') # Assume this template exists for Windows
 RC_FILE = Path('version.rc')
 IS_WINDOWS_BUILD = pyhabitat.on_windows()
+PROJECT_ROOT = Path(__file__).resolve().parent
 
 # --- Version Info Helper (From successful build_pyz.py) ---
 def find_pyproject(start: Path) -> Path | None:
@@ -90,13 +91,13 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     
     print(f"--- {PROJECT_NAME} Executable Builder ---")
 
-    # Define paths to add
-    LICENSE_PATH = Path("LICENSE")
-    README_PATH = Path("README.md")
+    # Define paths to add using the absolute project root.
+    LICENSE_PATH_ABS = PROJECT_ROOT / "LICENSE"
+    README_PATH_ABS = PROJECT_ROOT / "README.md"
 
     # PyInstaller uses os.pathsep (';' on Windows, ':' on Unix) for the separator
-    add_data_flag_license = f"{LICENSE_PATH}{os.pathsep}."
-    add_data_flag_readme = f"{README_PATH}{os.pathsep}."
+    add_data_flag_license = f"{LICENSE_PATH_ABS}{os.pathsep}."
+    add_data_flag_readme = f"{README_PATH_ABS}{os.pathsep}."
     
     # 1. Clean and Setup
     clean_artifacts(exe_name=dynamic_exe_name)

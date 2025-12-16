@@ -4,6 +4,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.36] - 2025-12-15
+### Fixed:
+- Remove `--include` flag from shiv call and hope for the best for the LICENSE file.
+- Adjust path reference to LICENSE and README.md in Pyinstaller.
+
+---
+
 ## [1.1.35] - 2025-12-15
 ### Fixed:
 - Implement `assured_auto_close_value` in cli.gui_command() to handle the typer.OptionInfo type given a call of gui_command() from main().
