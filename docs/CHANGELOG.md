@@ -4,6 +4,17 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.48] - 2025-12-16
+### Fixed:
+- Revert page numbering correction factor to use +1
+- Revert / unsuppress `self.text_widget.update_idletasks()`, for immediate feedback when a new file is checked.
+
+### Added:
+- Tkinter Copy Path button, because copying the selection does not work manually as expected.
+- GUI Row 0 Frame: Tkinter row 0 has nicer spacing when using a ttk.Frame() for the file selection.
+
+---
+
 ## [1.1.47] - 2025-12-16
 ### Fixed:
 - **Reporting Accuracy:** All reports containing internal page jumps (TOC links, table references, etc.) now show the correct destination page number. Previously, these links were incorrectly reported as pointing to the following page (e.g., a link to page 57 was reported as page 58). This is now fixed across all inspected files.

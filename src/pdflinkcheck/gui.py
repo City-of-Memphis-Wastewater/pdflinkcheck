@@ -134,24 +134,17 @@ class PDFLinkCheckerApp(tk.Tk):
         
         # Entry (Path Display)
         ttk.Entry(file_selection_frame, textvariable=self.pdf_path, width=50).pack(side=tk.LEFT, fill='x', expand=True, padx=5)
+        # The Entry field (column 1) must expand horizontally within its frame
+        # Since we are using PACK for this frame, we use fill='x', expand=True on the Entry.
         
         # Browse Button
         ttk.Button(file_selection_frame, text="Browse...", command=self._select_pdf).pack(side=tk.LEFT, padx=(5, 5))
-        
+
         # Copy Button
         # NOTE: Removed leading spaces from " Copy Path"
         ttk.Button(file_selection_frame, text="Copy Path", command=self._copy_pdf_path).pack(side=tk.LEFT, padx=(0, 0))
         
-        # The Entry field (column 1) must expand horizontally within its frame
-        # Since we are using PACK for this frame, we use fill='x', expand=True on the Entry.
-        
         # === END: File Selection Frame ===
-
-        #ttk.Label(control_frame, text="PDF Path:").grid(row=0, column=0, padx=5, pady=5, sticky='w')
-        #ttk.Entry(control_frame, textvariable=self.pdf_path, width=60).grid(row=0, column=1, padx=5, pady=5, sticky='ew')
-        #ttk.Button(control_frame, text="Browse...", command=self._select_pdf).grid(row=0, column=2, padx=5, pady=5)
-        #ttk.Button(control_frame, text="Copy Path", command=self._copy_pdf_path).grid(row=0, column=3, padx=5, pady=5)
-        #control_frame.grid_columnconfigure(1, weight=1)
 
         # Row 1: Remnants and Max Links Label/Entry
         ttk.Checkbutton(
