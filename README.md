@@ -55,28 +55,68 @@ We are actively working on the following enhancements:
 
 -----
 
-### 🚀 CLI Usage
+## 🚀 CLI Usage
 
-The main command is `pdflinkcheck analyze`.
+The core functionality is accessed via the `analyze` command. All commands include the built-in `--help` flag for quick reference.
 
-```bash
-# Basic usage: Analyze a PDF and check for remnants (default behavior)
-pdflinkcheck analyze "path/to/my/document.pdf"
+### Available Commands
+
+|**Command**|**Description**|
+|---|---|
+|`pdflinkcheck analyze`|Analyzes a PDF file for links and remnants.|
+|`pdflinkcheck gui`|Explicitly launch the Graphical User Interface.|
+|`pdflinkcheck license`|**Displays the full AGPLv3+ license text in the terminal.**|
+
+### `analyze` Command Options
+
+|**Option**|**Description**|**Default**|
+|---|---|---|
+|`<PDF_PATH>`|**Required.** The path to the PDF file to analyze.|N/A|
+|`--check-remnants / --no-check-remnants`|Toggle scanning the text layer for unlinked URLs/Emails.|`--check-remnants`|
+|`--max-links INTEGER`|Maximum number of links/remnants to display in the detailed report sections. Use `0` to show all.|`0` (Show All)|
+|`--export-format FORMAT`|Format for the exported report. If specified, the report is saved to a file named after the PDF. Currently supported: `JSON`.|`JSON`|
+|`--help`|Show command help and exit.|N/A|
+
+### `gui` Command Options
+
+| **Option**             | **Description**                                                                                               | **Default**    |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- | -------------- |
+| `--auto-close INTEGER` | **(For testing/automation only).** Delay in milliseconds after which the GUI window will automatically close. | `0` (Disabled) |
+#### Example Runs
+
+
+
+```bash 
+# Analyze a document, show all links/remnants, and save the report as JSON
+pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --export-format JSON
+
+# Analyze a document but skip the time-consuming remnant check
+pdflinkcheck analyze "another_doc.pdf" --no-check-remnants 
+
+# Analyze a document but keep the print block short, showing only the first 10 links for each type
+pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
+
+# Show the GUI for only a moment, like in a build check
+pdflinkcheck gui --auto-close 3000 
 ```
 
-#### Analyze Command Options
 
-| **Option** | **Description** | **Default** |
-| :--- | :--- | :--- |
-| `<PDF_PATH>` | **Required.** The path to the PDF file to analyze. | N/A |
-| `--check-remnants / --no-check-remnants` | Toggle scanning the text layer for unlinked URLs/Emails. | `--check-remnants` |
-| `--max-links INTEGER` | Set the maximum number of links/remnants to display in the detailed report sections. Use 0 to show all. | `50` |
-| `--help` | Show command help and exit. | N/A |
+-----
 
-#### Example Run
+### 📦 Library Access (Advanced)
 
-```bash
-pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
+For developers importing `pdflinkcheck` into other Python projects, the core analysis functions are exposed directly in the root namespace:
+
+|**Function**|**Description**|
+|---|---|
+|`run_analysis()`|**(Primary function)** Performs the full analysis, prints to console, and handles file export.|
+|`extract_links()`|Low-level function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path.|
+|`extract_toc()`|Low-level function to extract the PDF's internal Table of Contents (bookmarks/outline).|
+
+Python
+
+```
+from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
 ```
 
 -----
