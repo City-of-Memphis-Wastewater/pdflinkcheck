@@ -4,7 +4,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.51] - 2025-12-16
+## [1.1.52] - 2025-12-16
 ### Fixed: 
 - Erroneous import of `ensure_data_files_for_build` in build_executable.py; remove excessive parentheses.
 
