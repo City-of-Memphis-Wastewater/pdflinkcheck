@@ -249,8 +249,9 @@ def print_structural_toc(structural_toc):
     Args:
         structural_toc: A list of TOC dictionaries returned by `analyze_toc_fitz`.
     """
-    print("\n## Structural Table of Contents (PDF Bookmarks/Outline)")
-    print("-" * 50)
+    print("\n" + "=" * 70)
+    print("## Structural Table of Contents (PDF Bookmarks/Outline)")
+    print("=" * 70)
     if not structural_toc:
         print("No structural TOC (bookmarks/outline) found.")
         return
@@ -267,7 +268,7 @@ def print_structural_toc(structural_toc):
         page_str = str(item['target_page']).rjust(page_width)
         print(f"{indent}{item['title']} . . . page {page_str}")
 
-    print("-" * 50)
+    print("-" * 70)
 
 
 def get_first_pdf_in_cwd() -> Optional[str]:
@@ -313,7 +314,7 @@ def get_first_pdf_in_cwd() -> Optional[str]:
         print(f"Error while searching for PDF in CWD: {e}", file=sys.stderr)
         return None
 
-def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: int = 0, export_format: Optional[str] = None) -> Dict[str, Any]:
+def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: int = 0, export_format: Optional[str] = "JSON") -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
     
@@ -364,20 +365,22 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         total_internal_links = len(goto_links) + len(resolved_action_links)
         
         # --- ANALYSIS SUMMARY (Using your print logic) ---
-        print(f"\n--- Link Analysis Results for {Path(pdf_path).name} ---")
+        print("\n" + "✪" * 70)
+        print(f"--- Link Analysis Results for {Path(pdf_path).name} ---")
         print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
         print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
         print(f"Total **potential missing links** found: {len(remnants)}")
-        print("-" * 50)
+        print("✪" * 70)
 
         limit = max_links if max_links > 0 else None
 
         uri_and_other = uri_links + other_links
         
         # --- Section 1: ACTIVE URI LINKS ---
-        print(f"\n## Active URI Links (External & Other) - {len(uri_and_other)} found") 
+        print("\n" + "=" * 70)
+        print(f"## Active URI Links (External & Other) - {len(uri_and_other)} found") 
         print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
-        print("-" * 75)
+        print("=" * 70)
         
         if uri_and_other:
             for i, link in enumerate(uri_and_other[:limit], 1):
@@ -388,12 +391,14 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
                 print(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
 
         else: 
-            print("  No external or 'Other' links found.")
+            print(" No external or 'Other' links found.")
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
-        print(f"\n## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
+        print("\n" + "=" * 70)
+        print(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
+        print("=" * 70)
         print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
-        print("-" * 75)
+        print("-" * 70)
         
         all_internal = goto_links + resolved_action_links
         if total_internal_links > 0:
@@ -413,10 +418,10 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         
         if remnants:
             print("{:<5} | {:<5} | {:<15} | {}".format("Idx", "Page", "Remnant Type", "Text Found (Needs Hyperlink)"))
-            print("-" * 75)
-            for i, remnant in enumerate(remnants[:max_links], 1):
+            print("-" * 70)
+            for i, remnant in enumerate(remnants[:limit], 1):
                 print("{:<5} | {:<5} | {:<15} | {}".format(i, remnant['page'], remnant['type'], remnant['text']))
-            if len(remnants) > max_links:
+            if max_links!=0 and len(remnants) > max_links:
                 print(f"... and {len(remnants) - max_links} more remnants (use --max-links to see all).")
         else:
             print(" No URI or Email remnants found that are not already active links.")
@@ -434,7 +439,7 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
 
         # 5. Export Report 
         if export_format:
-            # Assuming export_to will hold the output format string (e.g., "json")
+            # Assuming export_to will hold the output format string (e.g., "JSON")
             export_report_data(final_report_data, Path(pdf_path).name, export_format)
 
         return final_report_data

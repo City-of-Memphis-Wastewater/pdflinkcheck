@@ -46,18 +46,18 @@ def analyze_pdf( # Renamed function for clarity
         resolve_path=True,
         help="The path to the PDF file to analyze."
     ),
+    export_format: str = typer.Option("JSON", "--export-format","-e", help="Set the export format for the report. Currently supported: json. When None, the report wll be printed but not exported. "
+    ),
+    max_links: int = typer.Option(
+        0,
+        "--max-links",
+        min=0,
+        help="Maximum number of links/remnants to display in the report, if an overwhelming amount is expected. Use 0 to show all."
+    ),
     check_remnants: bool = typer.Option(
         True,
         "--check-remnants/--no-check-remnants",
         help="Toggle checking for unlinked URLs/Emails in the text layer."
-    ),
-    max_links: int = typer.Option(
-        50,
-        "--max-links",
-        min=0,
-        help="Maximum number of links/remnants to display in the report. Use 0 to show all."
-    ),
-    export_format: str = typer.Option(None, "--export-format","-e", help="Set the export format for the report. Currently supported: json. When None, the report wll be printed but not exported. "
     )
 ):
     """

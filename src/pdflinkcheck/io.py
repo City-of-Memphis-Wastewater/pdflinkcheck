@@ -57,7 +57,7 @@ error_logger = setup_error_logger()
 def export_report_data(
     report_data: Dict[str, Any], 
     pdf_filename: str, 
-    export_format: str = "json"
+    export_format: str = "JSON"
 ) -> Path:
     """
     Exports the structured analysis report data to a file in the 
@@ -74,9 +74,9 @@ def export_report_data(
     Raises:
         ValueError: If the export_format is not supported.
     """
-    if export_format.lower() != "json":
+    if export_format.upper() != "JSON":
         error_logger.error(f"Unsupported export format requested: {export_format}")
-        raise ValueError("Only 'json' format is currently supported for report export.")
+        raise ValueError("Only 'JSON' format is currently supported for report export.")
         
     # Create an output file name based on the PDF name and a timestamp
     base_name = Path(pdf_filename).stem
