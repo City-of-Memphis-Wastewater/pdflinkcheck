@@ -8,6 +8,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.1.31] - 2025-12-15
 ### Added:
 - Add functions form pdflinkcheck.analyze and pdflinkcehck.remnants to pdflinkcheck.__init__ so that functions are available as a library
+- Add 'Show License' button to GUI
+- Add export options to gui 
+- **Export and Logging:** pdflinkcheck/io.py now handles export of the report and the error logging.
+
+### Changed:
+- Improved GUI formatting
+- Improved report formatting
+- By default, max-links is 0 (all), and export format is 'JSON' 
 
 ---
 
