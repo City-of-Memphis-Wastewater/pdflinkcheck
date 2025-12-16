@@ -145,12 +145,39 @@ This license has significant implications for **distribution and network use**, 
 
 ### ⚠️ Compatibility Notes
 
-  * **Platform Compatibility:** This tool relies on the `PyMuPDF` library. All testing has failed to run in a **Termux (Android)** environment due to underlying C/C++ library compilation issues with PyMuPDF. It is recommended for use on standard Linux, macOS, or Windows operating systems.
-  * **Document Compatibility:** While `pdflinkcheck` uses the robust PyMuPDF library, not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
-    Processing may fail or yield incomplete results for:
-      * **Scanned PDFs** (images of text) that lack an accessible text layer.
-      * **Encrypted or Password-Protected** documents.
-      * **Malformed or non-standard** PDF files.
+#### Platform Compatibility: 
+
+This tool relies on the `PyMuPDF` library. 
+All testing has failed to run in a **Termux (Android)** environment due to underlying C/C++ library compilation issues with PyMuPDF. 
+It is recommended for use on standard Linux, macOS, or Windows operating systems.
+
+A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible. Unfortunately, that simply isn't possible with PyMuPDF as a dependency. 
+We tried alternative PDF libaries like `pdfminer`, `pdfplumber`, and `borb`, but none of these offered the level of detail concerning GoTo links.
+Due to Termux compatibility goals, we do not generally make Tkinter-based interfaces, so that was a fun, minimalist opportunity on this project. 
+
+Termux compatibility is important in the modern age as Android devices are common among technicians, field engineers, and maintenace staff. 
+Android is the most common operating system in the Global South. 
+We aim to produce stable software that can do the most possible good. 
+
+We love web-stack GUIs served locally as a final product.
+All that packaged up into a Termux-compatible ELF or PYZ - What could be better!
+
+In the future we may find a work-around and be able to drop the PyMuPDF dependency. 
+This would have lots of implications:
+- Reduced artifact size.
+- Alpine-compatible Docker image.
+- Web-stack GUI rather than tkinter, to be compatible with Termux.
+- A different license from the AGPL3, if we choose at that time.
+
+In the meantime, the standalone binaries and pipx installation provide excellent cross-platform support on Windows, macOS, and standard Linux desktops/laptops.
+
+#### Document Compatibility: 
+While `pdflinkcheck` uses the robust PyMuPDF library, not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
+
+Processing may fail or yield incomplete results for:
+* **Scanned PDFs** (images of text) that lack an accessible text layer.
+* **Encrypted or Password-Protected** documents.
+* **Malformed or non-standard** PDF files.
 
 -----
 

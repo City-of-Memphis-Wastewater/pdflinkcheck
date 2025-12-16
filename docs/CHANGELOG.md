@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.1.44] - 2025-12-16
+### Added:
+- Add detail to compatibility section in README explaining our typical Termux compatibility goals.
 
 ---
 
