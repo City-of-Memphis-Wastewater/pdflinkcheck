@@ -1,3 +1,21 @@
+pdflinkcheck - A PDF Link Checker
+Copyright (C) 2025 George Clayton Bennett
+
+This program is free software: You can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.                    
+
+The AGPL3+ is required because it uses PyMuPDF, which is licensed under the AGPL3.
+
+All Python dependencies:
+- PyMuPDF (AGPL3)
+- pyhabitat (MIT)
+- rich (MIT)
+- typer (MIT)
+
+----------------------------------------------------------------------
+
                     GNU AFFERO GENERAL PUBLIC LICENSE
                        Version 3, 19 November 2007
 

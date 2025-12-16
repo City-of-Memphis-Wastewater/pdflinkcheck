@@ -1,12 +1,14 @@
 import sys
 from pathlib import Path
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Optional
+# ... other imports ...
 # Configure logging to suppress low-level pdfminer messages
 logging.getLogger("fitz").setLevel(logging.ERROR) 
 import fitz # PyMuPDF
 
 from pdflinkcheck.remnants import find_link_remnants
+from pdflinkcheck.io import error_logger, export_report_data, LOG_FILE_PATH
 
 """
 Inspect target PDF for both URI links and for GoTo links.
@@ -15,8 +17,17 @@ Inspect target PDF for both URI links and for GoTo links.
 # Helper function: Prioritize 'from'
 def get_link_rect(link_dict):
     """
-    Retrieves the bounding box for the link using the reliable 'from' key.
-    Returns the rect coordinates (tuple of 4 floats) or None.
+    Retrieves the bounding box for the link using the reliable 'from' key
+    provided by PyMuPDF's link dictionary.
+
+    Args:
+        link_dict: A dictionary representing a single link/annotation 
+                   returned by `page.get_links()`.
+
+    Returns:
+        A tuple of four floats (x0, y0, x1, y1) representing the 
+        rectangular coordinates of the link on the page, or None if the 
+        bounding box data is missing.
     """
     # 1. Use the 'from' key, which returns a fitz.Rect object or None
     rect_obj = link_dict.get('from') 
@@ -31,8 +42,17 @@ def get_link_rect(link_dict):
 
 def get_anchor_text(page, link_rect):
     """
-    Extracts text content using the link's bounding box.
-    Returns the cleaned text or a placeholder if no text is found.
+    Extracts text content using the link's bounding box coordinates.
+    The bounding box is slightly expanded to ensure full characters are captured.
+
+    Args:
+        page: The fitz.Page object where the link is located.
+        link_rect: A tuple of four floats (x0, y0, x1, y1) representing the 
+                   link's bounding box.
+
+    Returns:
+        The cleaned, extracted text string, or a placeholder message 
+        if no text is found or if an error occurs.
     """
     if not link_rect:
         return "N/A: Missing Rect"
@@ -72,9 +92,18 @@ def get_anchor_text(page, link_rect):
         return "N/A: Rect Error"
 
 
+#def analyze_toc_fitz(doc):
 def analyze_toc_fitz(doc):
     """
-    Extracts the structured Table of Contents (bookmarks/outline) from the PDF.
+    Extracts the structural Table of Contents (PDF Bookmarks/Outline) 
+    from the PDF document using PyMuPDF's built-in functionality.
+
+    Args:
+        doc: The open fitz.Document object.
+
+    Returns:
+        A list of dictionaries, where each dictionary represents a TOC entry 
+        with 'level', 'title', and 'target_page' (1-indexed).
     """
     toc = doc.get_toc()
     toc_data = []
@@ -91,7 +120,37 @@ def analyze_toc_fitz(doc):
 
 
 # 2. Updated Main Inspection Function to Include Text Extraction
-def inspect_pdf_hyperlinks_fitz(pdf_path):
+#def inspect_pdf_hyperlinks_fitz(pdf_path):
+def extract_toc(pdf_path):
+    """
+    Opens a PDF, iterates through all pages and extracts the structural table of contents (TOC/bookmarks).
+
+    Args:
+        pdf_path: The file system path (str) to the target PDF document.
+
+    Returns:
+        A list of dictionaries representing the structural TOC/bookmarks.
+    """
+    try:
+        doc = fitz.open(pdf_path)
+        structural_toc = analyze_toc_fitz(doc)
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+    return structural_toc
+        
+def extract_links(pdf_path):
+    """
+    Opens a PDF, iterates through all pages and extracts all link annotations. 
+    It categorizes the links into External, Internal, or Other actions, and extracts the anchor text.
+    
+    Args:
+        pdf_path: The file system path (str) to the target PDF document.
+
+    Returns:
+        A list of dictionaries, where each dictionary is a comprehensive 
+           representation of an active hyperlink found in the PDF.
+        
+    """
     links_data = []
     try:
         doc = fitz.open(pdf_path)
@@ -180,13 +239,17 @@ def inspect_pdf_hyperlinks_fitz(pdf_path):
         doc.close()
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)
-    return links_data, structural_toc
+    return links_data
 
 def print_structural_toc(structural_toc):
     """
-    Prints the structural TOC data in a clean, hierarchical, and readable format.
+    Prints the structural TOC data (bookmarks/outline) in a clean, 
+    hierarchical, and readable console format.
+
+    Args:
+        structural_toc: A list of TOC dictionaries returned by `analyze_toc_fitz`.
     """
-    print("\n## 📚 Structural Table of Contents (PDF Bookmarks/Outline)")
+    print("\n## Structural Table of Contents (PDF Bookmarks/Outline)")
     print("-" * 50)
     if not structural_toc:
         print("No structural TOC (bookmarks/outline) found.")
@@ -206,106 +269,189 @@ def print_structural_toc(structural_toc):
 
     print("-" * 50)
 
-def run_analysis(pdf_path: str, check_remnants: bool, max_links: int) -> Dict[str, Any]:
+
+def get_first_pdf_in_cwd() -> Optional[str]:
     """
-    Core PDF analysis logic using PyMuPDF. Extracts links, remnants, and TOC.
-    The printing is done inside this function.
-    max_links: If <= 0, all links will be displayed.
+    Scans the current working directory (CWD) for the first file ending 
+    with a '.pdf' extension (case-insensitive).
+
+    This is intended as a convenience function for running the tool 
+    without explicitly specifying a path.
+
+    Returns:
+        The absolute path (as a string) to the first PDF file found, 
+        or None if no PDF files are present in the CWD.
     """
+    # 1. Get the current working directory (CWD)
+    cwd = Path.cwd()
     
-    print(f"Running PyMuPDF analysis on {Path(pdf_path).name}...")
-
-    # 1. Extract all active links and TOC
-    extracted_links, structural_toc = inspect_pdf_hyperlinks_fitz(pdf_path) 
-    toc_entry_count = len(structural_toc)
+    # 2. Use Path.glob to find files matching the pattern. 
+    #    We use '**/*.pdf' to also search nested directories if desired, 
+    #    but typically for a single PDF in CWD, '*.pdf' is enough. 
+    #    Let's stick to files directly in the CWD for simplicity.
     
-    # 2. Find link remnants
-    remnants = []
-    if check_remnants:
-        remnants = find_link_remnants(pdf_path, extracted_links) # Pass active links to exclude them
-
-    if not extracted_links and not remnants and not structural_toc:
-         print(f"\nNo hyperlinks, remnants, or structural TOC found in {Path(pdf_path).name}.")
-         return {}
-         
-    # 3. Separate the lists based on the 'type' key
-    uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
-    goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
-    resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
-    other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
-
-    total_internal_links = len(goto_links) + len(resolved_action_links)
+    # We use list comprehension with next() for efficiency, or a simple loop.
+    # Using Path.glob('*.pdf') to search the CWD for files ending in .pdf
+    # We make it case-insensitive by checking both '*.pdf' and '*.PDF'
     
-    # --- ANALYSIS SUMMARY (Using your print logic) ---
-    print(f"\n--- Link Analysis Results for {Path(pdf_path).name} ---")
-    print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
-    print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
-    print(f"Total **potential missing links** found: {len(remnants)}")
-    print("-" * 50)
-
-    limit = max_links if max_links > 0 else None
-
-    uri_and_other = uri_links + other_links
+    # Note: On Unix systems, glob is case-sensitive by default.
+    # The most cross-platform safe way is to iterate and check the suffix.
     
-    # --- Section 1: ACTIVE URI LINKS ---
-    print(f"\n## 🔗 Active URI Links (External & Other) - {len(uri_and_other)} found") 
-    print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
-    print("-" * 75)
+    try:
+        # Check for files in the current directory only
+        # Iterating over the generator stops as soon as the first match is found.
+        first_pdf_path = next(
+            p.resolve() for p in cwd.iterdir() 
+            if p.is_file() and p.suffix.lower() == '.pdf'
+        )
+        return str(first_pdf_path)
+    except StopIteration:
+        # If the generator runs out of items, no PDF was found
+        return None
+    except Exception as e:
+        # Handle potential permissions errors or other issues
+        print(f"Error while searching for PDF in CWD: {e}", file=sys.stderr)
+        return None
+
+def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: int = 0, export_format: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Core high-level PDF link analysis logic. 
     
-    if uri_and_other:
-        for i, link in enumerate(uri_and_other[:limit], 1):
-            target = link.get('url') or link.get('remote_file') or link.get('target')
-            link_text = link.get('link_text', 'N/A')
-            print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
-        if limit is not None and len(uri_and_other) > limit:
-            print(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+    This function orchestrates the extraction of active links and TOC 
+    using PyMuPDF, finds link remnants (plain text URLs/emails), and 
+    prints a comprehensive, user-friendly report to the console.
 
-    else: 
-        print("  No external or 'Other' links found.")
+    Args:
+        pdf_path: The file system path (str) to the target PDF document.
+        check_remnants: Boolean flag to enable/disable scanning for plain text 
+                        links that are not active hyperlinks.
+        max_links: Maximum number of links/remnants to display in each console 
+                   section. If <= 0, all links will be displayed.
 
-    # --- Section 2: ACTIVE INTERNAL JUMPS ---
-    print(f"\n## 🖱️ Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
-    print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
-    print("-" * 75)
-    
-    all_internal = goto_links + resolved_action_links
-    if total_internal_links > 0:
-        for i, link in enumerate(all_internal[:limit], 1):
-            link_text = link.get('link_text', 'N/A')
-            print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
+    Returns:
+        A dictionary containing the structured results of the analysis:
+        'external_links', 'internal_links', 'remnants', and 'toc'.
+    """
 
-        if limit is not None and len(all_internal) > limit:
-             print(f"... and {len(all_internal) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
-    else:
-        print("  No internal GoTo or Resolved Action links found.")
+    if pdf_path is None:
+        pdf_path = get_first_pdf_in_cwd()
+    if pdf_path is None:
+        print("pdf_path is None")
+        return
+    try:
+        print(f"Running PyMuPDF analysis on {Path(pdf_path).name}...")
+
+        # 1. Extract all active links and TOC
+        extracted_links = extract_links(pdf_path)
+        structural_toc = extract_toc(pdf_path) 
+        toc_entry_count = len(structural_toc)
         
-    # --- Section 3: REMNANTS ---
-    print("\n" + "=" * 70)
-    print(f"## ⚠️ Link Remnants (Potential Missing Links to Fix) - {len(remnants)} found")
-    print("=" * 70)
-    
-    if remnants:
-        print("{:<5} | {:<5} | {:<15} | {}".format("Idx", "Page", "Remnant Type", "Text Found (Needs Hyperlink)"))
+        # 2. Find link remnants
+        remnants = []
+        if check_remnants:
+            remnants = find_link_remnants(pdf_path, extracted_links) # Pass active links to exclude them
+
+        if not extracted_links and not remnants and not structural_toc:
+            print(f"\nNo hyperlinks, remnants, or structural TOC found in {Path(pdf_path).name}.")
+            return {}
+            
+        # 3. Separate the lists based on the 'type' key
+        uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
+        goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
+        resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
+        other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
+
+        total_internal_links = len(goto_links) + len(resolved_action_links)
+        
+        # --- ANALYSIS SUMMARY (Using your print logic) ---
+        print(f"\n--- Link Analysis Results for {Path(pdf_path).name} ---")
+        print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
+        print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
+        print(f"Total **potential missing links** found: {len(remnants)}")
+        print("-" * 50)
+
+        limit = max_links if max_links > 0 else None
+
+        uri_and_other = uri_links + other_links
+        
+        # --- Section 1: ACTIVE URI LINKS ---
+        print(f"\n## Active URI Links (External & Other) - {len(uri_and_other)} found") 
+        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
         print("-" * 75)
-        for i, remnant in enumerate(remnants[:max_links], 1):
-            print("{:<5} | {:<5} | {:<15} | {}".format(i, remnant['page'], remnant['type'], remnant['text']))
-        if len(remnants) > max_links:
-             print(f"... and {len(remnants) - max_links} more remnants (use --max-links to see all).")
-    else:
-        print("  No URI or Email remnants found that are not already active links.")
         
-    # --- Section 4: TOC ---
-    print_structural_toc(structural_toc)
-    
-    # Return the collected data for potential future JSON/other output
-    return {
-        "external_links": uri_links,
-        "internal_links": all_internal,
-        "remnants": remnants,
-        "toc": structural_toc
-    }
+        if uri_and_other:
+            for i, link in enumerate(uri_and_other[:limit], 1):
+                target = link.get('url') or link.get('remote_file') or link.get('target')
+                link_text = link.get('link_text', 'N/A')
+                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
+            if limit is not None and len(uri_and_other) > limit:
+                print(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+
+        else: 
+            print("  No external or 'Other' links found.")
+
+        # --- Section 2: ACTIVE INTERNAL JUMPS ---
+        print(f"\n## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
+        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
+        print("-" * 75)
+        
+        all_internal = goto_links + resolved_action_links
+        if total_internal_links > 0:
+            for i, link in enumerate(all_internal[:limit], 1):
+                link_text = link.get('link_text', 'N/A')
+                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
+
+            if limit is not None and len(all_internal) > limit:
+                print(f"... and {len(all_internal) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+        else:
+            print(" No internal GoTo or Resolved Action links found.")
+            
+        # --- Section 3: REMNANTS ---
+        print("\n" + "=" * 70)
+        print(f"## ⚠️ Link Remnants (Potential Missing Links to Fix) - {len(remnants)} found")
+        print("=" * 70)
+        
+        if remnants:
+            print("{:<5} | {:<5} | {:<15} | {}".format("Idx", "Page", "Remnant Type", "Text Found (Needs Hyperlink)"))
+            print("-" * 75)
+            for i, remnant in enumerate(remnants[:max_links], 1):
+                print("{:<5} | {:<5} | {:<15} | {}".format(i, remnant['page'], remnant['type'], remnant['text']))
+            if len(remnants) > max_links:
+                print(f"... and {len(remnants) - max_links} more remnants (use --max-links to see all).")
+        else:
+            print(" No URI or Email remnants found that are not already active links.")
+            
+        # --- Section 4: TOC ---
+        print_structural_toc(structural_toc)
+        
+        # Return the collected data for potential future JSON/other output
+        final_report_data =  {
+            "external_links": uri_links,
+            "internal_links": all_internal,
+            "remnants": remnants,
+            "toc": structural_toc
+        }
+
+        # 5. Export Report 
+        if export_format:
+            # Assuming export_to will hold the output format string (e.g., "json")
+            export_report_data(final_report_data, Path(pdf_path).name, export_format)
+
+        return final_report_data
+    except Exception as e:
+        # Log the critical failure
+        error_logger.error(f"Critical failure during run_analysis for {pdf_path}: {e}", exc_info=True)
+        print(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
+        raise # Allow the exception to propagate or handle gracefully
+
+
 
 def call_stable():
+    """
+    Placeholder function for command-line execution (e.g., in __main__).
+    Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
+    passing them as arguments to run_analysis.
+    """
     print("Begin analysis...")
     run_analysis()
     print("Analysis complete.")

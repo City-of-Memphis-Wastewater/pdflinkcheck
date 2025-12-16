@@ -1,2 +1,1 @@
-from pdflinkcheck.analyze import get_link_rect, get_anchor_text, analyze_toc_fitz, inspect_pdf_hyperlinks_fitz, print_structural_toc, run_analysis
-from pdflinkcheck.remnants import clean_ex_rect, find_link_remnants
+from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
