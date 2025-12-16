@@ -8,11 +8,12 @@ License, or (at your option) any later version.
 
 The AGPL3+ is required because it uses PyMuPDF, which is licensed under the AGPL3.
 
-All Python dependencies:
-- PyMuPDF (AGPL3)
-- pyhabitat (MIT)
-- rich (MIT)
-- typer (MIT)
+Dependencies:
+- Python (PSFL) | https://github.com/python/cpython | 
+- PyMuPDF (AGPL3) | https://github.com/pymupdf/PyMuPDF | 
+- pyhabitat (MIT) | https://github.com/City-of-Memphis-Wastewater/pdflinkcheck | 
+- rich (MIT) | https://github.com/Textualize/rich | 
+- typer (MIT) | https://github.com/fastapi/typer | 
 
 ----------------------------------------------------------------------
 
