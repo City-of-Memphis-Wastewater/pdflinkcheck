@@ -5,7 +5,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.40] - 2025-12-15
+## [1.1.43] - 2025-12-15
 ### Changed:
 - PyMuPDF does not (easily) build on alpine. change to a py3.11-slim build.
 
