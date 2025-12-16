@@ -222,3 +222,16 @@ cd pdflinkcheck
 uv sync
 uv run python src/pdflinkcheck/cli.py --help
 ```
+
+---
+
+pdflinkcheck - A PDF Link Checker
+Copyright (C) 2025 George Clayton Bennett
+source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
+
+This program is free software: You can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.                    
+
+The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed under the AGPL3.

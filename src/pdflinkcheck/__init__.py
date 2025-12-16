@@ -10,7 +10,7 @@ it under the terms of the GNU Affero General Public License as
 published by the Free Software Foundation, either version 3 of the
 License, or (at your option) any later version.                    
 
-The AGPL3+ is required because it uses PyMuPDF, which is licensed under the AGPL3.
+The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed under the AGPL3.
 """
 # Library functions
 from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
