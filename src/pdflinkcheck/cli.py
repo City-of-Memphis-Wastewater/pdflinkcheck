@@ -167,7 +167,7 @@ def analyze_pdf( # Renamed function for clarity
         resolve_path=True,
         help="The path to the PDF file to analyze."
     ),
-    export_format: str = typer.Option("JSON", "--export-format","-e", help="Set the export format for the report. Currently supported: JSON. When None, the report will be printed but not exported. "
+    export_format: str = typer.Option("JSON", "--export-format","-e", help="Set the export format for the report. Currently supported: JSON. To suppress file export, use the empty string: --export-format \"\""
     ),
     max_links: int = typer.Option(
         0,
@@ -185,6 +185,8 @@ def analyze_pdf( # Renamed function for clarity
     Analyzes the specified PDF file for all internal, external, and unlinked references.
     """
     # The actual heavy lifting (analysis and printing) is now in run_analysis
+    if export_format and export_format == "":
+        export_format = None
     run_analysis(
         pdf_path=str(pdf_path), 
         check_remnants=check_remnants,
