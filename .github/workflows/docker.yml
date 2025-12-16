@@ -22,8 +22,8 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PAT }}
-
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Build and push
         run: |
           TAG=${GITHUB_REF#refs/tags/v}
