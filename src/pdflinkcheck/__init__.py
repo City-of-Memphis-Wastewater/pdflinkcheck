@@ -2,28 +2,30 @@
 from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
 
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
-
+# Is this Pythonic? No. Oh well. PEP 8, PEP 20.
 import os
 flag = os.environ.get('PDFLINKCHECK_GUI_EASTEREGG', '')
 pdflibkcheck_gui_lib_func_load = str(flag).strip().lower() in ('true', '1', 'yes', 'on')
 
 if pdflibkcheck_gui_lib_func_load:
     try:
-        import pyhabitat
+        import pyhabitat # pyhabitat is a dependency of this package already
         if pyhabitat.tkinter_is_available():
             from pdflinkcheck.gui import start_gui
     except ImportError:
         # Optional: log or ignore silently
         pass
 
+# Breadcrumbs, for stumbling upon.
+if pdflibkcheck_gui_lib_func_load:
+    __pdflinkcheck_gui_easteregg_enabled__ = True
+else:
+    __pdflinkcheck_gui_easteregg_enabled__ = False
+
+# Define __all__ such that the library functions are self documenting.
 __all__ = [
     "run_analysis",
     "extract_links",
     "extract_toc",
     "start_gui" if pdflibkcheck_gui_lib_func_load else None,
 ]
-
-if pdflibkcheck_gui_lib_func_load:
-    __pdflinkcheck_gui_enabled__ = True
-
-
