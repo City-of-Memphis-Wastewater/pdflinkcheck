@@ -5,7 +5,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.31] - 2025-12-15
+## [1.1.32] - 2025-12-15
 ### Added:
 - MANIFEST.in file, to ensure inclusion of README and LICENSE files.
 - Sections in build_pyz.py and build_executable.py to  inclusion of README and LICENSE files. 
