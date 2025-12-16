@@ -214,9 +214,9 @@ uv run python src/pdflinkcheck/cli.py --help
 
 ## 📜 License Implications (AGPLv3+)
 
-**pdflinkcheck is licensed under the GNU Affero General Public License version 3 or later (AGPLv3+).**
+**`pdflinkcheck` is licensed under the `GNU Affero General Public License` version 3 or later (`AGPLv3+`).**
 
-The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed under the AGPL3.
+The `AGPL3+` is required because `pdflinkcheck` uses `PyMuPDF`, which is licensed under the AGPL3.
 
 This license has significant implications for **distribution and network use**, particularly for organizations:
 
