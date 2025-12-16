@@ -18,7 +18,7 @@ class RedirectText:
         """Insert the incoming string into the Text widget."""
         self.text_widget.insert(tk.END, string)
         self.text_widget.see(tk.END) # Scroll to the end
-        self.text_widget.update_idletasks() # Refresh GUI
+        ## self.text_widget.update_idletasks() # Refresh GUI << Suppress: The mainloop will handle updates efficiently without forcing them.
 
     def flush(self, *args):
         """Required for file-like objects, but does nothing here."""
@@ -175,7 +175,13 @@ class PDFLinkCheckerApp(tk.Tk):
         self.output_text['yscrollcommand'] = scrollbar.set # Link text widget back to scrollbar
 
     def _select_pdf(self):
+        if self.pdf_path.get():
+            initialdir = str(Path(self.pdf_path.get()).parent)
+        else:
+            initialdir = str(Path.cwd())
+
         file_path = filedialog.askopenfilename(
+            initialdir=initialdir,
             defaultextension=".pdf",
             filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
         )
@@ -248,12 +254,15 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _display_error(self, message):
         # Ensure output is in normal state to write
-        if self.output_text.cget('state') == tk.DISABLED:
+        original_state = self.output_text.cget('state')
+        if original_state == tk.DISABLED:
             self.output_text.config(state=tk.NORMAL)
             
-        self.output_text.delete('1.0', tk.END)
+        #self.output_text.delete('1.0', tk.END)
         self.output_text.insert(tk.END, f"[ERROR] {message}\n", 'error')
         self.output_text.tag_config('error', foreground='red')
+
+        # Restore state
         self.output_text.config(state=tk.DISABLED)
 
 
