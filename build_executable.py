@@ -11,7 +11,7 @@ from pathlib import Path
 import re
 import pyhabitat
 
-from pdflinkcheck.build import ensure_data_files_for_build()
+from pdflinkcheck.datacopy import ensure_data_files_for_build()
 
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
@@ -124,7 +124,6 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
-        
     ]
 
     # 3. Add Windows resource file if applicable

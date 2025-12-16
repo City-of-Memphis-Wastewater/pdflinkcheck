@@ -1,4 +1,4 @@
-# src/pdflinkcheck/build.py
+# src/pdflinkcheck/datacopy.py
 import shutil
 import sys
 from pathlib import Path

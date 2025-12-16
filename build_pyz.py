@@ -9,7 +9,7 @@ import site
 import pyhabitat
 
 from build_executable import form_dynamic_name
-from pdflinkcheck.build import ensure_data_files_for_build
+from pdflinkcheck.datacopy import ensure_data_files_for_build
 
 # Get the one site-packages path where packages are installed in the venv
 SITE_PACKAGES_PATH = site.getsitepackages()[0]

@@ -37,6 +37,9 @@ jobs:
         # Install uv globally (or add it to the path)
         run: pip install uv
 
+      - name: Ensure updated copies of packaged data files
+        run: python src/pdflinkcheck/datacopy.py
+
       - name: Create isolated environment and install build dependencies
         # Use uv to install `build` and all dependencies specified in `pyproject.toml`
         # We don't need a separate lockfile step, as uv handles resolution quickly.

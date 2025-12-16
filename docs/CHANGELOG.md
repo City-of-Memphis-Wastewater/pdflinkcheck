@@ -4,6 +4,22 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.50] - 2025-12-16
+### Added:
+- GUI: Readme button in Tkinter GUI. Strip the glyphs but otherwise accept the markdown formatting.
+- src/pdflinkcheck/datacopy.py: `ensure_data_files_for_build()` is defined, to be called manually or automatically for copying LICENSE and README.md from root to the pdflinkcheck/data/ directory for package inclusion. 
+- src/pdflinkcheck/datacopy.py: `ensure_data_files_for_build()` is called in build_pyz.py, build_executable.py, and in publish.yml to ensure proper files at build time.
+- hook-pdflinkcheck.py: PyInstaller expected hook file added to ensure success of data/ files inclusion.  
+
+### Changed:
+- CLI: `license` command is not `docs` command, with `--license/-l` and `--readme/-r` flags.
+
+### Fixed:
+- LICENSE is now purely the suggested AGPL template, so that GitHub picks up on the type.
+- Copyright for `pdflinkcheck` is now declared at the bottom of the README and in the __init__ file.
+
+---
+
 ## [1.1.49] - 2025-12-16
 ### Fixed:
 - Revert page numbering correction factor to use +1
