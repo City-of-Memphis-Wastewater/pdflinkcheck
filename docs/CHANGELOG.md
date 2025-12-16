@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.1.40] - 2025-12-15
+### Changed:
+- PyMuPDF does not (easily) build on alpine. change to a py3.11-slim build.
+
 ---
 
 ## [1.1.40] - 2025-12-15
