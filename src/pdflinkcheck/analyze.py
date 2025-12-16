@@ -440,6 +440,8 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
 
         total_internal_links = len(goto_links) + len(resolved_action_links)
+        limit = max_links if max_links > 0 else None
+        uri_and_other = uri_links + other_links
         
         # --- ANALYSIS SUMMARY (Using your print logic) ---
         print("\n" + "✪" * 70)
@@ -449,26 +451,8 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         print(f"Total **potential missing links** found: {len(remnants)}")
         print("✪" * 70)
 
-        limit = max_links if max_links > 0 else None
-
-        uri_and_other = uri_links + other_links
-        
-        # --- Section 1: ACTIVE URI LINKS ---
-        print("\n" + "=" * 70)
-        print(f"## Active URI Links (External & Other) - {len(uri_and_other)} found") 
-        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
-        print("=" * 70)
-        
-        if uri_and_other:
-            for i, link in enumerate(uri_and_other[:limit], 1):
-                target = link.get('url') or link.get('remote_file') or link.get('target')
-                link_text = link.get('link_text', 'N/A')
-                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
-            if limit is not None and len(uri_and_other) > limit:
-                print(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
-
-        else: 
-            print(" No external or 'Other' links found.")
+        # --- Section 1: TOC ---
+        print_structural_toc(structural_toc)
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
         print("\n" + "=" * 70)
@@ -487,8 +471,26 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
                 print(f"... and {len(all_internal) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
         else:
             print(" No internal GoTo or Resolved Action links found.")
+        
+        # --- Section 3: ACTIVE URI LINKS ---
+        print("\n" + "=" * 70)
+        print(f"## Active URI Links (External & Other) - {len(uri_and_other)} found") 
+        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
+        print("=" * 70)
+        
+        if uri_and_other:
+            for i, link in enumerate(uri_and_other[:limit], 1):
+                target = link.get('url') or link.get('remote_file') or link.get('target')
+                link_text = link.get('link_text', 'N/A')
+                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
+            if limit is not None and len(uri_and_other) > limit:
+                print(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+
+        else: 
+            print(" No external or 'Other' links found.")
+
             
-        # --- Section 3: REMNANTS ---
+        # --- Section 4: REMNANTS ---
         print("\n" + "=" * 70)
         print(f"## ⚠️ Link Remnants (Potential Missing Links to Fix) - {len(remnants)} found")
         print("=" * 70)
@@ -503,8 +505,6 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         else:
             print(" No URI or Email remnants found that are not already active links.")
             
-        # --- Section 4: TOC ---
-        print_structural_toc(structural_toc)
         
         # Return the collected data for potential future JSON/other output
         final_report_data =  {

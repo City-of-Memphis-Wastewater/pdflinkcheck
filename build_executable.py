@@ -12,6 +12,7 @@ import re
 import pyhabitat
 
 from pdflinkcheck.datacopy import ensure_data_files_for_build
+from pdflinkcheck.version_info import get_version_from_pyproject
 
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
@@ -23,26 +24,6 @@ RC_FILE = Path('version.rc')
 IS_WINDOWS_BUILD = pyhabitat.on_windows()
 PROJECT_ROOT = Path(__file__).resolve().parent
 HOOKS_DIR_ABS = PROJECT_ROOT / "pyinstaller_hooks"
-
-
-
-# --- Version Info Helper (From successful build_pyz.py) ---
-def find_pyproject(start: Path) -> Path | None:
-    """Find the pyproject.toml file by walking up the directory tree."""
-    for p in start.resolve().parents:
-        candidate = p / "pyproject.toml"
-        if candidate.exists():
-            return candidate
-    return None
-
-def get_version_for_build() -> str:
-    """Reads the version from pyproject.toml."""
-    pyproject = find_pyproject(Path(__file__))
-    if not pyproject: return "0.0.0"
-    text = pyproject.read_text(encoding="utf-8")
-    
-    match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', text, re.DOTALL | re.IGNORECASE)
-    return match.group(1) if match else "0.0.0"
 
 # --- Dynamic Naming Placeholder (Simplified version for this context) ---
 def form_dynamic_name(pkg_name: str, version: str) -> str:
@@ -154,7 +135,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
 
 if __name__ == "__main__":
     try:
-        package_version = get_version_for_build()
+        package_version = get_version_from_pyproject()
         if package_version == "0.0.0":
             print("FATAL: Cannot find package version in pyproject.toml.", file=sys.stderr)
             sys.exit(1)

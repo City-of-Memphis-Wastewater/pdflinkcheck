@@ -8,6 +8,19 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed: 
 - Erroneous import of `ensure_data_files_for_build` in build_executable.py; remove excessive parentheses.
 
+### Changed:
+- Versioning: `src/pdflinkcheck/version_info.py` created, with versioning functions from `build_executable.py` and `build_pyz.py` migrated to `version_info.py`
+- Analysis report order changed so that most aesthetic and immediately useful information is at the top.
+- Adjust Gui screenshot reference in 
+
+### Added:
+- GUI Version: Version info added to frame heading of the Tkinter gui, by leveraging `version_info.get_version_from_pyproject()`
+- GUI Buttons: Top and Bottom.
+- Asset: `assets/pdflinkcheck_gui_v1.1.51.png`; update GUI screenshot reference in README.
+- Asset: `assets/pdflinkcheck_cli_v1.1.51.png`; add CLI screenshot reference in README.
+- CLI versioning: Import version_info into cli.py and add version number to help print statment.
+- CLI Tree Help: New CLI command to show the entire CLI structure.
+
 ---
 
 ## [1.1.50] - 2025-12-16

@@ -9,6 +9,7 @@ from importlib.resources import files
 
 # Import the core analysis function
 from pdflinkcheck.analyze import run_analysis 
+from pdflinkcheck.version_info import get_version_from_pyproject
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -28,7 +29,7 @@ class RedirectText:
 class PDFLinkCheckerApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("PDF Link Check")
+        self.title(f"PDF Link Check v{get_version_from_pyproject()}")
         self.geometry("800x600")
         
         # Style for the application
@@ -73,7 +74,15 @@ class PDFLinkCheckerApp(tk.Tk):
                 messagebox.showerror("Copy Error", f"Failed to access the system clipboard: {e}")
         else:
             messagebox.showwarning("Copy Failed", "The PDF Path field is empty.")
-            
+    
+    def _scroll_to_top(self):
+        """Scrolls the output text widget to the top."""
+        self.output_text.see('1.0') # '1.0' is the index for the very first character
+
+    def _scroll_to_bottom(self):
+        """Scrolls the output text widget to the bottom."""
+        self.output_text.see(tk.END) # tk.END is the index for the position just after the last character
+
     def _show_license(self):
         """
         Reads the embedded LICENSE file (AGPLv3) and displays its content in a new modal window.
@@ -256,7 +265,23 @@ class PDFLinkCheckerApp(tk.Tk):
         output_frame = ttk.Frame(self, padding="10")
         output_frame.pack(fill='both', expand=True)
 
-        ttk.Label(output_frame, text="Analysis Report Output:").pack(fill='x')
+        output_header_frame = ttk.Frame(output_frame)
+        output_header_frame.pack(fill='x', pady=(0, 5))
+        
+        # Label
+        ttk.Label(output_header_frame, text="Analysis Report Output:").pack(side=tk.LEFT, fill='x', expand=True)
+
+        # Scroll to Bottom Button # put this first so that it on the right when the Top button is added on the left.
+        bottom_btn = ttk.Button(output_header_frame, text="▼ Bottom", command=self._scroll_to_bottom, width=8)
+        bottom_btn.pack(side=tk.RIGHT, padx=(0, 5)) 
+
+        # Scroll to Top Button
+        top_btn = ttk.Button(output_header_frame, text="▲ Top", command=self._scroll_to_top, width=6)
+        top_btn.pack(side=tk.RIGHT, padx=(5, 5))
+        
+        
+        # ----------------------------------------------------
+        
         
         # Scrollable Text Widget for output
         # Use an internal frame for text and scrollbar to ensure correct packing

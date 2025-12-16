@@ -10,6 +10,7 @@ import pyhabitat
 
 from build_executable import form_dynamic_name
 from pdflinkcheck.datacopy import ensure_data_files_for_build
+from pdflinkcheck.version_info import get_version_from_pyproject
 
 # Get the one site-packages path where packages are installed in the venv
 SITE_PACKAGES_PATH = site.getsitepackages()[0]
@@ -19,36 +20,6 @@ PROJECT_NAME = "pdflinkcheck"
 ENTRY_POINT = "pdflinkcheck.cli:app"
 DIST_DIR = Path("dist")
 PROJECT_ROOT = Path(__file__).resolve().parent
-
-# --- TOML Parsing Helper ---
-def find_pyproject(start: Path) -> Path | None:
-    for p in start.resolve().parents:
-        candidate = p / "pyproject.toml"
-        if candidate.exists():
-            return candidate
-    return None
-
-def get_version_from_pyproject() -> str:
-    pyproject = find_pyproject(Path(__file__))
-    if not pyproject or not pyproject.exists():
-        print("ERROR: pyproject.toml missing.", file=sys.stderr)
-        return "0.0.0"
-
-    text = pyproject.read_text(encoding="utf-8")
-    
-    # Match PEP 621 style: [project]
-    project_section = re.search(r"\[project\](.*?)(?:\n\[|$)", text, re.DOTALL | re.IGNORECASE)
-    if project_section:
-        match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', project_section.group(1))
-        if match: return match.group(1)
-
-    # Match Poetry style: [tool.poetry]
-    poetry_section = re.search(r"\[tool\.poetry\](.*?)(?:\n\[|$)", text, re.DOTALL | re.IGNORECASE)
-    if poetry_section:
-        match = re.search(r'version\s*=\s*["\']([^"\']+)["\']', poetry_section.group(1))
-        if match: return match.group(1)
-
-    return "0.0.0"
 
 # --- Helper Functions ---
 
