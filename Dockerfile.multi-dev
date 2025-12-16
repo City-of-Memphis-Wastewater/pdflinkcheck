@@ -46,4 +46,4 @@ ENTRYPOINT ["/bin/bash"]
 
 # Make the container available as a GitHub Package
 LABEL org.opencontainers.image.source=https://github.com/city-of-memphis-wastewater/pdflinkcheck
-LABEL org.opencontainers.image.description="Developer environment for pdflinkcheck, a CLI and GUI that leveragea the PyMuPDF library to inspect PDF files for internal links, external links, and table of contents (toc).
+LABEL org.opencontainers.image.description="Developer environment for pdflinkcheck, a CLI and GUI that leveragea the PyMuPDF library to inspect PDF files for internal links, external links, and table of contents (toc)."
