@@ -2,6 +2,11 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.1.39] - 2025-12-15
+### Added:
+- Update license information to include links to dependency source code.
 
 ---
 
