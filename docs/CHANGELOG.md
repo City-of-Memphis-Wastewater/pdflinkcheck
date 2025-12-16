@@ -4,10 +4,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.33] - 2025-12-15
+## [1.1.34] - 2025-12-15
 ### Added/Fixed:
 - `src/pdflinkcheck/data/LICENSE`, to be included in the wheel. Use this version with the gui.py code, so that it functions with the pipx installed CLI-launched GUI.
 
+### Fixed:
+- Use explicit flag `--include` in Shiv command, instead of short `--i`, which might default to `--index-url`.
+- Correct erroneous quotation in pyproject.toml
 
 ---
 
