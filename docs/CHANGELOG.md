@@ -4,6 +4,17 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.46] - 2025-12-16
+### Fixed:
+- analyze.py: Remove redundant call to get structural_toc
+- analyze.py: Add hint when there is no PDF file in run_analysis()
+- __init__.py: Clean up order and guarding of the easter egg and the __all__ definition.
+
+### Added:
+- README: Section concering the start_gui() easter egg library function, unlocked by an env var.
+
+---
+
 ## [1.1.45] - 2025-12-16
 ### Added:
 - Easter egg: Add elements to the pdflinkcheck/__init__.py, to enable start_gui() to be imported as a library function if the `PDFLINKCHECK_GUI_EASTEREGG` env var is set.

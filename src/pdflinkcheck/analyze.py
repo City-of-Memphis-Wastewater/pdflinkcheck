@@ -153,9 +153,7 @@ def extract_links(pdf_path):
     """
     links_data = []
     try:
-        doc = fitz.open(pdf_path)
-        structural_toc = analyze_toc_fitz(doc)
-        
+        doc = fitz.open(pdf_path)        
 
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
@@ -338,6 +336,7 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         pdf_path = get_first_pdf_in_cwd()
     if pdf_path is None:
         print("pdf_path is None")
+        print("Tip: Drop a PDF in the current folder or pass in a path arg.")
         return
     try:
         print(f"Running PyMuPDF analysis on {Path(pdf_path).name}...")
