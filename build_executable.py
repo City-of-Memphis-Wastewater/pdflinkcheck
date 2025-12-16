@@ -20,6 +20,7 @@ RC_TEMPLATE = Path('version.rc.template') # Assume this template exists for Wind
 RC_FILE = Path('version.rc')
 IS_WINDOWS_BUILD = pyhabitat.on_windows()
 PROJECT_ROOT = Path(__file__).resolve().parent
+HOOKS_DIR_ABS = PROJECT_ROOT / "pyinstaller_hooks"
 
 # --- Version Info Helper (From successful build_pyz.py) ---
 def find_pyproject(start: Path) -> Path | None:
@@ -91,14 +92,6 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     
     print(f"--- {PROJECT_NAME} Executable Builder ---")
 
-    # Define paths to add using the absolute project root.
-    LICENSE_PATH_ABS = PROJECT_ROOT / "LICENSE"
-    README_PATH_ABS = PROJECT_ROOT / "README.md"
-
-    # PyInstaller uses os.pathsep (';' on Windows, ':' on Unix) for the separator
-    add_data_flag_license = f"{LICENSE_PATH_ABS}{os.pathsep}."
-    add_data_flag_readme = f"{README_PATH_ABS}{os.pathsep}."
-    
     # 1. Clean and Setup
     clean_artifacts(exe_name=dynamic_exe_name)
     setup_dirs()
@@ -118,10 +111,8 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         f'--workpath={BUILD_DIR / "work"}',
         f'--specpath={BUILD_DIR}',
 
-        # --- Include LICENSE and README.md with --add-data ---
-        # destination '.' ensures they are placed at the root of the temp unpack directory
-        '--add-data', add_data_flag_license,
-        '--add-data', add_data_flag_readme,
+        # --- Add the Hooks Directory ---
+        f'--additional-hooks-dir={HOOKS_DIR_ABS}', # 
 
         # Crucial for Typer/Click based apps
         "--hidden-import", "pkg_resources.py2_warn", 
