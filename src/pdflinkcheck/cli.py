@@ -73,7 +73,10 @@ def analyze_pdf( # Renamed function for clarity
 
 @app.command(name="gui") 
 def gui_command(
-    auto_close: int = typer.Option(None, "--auto-close", "-c", help = "If a non-None value is provided, the GUI window will close on its own. This is for automated testing.")
+    auto_close: int = typer.Option(0, 
+                                   "--auto-close", "-c", 
+                                   help = "Delay in milliseconds after which the GUI window will close (for automated testing). Use 0 (default) to disable auto-closing.",
+                                   min=0)
     )->None:
     """
     Launch tkinter-based GUI.

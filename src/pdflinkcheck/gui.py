@@ -26,7 +26,7 @@ class RedirectText:
 class PDFLinkCheckerApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("PDF Link Checker")
+        self.title("PDF Link Check")
         self.geometry("800x600")
         
         # Style for the application
@@ -275,18 +275,18 @@ class PDFLinkCheckerApp(tk.Tk):
         self.output_text.config(state=tk.DISABLED)
 
 
-def auto_close_window(root, delay_ms):
+def auto_close_window(root, delay_ms:int = 0):
     """
     Schedules the Tkinter window to be destroyed after a specified delay.
     """
-    if delay_ms is not None:
+    if delay_ms > 0:
         print(f"Window is set to automatically close in {delay_ms/1000} seconds.")
         root.after(delay_ms, root.destroy)
     else:
         return
 
 
-def start_gui(time_auto_close:int=None):
+def start_gui(time_auto_close:int=0):
     """
     Entry point function to launch the application.
     """

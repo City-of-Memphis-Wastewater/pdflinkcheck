@@ -89,11 +89,20 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     """Run PyInstaller to build the executable."""
     
     print(f"--- {PROJECT_NAME} Executable Builder ---")
+
+    # Define paths to add
+    LICENSE_PATH = Path("LICENSE")
+    README_PATH = Path("README.md")
+
+    # PyInstaller uses os.pathsep (';' on Windows, ':' on Unix) for the separator
+    add_data_flag_license = f"{LICENSE_PATH}{os.pathsep}."
+    add_data_flag_readme = f"{README_PATH}{os.pathsep}."
     
     # 1. Clean and Setup
     clean_artifacts(exe_name=dynamic_exe_name)
     setup_dirs()
 
+    
     # 2. PyInstaller Command Construction
     base_command = [
         'pyinstaller',
@@ -107,6 +116,11 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         f'--distpath={DIST_DIR}',
         f'--workpath={BUILD_DIR / "work"}',
         f'--specpath={BUILD_DIR}',
+
+        # --- Include LICENSE and README.md with --add-data ---
+        # destination '.' ensures they are placed at the root of the temp unpack directory
+        '--add-data', add_data_flag_license,
+        '--add-data', add_data_flag_readme,
 
         # Crucial for Typer/Click based apps
         "--hidden-import", "pkg_resources.py2_warn", 

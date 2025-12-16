@@ -4,7 +4,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and link remnants 
 
 -----
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.32.png)
 
 -----
 
