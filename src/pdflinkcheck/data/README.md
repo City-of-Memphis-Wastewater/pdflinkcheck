@@ -229,4 +229,4 @@ Links:
 - Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/  
 - Official AGPLv3 Text (FSF): https://www.gnu.org/licenses/agpl-3.0.html
 
-Copyright &copy; 2025 George Clayton Bennett
+Copyright © 2025 George Clayton Bennett

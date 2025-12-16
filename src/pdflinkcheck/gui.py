@@ -4,6 +4,7 @@ from tkinter import filedialog, ttk, messagebox # Added messagebox
 import sys
 from pathlib import Path
 from typing import Optional # Added Optional
+import unicodedata
 from importlib.resources import files
 
 # Import the core analysis function
@@ -116,6 +117,50 @@ class PDFLinkCheckerApp(tk.Tk):
         license_window.grab_set()
         self.wait_window(license_window)
 
+    def _show_readme(self):
+        """
+        Reads the embedded README.md file and displays its content in a new modal window.
+        """
+        try:
+            # CORRECT WAY: Use the Traversable object's read_text() method.
+            # This handles files located inside zip archives (.pyz, pipx venvs) correctly.
+            readme_path_traversable = files("pdflinkcheck.data") / "README.md"
+            readme_content = readme_path_traversable.read_text(encoding="utf-8")
+            readme_content = sanitize_glyphs_for_tkinter(readme_content)
+            
+        except FileNotFoundError:
+            messagebox.showerror(
+                "Readme Error", 
+                "README.md file not found within the installation package (pdflinkcheck.data/README.md). Check build process."
+            )
+            return
+        except Exception as e:
+            messagebox.showerror("Read Error", f"Failed to read embedded README.md file: {e}")
+            return
+
+        # --- Display in a New Toplevel Window ---
+        readme_window = tk.Toplevel(self)
+        readme_window.title("pdflinkcheck README.md")
+        readme_window.geometry("600x400")
+        
+        # Text widget for content
+        text_widget = tk.Text(readme_window, wrap=tk.WORD, font=('Monospace', 10), padx=10, pady=10)
+        text_widget.insert(tk.END, readme_content)
+        text_widget.config(state=tk.DISABLED)
+        
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(readme_window, command=text_widget.yview)
+        text_widget['yscrollcommand'] = scrollbar.set
+        
+        # Layout
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        text_widget.pack(fill='both', expand=True)
+        
+        # Make the window modal (optional, but good practice for notices)
+        readme_window.transient(self)
+        readme_window.grab_set()
+        self.wait_window(readme_window)
+
     def _create_widgets(self):
         # --- Control Frame (Top) ---
         control_frame = ttk.Frame(self, padding="10")
@@ -185,14 +230,27 @@ class PDFLinkCheckerApp(tk.Tk):
         ).grid(row=2, column=2, padx=5, pady=5, sticky='w')
 
         # Row 3: Run Button and License Button
+        # 1. Run Button (Spans columns 0 and 1)
         run_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_analysis_gui, style='Accent.TButton')
         run_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
-        
-        license_btn = ttk.Button(control_frame, text="Show License", command=self._show_license)
-        license_btn.grid(row=3, column=2, columnspan=1, pady=10, sticky='ew', padx=(5, 0)) # Sticky 'ew' makes it fill
 
-        
+        # 2. Create a Frame to hold the two small buttons (This frame goes into column 2)
+        info_btn_frame = ttk.Frame(control_frame)
+        info_btn_frame.grid(row=3, column=2, columnspan=1, pady=10, sticky='ew', padx=(5, 0))
+        # Ensure the info button frame expands to fill its column
+        info_btn_frame.grid_columnconfigure(0, weight=1)
+        info_btn_frame.grid_columnconfigure(1, weight=1)
+
+        # 3. Place License and Readme buttons inside the new frame
+        license_btn = ttk.Button(info_btn_frame, text="License", command=self._show_license)
+        # Use PACK or a 2-column GRID inside the info_btn_frame. GRID is cleaner here.
+        license_btn.grid(row=0, column=0, sticky='ew', padx=(0, 2)) # Left side of the frame
+
+        readme_btn = ttk.Button(info_btn_frame, text="Readme", command=self._show_readme)
+        readme_btn.grid(row=0, column=1, sticky='ew', padx=(2, 0)) # Right side of the frame
+
         control_frame.grid_columnconfigure(1, weight=1)
+        control_frame.grid_columnconfigure(2, weight=1)
 
         # --- Output Frame (Bottom) ---
         output_frame = ttk.Frame(self, padding="10")
@@ -259,7 +317,7 @@ class PDFLinkCheckerApp(tk.Tk):
                 self._display_error("Error: Max Links must be an integer.")
                 return
 
-        export_format = None
+        export_format = None # default value, if selection is not made (if selection is not active)
         if self.do_export_report_var.get():
             export_format = self.export_report_format_var.get().lower()
 
@@ -304,6 +362,24 @@ class PDFLinkCheckerApp(tk.Tk):
         # Restore state
         self.output_text.config(state=tk.DISABLED)
 
+
+def sanitize_glyphs_for_tkinter(text: str) -> str:
+    """
+    Converts complex Unicode characters (like emojis and symbols) 
+    into their closest ASCII representation, ignoring those that 
+    cannot be mapped. This prevents the 'empty square' issue in Tkinter.
+    """
+    # 1. Normalize the text (NFKD converts composite characters to their base parts)
+    normalized = unicodedata.normalize('NFKD', text)
+    
+    # 2. Encode to ASCII and decode back. 
+    # The 'ignore' flag is crucial: it removes any characters 
+    # that don't have an ASCII representation.
+    sanitized = normalized.encode('ascii', 'ignore').decode('utf-8')
+    
+    # 3. Clean up any resulting double spaces or artifacts
+    sanitized = sanitized.replace('  ', ' ')
+    return sanitized
 
 def auto_close_window(root, delay_ms:int = 0):
     """
