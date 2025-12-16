@@ -4,6 +4,7 @@ from tkinter import filedialog, ttk, messagebox # Added messagebox
 import sys
 from pathlib import Path
 from typing import Optional # Added Optional
+from importlib.resources import files
 
 # Import the core analysis function
 from pdflinkcheck.analyze import run_analysis 
@@ -19,7 +20,7 @@ class RedirectText:
         self.text_widget.see(tk.END) # Scroll to the end
         self.text_widget.update_idletasks() # Refresh GUI
 
-    def flush(self):
+    def flush(self, *args):
         """Required for file-like objects, but does nothing here."""
         pass
 
@@ -52,44 +53,25 @@ class PDFLinkCheckerApp(tk.Tk):
         self._toggle_max_links_entry() 
         self._toggle_export_report()
         
-    def _get_resource_path(self, relative_path: str) -> Optional[Path]:
-        """
-        Get the absolute path to a resource file, accounting for PyInstaller
-        one-file bundle mode.
-        """
-        try:
-            # If running in a PyInstaller bundle, the resource is in the temp directory
-            base_path = Path(sys._MEIPASS)
-        except AttributeError:
-            # If running in a normal Python environment (e.g., development)
-            # Assumes the resource is relative to the script's package directory
-            base_path = Path(__file__).resolve().parent.parent.parent
-
-        resource_path = base_path / relative_path
-        
-        if resource_path.exists():
-            return resource_path
-        return None
 
     def _show_license(self):
         """
-        Reads the LICENSE file and displays its content in a new modal window.
+        Reads the embedded LICENSE file (AGPLv3) and displays its content in a new modal window.
         """
-        # Search for LICENSE one level up from gui.py (common project root location)
-        license_path = self._get_resource_path("LICENSE")
+        try:
+            # CORRECT WAY: Use the Traversable object's read_text() method.
+            # This handles files located inside zip archives (.pyz, pipx venvs) correctly.
+            license_path_traversable = files("pdflinkcheck.data") / "LICENSE"
+            license_content = license_path_traversable.read_text(encoding="utf-8")
             
-        if not (license_path and license_path.exists()):
+        except FileNotFoundError:
             messagebox.showerror(
                 "License Error", 
-                "LICENSE file not found. Ensure the LICENSE file is included in the installation package."
+                "LICENSE file not found within the installation package (pdflinkcheck.data/LICENSE). Check build process."
             )
             return
-
-        try:
-            with open(license_path, 'r', encoding='utf-8') as f:
-                license_content = f.read()
         except Exception as e:
-            messagebox.showerror("Read Error", f"Failed to read LICENSE file: {e}")
+            messagebox.showerror("Read Error", f"Failed to read embedded LICENSE file: {e}")
             return
 
         # --- Display in a New Toplevel Window ---
@@ -225,7 +207,7 @@ class PDFLinkCheckerApp(tk.Tk):
         else:
             try:
                 max_links_to_pass = int(self.max_links_var.get())
-                if max_links_to_pass <= 0:
+                if max_links_to_pass < 1:
                      self._display_error("Error: Max Links must be a positive number (or use 'Show All').")
                      return
             except ValueError:

@@ -173,8 +173,8 @@ def build_shiv_pyz():
 
         # --- Include LICENSE and README.md ---
         # The files will be placed in the root of the PYZ (site-packages/ directory)
-        "-i", str(LICENSE_PATH), 
-        "-i", str(README_PATH),
+        "--include", str(LICENSE_PATH), 
+        "--include", str(README_PATH),
     ]
     
     # Pass the current, activated environment

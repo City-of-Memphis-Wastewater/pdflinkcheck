@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.1.33] - 2025-12-15
+### Added/Fixed:
+- `src/pdflinkcheck/data/LICENSE`, to be included in the wheel. Use this version with the gui.py code, so that it functions with the pipx installed CLI-launched GUI.
+
 
 ---
 

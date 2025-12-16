@@ -6,6 +6,9 @@ from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
 from typing import Dict
 import pyhabitat
 import sys
+from importlib.resources import files
+
+from pdflinkcheck.gui import start_gui 
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -24,7 +27,7 @@ def main(ctx: typer.Context):
     """
 
     if ctx.invoked_subcommand is None:
-        gui_command()
+        start_gui(time_auto_close=0)
         raise typer.Exit(code=0)
     
     # 1. Access the list of all command-line arguments
@@ -33,7 +36,28 @@ def main(ctx: typer.Context):
     command_string = " ".join(full_command_list)
     # 3. Print the command
     typer.echo(f"command:\n{command_string}\n")
+    
 
+@app.command(name="license", help="Show the full license (AGPLv3) for this software.")
+def license_command():
+    """
+    Reads and prints the contents of the embedded LICENSE file.
+    """
+    try:
+        # Use importlib.resources.files to locate the LICENSE file within the installed package
+        license_path = files("pdflinkcheck.data") / "LICENSE"
+        license_text = license_path.read_text(encoding="utf-8")
+        
+        # Use rich console for clean, direct output
+        console.print('='*70)
+        console.print(license_text, highlight=False)
+        
+    except FileNotFoundError:
+        # This handles cases where the license file might be missing (e.g., failed sdist build)
+        console.print("[bold red]Error:[/bold red] The embedded license file could not be found.")
+        raise typer.Exit(code=1)
+        
+    raise typer.Exit(code=0)
 
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity
@@ -81,11 +105,10 @@ def gui_command(
     """
     Launch tkinter-based GUI.
     """
-
+    from pdflinkcheck.gui import start_gui
     if not pyhabitat.tkinter_is_available():
         _gui_failure_msg()
         return
-    from pdflinkcheck.gui import start_gui
     start_gui(time_auto_close = auto_close)
 
 
@@ -99,5 +122,4 @@ def _gui_failure_msg():
     pass
 
 if __name__ == "__main__":
-
     app()
