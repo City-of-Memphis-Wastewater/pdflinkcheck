@@ -103,7 +103,7 @@ pdflinkcheck gui --auto-close 3000
 
 -----
 
-### 📦 Library Access (Advanced)
+## 📦 Library Access (Advanced)
 
 For developers importing `pdflinkcheck` into other Python projects, the core analysis functions are exposed directly in the root namespace:
 
@@ -121,7 +121,7 @@ from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
 
 -----
 
-### ✨ Features
+## ✨ Features
 
   * **Active Link Extraction:** Identifies and categorizes all programmed links (External URIs, Internal GoTo/Destinations, Remote Jumps).
   * **Anchor Text Retrieval:** Extracts the visible text corresponding to each link's bounding box.
@@ -130,7 +130,7 @@ from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
 
 -----
 
-### 📜 License Implications (AGPLv3+)
+## 📜 License Implications (AGPLv3+)
 
 **pdflinkcheck is licensed under the GNU Affero General Public License version 3 or later (AGPLv3+).**
 
@@ -143,14 +143,47 @@ This license has significant implications for **distribution and network use**, 
 
 -----
 
-### ⚠️ Compatibility Notes
+## 🥚 Optional REPL‑Friendly GUI Access (Easter Egg)
 
-#### Platform Compatibility: 
+For users who prefer exploring tools interactively—especially those coming from MATLAB or other REPL‑first environments—`pdflinkcheck` includes an optional Easter egg that exposes the GUI launcher directly in the library namespace.
+
+This feature is **disabled by default** and has **no effect on normal imports**.
+
+### Enabling the Easter Egg
+
+Set the environment variable before importing the library:
+
+```python
+import os
+os.environ["PDFLINKCHECK_GUI_EASTEREGG"] = "true"
+
+import pdflinkcheck
+pdflinkcheck.start_gui()
+```
+
+Accepted values include: `true`, `1`, `yes`, `on` (case‑insensitive).
+
+### Purpose
+
+This opt‑in behavior is designed to make the library feel welcoming to beginners who are experimenting in a Python REPL for the first time. When enabled, the `start_gui()` function becomes available at the top level:
+
+```python
+pdflinkcheck.start_gui()
+```
+
+If the `PDFLINKCHECK_GUI_EASTEREGG` environment variable is not set—or if GUI support is unavailable—`pdflinkcheck` behaves as a normal library with no GUI functions exposed.
+
+-----
+
+## ⚠️ Compatibility Notes
+
+### Platform Compatibility: 
 
 This tool relies on the `PyMuPDF` library. 
 All testing has failed to run in a **Termux (Android)** environment due to underlying C/C++ library compilation issues with PyMuPDF. 
 It is recommended for use on standard Linux, macOS, or Windows operating systems.
 
+#### Termux Compatibility as a Key Goal
 A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible. Unfortunately, that simply isn't possible with PyMuPDF as a dependency. 
 We tried alternative PDF libaries like `pdfminer`, `pdfplumber`, and `borb`, but none of these offered the level of detail concerning GoTo links.
 Due to Termux compatibility goals, we do not generally make Tkinter-based interfaces, so that was a fun, minimalist opportunity on this project. 
@@ -171,7 +204,7 @@ This would have lots of implications:
 
 In the meantime, the standalone binaries and pipx installation provide excellent cross-platform support on Windows, macOS, and standard Linux desktops/laptops.
 
-#### Document Compatibility: 
+### Document Compatibility: 
 While `pdflinkcheck` uses the robust PyMuPDF library, not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
 
 Processing may fail or yield incomplete results for:
@@ -181,7 +214,7 @@ Processing may fail or yield incomplete results for:
 
 -----
 
-### Run from Source (Developers)
+## Run from Source (Developers)
 
 ```bash
 git clone http://github.com/city-of-memphis-wastewater/pdflinkcheck.git
