@@ -4,7 +4,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.36] - 2025-12-15
+## [1.1.37] - 2025-12-15
 ### Fixed:
 - Remove `--include` flag from shiv call and hope for the best for the LICENSE file.
 - Adjust path reference to LICENSE and README.md in Pyinstaller.

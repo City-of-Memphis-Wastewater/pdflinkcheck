@@ -153,10 +153,7 @@ def build_shiv_pyz():
     if output_path.exists():
         output_path.unlink()
 
-    # Define paths to include in the PYZ
-    LICENSE_PATH = Path("LICENSE")
-    README_PATH = Path("README.md")
-        
+
     print(f"\n3. Building PYZ using shiv from Wheel: {pyz_filename}")
 
     # SHIV COMMAND
@@ -170,11 +167,6 @@ def build_shiv_pyz():
         "--no-cache", 
         #"--python", sys.executable, # removed for cross-platform robustness
         #"--site-packages", SITE_PACKAGES_PATH, # removed to prevent editable install conflicts # this makes the windows pyz huge ~100 MB
-
-        # --- Include LICENSE and README.md ---
-        # The files will be placed in the root of the PYZ (site-packages/ directory)
-        "--include", str(LICENSE_PATH), 
-        "--include", str(README_PATH),
     ]
     
     # Pass the current, activated environment
