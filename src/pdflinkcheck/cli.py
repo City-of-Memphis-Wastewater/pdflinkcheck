@@ -1,5 +1,6 @@
 # src/bug_record/cli.py
 import typer
+from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
 from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
@@ -8,7 +9,6 @@ import pyhabitat
 import sys
 from importlib.resources import files
 
-from pdflinkcheck.gui import start_gui 
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -25,9 +25,9 @@ def main(ctx: typer.Context):
     """
     If no subcommand is provided, launch the GUI.
     """
-
+    
     if ctx.invoked_subcommand is None:
-        start_gui(time_auto_close=0)
+        gui_command()
         raise typer.Exit(code=0)
     
     # 1. Access the list of all command-line arguments
@@ -105,11 +105,26 @@ def gui_command(
     """
     Launch tkinter-based GUI.
     """
-    from pdflinkcheck.gui import start_gui
+
+    # --- START FIX ---
+    assured_auto_close_value = 0
+    
+    if isinstance(auto_close, OptionInfo):
+        # Case 1: Called implicitly from main() (pdflinkcheck with no args)
+        # We received the metadata object, so use the function's default value (0).
+        # We don't need to do anything here since final_auto_close_value is already 0.
+        pass 
+    else:
+        # Case 2: Called explicitly by Typer (pdflinkcheck gui -c 3000)
+        # Typer has successfully converted the command line argument, and auto_close is an int.
+        assured_auto_close_value = int(auto_close)
+    # --- END FIX ---
+
     if not pyhabitat.tkinter_is_available():
         _gui_failure_msg()
         return
-    start_gui(time_auto_close = auto_close)
+    from pdflinkcheck.gui import start_gui
+    start_gui(time_auto_close = assured_auto_close_value)
 
 
 # --- Helper, consistent gui failure message. --- 

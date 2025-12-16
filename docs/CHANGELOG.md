@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.35] - 2025-12-15
+### Fixed:
+- Implement `assured_auto_close_value` in cli.gui_command() to handle the typer.OptionInfo type given a call of gui_command() from main().
+
+---
+
 ## [1.1.34] - 2025-12-15
 ### Added/Fixed:
 - `src/pdflinkcheck/data/LICENSE`, to be included in the wheel. Use this version with the gui.py code, so that it functions with the pipx installed CLI-launched GUI.
