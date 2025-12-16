@@ -199,7 +199,7 @@ In the future we may find a work-around and be able to drop the PyMuPDF dependen
 This would have lots of implications:
 - Reduced artifact size.
 - Alpine-compatible Docker image.
-- Web-stack GUI rather than tkinter, to be compatible with Termux.
+- Web-stack GUI rather than Tkinter, to be compatible with Termux.
 - A different license from the AGPL3, if we choose at that time.
 
 In the meantime, the standalone binaries and pipx installation provide excellent cross-platform support on Windows, macOS, and standard Linux desktops/laptops.
