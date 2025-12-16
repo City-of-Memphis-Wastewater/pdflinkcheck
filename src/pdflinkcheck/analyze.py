@@ -1,11 +1,14 @@
 import sys
 from pathlib import Path
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 # ... other imports ...
 # Configure logging to suppress low-level pdfminer messages
 logging.getLogger("fitz").setLevel(logging.ERROR) 
 import fitz # PyMuPDF
+import pypdf
+from pypdf import PdfReader
+from pypdf.generic import Destination, NameObject, ArrayObject, IndirectObject
 
 from pdflinkcheck.remnants import find_link_remnants
 from pdflinkcheck.io import error_logger, export_report_data, LOG_FILE_PATH
@@ -91,6 +94,36 @@ def get_anchor_text(page, link_rect):
         # Fallback for unexpected errors in rect conversion or retrieval
         return "N/A: Rect Error"
 
+def get_anchor_text_pypdf(page, rect) -> str:
+    """
+    Alternative to get_anchor_text().
+    Status: Not ready yet.
+    Extracts text within (or overlapping) the link's bounding box.
+    Slightly expands the rect to capture full characters.
+    """
+    if rect is None:
+        return "N/A: Missing Rect"
+    
+    try:
+        # pypdf Rect: [x0, y0, x1, y1] (bottom-left origin)
+        x0, y0, x1, y1 = rect
+        if x0 >= x1 or y0 >= y1:
+            return "N/A: Invalid Rect"
+        
+        # Expand slightly
+        expand = 2
+        expanded = (x0 - expand, y0 - expand, x1 + expand, y1 + expand)
+        
+        text = page.extract_text(
+            x0=expanded[0], y0=expanded[1],
+            x1=expanded[2], y1=expanded[3]
+        )
+        
+        cleaned = " ".join(text.split()) if text else "N/A: No Visible Text"
+        return cleaned
+    except Exception:
+        return "N/A: Extraction Error"
+    
 
 def analyze_toc_fitz(doc):
     """
@@ -388,6 +421,8 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         # 1. Extract all active links and TOC
         extracted_links = extract_links(pdf_path)
         structural_toc = extract_toc(pdf_path) 
+        #extracted_links = extract_links_pypdf(pdf_path)
+        #structural_toc = extract_toc_pypdf(pdf_path) 
         toc_entry_count = len(structural_toc)
         
         # 2. Find link remnants
@@ -491,6 +526,145 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         error_logger.error(f"Critical failure during run_analysis for {pdf_path}: {e}", exc_info=True)
         print(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
         raise # Allow the exception to propagate or handle gracefully
+
+def resolve_destination(reader: PdfReader, dest) -> Optional[int]:
+    """
+    Necessary for pypdf alternative functions to run.
+    Resolve destination to page number (1-based).
+    Handles direct page references, named dests via /Dests, and array forms.
+    """
+    if isinstance(dest, Destination):
+        return dest.page_number + 1 if dest.page_number is not None else "N/A"
+    
+    if isinstance(dest, int) or isinstance(dest, IndirectObject):
+        # Direct page reference
+        page_num = reader.get_destination_page_number(dest)
+        return page_num + 1
+    
+    if isinstance(dest, str):
+        # Named destination
+        root = reader.trailer["/Root"]
+        if "/Dests" in root:
+            dests = root["/Dests"]
+            if "/Names" in dests and dest in dests["/Names"]:
+                target = dests["/Names"][dest]
+                if isinstance(target, ArrayObject):
+                    return reader.get_destination_page_number(target[0]) + 1
+        return "Named (Unresolved)"
+    
+    if isinstance(dest, ArrayObject) and len(dest) > 0:
+        return reader.get_destination_page_number(dest[0]) + 1
+    
+    return "N/A"
+
+def extract_toc_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
+    """
+    Alternative to extract_toc().
+    Status: Not ready yet.
+    Extract structural TOC (bookmarks/outline).
+    """
+    try:
+        reader = PdfReader(pdf_path)
+        toc = reader.outline  # List of Destination objects or nested lists
+        toc_data = []
+        
+        def flatten_outline(outline_items, level=1):
+            for item in outline_items:
+                if isinstance(item, Destination):
+                    page_num = resolve_destination(reader, item)
+                    toc_data.append({
+                        "level": level,
+                        "title": item.title,
+                        "target_page": page_num
+                    })
+                # Nested outlines
+                if hasattr(item, "items") or isinstance(item, list):
+                    sub_items = item.items if hasattr(item, "items") else item
+                    flatten_outline(sub_items, level + 1)
+        
+        flatten_outline(toc)
+        return toc_data
+    except Exception as e:
+        print(f"TOC error: {e}", file=sys.stderr)
+        return []
+
+def extract_links_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
+    """
+    Alternative to extract_links().
+    Status: Not ready yet.
+    Extract all link annotations with details.
+    """
+    links_data = []
+    try:
+        reader = PdfReader(pdf_path)
+        
+        for page_num, page in enumerate(reader.pages, start=1):
+            if "/Annots" not in page:
+                continue
+            
+            for annot_ref in page["/Annots"]:
+                annot = annot_ref.get_object()
+                if annot.get("/Subtype") != "/Link":
+                    continue
+                
+                rect = annot.get("/Rect")  # [x0, y0, x1, y1]
+                anchor_text = get_anchor_text_pypdf(page, rect)
+                
+                link_dict = {
+                    "page": page_num,
+                    "rect": rect,
+                    "link_text": anchor_text,
+                }
+                
+                # Action or Dest
+                if "/A" in annot:
+                    action = annot["/A"]
+                    if "/URI" in action:
+                        link_dict.update({
+                            "type": "External (URI)",
+                            "url": action["/URI"],
+                            "target": action["/URI"]
+                        })
+                    elif "/S" in action and action["/S"] == "/GoToR":
+                        link_dict.update({
+                            "type": "Remote (GoToR)",
+                            "remote_file": action.get("/F"),
+                            "target": "Remote File"
+                        })
+                    else:
+                        link_dict.update({
+                            "type": "Other Action",
+                            "target": str(action)
+                        })
+                elif "/Dest" in annot:
+                    dest = annot["/Dest"]
+                    target_page = resolve_destination(reader, dest)
+                    link_dict.update({
+                        "type": "Internal (GoTo/Dest)",
+                        "destination_page": target_page,
+                        "target": f"Page {target_page}"
+                    })
+                else:
+                    link_dict.update({
+                        "type": "Other Link",
+                        "target": "Unknown"
+                    })
+                
+                links_data.append(link_dict)
+        
+    except Exception as e:
+        print(f"Links error: {e}", file=sys.stderr)
+    
+    return links_data
+
+# Rest of your functions (print_structural_toc, get_first_pdf_in_cwd, run_analysis) remain almost identical
+# Just replace calls to extract_toc/extract_links with the new versions above.
+
+# Example adjustment in run_analysis:
+# extracted_links = extract_links(pdf_path)
+# structural_toc = extract_toc(pdf_path)
+
+# The reporting logic can stay the same – it uses the same dict keys.
 
 
 

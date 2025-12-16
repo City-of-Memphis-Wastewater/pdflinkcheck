@@ -172,19 +172,15 @@ It is recommended for use on standard Linux, macOS, or Windows operating systems
 
 #### Termux Compatibility as a Key Goal
 A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible. Unfortunately, that simply isn't possible with PyMuPDF as a dependency. 
-
-We have tried alternative PDF libaries like `pdfminer`, `pdfplumber`, and `borb`, but none of these offered the level of detail concerning GoTo links.
-We investigated `pikepdf`, but this has issues building on Termux, similar to `PyMuPDF`.
-
+We tried alternative PDF libaries like `pdfminer`, `pdfplumber`, and `borb`, but none of these offered the level of detail concerning GoTo links.
 Due to Termux compatibility goals, we do not generally make Tkinter-based interfaces, so that was a fun, minimalist opportunity on this project. 
 
-We aim to produce stable software that can do the most possible good. 
-Termux compatibility is important in the modern age because Android devices are common among technicians, field engineers, and maintenace staff. 
+Termux compatibility is important in the modern age as Android devices are common among technicians, field engineers, and maintenace staff. 
 Android is the most common operating system in the Global South. 
-Samsung market share is expected to rise.
+We aim to produce stable software that can do the most possible good. 
 
 We love web-stack GUIs served locally as a final product.
-All that packaged into a Termux-compatible ELF or a cross-platform PYZ - What could be better!
+All that packaged up into a Termux-compatible ELF or PYZ - What could be better!
 
 In the future we may find a work-around and be able to drop the PyMuPDF dependency. 
 This would have lots of implications:
