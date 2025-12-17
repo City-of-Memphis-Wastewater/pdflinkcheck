@@ -184,12 +184,20 @@ def analyze_pdf( # Renamed function for clarity
     """
     Analyzes the specified PDF file for all internal, external, and unlinked references.
     """
+
+    VALID_FORMATS = ("JSON") # extend later
+
     final_export_format = export_format.upper().strip()
+    export_format_for_analysis = None
 
     # The actual heavy lifting (analysis and printing) is now in run_analysis
     if not final_export_format:
         export_format_for_analysis = None
-    elif (final_export_format == "" or final_export_format == "NONE"):
+    elif final_export_format == "" or final_export_format == "NONE" or final_export_format == "0":
+        export_format_for_analysis = None
+    elif final_export_format not in VALID_FORMATS:
+        typer.echo(f"An unexpected --export-format was provided: {final_export_format}")
+        typer.echo(f"No export will be made.")
         export_format_for_analysis = None
     else:
         # User passed "JSON" or other valid format
