@@ -93,7 +93,7 @@ def tree_help_command(ctx: typer.Context):
                 default_value = getattr(param, 'default', None)
 
                 # This is the sentinel value used by the Click/Typer internals
-                if default_value not in (None, False, click.core.UNSET):
+                if default_value not in (None, click.core.UNSET):
                     default = f"[dim] (default: {default_value})[/dim]"
                 else:
                     default = ""
@@ -184,14 +184,22 @@ def analyze_pdf( # Renamed function for clarity
     """
     Analyzes the specified PDF file for all internal, external, and unlinked references.
     """
+    final_export_format = export_format.upper().strip()
+
     # The actual heavy lifting (analysis and printing) is now in run_analysis
-    if export_format and export_format == "":
-        export_format = None
+    if not final_export_format:
+        export_format_for_analysis = None
+    elif (final_export_format == "" or final_export_format == "NONE"):
+        export_format_for_analysis = None
+    else:
+        # User passed "JSON" or other valid format
+        export_format_for_analysis = final_export_format
+
     run_analysis(
         pdf_path=str(pdf_path), 
         check_remnants=check_remnants,
         max_links=max_links,
-        export_format = export_format
+        export_format = export_format_for_analysis
     )
 
 @app.command(name="gui") 
