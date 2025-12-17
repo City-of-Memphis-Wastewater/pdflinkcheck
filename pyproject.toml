@@ -51,7 +51,9 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 
 [project.optional-dependencies]
 # This allows users to do: pip install pdflinkcheck[full]
-full = []
+full = [
+    "pymupdf>=1.26.7",
+]
 
 
 [dependency-groups]

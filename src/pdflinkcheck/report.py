@@ -136,7 +136,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         # 5. Export Report 
         if export_format:
             # Assuming export_to will hold the output format string (e.g., "JSON")
-            export_report_data(final_report_data_dict, Path(pdf_path).name, export_format)
+            export_report_data(final_report_data_dict, Path(pdf_path).name, export_format, pdf_library)
 
         return final_report_data_dict, report_buffer
     except Exception as e:

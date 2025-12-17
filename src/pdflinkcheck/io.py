@@ -58,7 +58,8 @@ error_logger = setup_error_logger()
 def export_report_data(
     report_data: Dict[str, Any], 
     pdf_filename: str, 
-    export_format: str = "JSON"
+    export_format: str = "JSON",
+    pdf_library: str = "", # expected to be specificed every time.
 ) -> Path:
     """
     Exports the structured analysis report data to a file in the 
@@ -81,7 +82,7 @@ def export_report_data(
         
     # Create an output file name based on the PDF name and a timestamp
     base_name = Path(pdf_filename).stem
-    output_filename = f"{base_name}_report.json"
+    output_filename = f"{base_name}_{pdf_library}_report.json"
     output_path = PDFLINKCHECK_HOME / output_filename
 
     try:
