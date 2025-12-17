@@ -1,15 +1,13 @@
-# src/bug_record/cli.py
+# src/pdflinkcheck/cli.py
 import typer
 from typer.models import OptionInfo
 from rich.console import Console
-from rich.tree import Tree 
-from rich.panel import Panel
-import click
 from pathlib import Path
 from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
 from typing import Dict, Optional
 import pyhabitat
 import sys
+import os
 from importlib.resources import files
 
 from pdflinkcheck.version_info import get_version_from_pyproject
@@ -24,6 +22,7 @@ app = typer.Typer(
     invoke_without_command = True, 
     no_args_is_help = False,
 )
+
 
 @app.callback()
 def main(ctx: typer.Context):
@@ -42,71 +41,14 @@ def main(ctx: typer.Context):
     # 3. Print the command
     typer.echo(f"command:\n{command_string}\n")
 
-# src/pdflinkcheck/cli.py
 
-@app.command(name="tree-help", help="Show all commands and options in a tree structure.")
-def tree_help_command(ctx: typer.Context):
-    """
-    Generates and prints a tree view of the CLI structure (commands and flags).
-    """
-    # ... (Lines 59-81 remain the same) ...
-    root_app_command = ctx.parent.command 
-    
-    # 1. Start the Rich Tree structure
-    app_tree = Tree(
-        f"[bold blue]{root_app_command.name}[/bold blue] (v{get_version_from_pyproject()})",
-        guide_style="cyan"
-    )
+# help-tree() command: fragile, experimental, defaults to not being included.
+if os.environ.get('DEV_HELP_TREE',0) in ('true','1'):
+    from pdflinkcheck.dev import add_help_tree
+    add_help_tree(
+        app = app,
+        console = console)
 
-    # 2. Iterate through all subcommands of the main app
-    for command_name in sorted(root_app_command.commands.keys()):
-        command = root_app_command.commands[command_name]
-        
-        if command.name == "tree-help":
-            continue
-
-        help_text = command.help.splitlines()[0].strip() if command.help else "No help available."
-
-        command_branch = app_tree.add(f"[bold white]{command.name}[/bold white] - [dim]{help_text}[/dim]")
-
-        # 3. Add Arguments and Options (Flags)
-        params_branch = command_branch.add("[yellow]Parameters[/yellow]:")
-        
-        if not command.params:
-             params_branch.add("[dim]None[/dim]")
-        
-        for param in command.params:
-            # New, safer check: Check if param is an Option by looking for opts attribute 
-            # and ensuring it has a flag declaration (starts with '-')
-            is_option = hasattr(param, 'opts') and param.opts and param.opts[0].startswith('-')
-            
-            if is_option:
-                # This is an Option/Flag
-                flag_names = " / ".join(param.opts)
-                
-                # Filter out the default Typer/Click flags like --help
-                if flag_names in ("-h", "--help"):
-                    continue
-                
-                # Handling default value safely
-                # Check for None explicitly, as well as the Typer/Click internal sentinel value for not provided.
-                default_value = getattr(param, 'default', None)
-
-                # This is the sentinel value used by the Click/Typer internals
-                if default_value not in (None, click.core.UNSET):
-                    default = f"[dim] (default: {default_value})[/dim]"
-                else:
-                    default = ""
-                
-                params_branch.add(f"[green]{flag_names}[/green]: [dim]{param.help}[/dim]{default}")
-            else:
-                # This is an Argument (Positional)
-                # Arguments have a single name property, not an opts list.
-                arg_name = param.human_readable_name.upper()
-                params_branch.add(f"[magenta]ARG: {arg_name}[/magenta]: [dim]{param.help}[/dim]")
-
-    # 4. Print the final Panel containing the tree
-    console.print(Panel(app_tree, title=f"[bold]{root_app_command.name} CLI Tree Help[/bold]", border_style="blue"))
 @app.command(name="docs", help="Show the docs for this software.")
 def docs_command(
     license: Optional[bool] = typer.Option(
@@ -241,7 +183,6 @@ def gui_command(
     from pdflinkcheck.gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
-
 # --- Helper, consistent gui failure message. --- 
 def _gui_failure_msg():
     console.print("[bold red]GUI failed to launch[/bold red]")
@@ -253,3 +194,4 @@ def _gui_failure_msg():
 
 if __name__ == "__main__":
     app()
+    
