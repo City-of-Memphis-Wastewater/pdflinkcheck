@@ -1,5 +1,4 @@
 # src/pdflinkcheck/__init__.py
-import os
 """
 # License information
 pdflinkcheck - A PDF Link Checker
@@ -15,18 +14,13 @@ License, or (at your option) any later version.
 
 The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed under the AGPL3.
 """
+import os
+
 # Library functions
 from pdflinkcheck.analyze import run_analysis, extract_links_pymupdf, extract_toc_pymupdf, extract_links_pypdf, extract_toc_pypdf
 from pdflinkcheck.analyze import extract_links_pymupdf as extract_links # to expose functions referred to in README
 from pdflinkcheck.analyze import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
 
-"""
-# This is an experimental function, and it can be imported directly rather than exposed to the top level
-dev_typer_help_tree_env_flag = os.environ.get('DEV_TYPER_HELP_TREE',0) in ('true','1')
-dev_typer_help_tree_lib_func_load = str(dev_typer_help_tree_env_flag).strip().lower() in ('true', '1', 'yes', 'on')
-if dev_typer_help_tree_lib_func_load:
-    from pdflinkcheck.dev import add_typer_help_tree
-"""
 
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
 # Is this Pythonic? No. Oh well. PEP 8, PEP 20.
@@ -57,5 +51,4 @@ __all__ = [
     #"extract_links_pypdf", # not mature yet 
     #"extract_toc_pypdf", # not mature yet
     "start_gui" if pdflibkcheck_gui_lib_func_load else None,
-    #"add_typer_help_tree" if dev_typer_help_tree_lib_func_load else None, # not appropriate for exposing to the top level
 ]
