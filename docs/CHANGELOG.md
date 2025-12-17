@@ -4,6 +4,19 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.54] - 2025-12-16
+### Added / Changed:
+**Link and TOC analysis functions:**
+    - Rename analyze.extract_links() to analyze.extract_links_pymupdf(). 
+    - Rename analyze.extract_toc() to analyze.extract_toc_pymupdf(). 
+    - All four of these now appear in __init__, like 'from pdflinkcheck.analyze import extract_links_pymupdf as extract_links # to expose functions referred to in README'. 
+    - Also add extract_links_pypdf() and extract_toc_pypdf() to __init__ and to __all__. 
+    - This helps with troubleshooting in the REPL, to compare the pymupdf results to the under-development pypdf results.
+**pdflinkcheck.dev.help_tree_command():**
+    - Add dev.py file to represent the add_help_tree(). Reference this in cli.py, to safely include the experiemental help_tree CLI command. License dev.py as MIT-licensed internally. 
+
+---
+
 ## [1.1.53] - 2025-12-16
 ### Fixed:
 - Added clarity and handling for the `--export-format` option for the `analyze` CLI command.
