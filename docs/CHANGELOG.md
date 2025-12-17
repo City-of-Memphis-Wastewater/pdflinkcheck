@@ -4,6 +4,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.53] - 2025-12-16
+### Fixed:
+- Added clarity and handling for the `--export-format` option for the `analyze` CLI command.
+
+---
+
 ## [1.1.52] - 2025-12-16
 ### Fixed: 
 - Erroneous import of `ensure_data_files_for_build` in build_executable.py; remove excessive parentheses.
