@@ -4,7 +4,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and link remnants 
 
 -----
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.32.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.51.png)
 
 -----
 
@@ -58,6 +58,9 @@ We are actively working on the following enhancements:
 ## 🚀 CLI Usage
 
 The core functionality is accessed via the `analyze` command. All commands include the built-in `--help` flag for quick reference.
+
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.51_tree_help.png)
+
 
 ### Available Commands
 
@@ -116,7 +119,7 @@ For developers importing `pdflinkcheck` into other Python projects, the core ana
 Python
 
 ```
-from pdflinkcheck.report import run_report, 
+from pdflinkcheck.report import run_report
 from pdflinkcheck.analysis import extract_links, extract_toc
 ```
 

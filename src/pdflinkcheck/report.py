@@ -47,12 +47,9 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             import fitz
         except Exception as e:
             print("The PyMuPDF / fitz library is not available. Install manually or see `pdflinkcheck` README for inclusion.")
-            return
-        
-        from pdflinkcheck.analyze import extract_links_pymupdf as extract_links
-        from pdflinkcheck.analyze import extract_toc_pymupdf as extract_toc
+            return    
+        from pdflinkcheck.analyze_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
     
-
     if pdf_path is None:
         pdf_path = get_first_pdf_in_cwd()
     if pdf_path is None:
@@ -244,7 +241,7 @@ def run_validation(pdf_path: str = None, pdf_library: str = "pypdf", check_exter
     if pdf_library == "pypdf":
         from pdflinkcheck.analyze_pypdf import extract_links_pypdf as extract_links
     else:
-        from pdflinkcheck.analyze import extract_links_pymupdf as extract_links
+        from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as extract_links
 
     if pdf_path is None:
         pdf_path = get_first_pdf_in_cwd()

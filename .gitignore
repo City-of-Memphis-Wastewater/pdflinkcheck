@@ -17,3 +17,8 @@ src/sample/
 src/example/
 src/sandbox/
 src/defunct/
+
+# Ignore the copies created by datacopy.py
+src/pdflinkcheck/data/pyproject.toml
+src/pdflinkcheck/data/LICENSE
+src/pdflinkcheck/data/README.md

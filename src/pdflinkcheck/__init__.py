@@ -17,10 +17,10 @@ The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed unde
 import os as _os
 
 # Library functions
-from pdflinkcheck.analyze import extract_links_pymupdf, extract_toc_pymupdf
+from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf, extract_toc_pymupdf
 from pdflinkcheck.analyze_pypdf import extract_links_pypdf, extract_toc_pypdf
-from pdflinkcheck.analyze import extract_links_pymupdf as extract_links # to expose functions referred to in README
-from pdflinkcheck.analyze import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
+from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as extract_links # to expose functions referred to in README
+from pdflinkcheck.analyze_pymupdf import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
 from pdflinkcheck import analyze_pypdf
 from pdflinkcheck.report import run_report
 from pdflinkcheck.report import run_report as run_analysis # for backwards compatibility with previos versions

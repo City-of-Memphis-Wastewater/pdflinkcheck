@@ -35,11 +35,30 @@ SOFTWARE.
 
 # --- TOML Parsing Helper ---
 def find_pyproject(start: Path) -> Path | None:
+    # 1. Handle PyInstaller / Frozen state
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # In PyInstaller, force-include maps to: sys._MEIPASS / package_name / data / file
+        candidate = Path(sys._MEIPASS) / "pdflinkcheck" / "data" / "pyproject.toml"
+        if candidate.exists():
+            return candidate
+        # Fallback for simple --add-data "pyproject.toml:."
+        candidate = Path(sys._MEIPASS) / "pyproject.toml"
+        if candidate.exists():
+            return candidate
+
+    # 2. Handle Installed / Wheel / Shiv state (using your force-include path)
+    internal_path = Path(__file__).parent / "data" / "pyproject.toml"
+    if internal_path.exists():
+        return internal_path
+
+    # 3. Handle Development state (walking up the tree)
     for p in start.resolve().parents:
         candidate = p / "pyproject.toml"
         if candidate.exists():
             return candidate
+
     return None
+
 
 def get_version_from_pyproject() -> str:
     pyproject = find_pyproject(Path(__file__))
