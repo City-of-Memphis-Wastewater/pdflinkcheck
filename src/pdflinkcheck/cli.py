@@ -3,7 +3,7 @@ import typer
 from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
-from pdflinkcheck.analyze import run_analysis # Assuming core logic moves here
+from pdflinkcheck.report import run_report # Assuming core logic moves here
 from typing import Dict, Optional
 import pyhabitat
 import sys
@@ -132,7 +132,7 @@ def analyze_pdf( # Renamed function for clarity
     final_export_format = export_format.upper().strip()
     export_format_for_analysis = None
 
-    # The actual heavy lifting (analysis and printing) is now in run_analysis
+    # The actual heavy lifting (analysis and printing) is now in run_report
     if not final_export_format:
         export_format_for_analysis = None
     elif final_export_format == "" or final_export_format == "NONE" or final_export_format == "0":
@@ -145,9 +145,8 @@ def analyze_pdf( # Renamed function for clarity
         # User passed "JSON" or other valid format
         export_format_for_analysis = final_export_format
 
-    run_analysis(
+    run_report(
         pdf_path=str(pdf_path), 
-        check_remnants=check_remnants,
         max_links=max_links,
         export_format = export_format_for_analysis
     )

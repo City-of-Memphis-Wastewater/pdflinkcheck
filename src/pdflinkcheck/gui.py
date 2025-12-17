@@ -8,7 +8,7 @@ import unicodedata
 from importlib.resources import files
 
 # Import the core analysis function
-from pdflinkcheck.analyze import run_analysis 
+from pdflinkcheck.report import run_report 
 from pdflinkcheck.version_info import get_version_from_pyproject
 
 class RedirectText:
@@ -240,7 +240,7 @@ class PDFLinkCheckerApp(tk.Tk):
 
         # Row 3: Run Button and License Button
         # 1. Run Button (Spans columns 0 and 1)
-        run_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_analysis_gui, style='Accent.TButton')
+        run_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton')
         run_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
 
         # 2. Create a Frame to hold the two small buttons (This frame goes into column 2)
@@ -324,7 +324,7 @@ class PDFLinkCheckerApp(tk.Tk):
         else:
             self.export_report_format.config(state=tk.DISABLED)
 
-    def _run_analysis_gui(self):
+    def _run_report_gui(self):
         pdf_path_str = self.pdf_path.get()
         if not Path(pdf_path_str).exists():
             self._display_error("Error: PDF file not found or path is invalid.")
@@ -357,7 +357,7 @@ class PDFLinkCheckerApp(tk.Tk):
         try:
             # 3. Call the core logic function
             self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
-            run_analysis(
+            run_report(
                 pdf_path=pdf_path_str,
                 check_remnants=self.check_remnants_var.get(),
                 max_links=max_links_to_pass,

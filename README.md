@@ -112,14 +112,15 @@ For developers importing `pdflinkcheck` into other Python projects, the core ana
 
 |**Function**|**Description**|
 |---|---|
-|`run_analysis()`|**(Primary function)** Performs the full analysis, prints to console, and handles file export.|
+|`run_report()`|**(Primary function)** Performs the full analysis, prints to console, and handles file export.|
 |`extract_links()`|Low-level function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path.|
 |`extract_toc()`|Low-level function to extract the PDF's internal Table of Contents (bookmarks/outline).|
 
 Python
 
 ```
-from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
+from pdflinkcheck.report import run_report
+from pdflinkcheck.analysis import extract_links, extract_toc
 ```
 
 -----

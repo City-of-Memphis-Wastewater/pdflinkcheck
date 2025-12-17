@@ -2,7 +2,7 @@
 import logging
 import json
 from pathlib import Path
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Optional
 
 # --- Configuration ---
 
@@ -64,7 +64,7 @@ def export_report_data(
     PDFLINKCHECK_HOME directory.
 
     Args:
-        report_data: The dictionary containing the results from run_analysis.
+        report_data: The dictionary containing the results from run_report.
         pdf_filename: The base filename of the PDF being analyzed (used for the output file name).
         export_format: The desired output format ('json' currently supported).
 
@@ -104,3 +104,45 @@ def export_report_data(
 #     error_logger.exception("An exception occurred during link extraction.")
 
 
+def get_first_pdf_in_cwd() -> Optional[str]:
+    """
+    Scans the current working directory (CWD) for the first file ending 
+    with a '.pdf' extension (case-insensitive).
+
+    This is intended as a convenience function for running the tool 
+    without explicitly specifying a path.
+
+    Returns:
+        The absolute path (as a string) to the first PDF file found, 
+        or None if no PDF files are present in the CWD.
+    """
+    # 1. Get the current working directory (CWD)
+    cwd = Path.cwd()
+    
+    # 2. Use Path.glob to find files matching the pattern. 
+    #    We use '**/*.pdf' to also search nested directories if desired, 
+    #    but typically for a single PDF in CWD, '*.pdf' is enough. 
+    #    Let's stick to files directly in the CWD for simplicity.
+    
+    # We use list comprehension with next() for efficiency, or a simple loop.
+    # Using Path.glob('*.pdf') to search the CWD for files ending in .pdf
+    # We make it case-insensitive by checking both '*.pdf' and '*.PDF'
+    
+    # Note: On Unix systems, glob is case-sensitive by default.
+    # The most cross-platform safe way is to iterate and check the suffix.
+    
+    try:
+        # Check for files in the current directory only
+        # Iterating over the generator stops as soon as the first match is found.
+        first_pdf_path = next(
+            p.resolve() for p in cwd.iterdir() 
+            if p.is_file() and p.suffix.lower() == '.pdf'
+        )
+        return str(first_pdf_path)
+    except StopIteration:
+        # If the generator runs out of items, no PDF was found
+        return None
+    except Exception as e:
+        # Handle potential permissions errors or other issues
+        print(f"Error while searching for PDF in CWD: {e}", file=sys.stderr)
+        return None
