@@ -5,7 +5,10 @@ from typing import Dict, Any, Optional, List
 
 logging.getLogger("fitz").setLevel(logging.ERROR) 
 
-import fitz # PyMuPDF
+try:
+    import fitz  # PyMuPDF
+except ImportError:
+    fitz = None
 
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
 from pdflinkcheck.report import run_report, run_validation

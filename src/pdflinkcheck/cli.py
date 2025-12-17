@@ -118,7 +118,7 @@ def analyze_pdf( # Renamed function for clarity
         help="Maximum number of links/remnants to display in the report, if an overwhelming amount is expected. Use 0 to show all."
     ),
     pdf_library: str = typer.Option(
-        "pymupdf",
+        "pypdf",#"pymupdf",
         "--pdf-library","-p",
         help="select the PDF parsing library to use, pymupdf or pypdf."
     )

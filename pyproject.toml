@@ -6,7 +6,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "pyhabitat>=1.0.53",
-    "pymupdf>=1.26.6",
     "pypdf>=6.4.2",
     "rich>=14.2.0",
     "typer>=0.20.0",
@@ -51,11 +50,18 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 # Hatching has Automatic discovery of src/
 
 [project.optional-dependencies]
+# This allows users to do: pip install pdflinkcheck[full]
+full = []
+
+
+[dependency-groups]
 dev = [
+    "build>=1.3.0",
+    "pyinstaller>=6.17.0",
+    "shiv>=1.0.8",
     "ruff>=0.1.13",
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
-    # Add any other development tools here (e.g., build, shiv, etc., if you want them tracked here)
 ]
 
 [build-system]
@@ -79,9 +85,4 @@ include = [
     "src/pdflinkcheck/data/README.md",
 ]
 
-[dependency-groups]
-dev = [
-    "build>=1.3.0",
-    "pyinstaller>=6.17.0",
-    "shiv>=1.0.8",
-]
+

@@ -46,7 +46,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         try:
             import fitz
         except Exception as e:
-            print("The PyMuPDF / fitz library is not available. Install manually or see `pdflinkcheck` README for inclusion.")
+            print("The PyMuPDF / fitz library is not available. Install pymupdf, or select pypdf as the PDF library. See README for details.")
             return    
         from pdflinkcheck.analyze_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
     
