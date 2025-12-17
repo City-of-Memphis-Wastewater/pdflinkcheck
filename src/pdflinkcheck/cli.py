@@ -43,9 +43,9 @@ def main(ctx: typer.Context):
 
 
 # help-tree() command: fragile, experimental, defaults to not being included.
-if os.environ.get('DEV_HELP_TREE',0) in ('true','1'):
-    from pdflinkcheck.dev import add_help_tree
-    add_help_tree(
+if os.environ.get('DEV_TYPER_HELP_TREE',0) in ('true','1'):
+    from pdflinkcheck.dev import add_typer_help_tree
+    add_typer_help_tree(
         app = app,
         console = console)
 

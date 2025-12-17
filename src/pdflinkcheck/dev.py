@@ -1,4 +1,5 @@
 # pdflinkcheck/dev.py
+
 """
 Experiemental developer-facing function(s).
 
@@ -37,9 +38,9 @@ from rich.tree import Tree
 from rich.panel import Panel
 import click
 
-from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck.version_info import get_version_from_pyproject # change to import from pyhabitat
 
-def add_help_tree(app,
+def add_typer_help_tree(app,
                   console):
     @app.command(name="help-tree", help="Show all commands and options in a tree structure.")
     def help_tree_command(ctx: typer.Context):
