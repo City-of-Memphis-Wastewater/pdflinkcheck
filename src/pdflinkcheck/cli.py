@@ -113,14 +113,14 @@ def analyze_pdf( # Renamed function for clarity
     ),
     max_links: int = typer.Option(
         0,
-        "--max-links",
+        "--max-links", "-m",
         min=0,
         help="Maximum number of links/remnants to display in the report, if an overwhelming amount is expected. Use 0 to show all."
     ),
-    check_remnants: bool = typer.Option(
-        True,
-        "--check-remnants/--no-check-remnants",
-        help="Toggle checking for unlinked URLs/Emails in the text layer."
+    pdf_library: str = typer.Option(
+        "pymupdf",
+        "--pdf-library","-p",
+        help="select the PDF parsing library to use, pymupdf or pypdf."
     )
 ):
     """
@@ -148,7 +148,8 @@ def analyze_pdf( # Renamed function for clarity
     run_report(
         pdf_path=str(pdf_path), 
         max_links=max_links,
-        export_format = export_format_for_analysis
+        export_format = export_format_for_analysis,
+        pdf_library = pdf_library,
     )
 
 @app.command(name="gui") 

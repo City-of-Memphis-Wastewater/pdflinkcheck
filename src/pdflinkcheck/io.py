@@ -1,6 +1,7 @@
 # src/pdflinkcheck/io.py
 import logging
 import json
+import sys
 from pathlib import Path
 from typing import Dict, Any, Union, List, Optional
 
@@ -130,7 +131,7 @@ def get_first_pdf_in_cwd() -> Optional[str]:
     
     # Note: On Unix systems, glob is case-sensitive by default.
     # The most cross-platform safe way is to iterate and check the suffix.
-    
+    print("No PDF argument was provide. Falling back to using the first PDF available at the current path.")
     try:
         # Check for files in the current directory only
         # Iterating over the generator stops as soon as the first match is found.
@@ -138,6 +139,7 @@ def get_first_pdf_in_cwd() -> Optional[str]:
             p.resolve() for p in cwd.iterdir() 
             if p.is_file() and p.suffix.lower() == '.pdf'
         )
+        print(f"Fallback PDF found: {first_pdf_path.name}")
         return str(first_pdf_path)
     except StopIteration:
         # If the generator runs out of items, no PDF was found

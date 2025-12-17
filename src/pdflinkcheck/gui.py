@@ -10,6 +10,7 @@ from importlib.resources import files
 # Import the core analysis function
 from pdflinkcheck.report import run_report 
 from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck.io import get_first_pdf_in_cwd
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -38,7 +39,8 @@ class PDFLinkCheckerApp(tk.Tk):
         
         # --- 1. Initialize Variables ---
         self.pdf_path = tk.StringVar(value="")
-        self.check_remnants_var = tk.BooleanVar(value=True) 
+        self.pdf_library_var = tk.StringVar(value="PyMuPDF")
+        #self.pdf_library_var.set("PyMuPDF")
         self.max_links_var = tk.StringVar(value="50")
         self.show_all_links_var = tk.BooleanVar(value=True) 
         self.export_report_format_var = tk.StringVar(value="JSON")
@@ -200,12 +202,35 @@ class PDFLinkCheckerApp(tk.Tk):
         
         # === END: File Selection Frame ===
 
-        # Row 1: Remnants and Max Links Label/Entry
+        # PDF Library Selection
+        # Create a labeled group for the PDF options
+        pdf_library_frame = ttk.LabelFrame(control_frame, text="Select PDF Library")
+        pdf_library_frame.grid(row=2, column=2, columnspan=2, padx=10, pady=10, sticky='nsew')
+
+        # Radio options inside the frame
+        ttk.Radiobutton(
+            pdf_library_frame,
+            text="PyMuPDF",
+            variable=self.pdf_library_var,
+            value="PyMuPDF",
+            
+        ).pack(side='left', padx=10, pady=5)   
+
+        ttk.Radiobutton(
+            pdf_library_frame,
+            text="pypdf",
+            variable=self.pdf_library_var,
+            value="pypdf",
+        ).pack(side='left', padx=10, pady=5)
+
+        #
         ttk.Checkbutton(
             control_frame, 
-            text="Check for Remnants (URLs/Emails)", 
-            variable=self.check_remnants_var
+            text="Show All Links (Override Max)", 
+            variable=self.show_all_links_var,
+            command=self._toggle_max_links_entry
         ).grid(row=1, column=0, padx=5, pady=5, sticky='w')
+
 
         ttk.Label(control_frame, text="Max Links to Display:").grid(row=1, column=1, padx=5, pady=5, sticky='e')
         self.max_links_entry = ttk.Entry(control_frame, textvariable=self.max_links_var, width=10)
@@ -230,13 +255,6 @@ class PDFLinkCheckerApp(tk.Tk):
         self.export_report_format.set(self.supported_export_formats[0]) # Set default text
         self.export_report_format.pack(side=tk.LEFT)
          # Pack Entry tightly next to it
-
-        ttk.Checkbutton(
-            control_frame, 
-            text="Show All Links (Override Max)", 
-            variable=self.show_all_links_var,
-            command=self._toggle_max_links_entry
-        ).grid(row=2, column=2, padx=5, pady=5, sticky='w')
 
         # Row 3: Run Button and License Button
         # 1. Run Button (Spans columns 0 and 1)
@@ -310,6 +328,7 @@ class PDFLinkCheckerApp(tk.Tk):
         if file_path:
             self.pdf_path.set(file_path)
 
+
     def _toggle_max_links_entry(self):
         """Disables/enables the max_links entry based on show_all_links_var."""
         if self.show_all_links_var.get():
@@ -326,6 +345,9 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _run_report_gui(self):
         pdf_path_str = self.pdf_path.get()
+        if pdf_path_str.strip() == "" or pdf_path_str is None: 
+            print(f"pdf_path_str is blank. Using")
+            pdf_path_str = get_first_pdf_in_cwd()
         if not Path(pdf_path_str).exists():
             self._display_error("Error: PDF file not found or path is invalid.")
             return
@@ -346,6 +368,9 @@ class PDFLinkCheckerApp(tk.Tk):
         if self.do_export_report_var.get():
             export_format = self.export_report_format_var.get().lower()
 
+        pdf_library = self._discern_pdf_library()
+
+        
         # 1. Clear previous output and enable editing
         self.output_text.config(state=tk.NORMAL)
         self.output_text.delete('1.0', tk.END)
@@ -359,9 +384,9 @@ class PDFLinkCheckerApp(tk.Tk):
             self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
             run_report(
                 pdf_path=pdf_path_str,
-                check_remnants=self.check_remnants_var.get(),
                 max_links=max_links_to_pass,
-                export_format=export_format
+                export_format=export_format,
+                pdf_library = pdf_library, 
             )
             self.output_text.insert(tk.END, "\n--- Analysis Complete ---\n")
 
@@ -373,7 +398,16 @@ class PDFLinkCheckerApp(tk.Tk):
             # 4. Restore standard output and disable editing
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
-
+        
+    def _discern_pdf_library(self):
+        selected_lib = self.pdf_library_var.get().lower()
+        
+        if selected_lib == "pymupdf":
+            print("Using high-speed PyMuPDF engine.")
+        elif selected_lib == "pypdf":
+            print("Using pure-python pypdf engine.")
+        return selected_lib
+    
     def _display_error(self, message):
         # Ensure output is in normal state to write
         original_state = self.output_text.cget('state')

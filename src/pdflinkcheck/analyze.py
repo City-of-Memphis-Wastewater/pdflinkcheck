@@ -291,8 +291,8 @@ def call_stable():
     passing them as arguments to run_report.
     """
     print("Begin analysis...")
-    run_report(library_pdf = "pymupdf")
-    #run_validation(library_pdf = "pymupdf")
+    run_report(pdf_library = "pymupdf")
+    #run_validation(pdf_library = "pymupdf")
     print("Analysis complete.")
 
 if __name__ == "__main__":

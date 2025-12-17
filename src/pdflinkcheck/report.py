@@ -7,7 +7,7 @@ from typing import Optional, Dict, Any
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
 
 
-def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", library_pdf: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
     
@@ -39,11 +39,16 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
 
     # Expected: "pypdf" or "PyMuPDF"
     allowed_libraries = ("pypdf","pymupdf")
-    library_pdf = library_pdf.lower()
-    if library_pdf in allowed_libraries and library_pdf == "pypdf":
-        from pdflinkcheck.analyze_pypdf import extract_links_pypdf as extract_links
-        from pdflinkcheck.analyze_pypdf import extract_toc_pypdf as extract_toc
-    elif library_pdf in allowed_libraries and library_pdf == "pymupdf":
+    pdf_library = pdf_library.lower()
+    if pdf_library in allowed_libraries and pdf_library == "pypdf":
+        from pdflinkcheck.analyze_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
+    elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
+        try:
+            import fitz
+        except Exception as e:
+            print("The PyMuPDF / fitz library is not available. Install manually or see `pdflinkcheck` README for inclusion.")
+            return
+        
         from pdflinkcheck.analyze import extract_links_pymupdf as extract_links
         from pdflinkcheck.analyze import extract_toc_pymupdf as extract_toc
     
@@ -55,7 +60,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
         return
     try:
-        log(f"Running pdflinkcheck analysis on {Path(pdf_path).name}...")
+        log(f"Running {pdf_library} analysis on {Path(pdf_path).name}...")
 
         # 1. Extract all active links and TOC
         extracted_links = extract_links(pdf_path)
@@ -136,14 +141,12 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             # Assuming export_to will hold the output format string (e.g., "JSON")
             export_report_data(final_report_data_dict, Path(pdf_path).name, export_format)
 
-        return final_report_data_dict
+        return final_report_data_dict, report_buffer
     except Exception as e:
         # Log the critical failure
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
         log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
         raise # Allow the exception to propagate or handle gracefully
-
-    return final_report_data_dict, report_buffer
 
 
 def print_structural_toc_print(structural_toc:dict, print_bool:bool=True)->str|None:
@@ -225,7 +228,7 @@ def print_structural_toc(structural_toc: list, print_bool: bool = True) -> str:
     return str_structural_toc
 
 
-def run_validation(pdf_path: str = None, library_pdf: str = "pypdf", check_external_links:bool = False) -> Dict[str, Any]:
+def run_validation(pdf_path: str = None, pdf_library: str = "pypdf", check_external_links:bool = False) -> Dict[str, Any]:
     """
     Experimental. Ignore for now.
 
@@ -237,8 +240,8 @@ def run_validation(pdf_path: str = None, library_pdf: str = "pypdf", check_exter
         import requests
 
     # 1. Setup Library Engine (Reuse your logic)
-    library_pdf = library_pdf.lower()
-    if library_pdf == "pypdf":
+    pdf_library = pdf_library.lower()
+    if pdf_library == "pypdf":
         from pdflinkcheck.analyze_pypdf import extract_links_pypdf as extract_links
     else:
         from pdflinkcheck.analyze import extract_links_pymupdf as extract_links
