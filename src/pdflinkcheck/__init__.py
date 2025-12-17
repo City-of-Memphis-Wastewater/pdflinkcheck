@@ -16,7 +16,9 @@ License, or (at your option) any later version.
 The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed under the AGPL3.
 """
 # Library functions
-from pdflinkcheck.analyze import run_analysis, extract_links, extract_toc
+from pdflinkcheck.analyze import run_analysis, extract_links_pymupdf, extract_toc_pymupdf, extract_links_pypdf, extract_toc_pypdf
+from pdflinkcheck.analyze import extract_links_pymupdf as extract_links # to expose functions referred to in README
+from pdflinkcheck.analyze import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
 
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
 # Is this Pythonic? No. Oh well. PEP 8, PEP 20.
@@ -44,5 +46,9 @@ __all__ = [
     "run_analysis",
     "extract_links",
     "extract_toc",
+    "extract_links_pymupdf",
+    "extract_toc_pymupdf",
+    "extract_links_pypdf", 
+    "extract_toc_pypdf",
     "start_gui" if pdflibkcheck_gui_lib_func_load else None,
 ]

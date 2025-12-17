@@ -152,7 +152,7 @@ def analyze_toc_fitz(doc):
 
 # 2. Updated Main Inspection Function to Include Text Extraction
 #def inspect_pdf_hyperlinks_fitz(pdf_path):
-def extract_toc(pdf_path):
+def extract_toc_pymupdf(pdf_path):
     """
     Opens a PDF, iterates through all pages and extracts the structural table of contents (TOC/bookmarks).
 
@@ -197,7 +197,7 @@ def serialize_fitz_object(obj):
     # Otherwise, return the object as is (it's already primitive)
     return obj
 
-def extract_links(pdf_path):
+def extract_links_pymupdf(pdf_path):
     """
     Opens a PDF, iterates through all pages and extracts all link annotations. 
     It categorizes the links into External, Internal, or Other actions, and extracts the anchor text.
@@ -406,6 +406,10 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
     Returns:
         A dictionary containing the structured results of the analysis:
         'external_links', 'internal_links', 'remnants', and 'toc'.
+
+    To Do:
+        Aggregate print strings into a str for TXT export.
+        Modularize.
     """
 
     if pdf_path is None:
@@ -418,8 +422,8 @@ def run_analysis(pdf_path: str = None, check_remnants: bool = True, max_links: i
         print(f"Running PyMuPDF analysis on {Path(pdf_path).name}...")
 
         # 1. Extract all active links and TOC
-        extracted_links = extract_links(pdf_path)
-        structural_toc = extract_toc(pdf_path) 
+        extracted_links = extract_links_pymupdf(pdf_path)
+        structural_toc = extract_toc_pymupdf(pdf_path) 
         #extracted_links = extract_links_pypdf(pdf_path)
         #structural_toc = extract_toc_pypdf(pdf_path) 
         toc_entry_count = len(structural_toc)
@@ -558,7 +562,7 @@ def resolve_destination(reader: PdfReader, dest) -> Optional[int]:
 
 def extract_toc_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
     """
-    Alternative to extract_toc().
+    Alternative to extract_toc_pymupdf().
     Status: Not ready yet.
     Extract structural TOC (bookmarks/outline).
     """
@@ -589,7 +593,7 @@ def extract_toc_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
 
 def extract_links_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
     """
-    Alternative to extract_links().
+    Alternative to extract_links_pymupdf().
     Status: Not ready yet.
     Extract all link annotations with details.
     """
@@ -657,11 +661,11 @@ def extract_links_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
     return links_data
 
 # Rest of your functions (print_structural_toc, get_first_pdf_in_cwd, run_analysis) remain almost identical
-# Just replace calls to extract_toc/extract_links with the new versions above.
+# Just replace calls to extract_toc_pymupdf() and extract_links_pymupdf() with the new versions above.
 
 # Example adjustment in run_analysis:
-# extracted_links = extract_links(pdf_path)
-# structural_toc = extract_toc(pdf_path)
+# extracted_links = extract_links_pymupdf(pdf_path)
+# structural_toc = extract_toc_pymupdf(pdf_path)
 
 # The reporting logic can stay the same – it uses the same dict keys.
 
