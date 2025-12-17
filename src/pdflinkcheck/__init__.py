@@ -20,7 +20,7 @@ import os
 from pdflinkcheck.analyze import run_analysis, extract_links_pymupdf, extract_toc_pymupdf, extract_links_pypdf, extract_toc_pypdf
 from pdflinkcheck.analyze import extract_links_pymupdf as extract_links # to expose functions referred to in README
 from pdflinkcheck.analyze import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
-
+#from pdflinkcheck import dev
 
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
 # Is this Pythonic? No. Oh well. PEP 8, PEP 20.
@@ -50,5 +50,8 @@ __all__ = [
     #"extract_toc_pymupdf", # redundant
     #"extract_links_pypdf", # not mature yet 
     #"extract_toc_pypdf", # not mature yet
-    "start_gui" if pdflibkcheck_gui_lib_func_load else None,
+    #"start_gui" if pdflibkcheck_gui_lib_func_load else None,
+    #"dev", # can i expose a set of functions like this?
 ]
+if pdflibkcheck_gui_lib_func_load:
+    __all__.append("start_gui")
