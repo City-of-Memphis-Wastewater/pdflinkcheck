@@ -8,7 +8,7 @@ logging.getLogger("fitz").setLevel(logging.ERROR)
 import fitz # PyMuPDF
 
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
-from pdflinkcheck.report import run_report
+from pdflinkcheck.report import run_report, run_validation
 
 """
 Inspect target PDF for both URI links and for GoTo links.
@@ -292,6 +292,7 @@ def call_stable():
     """
     print("Begin analysis...")
     run_report(library_pdf = "pymupdf")
+    #run_validation(library_pdf = "pymupdf")
     print("Analysis complete.")
 
 if __name__ == "__main__":

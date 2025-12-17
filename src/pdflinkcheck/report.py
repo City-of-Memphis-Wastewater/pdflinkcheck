@@ -7,7 +7,7 @@ from typing import Optional, Dict, Any
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
 
 
-def run_report(pdf_path: str = None,  max_links: int = 0, export_format: Optional[str] = "JSON", library_pdf: Optional[str] = "pypdf") -> Dict[str, Any]:
+def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", library_pdf: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
     
@@ -29,6 +29,14 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: Optiona
         Modularize.
     """
 
+    report_buffer = []
+
+    # Helper to handle conditional printing and mandatory buffering
+    def log(msg: str):
+        if print_bool:
+            print(msg)
+        report_buffer.append(msg)
+
     # Expected: "pypdf" or "PyMuPDF"
     allowed_libraries = ("pypdf","pymupdf")
     library_pdf = library_pdf.lower()
@@ -43,11 +51,11 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: Optiona
     if pdf_path is None:
         pdf_path = get_first_pdf_in_cwd()
     if pdf_path is None:
-        print("pdf_path is None")
-        print("Tip: Drop a PDF in the current folder or pass in a path arg.")
+        log("pdf_path is None")
+        log("Tip: Drop a PDF in the current folder or pass in a path arg.")
         return
     try:
-        print(f"Running pdflinkcheck analysis on {Path(pdf_path).name}...")
+        log(f"Running pdflinkcheck analysis on {Path(pdf_path).name}...")
 
         # 1. Extract all active links and TOC
         extracted_links = extract_links(pdf_path)
@@ -57,7 +65,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: Optiona
         
 
         if not extracted_links and not structural_toc:
-            print(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
+            log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
             return {}
             
         # 3. Separate the lists based on the 'type' key
@@ -71,53 +79,53 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: Optiona
         uri_and_other = uri_links + other_links
         
         # --- ANALYSIS SUMMARY (Using your print logic) ---
-        print("\n" + "=" * 70)
-        print(f"--- Link Analysis Results for {Path(pdf_path).name} ---")
-        print(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
-        print(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
-        print("=" * 70)
+        log("\n" + "=" * 70)
+        log(f"--- Link Analysis Results for {Path(pdf_path).name} ---")
+        log(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
+        log(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
+        log("=" * 70)
 
         # --- Section 1: TOC ---
         print_structural_toc(structural_toc)
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
-        print("\n" + "=" * 70)
-        print(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
-        print("=" * 70)
-        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
-        print("-" * 70)
+        log("\n" + "=" * 70)
+        log(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
+        log("=" * 70)
+        log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
+        log("-" * 70)
         
         all_internal = goto_links + resolved_action_links
         if total_internal_links > 0:
             for i, link in enumerate(all_internal[:limit], 1):
                 link_text = link.get('link_text', 'N/A')
-                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
+                log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
 
             if limit is not None and len(all_internal) > limit:
-                print(f"... and {len(all_internal) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+                log(f"... and {len(all_internal) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
         else:
-            print(" No internal GoTo or Resolved Action links found.")
+            log(" No internal GoTo or Resolved Action links found.")
         
         # --- Section 3: ACTIVE URI LINKS ---
-        print("\n" + "=" * 70)
-        print(f"## Active URI Links (External & Other) - {len(uri_and_other)} found") 
-        print("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
-        print("=" * 70)
+        log("\n" + "=" * 70)
+        log(f"## Active URI Links (External & Other) - {len(uri_and_other)} found") 
+        log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
+        log("=" * 70)
         
         if uri_and_other:
             for i, link in enumerate(uri_and_other[:limit], 1):
                 target = link.get('url') or link.get('remote_file') or link.get('target')
                 link_text = link.get('link_text', 'N/A')
-                print("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
+                log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
             if limit is not None and len(uri_and_other) > limit:
-                print(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+                log(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
 
         else: 
-            print(" No external or 'Other' links found.")
+            log(" No external or 'Other' links found.")
 
         
         # Return the collected data for potential future JSON/other output
-        final_report_data =  {
+        final_report_data_dict =  {
             "external_links": uri_links,
             "internal_links": all_internal,
             "toc": structural_toc
@@ -126,17 +134,19 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: Optiona
         # 5. Export Report 
         if export_format:
             # Assuming export_to will hold the output format string (e.g., "JSON")
-            export_report_data(final_report_data, Path(pdf_path).name, export_format)
+            export_report_data(final_report_data_dict, Path(pdf_path).name, export_format)
 
-        return final_report_data
+        return final_report_data_dict
     except Exception as e:
         # Log the critical failure
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
-        print(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
+        log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
         raise # Allow the exception to propagate or handle gracefully
 
+    return final_report_data_dict, report_buffer
 
-def print_structural_toc(structural_toc):
+
+def print_structural_toc_print(structural_toc:dict, print_bool:bool=True)->str|None:
     """
     Prints the structural TOC data (bookmarks/outline) in a clean, 
     hierarchical, and readable console format.
@@ -164,3 +174,160 @@ def print_structural_toc(structural_toc):
         print(f"{indent}{item['title']} . . . page {page_str}")
 
     print("-" * 70)
+
+
+def print_structural_toc(structural_toc: list, print_bool: bool = True) -> str:
+    """
+    Formats the structural TOC data into a hierarchical string and optionally prints it.
+
+    Args:
+        structural_toc: A list of TOC dictionaries.
+        print_bool: Whether to print the output to the console.
+
+    Returns:
+        A formatted string of the structural TOC.
+    """
+    lines = []
+    lines.append("\n" + "=" * 70)
+    lines.append("## Structural Table of Contents (PDF Bookmarks/Outline)")
+    lines.append("=" * 70)
+
+    if not structural_toc:
+        msg = "No structural TOC (bookmarks/outline) found."
+        lines.append(msg)
+        output = "\n".join(lines)
+        if print_bool:
+            print(output)
+        return output
+
+    # Determine max page width for consistent alignment
+    valid_pages = [item['target_page'] for item in structural_toc if isinstance(item['target_page'], int)]
+    max_page = max(valid_pages) if valid_pages else 1
+    page_width = len(str(max_page))
+    
+    # Iterate and format
+    for item in structural_toc:
+        indent = " " * 4 * (item['level'] - 1)
+        # Handle cases where page might be N/A or None
+        target_page = item.get('target_page', "N/A")
+        page_str = str(target_page).rjust(page_width)
+        
+        lines.append(f"{indent}{item['title']} . . . page {page_str}")
+
+    lines.append("-" * 70)
+    
+    # Final aggregation
+    str_structural_toc = "\n".join(lines)
+    
+    if print_bool:
+        print(str_structural_toc)
+        
+    return str_structural_toc
+
+
+def run_validation(pdf_path: str = None, library_pdf: str = "pypdf", check_external_links:bool = False) -> Dict[str, Any]:
+    """
+    Experimental. Ignore for now.
+
+    Extends the report logic by programmatically testing every extracted link.
+    Validates Internal Jumps (page bounds), External URIs (HTTP status), 
+    and Launch actions (file existence).
+    """
+    if check_external_links:
+        import requests
+
+    # 1. Setup Library Engine (Reuse your logic)
+    library_pdf = library_pdf.lower()
+    if library_pdf == "pypdf":
+        from pdflinkcheck.analyze_pypdf import extract_links_pypdf as extract_links
+    else:
+        from pdflinkcheck.analyze import extract_links_pymupdf as extract_links
+
+    if pdf_path is None:
+        pdf_path = get_first_pdf_in_cwd()
+    
+    if not pdf_path:
+        print("Error: No PDF found for validation.")
+        return {}
+
+    print(f"\nValidating links in {Path(pdf_path).name}...")
+
+    # 2. Extract links and initialize validation counters
+    links = extract_links(pdf_path)
+    total_links = len(links)
+    results = {"valid": [], "broken": [], "error": []}
+
+    # 3. Validation Loop
+    for i, link in enumerate(links, 1):
+        # Progress indicator for long manuals
+        sys.stdout.write(f"\rChecking link {i}/{total_links}...")
+        sys.stdout.flush()
+
+        link_type = link.get('type')
+        status = {"is_valid": False, "reason": "Unknown Type"}
+
+        # --- A. Validate Internal Jumps ---
+        if "Internal" in link_type:
+            target_page = link.get('destination_page')
+            if isinstance(target_page, int) and target_page > 0:
+                # In a real run, you'd compare against reader.pages_count
+                status = {"is_valid": True, "reason": "Resolves"}
+            else:
+                status = {"is_valid": False, "reason": f"Invalid Page: {target_page}"}
+
+        # --- B. Validate Web URIs ---
+        elif link_type == 'External (URI)':
+
+            url = link.get('url')
+            if url and url.startswith("http") and check_external_links:
+                try:
+                    # Use a short timeout and HEAD request to be polite/fast
+                    resp = requests.head(url, timeout=5, allow_redirects=True)
+                    if resp.status_code < 400:
+                        status = {"is_valid": True, "reason": f"HTTP {resp.status_code}"}
+                    else:
+                        status = {"is_valid": False, "reason": f"HTTP {resp.status_code}"}
+                except Exception as e:
+                    status = {"is_valid": False, "reason": "Connection Failed"}
+            else:
+                status = {"is_valid": False, "reason": "Malformed URL"}
+
+        # --- C. Validate Local File/Launch Links ---
+        elif link_type == 'Launch' or 'remote_file' in link:
+            file_path = link.get('remote_file') or link.get('url')
+            if file_path:
+                # Clean URI formatting
+                clean_path = file_path.replace("file://", "").replace("%20", " ")
+                # Check relative to the PDF's location
+                abs_path = Path(pdf_path).parent / clean_path
+                if abs_path.exists():
+                    status = {"is_valid": True, "reason": "File Exists"}
+                else:
+                    status = {"is_valid": False, "reason": "File Missing"}
+
+        # Append result
+        link['validation'] = status
+        if status['is_valid']:
+            results['valid'].append(link)
+        else:
+            results['broken'].append(link)
+
+    print("\n" + "=" * 70)
+    print(f"--- Validation Summary for {Path(pdf_path).name} ---")
+    print(f"Total Checked: {total_links}")
+    print(f"✅ Valid:  {len(results['valid'])}")
+    print(f"❌ Broken: {len(results['broken'])}")
+    print("=" * 70)
+
+    # 4. Print Detail Report for Broken Links
+    if results['broken']:
+        print("\n## ❌ Broken Links Found:")
+        print("{:<5} | {:<5} | {:<30} | {}".format("Idx", "Page", "Reason", "Target"))
+        print("-" * 70)
+        for i, link in enumerate(results['broken'], 1):
+            target = link.get('url') or link.get('destination_page') or link.get('remote_file')
+            print("{:<5} | {:<5} | {:<30} | {}".format(
+                i, link['page'], link['validation']['reason'], str(target)[:30]
+            ))
+    
+    return results

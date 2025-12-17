@@ -9,7 +9,7 @@ from pypdf.generic import Destination, NameObject, ArrayObject, IndirectObject
 
 
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
-from pdflinkcheck.report import run_report
+from pdflinkcheck.report import run_report, run_validation
 
 """
 Inspect target PDF for both URI links and for GoTo links, using only pypdf, not Fitz
@@ -172,6 +172,7 @@ def call_stable():
     """
     print("Begin analysis...")
     run_report(library_pdf = "pypdf")
+    #run_validation(library_pdf = "pypdf")
     print("Analysis complete.")
 
 if __name__ == "__main__":

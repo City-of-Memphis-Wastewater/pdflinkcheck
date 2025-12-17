@@ -23,6 +23,7 @@ from pdflinkcheck.analyze import extract_links_pymupdf as extract_links # to exp
 from pdflinkcheck.analyze import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
 from pdflinkcheck import analyze_pypdf
 from pdflinkcheck.report import run_report
+from pdflinkcheck.report import run_report as run_analysis # for backwards compatibility with previos versions
 #from pdflinkcheck import dev
 
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
@@ -47,6 +48,7 @@ else:
 # Define __all__ such that the library functions are self documenting.
 __all__ = [
     "run_report",
+    "run_analysis",
     "extract_links",
     "extract_toc",
     #"extract_links_pymupdf", # redundant
@@ -67,5 +69,3 @@ del _load_gui_func
 # inside analyze.py. You can force-remove it here:
 if "io" in locals(): 
     del io
-if "remnants" in locals(): 
-    del remnants
