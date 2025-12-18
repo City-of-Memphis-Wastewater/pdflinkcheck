@@ -25,17 +25,23 @@ def get_anchor_text_pypdf(page, rect) -> str:
     
     # Standardize rect orientation (pypdf Rects are [x0, y0, x1, y1])
     # Note: PDF coordinates use bottom-left as (0,0)
-    x_min, y_min = min(rect[0], rect[2]), min(rect[1], rect[3])
-    x_max, y_max = max(rect[0], rect[2]), max(rect[1], rect[3])
+    x_min = min(rect[0], rect[2])
+    y_min = min(rect[1], rect[3])
+    x_max = max(rect[0], rect[2])
+    y_max = max(rect[1], rect[3])
     
-    parts = []
+    parts: List[str] = []
 
     def visitor_body(text, cm, tm, font_dict, font_size):
         # tm[4], tm[5] are the current text insertion point coordinates (x, y)
         x, y = tm[4], tm[5]
-        # Using a 3pt threshold to account for font metrics/descenders
-        if (x_min - 3) <= x <= (x_max + 3) and (y_min - 3) <= y <= (y_max + 3):
-            parts.append(text)
+
+        # Using a threshold to account for font metrics/descenders
+        # Generous tolerance (±10 pt) to catch descenders, ascenders, kerning, and minor misalignments
+        tolerance = 10
+        if (x_min - tolerance) <= x <= (x_max + tolerance) and (y_min - tolerance) <= y <= (y_max + tolerance):
+            if text.strip():
+                parts.append(text)
 
     page.extract_text(visitor_text=visitor_body)
     
@@ -170,10 +176,8 @@ def call_stable():
     Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
     passing them as arguments to run_report.
     """
-    print("Begin analysis...")
     run_report(pdf_library = "pypdf")
     #run_validation(pdf_library = "pypdf")
-    print("Analysis complete.")
 
 if __name__ == "__main__":
     call_stable()

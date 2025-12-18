@@ -6,11 +6,12 @@ from pathlib import Path
 from typing import Optional # Added Optional
 import unicodedata
 from importlib.resources import files
+import pyhabitat
 
 # Import the core analysis function
 from pdflinkcheck.report import run_report 
 from pdflinkcheck.version_info import get_version_from_pyproject
-from pdflinkcheck.io import get_first_pdf_in_cwd
+from pdflinkcheck.io import get_first_pdf_in_cwd, PDFLINKCHECK_HOME
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -45,6 +46,7 @@ class PDFLinkCheckerApp(tk.Tk):
         self.show_all_links_var = tk.BooleanVar(value=True)  
         self.do_export_report_json_var = tk.BooleanVar(value=True) 
         self.do_export_report_txt_var = tk.BooleanVar(value=False) 
+        self.current_report_text = None
 
         self.supported_export_formats = ["JSON", "MD", "TXT"]
         self.supported_export_formats = ["JSON"]
@@ -301,6 +303,10 @@ class PDFLinkCheckerApp(tk.Tk):
         # Scroll to Top Button
         top_btn = ttk.Button(output_header_frame, text="▲ Top", command=self._scroll_to_top, width=6)
         top_btn.pack(side=tk.RIGHT, padx=(5, 5))
+
+        # Open Report Button
+        self.open_report_btn = ttk.Button(output_header_frame, text="Open Report", command=self._open_report_text)
+        self.open_report_btn.pack(side=tk.RIGHT, padx=(5, 5))
         
         
         # ----------------------------------------------------
@@ -391,14 +397,17 @@ class PDFLinkCheckerApp(tk.Tk):
         
         try:
             # 3. Call the core logic function
-            self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
-            run_report(
+            #self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
+            report_results = run_report(
                 pdf_path=pdf_path_str,
                 max_links=max_links_to_pass,
                 export_format=export_format,
                 pdf_library = pdf_library, 
             )
-            self.output_text.insert(tk.END, "\n--- Analysis Complete ---\n")
+            self.current_report_text = report_results.get("text", "")
+            self.current_report_data = report_results.get("data", {})
+
+            #self.output_text.insert(tk.END, "\n--- Analysis Complete ---\n")
 
         except Exception as e:
             self.output_text.insert(tk.END, "\n")
@@ -431,6 +440,27 @@ class PDFLinkCheckerApp(tk.Tk):
         # Restore state
         self.output_text.config(state=tk.DISABLED)
 
+    def _open_report_text(self):
+        """Opens the LATEST analysis text in an editor, regardless of export settings."""
+        # 1. Check our internal buffer, not the window or the disk
+        if not self.current_report_text:
+            messagebox.showwarning("Open Failed", "No analysis data available. Please run an analysis first.")
+            return
+
+        try:
+            # 2. Always create a 'viewing' file in a temp directory or .tmp folder
+            # This prevents clobbering an actual user-saved report.
+            pdf_name = Path(self.pdf_path.get()).stem if self.pdf_path.get() else "report"
+            view_path = PDFLINKCHECK_HOME / f"LAST_REPORT_{pdf_name}.txt"
+            
+            # 3. Write our buffer to this 'View' file
+            view_path.write_text(self.current_report_text, encoding="utf-8")
+            
+            # 4. Open with pyhabitat
+            pyhabitat.edit_textfile(view_path)
+            
+        except Exception as e:
+            messagebox.showerror("View Error", f"Could not launch editor: {e}")
 
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """

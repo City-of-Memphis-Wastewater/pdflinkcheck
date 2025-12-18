@@ -10,7 +10,6 @@ try:
 except ImportError:
     fitz = None
 
-from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
 from pdflinkcheck.report import run_report, run_validation
 
 """
@@ -44,6 +43,44 @@ def get_link_rect(link_dict):
     return None
 
 def get_anchor_text(page, link_rect):
+    if not link_rect:
+        return "N/A: Missing Rect"
+
+    try:
+        # 1. Convert to fitz.Rect and normalize
+        rect = fitz.Rect(link_rect)
+        if rect.is_empty:
+            return "N/A: Rect Error"
+
+        # 2. Use asymmetric expansion (similar to the pypdf logic)
+        # 10 points horizontal to catch wide characters/kerning
+        # 3 points vertical to stay within the line
+        search_rect = fitz.Rect(
+            rect.x0 - 10, 
+            rect.y0 - 3, 
+            rect.x1 + 10, 
+            rect.y1 + 3
+        )
+
+        # 3. Extract all words on the page
+        # Each word is: (x0, y0, x1, y1, "text", block_no, line_no, word_no)
+        words = page.get_text("words")
+        
+        anchor_parts = []
+        for w in words:
+            word_rect = fitz.Rect(w[:4])
+            # Check if the word intersects our expanded link rectangle
+            if word_rect.intersects(search_rect):
+                anchor_parts.append(w[4])
+
+        cleaned_text = " ".join(anchor_parts).strip()
+        
+        return cleaned_text if cleaned_text else "N/A: No Visible Text"
+            
+    except Exception:
+        return "N/A: Rect Error"
+    
+def get_anchor_text_stable(page, link_rect):
     """
     Extracts text content using the link's bounding box coordinates.
     The bounding box is slightly expanded to ensure full characters are captured.
@@ -293,10 +330,8 @@ def call_stable():
     Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
     passing them as arguments to run_report.
     """
-    print("Begin analysis...")
     run_report(pdf_library = "pymupdf")
     #run_validation(pdf_library = "pymupdf")
-    print("Analysis complete.")
 
 if __name__ == "__main__":
     call_stable()

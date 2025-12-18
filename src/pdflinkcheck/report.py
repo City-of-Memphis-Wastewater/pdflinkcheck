@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
+from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, LOG_FILE_PATH
 
 
 def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
@@ -50,6 +50,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             return    
         from pdflinkcheck.analyze_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
     
+    log("\n--- Starting Analysis ... ---\n")
     if pdf_path is None:
         pdf_path = get_first_pdf_in_cwd()
     if pdf_path is None:
@@ -125,6 +126,10 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         else: 
             log(" No external or 'Other' links found.")
 
+        log("\n--- Analysis Complete ---\n")
+
+        # Final aggregation of the buffer into one string
+        report_buffer_str = "\n".join(report_buffer)
         
         # Return the collected data for potential future JSON/other output
         final_report_data_dict =  {
@@ -134,11 +139,30 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         }
 
         # 5. Export Report 
+        #if export_format:
+        #    # Assuming export_to will hold the output format string (e.g., "JSON")
+        #    export_report_data(final_report_data_dict, Path(pdf_path).name, export_format, pdf_library)
+        
         if export_format:
-            # Assuming export_to will hold the output format string (e.g., "JSON")
-            export_report_data(final_report_data_dict, Path(pdf_path).name, export_format, pdf_library)
+            fmt_upper = export_format.upper()
+            
+            if "JSON" in fmt_upper:
+                export_report_json(final_report_data_dict, pdf_path, pdf_library)
+            
+            if "TXT" in fmt_upper:
+                export_report_txt(report_buffer_str, pdf_path, pdf_library)
+                
+        # Return a clean results object
+        return {
+            "data": final_report_data_dict, # The structured JSON-ready dict
+            "text": report_buffer_str,      # The human-readable string
+            "metadata": {                  # Helpful for the GUI/Logs
+                "pdf_name": Path(pdf_path).name,
+                "library_used": pdf_library,
+                "total_links": len(extracted_links)
+            }
+        }
 
-        return final_report_data_dict, report_buffer
     except Exception as e:
         # Log the critical failure
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)

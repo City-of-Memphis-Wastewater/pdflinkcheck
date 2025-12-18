@@ -98,6 +98,41 @@ def export_report_data(
         # Re-raise the exception after logging for caller to handle
         raise RuntimeError(f"Report export failed due to an I/O error: {e}")
 
+def export_report_json(
+    report_data: Dict[str, Any], 
+    pdf_filename: str, 
+    pdf_library: str
+) -> Path:
+    """Exports structured dictionary results to a .json file."""
+    base_name = Path(pdf_filename).stem
+    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_report.json"
+
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(report_data, f, indent=4)
+        print(f"\nJSON report exported: {output_path}")
+        return output_path
+    except Exception as e:
+        error_logger.error(f"JSON export failed: {e}", exc_info=True)
+        raise RuntimeError(f"JSON export failed: {e}")
+
+def export_report_txt(
+    report_text: str, 
+    pdf_filename: str, 
+    pdf_library: str
+) -> Path:
+    """Exports the formatted string buffer to a .txt file."""
+    base_name = Path(pdf_filename).stem
+    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_report.txt"
+
+    try:
+        output_path.write_text(report_text, encoding='utf-8')
+        print(f"\nTXT report exported: {output_path}")
+        return output_path
+    except Exception as e:
+        error_logger.error(f"TXT export failed: {e}", exc_info=True)
+        raise RuntimeError(f"TXT export failed: {e}")
+    
 # Example of how an external module can log an error:
 # from pdflinkcheck.io import error_logger
 # try: 

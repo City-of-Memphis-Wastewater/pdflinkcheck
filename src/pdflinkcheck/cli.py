@@ -5,7 +5,7 @@ from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
 from pdflinkcheck.report import run_report # Assuming core logic moves here
-from typing import Dict, Optional
+from typing import Dict, Optional, Union, List
 import pyhabitat
 import sys
 import os
@@ -109,8 +109,12 @@ def analyze_pdf( # Renamed function for clarity
         readable=True,
         resolve_path=True,
         help="The path to the PDF file to analyze."
-    ),
-    export_format: Optional[Literal["JSON", "TXT"]] = typer.Option("JSON", "--export-format","-e", help="Export format. Use 'None' to suppress file export.",
+    ), 
+    export_format: Optional[Literal["JSON", "TXT", "JSON,TXT", "NONE"]] = typer.Option(
+        "JSON", 
+        "--export-format","-e",
+        case_sensitive=False, 
+        help="Export format. Use 'None' to suppress file export.",
     ),
     max_links: int = typer.Option(
         0,
@@ -143,27 +147,22 @@ def analyze_pdf( # Renamed function for clarity
     """
 
     VALID_FORMATS = ("JSON") # extend later
-
-    final_export_format = export_format.upper().strip()
-    export_format_for_analysis = None
-
-    # The actual heavy lifting (analysis and printing) is now in run_report
-    if not final_export_format:
-        export_format_for_analysis = None
-    elif final_export_format == "" or final_export_format == "NONE" or final_export_format == "0":
-        export_format_for_analysis = None
-    elif final_export_format not in VALID_FORMATS:
-        typer.echo(f"An unexpected --export-format was provided: {final_export_format}")
-        typer.echo(f"No export will be made.")
-        export_format_for_analysis = None
+    requested_formats = [fmt.strip().upper() for fmt in export_format.split(",")]
+    if "NONE" in requested_formats or not export_format.strip() or export_format == "0":
+        export_formats = ""
     else:
-        # User passed "JSON" or other valid format
-        export_format_for_analysis = final_export_format
+        # Filter for valid ones: ("JSON", "TXT")
+        # This allows "JSON,TXT" to become "JSONTXT" which your run_report logic can handle
+        valid = [f for f in requested_formats if f in ("JSON", "TXT")]
+        export_formats = "".join(valid)
+
+        if not valid and "NONE" not in requested_formats:
+            typer.echo(f"Warning: No valid formats found in '{export_format}'. Supported: JSON, TXT.")
 
     run_report(
         pdf_path=str(pdf_path), 
         max_links=max_links,
-        export_format = export_format_for_analysis,
+        export_format = export_formats,
         pdf_library = pdf_library,
     )
 
