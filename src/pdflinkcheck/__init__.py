@@ -18,7 +18,7 @@ import os as _os
 
 # Library functions
 from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf, extract_toc_pymupdf
-from pdflinkcheck.analyze_pypdf import extract_links_pypdf, extract_toc_pypdf
+from pdflinkcheck.analyze_pypdf_v2 import extract_links_pypdf, extract_toc_pypdf
 from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as extract_links # to expose functions referred to in README
 from pdflinkcheck.analyze_pymupdf import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
 from pdflinkcheck import analyze_pypdf
@@ -65,7 +65,7 @@ if _load_gui_func:
 del _os
 del _gui_easteregg_env_flag
 del _load_gui_func
-# Note: If you don't want 'io' appearing, it's likely being imported 
-# inside analyze.py. You can force-remove it here:
-if "io" in locals(): 
-    del io
+
+# Force avoid 'io' appearing, it's likely being imported, when it is imported by another package which is imported here:
+#if "io" in locals(): 
+#    del io
