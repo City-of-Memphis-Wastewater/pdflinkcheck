@@ -192,7 +192,7 @@ if __name__ == "__main__":
         ensure_data_files_for_build()
         # NOTE: This script is intended to be run via: uv run python build_pyz.py
         path = build_shiv_pyz()
-    except subprocess.CalledProcessError as e:
+    except subprocess.CalledProcessError as e: 
         print(f"\nFATAL ERROR: A subprocess failed with exit code {e.returncode}.", file=sys.stderr)
         print("Review the stderr output above for details (often a dependency issue).", file=sys.stderr)
         sys.exit(1)
