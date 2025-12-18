@@ -3,6 +3,7 @@
 import sys
 from pathlib import Path
 from typing import Optional, Dict, Any
+import pyhabitat
 
 from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
 
@@ -46,7 +47,12 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         try:
             import fitz
         except ImportError:
-            print("The PyMuPDF / fitz library is not available. Install pymupdf, or select pypdf as the PDF library. See README for details.")
+            print("PyMuPDF / fitz  is not available.")
+            print("Use pypdf as the PDF library, or install PyMuPDF. ")
+            print("See README for details.")
+            if pyhabitat.on_termux():
+                print(f"pyhabitat.on_termux() = {pyhabitat.on_termux()}")
+                print("PyMuPDF is not expected to work on Termux. Use pypdf.")
             return    
         from pdflinkcheck.analyze_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
     
