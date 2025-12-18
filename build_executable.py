@@ -117,7 +117,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
-    if not pyhabitat.tkinter_is_available(): # allows termux, etc build to be primarily CLI, becuase the gui wont work anyways
+    if pyhabitat.tkinter_is_available(): # allows termux, etc build to be primarily CLI, becuase the gui wont work anyways
         print("Building with the --noconsole flag, to favor GUI usage for the artifact, because GUI is avaialble.")
         base_command.append('--noconsole')
     else:
