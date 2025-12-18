@@ -159,6 +159,14 @@ pdflinkcheck.start_gui()
 
 If the `PDFLINKCHECK_GUI_EASTEREGG` environment variable is not set—or if GUI support is unavailable—`pdflinkcheck` behaves as a normal library with no GUI functions exposed.
 
+### Another Easter Egg
+
+```bash
+DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree
+```
+
+This `help-tree` feature has not yet been submitted for inclusion into Typer.
+
 -----
 
 ## ⚠️ Compatibility Notes

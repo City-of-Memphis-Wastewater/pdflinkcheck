@@ -4,6 +4,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.57] - 2025-12-18
+### Added
+- GUI Failure in Tkinter: Clear console.print() in GUI failure section concerning Tkinter compatibility
+- README for help-tree: Add documentation for the `DEV_TYPER_HELP_TREE` env var in the easter egg section of the README.
+
+### Learned
+- To test on Termux snd not include ruff, run `uv sync --no-dev`
+
+---
+
 ## [1.1.56] - 2025-12-18
 ### Added
 - **Environment Variable Configuration:** Added support for `PDFLINKCHECK_ANALYZE_PDF_LIBRARY` to allow persistent user preferences without repetitive flagging.

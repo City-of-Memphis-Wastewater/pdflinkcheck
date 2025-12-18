@@ -203,7 +203,8 @@ def _gui_failure_msg():
     console.print("[bold red]GUI failed to launch[/bold red]")
     console.print("Ensure pdflinkcheck dependecies are installed and the venv is activated (the dependecies are managed by uv).")
     console.print("The dependecies for pdflinkcheck are managed by uv.")
-    console.print("Ensure tkinter is available, especially if using WSLg.")
+    console.print("Ensure Tkinter is available, especially if using WSLg.")
+    console.print("On Termux/Android, GUI is not supported. Use 'pdflinkcheck analyze <file.pdf>' instead.")
     console.print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
     pass
 
