@@ -1,4 +1,6 @@
-name: Build and push multi-arch pyhabitat image
+# .github/workflows/docker.yml
+
+name: Build and push multi-arch pdflinkcheck image
 
 on:
   push:

@@ -43,8 +43,8 @@ jobs:
       - name: Create isolated environment and install build dependencies
         # Use uv to install `build` and all dependencies specified in `pyproject.toml`
         # We don't need a separate lockfile step, as uv handles resolution quickly.
-        run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build .
-        # run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build ".[full]"
+        # run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build .
+        run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build ".[full]"
         # NOTE: `uv pip install .` installs the package itself and its dependencies
         # The `source .venv/bin/activate` is necessary for the next steps to use the venv's commands.
 

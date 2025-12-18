@@ -131,8 +131,8 @@ def build_shiv_pyz():
     # SHIV COMMAND
     cmd = [
         "shiv",
-        str(wheel_path), 
-        #f"{str(wheel_path)}[full]",  # Add the [full] extra here
+        #str(wheel_path), 
+        f"{str(wheel_path)}[full]",  # Add the [full] extra here
         "-o", str(output_path),
         "-p", "/usr/bin/env python3", 
         "-e", ENTRY_POINT,

@@ -4,6 +4,54 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.55] - 2025-12-17
+
+### Added
+
+* **Multi-Engine PDF Support:** Integrated `pypdf` as the primary, lightweight PDF analysis engine alongside `PyMuPDF`.
+* **Dynamic Library Selection:** - **CLI:** Added support for selecting the backend engine via flags. Default behavior now utilizes `pypdf`.
+* **GUI:** Implemented a library selection interface allowing users to toggle between engines.
+
+
+* **Dependency Management:**
+* Transitioned `pymupdf` to an `optional-dependency` (extra: `full`) to minimize core installation footprint.
+* Implemented PEP 735 `[dependency-groups]` for development tools (`ruff`, `pytest`, `pyinstaller`).
+
+
+* **Build System Evolution:**
+* Migrated build backend to `hatchling`.
+* Implemented `datacopy.ensure_package_pyproject()` to force-include `pyproject.toml` into `src/pdflinkcheck/data/` for runtime version discovery.
+
+
+* **Reporting Enhancements:**
+* New `report.py` module created to handle centralized analysis orchestration.
+* Improved string and log handling within the reporting pipeline.
+* Added the active PDF library name to export filenames for better traceability of results.
+
+
+
+### Changed
+
+* **Major Refactor:** - Renamed `run_analysis()` to `run_report()` and migrated it to the new `report.py`.
+* Isolated engine-specific logic into `analyze.py` (PyMuPDF) and `analyze_pypdf.py` (pypdf).
+* `pypdf` implementation optimized for URI long-name extraction, outperforming the previous implementation in specific edge cases.
+
+
+* **Internal Versioning:** Updated `version_info.py` to successfully resolve project versions during `hatchling` builds.
+* **User Interface:** Default behavior across both CLI and GUI now defaults to the `pypdf` engine for improved portability.
+
+### Removed
+
+* **Remnant Checking:** Completely stripped all "check remnants" functionality and options from the CLI, GUI, and analysis engines to focus on the core link-checking use case.
+* **Mandatory PyMuPDF:** Removed `pymupdf` from the required dependencies list to allow for "slim" installs.
+
+### Fixed
+
+* **Build Reliability:** Resolved issues where `version_info` would fail to locate version strings during automated `uv` or `hatch` build processes.
+* **Package Integrity:** Fixed missing `pyproject.toml` inclusion in distributed wheels by implementing a force-copy artifact strategy in `datacopy.py`.
+
+---
+
 ## [1.1.54] - 2025-12-16
 ### Added / Changed:
 **Link and TOC analysis functions:**

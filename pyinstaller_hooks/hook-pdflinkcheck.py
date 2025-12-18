@@ -8,8 +8,9 @@ It checks all hook directories (including the one specified in build_executable.
 """
 from PyInstaller.utils.hooks import collect_data_files
 
-# This collects all files specified as package data in the setup configuration 
-# (e.g., pyproject.toml's [tool.setuptools.package-data]) for the package 'pdflinkcheck'.
+# This collects all files specified as package data in the setup configuration. 
+# This ensures that files force-copied to src/pdflinkcheck/data/ (like pyproject.toml) are bundled into the EXE.
+# This is required for runtime resource discovery via importlib.resources.
 # PyInstaller needs this explicit instruction for importlib.resources to work properly 
 # within the bundled executable.
 
