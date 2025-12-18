@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
+## [1.1.59] - 2025-12-18
+### Fixed:
+- `build_pyz.py`: Managed Shiv command based on if the platform is Termux or not.
+
+---
 ## [1.1.58] - 2025-12-18
 
 ### Added

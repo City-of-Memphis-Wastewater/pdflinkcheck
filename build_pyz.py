@@ -130,9 +130,7 @@ def build_shiv_pyz():
 
     # SHIV COMMAND
     cmd = [
-        "shiv",
-        #str(wheel_path), 
-        f"{str(wheel_path)}[full]",  # Add the [full] extra here
+        "shiv", 
         "-o", str(output_path),
         "-p", "/usr/bin/env python3", 
         "-e", ENTRY_POINT,
@@ -141,6 +139,14 @@ def build_shiv_pyz():
         #"--python", sys.executable, # removed for cross-platform robustness
         #"--site-packages", SITE_PACKAGES_PATH, # removed to prevent editable install conflicts # this makes the windows pyz huge ~100 MB
     ]
+
+    # Clarify if PyMuPDF should be included or not
+    if not pyhabitat.on_temux():
+        whl_call = f"{str(wheel_path)}[full]"  # include pymupdf
+    else:
+        whl_call = str(wheel_path) # do not include pymupdf
+    cmd.append(whl_call)    
+    #cmd.insert[1](whl_call)
     
     # Pass the current, activated environment
     run_command(cmd, env=os.environ.copy())
