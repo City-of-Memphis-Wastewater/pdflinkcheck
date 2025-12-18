@@ -29,18 +29,10 @@ HOOKS_DIR_ABS = PROJECT_ROOT / "pyinstaller_hooks"
 def form_dynamic_name(pkg_name: str, version: str) -> str:
     """Creates a standardized binary name descriptor."""
 
-    # Check if pymupdf is actually present in the build environment
-    pdf_lib_suffix = ""
-    try:
-        import fitz
-        pdf_lib_suffix = "-pymupdf"
-    except ImportError:
-        pass
-
     os_tag = pyhabitat.SystemInfo().get_os_tag()
     arch = pyhabitat.SystemInfo().get_arch()
     py_ver = f"py{sys.version_info.major}{sys.version_info.minor}"
-    return f"{pkg_name}-{version}{pdf_lib_suffix}-{py_ver}-{os_tag}-{arch}"
+    return f"{pkg_name}-{version}-{py_ver}-{os_tag}-{arch}"
 
 # --- Windows Resource File (version.rc) ---
 def generate_rc_file(package_version: str):

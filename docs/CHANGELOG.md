@@ -7,6 +7,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - `build_pyz.py`: Managed Shiv command based on if the platform is Termux or not.
 
+### Changed:
+- build_executable.form_dynamic_name() adjusted to no longer include "-PyMuPDF" if that package is included in the build. 
+- Update the README to indicate the assumption that PyMuPDF is included in all artifacts except for ones built on Android.
+
 ---
 ## [1.1.58] - 2025-12-18
 
