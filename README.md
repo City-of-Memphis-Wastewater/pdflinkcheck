@@ -249,7 +249,8 @@ uv run python src/pdflinkcheck/cli.py --help
 
 The `AGPL3+` is required for portions of this codebase because `pdflinkcheck` uses `PyMuPDF`, which is licensed under the `AGPL3`.
 
-To stay in compliance, the AGPL3 license text is readily available in the CLI, the GUI, is included in the build artifacts, and it represented as the primary license file in the source code. While this infers that the entire project is AGPL3-licensed, this is not true - portions of the codebase are MIT-licensed.
+To stay in compliance, the AGPL3 license text is readily available in the CLI and the GUI, and it is included in the build artifacts.
+The `AGPL3` appears as the primary license file in the source code. While this infers that the entire project is AGPL3-licensed, this is not true - portions of the codebase are MIT-licensed.
 
 This license has significant implications for **distribution and network use**, particularly for organizations:
 
