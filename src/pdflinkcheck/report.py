@@ -49,7 +49,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         except ImportError:
             print("PyMuPDF was explicitly requested as the PDF Engine")
             print("Use pypdf instead, or install PyMuPDF. ")
-            print("Install PyMuPDF locally with: `pip install .[full]` OR `uv sync --extra full`")
+            print("To install PyMuPDF locally, try: `uv sync --extra full` OR `pip install .[full]`")
             if pyhabitat.on_termux():
                 print(f"pyhabitat.on_termux() = {pyhabitat.on_termux()}")
                 print("PyMuPDF is not expected to work on Termux. Use pypdf.")
