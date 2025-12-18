@@ -33,6 +33,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 * **Major Refactor:** - Renamed `run_analysis()` to `run_report()` and migrated it to the new `report.py`.
 * Isolated engine-specific logic into `analyze.py` (PyMuPDF) and `analyze_pypdf.py` (pypdf).
 * `pypdf` implementation optimized for URI long-name extraction, outperforming the previous implementation in specific edge cases.
+* GUI Export Format Selection: Now each filetype has its own checkbox, rather than a report or not report checkbox with a combo box for slecting a single file type. TXT is currently greyed out and desaled until it is supported. 
 
 
 * **Internal Versioning:** Updated `version_info.py` to successfully resolve project versions during `hatchling` builds.
