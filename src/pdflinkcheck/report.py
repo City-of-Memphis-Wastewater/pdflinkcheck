@@ -90,7 +90,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         log("=" * 70)
 
         # --- Section 1: TOC ---
-        print_structural_toc(structural_toc)
+        str_structural_toc = print_structural_toc(structural_toc)
+        log(str_structural_toc)
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
         log("\n" + "=" * 70)
@@ -171,7 +172,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         raise # Allow the exception to propagate or handle gracefully
 
 
-def print_structural_toc_print(structural_toc:dict, print_bool:bool=True)->str|None:
+def print_structural_toc_print(structural_toc:dict)->str|None:
     """
     Prints the structural TOC data (bookmarks/outline) in a clean, 
     hierarchical, and readable console format.
@@ -201,7 +202,7 @@ def print_structural_toc_print(structural_toc:dict, print_bool:bool=True)->str|N
     print("-" * 70)
 
 
-def print_structural_toc(structural_toc: list, print_bool: bool = True) -> str:
+def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
     """
     Formats the structural TOC data into a hierarchical string and optionally prints it.
 
