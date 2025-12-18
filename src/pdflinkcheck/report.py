@@ -110,6 +110,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 log(f"... and {len(all_internal) - limit} more links (use --max-links 0 to show all).")
         else:
             log(" No internal GoTo or Resolved Action links found.")
+        log("-" * 70)
         
         # --- Section 3: ACTIVE URI LINKS ---
         log("\n" + "=" * 70)
@@ -127,6 +128,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
 
         else: 
             log(" No external or 'Other' links found.")
+        log("-" * 70)
 
         log("\n--- Analysis Complete ---\n")
 
