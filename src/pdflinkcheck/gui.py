@@ -42,10 +42,10 @@ class PDFLinkCheckerApp(tk.Tk):
         self.pdf_library_var = tk.StringVar(value="PyMuPDF")
         #self.pdf_library_var.set("PyMuPDF")
         self.max_links_var = tk.StringVar(value="50")
-        self.show_all_links_var = tk.BooleanVar(value=True) 
-        self.export_report_format_var = tk.StringVar(value="JSON")
-        self.do_export_report_var = tk.BooleanVar(value=True) 
-
+        self.show_all_links_var = tk.BooleanVar(value=True)  
+        self.do_export_report_json_var = tk.BooleanVar(value=True) 
+        self.do_export_report_txt_var = tk.BooleanVar(value=False) 
+        
         self.supported_export_formats = ["JSON", "MD", "TXT"]
         self.supported_export_formats = ["JSON"]
         
@@ -55,7 +55,8 @@ class PDFLinkCheckerApp(tk.Tk):
         
         # --- 3. Set Initial Dependent Widget States ---
         self._toggle_max_links_entry() 
-        self._toggle_export_report()
+        self._toggle_json_export()
+        self._toggle_txt_export()
         
     # In class PDFLinkCheckerApp:
 
@@ -202,10 +203,14 @@ class PDFLinkCheckerApp(tk.Tk):
         
         # === END: File Selection Frame ===
 
+        # Report brevity options:
+        report_brevity_frame = ttk.LabelFrame(control_frame, text="Report Brevity Options:")
+        report_brevity_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=1, sticky='nsew')
+
         # PDF Library Selection
         # Create a labeled group for the PDF options
-        pdf_library_frame = ttk.LabelFrame(control_frame, text="Select PDF Library")
-        pdf_library_frame.grid(row=2, column=2, columnspan=2, padx=10, pady=10, sticky='nsew')
+        pdf_library_frame = ttk.LabelFrame(control_frame, text="Select PDF Library:")
+        pdf_library_frame.grid(row=1, column=2, columnspan=2, padx=5, pady=1, sticky='nsew')
 
         # Radio options inside the frame
         ttk.Radiobutton(
@@ -214,54 +219,54 @@ class PDFLinkCheckerApp(tk.Tk):
             variable=self.pdf_library_var,
             value="PyMuPDF",
             
-        ).pack(side='left', padx=10, pady=5)   
+        ).pack(side='left', padx=5, pady=1)   
 
         ttk.Radiobutton(
             pdf_library_frame,
             text="pypdf",
             variable=self.pdf_library_var,
             value="pypdf",
-        ).pack(side='left', padx=10, pady=5)
+        ).pack(side='left', padx=5, pady=1)
 
         #
         ttk.Checkbutton(
-            control_frame, 
+            report_brevity_frame, 
             text="Show All Links (Override Max)", 
             variable=self.show_all_links_var,
             command=self._toggle_max_links_entry
-        ).grid(row=1, column=0, padx=5, pady=5, sticky='w')
+        ).pack(side='left', padx=5, pady=1)
 
 
-        ttk.Label(control_frame, text="Max Links to Display:").grid(row=1, column=1, padx=5, pady=5, sticky='e')
-        self.max_links_entry = ttk.Entry(control_frame, textvariable=self.max_links_var, width=10)
-        self.max_links_entry.grid(row=1, column=2, padx=5, pady=5, sticky='w')
+        ttk.Label(report_brevity_frame, text="Max Links to Display:").pack(side='left', padx=5, pady=1)
+        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=4)
+        self.max_links_entry.pack(side='left', padx=5, pady=1)
 
         export_group_frame = ttk.Frame(control_frame)
-        export_group_frame.grid(row=2, column=0, padx=5, pady=5, sticky='w') # Placed in the original Checkbutton's column
-
+        #export_group_frame = ttk.LabelFrame(control_frame, text = "Export Filetype Selection:")
+        export_group_frame.grid(row=3, column=1, padx=5, pady=1, sticky='e') # Placed in the original Checkbutton's column
+        ttk.Label(export_group_frame , text="Export Filetype:").pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label()
         ttk.Checkbutton(
             export_group_frame, 
-            text="Export Report", 
-            variable=self.do_export_report_var,
-            command=self._toggle_export_report
+            #text="Export Report",
+            text = "JSON" ,
+            variable=self.do_export_report_json_var
         ).pack(side=tk.LEFT, padx=(0, 5)) # Pack Checkbutton to the left with small internal padding
-        self.export_report_format = ttk.Combobox(
+        ttk.Checkbutton(
             export_group_frame, 
-            textvariable=self.export_report_format_var,
-            values=self.supported_export_formats,
-            state='readonly', # Prevents user from typing invalid values
-            width=5
-        )
-        self.export_report_format.set(self.supported_export_formats[0]) # Set default text
-        self.export_report_format.pack(side=tk.LEFT)
-         # Pack Entry tightly next to it
+            text = "TXT" ,
+            state=tk.DISABLED,
+            variable=self.do_export_report_txt_var,
+        ).pack(side=tk.LEFT, padx=(0, 5)) # Pack Checkbutton to the left with small internal padding
+        
+        # Pack Entry tightly next to it
 
         # Row 3: Run Button and License Button
         # 1. Run Button (Spans columns 0 and 1)
         run_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton')
-        run_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
+        run_btn.grid(row=3, column=0, columnspan=1, pady=10, sticky='ew', padx=(0, 5))
 
-        # 2. Create a Frame to hold the two small buttons (This frame goes into column 2)
+        # 2. Create a Frame to hold the two file link buttons (This frame goes into column 2)
         info_btn_frame = ttk.Frame(control_frame)
         info_btn_frame.grid(row=3, column=2, columnspan=1, pady=10, sticky='ew', padx=(5, 0))
         # Ensure the info button frame expands to fill its column
@@ -335,13 +340,16 @@ class PDFLinkCheckerApp(tk.Tk):
             self.max_links_entry.config(state=tk.DISABLED)
         else:
             self.max_links_entry.config(state=tk.NORMAL)
+    
+    def _toggle_json_export(self):
+        """Checkbox toggle for json filetype report."""
+        if self.do_export_report_json_var.get():
+            pass # placeholder # no side effects
 
-    def _toggle_export_report(self):
-        """Enables/disables the report file export."""
-        if self.do_export_report_var.get():
-            self.export_report_format.config(state=tk.NORMAL)
-        else:
-            self.export_report_format.config(state=tk.DISABLED)
+    def _toggle_txt_export(self):
+        """Checkbox toggle for TXT filetype report."""
+        if self.do_export_report_txt_var.get():
+            pass # placeholder # no side effects
 
     def _run_report_gui(self):
         pdf_path_str = self.pdf_path.get()
@@ -365,8 +373,11 @@ class PDFLinkCheckerApp(tk.Tk):
                 return
 
         export_format = None # default value, if selection is not made (if selection is not active)
-        if self.do_export_report_var.get():
-            export_format = self.export_report_format_var.get().lower()
+        export_format = ""
+        if self.do_export_report_json_var.get():
+            export_format = export_format + "JSON"
+        if self.do_export_report_txt_var.get():
+            export_format = export_format + "TXT" 
 
         pdf_library = self._discern_pdf_library()
 
