@@ -23,10 +23,11 @@ def get_anchor_text_pypdf(page, rect) -> str:
         return "N/A: Missing Rect"
 
     # PDF coordinates: bottom-left origin. Rect is [x0, y0, x1, y1]
-    x_min = min(rect[0], rect[2])
-    y_min = min(rect[1], rect[3])
-    x_max = max(rect[0], rect[2])
-    y_max = max(rect[1], rect[3])
+    # Standardize Rect: [x_min, y_min, x_max, y_max]
+    # Some PDF generators write Rect as [x_max, y_max, x_min, y_min]
+    x_min, y_min, x_max, y_max = rect[0], rect[1], rect[2], rect[3]
+    if x_min > x_max: x_min, x_max = x_max, x_min
+    if y_min > y_max: y_min, y_max = y_max, y_min
 
     parts: List[str] = []
 
@@ -34,19 +35,23 @@ def get_anchor_text_pypdf(page, rect) -> str:
         # tm[4] and tm[5] are the (x, y) coordinates of the text insertion point
         x, y = tm[4], tm[5]
 
-        # 1. Asymmetric Tolerance
+        # Guard against missing font_size
+        actual_font_size = font_size if font_size else 10
+
+        
+
+        # Approximate Center-Alignment Check
+        # Since tm[4/5] is usually the bottom-left of the character, 
+        # we shift our 'check point' slightly up and to the right based 
+        # on font size to approximate the center of the character.
+        char_center_x = x + (actual_font_size / 4)
+        char_center_y = y + (actual_font_size / 3)
+
+        # Asymmetric Tolerance
         # We use a tighter vertical tolerance (3pt) to avoid catching lines above/below.
         # We use a wider horizontal tolerance (10pt) to catch kerning/spacing issues.
         v_tol = 3 
         h_tol = 10
-
-        # 2. Approximate Center-Alignment Check
-        # Since tm[4/5] is usually the bottom-left of the character, 
-        # we shift our 'check point' slightly up and to the right based 
-        # on font size to approximate the center of the character.
-        char_center_x = x + (font_size / 4)
-        char_center_y = y + (font_size / 3)
-
         if (x_min - h_tol) <= char_center_x <= (x_max + h_tol) and \
         (y_min - v_tol) <= char_center_y <= (y_max + v_tol):
             if text.strip():
@@ -67,6 +72,13 @@ def resolve_pypdf_destination(reader: PdfReader, dest) -> str:
     Uses the official pypdf helper when possible for maximum reliability.
     """
     try:
+        if dest is None:
+            return "N/A"
+        
+        # If it's an IndirectObject, resolve it first
+        if isinstance(dest, (IndirectObject, NameObject)):
+            dest = dest.get_object()
+        
         # Named destinations or explicit destinations are handled correctly by this method
         if isinstance(dest, Destination):
             return str(reader.get_destination_page_number(dest) + 1)
