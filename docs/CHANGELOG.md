@@ -5,6 +5,29 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ---
 ## [1.1.58] - 2025-12-18
 
+### Added
+
+* **TXT Export Support:** Introduced plain text (`.txt`) as a valid export format in both the CLI and GUI, providing a lightweight, human-readable alternative to JSON.
+* **Privacy-Aware Pathing:** Implemented `get_friendly_path()` utility to sanitize printed file paths, protecting developer/user directory privacy in logs and console output.
+* **Enhanced TOC Reporting:** Integrated structural Table of Contents (TOC) handling into the final report generation for better document navigation analysis.
+
+### Changed
+
+* **PyMuPDF Installation Policy:** Transitioned from a hard-coded block on ARM/Linux to a "permissive attempt" model. Users on any system can now try to install the `full` extra, with clear guidance provided if the build fails on mobile hardware.
+* **CLI Robustness:** Improved `run_report()` error messaging to provide actionable `uv sync` or `pip` commands when a user explicitly selects an unavailable PDF library.
+* **GUI Error Handling:** Upgraded the Analysis GUI to use rich traceback information for unexpected failures, displayed via a dedicated red-text `_display_error` state-aware method.
+* **Refined Build Logic:** Updated `build_executable.py` to intelligently toggle the `--noconsole` flag based on Tkinter availability (via `pyhabitat`), ensuring functional console output on Termux.
+* **Library Fallback Terminology:** Standardized "Engine" and "Library" wording across reporting logs for consistent technical communication.
+
+### Fixed
+
+* **GUI Configuration:** Resolved an issue where the TXT export checkbutton was not properly linked to the analysis execution logic in the Tkinter interface.
+* **PEP 508 Compliance:** Corrected environment marker syntax in `pyproject.toml` to ensure successful `uv sync` operations across heterogeneous hardware (WSL2 vs. Termux).
+
+### Internal
+
+* Cleaned up and optimized `analyze_pypdf.py` (v2) with spatial anchor text extraction logic using the `pypdf` visitor pattern.
+* Verified cross-platform dependency resolution for `ruff` and `shiv` across `x86_64` and `aarch64`.
 
 ---
 

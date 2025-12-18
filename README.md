@@ -4,7 +4,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links wit
 
 -----
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.56.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.58.png)
 
 -----
 
@@ -27,7 +27,11 @@ For an isolated environment where you can access `pdflinkcheck` from any termina
 
 ```bash
 # Ensure you have pipx installed first (if not, run: pip install pipx)
+pipx install pdflinkcheck[full]
+
+# On Termux
 pipx install pdflinkcheck
+
 ```
 
 -----
@@ -59,7 +63,11 @@ We are actively working on the following enhancements:
 
 The core functionality is accessed via the `analyze` command. All commands include the built-in `--help` flag for quick reference.
 
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.57_tree_help.png)
+`DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree`:
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.58_tree_help.png)
+
+`pdflinkcheck --help`:
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.58.png)
 
 
 ### Available Commands
@@ -76,7 +84,7 @@ The core functionality is accessed via the `analyze` command. All commands inclu
 |---|---|---|
 |`<PDF_PATH>`|**Required.** The path to the PDF file to analyze.|N/A|
 |`--max-links INTEGER`|Maximum number of links to display in the detailed report sections. Use `0` to show all.|`0` (Show All)|
-|`--export-format FORMAT`|Format for the exported report. If specified, the report is saved to a file named after the PDF. Currently supported: `JSON`.|`JSON`|
+|`--export-format FORMAT`|`JSON` and/or `TXT` report export.|`JSON`|
 |`--help`|Show command help and exit.|N/A|
 
 ### `gui` Command Options
@@ -89,8 +97,8 @@ The core functionality is accessed via the `analyze` command. All commands inclu
 
 
 ```bash 
-# Analyze a document, show all links, and save the report as JSON
-pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --export-format JSON
+# Analyze a document, show all links, and save the report as JSON and TXT
+pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --export-format JSON,TXT
 
 # Analyze a document but keep the print block short, showing only the first 10 links for each type
 pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
@@ -98,7 +106,6 @@ pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
 # Show the GUI for only a moment, like in a build check
 pdflinkcheck gui --auto-close 3000 
 ```
-
 
 -----
 
@@ -178,25 +185,22 @@ All testing has failed to run in a **Termux (Android)** environment due to under
 It is recommended for use on standard Linux, macOS, or Windows operating systems.
 
 #### Termux Compatibility as a Key Goal
-A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible. Unfortunately, that simply isn't possible with PyMuPDF as a dependency. 
-We tried alternative PDF libaries like `pdfminer`, `pdfplumber`, and `borb`, but none of these offered the level of detail concerning GoTo links.
-Due to Termux compatibility goals, we do not generally make Tkinter-based interfaces, so that was a fun, minimalist opportunity on this project. 
+A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible.
 
 Termux compatibility is important in the modern age as Android devices are common among technicians, field engineers, and maintenace staff. 
 Android is the most common operating system in the Global South. 
 We aim to produce stable software that can do the most possible good. 
 
-We love web-stack GUIs served locally as a final product.
-All that packaged up into a Termux-compatible ELF or PYZ - What could be better!
+While using PyMuPDF in Python dependency resolution on Termux simply isn't possible, we are proud to have achieved a work around by implementing a parallel solution in `pypdf`! 
+Now, there is PDF Engine selection in both the CLI and the GUI. 
+`pypdf` is the function default for in pdflinkcheck.report.run_report() - PyMuPDF can be explicitly requested in the CLI and is the default in the TKinter GUI.
 
-In the future we may find a work-around and be able to drop the PyMuPDF dependency. 
-This would have lots of implications:
-- Reduced artifact size.
-- Alpine-compatible Docker image.
-- Web-stack GUI rather than Tkinter, to be compatible with Termux.
-- A different license from the AGPL3, if we choose at that time.
+Now that `pdflinkcheck` can run on Termux, we may find a work-around and be able to drop the PyMuPDF dependency. 
+- Build `pypdf`-only artifacts, to reduce size.
+- Build a web-stack GUI as an alternative to the Tkinter GUI, to be compatible with Termux.
 
-In the meantime, the standalone binaries and pipx installation provide excellent cross-platform support on Windows, macOS, and standard Linux desktops/laptops.
+Becaus it works, we plan to keep the `PyMuPDF` portion of the codebase. This portion will remain AGPL3-licensed.
+Other portions of the code are explicitly MIT-licensed.
 
 ### Document Compatibility: 
 While `pdflinkcheck` uses the robust PyMuPDF library, not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
@@ -229,7 +233,16 @@ uv add "pdflinkcheck[full]"
 ```bash
 git clone http://github.com/city-of-memphis-wastewater/pdflinkcheck.git
 cd pdflinkcheck
+
+# To include the PyMuPDF dependency in the installation:
+uv sync --extras full
+
+# On Termux, to not include PyMuPDF:
 uv sync
+
+# To include developer depedecies:
+uv sync --all-extras --group dev
+
 uv run python src/pdflinkcheck/cli.py --help
 ```
 

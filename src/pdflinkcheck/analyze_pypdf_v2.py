@@ -2,10 +2,10 @@
 import sys
 from pathlib import Path
 import logging
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, List
 
 from pypdf import PdfReader
-from pypdf.generic import Destination, NameObject, ArrayObject, IndirectObject
+from pypdf.generic import Destination, NameObject, IndirectObject
 
 from pdflinkcheck.report import run_report, run_validation
 
@@ -38,7 +38,6 @@ def get_anchor_text_pypdf(page, rect) -> str:
         # Guard against missing font_size
         actual_font_size = font_size if font_size else 10
 
-        
 
         # Approximate Center-Alignment Check
         # Since tm[4/5] is usually the bottom-left of the character, 
