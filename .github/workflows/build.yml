@@ -49,6 +49,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install shiv pyinstaller build
           pip install -e . 
+        # pip install -e ".[full]"  # Ensure PyMuPDF is there for the compiler to find
 
       - name: Build wheel & sdist
         run: python -m build --sdist

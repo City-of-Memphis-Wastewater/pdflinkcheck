@@ -205,6 +205,22 @@ Processing may fail or yield incomplete results for:
 
 -----
 
+## PDF Library Selection
+At long last, `PyMuPDF` is an optional dependency. The default is `pypdf`. All testing has shown identical performance, but the `analyze_pymupdf.py` is more direct and robust than `analyze_pypdf.py`, which requires a lot of intentional parsing. 
+
+Binaries and artifacts that are distibuted with both PDF librarys will include "pymupdf" in the filename. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
+
+To install the complete version use one of these options:
+
+```bash
+pip install "pdflinkcheck[full]"
+pipx install "pdflinkcheck[full]"
+uv tool install "pdflinkcheck[full]"
+uv add "pdflinkcheck[full]"
+```
+
+-----
+
 ## Run from Source (Developers)
 
 ```bash

@@ -89,7 +89,6 @@ def ensure_dependencies_and_shiv():
 
     # 2b. INSTALL/SYNC ALL PROJECT DEPENDENCIES (The Fix)
     print("Installing all project dependencies via uv pip install -e .")
-    #run_command(["uv", "pip", "install", "-e", "."]) # <-- FIX: Use -e . to get all dependencies
     run_command([sys.executable, "-m", "pip", "install", "-e", "."])
     
     # 2c. Ensure shiv is installed
@@ -133,6 +132,7 @@ def build_shiv_pyz():
     cmd = [
         "shiv",
         str(wheel_path), 
+        #f"{str(wheel_path)}[full]",  # Add the [full] extra here
         "-o", str(output_path),
         "-p", "/usr/bin/env python3", 
         "-e", ENTRY_POINT,
