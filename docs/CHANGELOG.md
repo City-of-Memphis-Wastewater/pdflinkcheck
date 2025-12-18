@@ -28,8 +28,6 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 * Improved string and log handling within the reporting pipeline.
 * Added the active PDF library name to export filenames for better traceability of results.
 
-
-
 ### Changed
 
 * **Major Refactor:** - Renamed `run_analysis()` to `run_report()` and migrated it to the new `report.py`.
@@ -43,7 +41,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Removed
 
 * **Remnant Checking:** Completely stripped all "check remnants" functionality and options from the CLI, GUI, and analysis engines to focus on the core link-checking use case.
-* **Mandatory PyMuPDF:** Removed `pymupdf` from the required dependencies list to allow for "slim" installs.
+* **Mandatory PyMuPDF:** Removed `pymupdf` from the required dependencies list to allow for Termux-compatible "slim" installs.
 
 ### Fixed
 
