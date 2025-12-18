@@ -1,5 +1,6 @@
 # src/pdflinkcheck/cli.py
 import typer
+from typing import Literal
 from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
@@ -109,22 +110,36 @@ def analyze_pdf( # Renamed function for clarity
         resolve_path=True,
         help="The path to the PDF file to analyze."
     ),
-    export_format: str = typer.Option("JSON", "--export-format","-e", help="Set the export format for the report. Currently supported: JSON. To suppress file export, use the empty string: --export-format \"\""
+    export_format: Optional[Literal["JSON", "TXT"]] = typer.Option("JSON", "--export-format","-e", help="Export format. Use 'None' to suppress file export.",
     ),
     max_links: int = typer.Option(
         0,
         "--max-links", "-m",
         min=0,
-        help="Maximum number of links/remnants to display in the report, if an overwhelming amount is expected. Use 0 to show all."
+        help="Report brevity control. Use 0 to show all."
     ),
-    pdf_library: str = typer.Option(
+
+    pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
         "pypdf",#"pymupdf",
         "--pdf-library","-p",
-        help="select the PDF parsing library to use, pymupdf or pypdf."
+        envvar="PDFLINKCHECK_ANALYZE_PDF_LIBRARY",
+        help="Select PDF parsing library, pymupdf or pypdf.",
     )
 ):
     """
     Analyzes the specified PDF file for all internal, external, and unlinked references.
+    """
+
+    """
+    Fun Typer fact:
+    Overriding Order
+    Environment variables sit in the middle of the "priority" hierarchy:
+
+    CLI Flag: (Highest priority) analyze -p pypdf will always win.
+
+    Env Var: If no flag is present, it checks PDFLINKCHECK_ANALYZE_PDF_LIBRARY.
+
+    Code Default: (Lowest priority) It falls back to "pypdf" as defined in your typer.Option.
     """
 
     VALID_FORMATS = ("JSON") # extend later
@@ -156,7 +171,7 @@ def analyze_pdf( # Renamed function for clarity
 def gui_command(
     auto_close: int = typer.Option(0, 
                                    "--auto-close", "-c", 
-                                   help = "Delay in milliseconds after which the GUI window will close (for automated testing). Use 0 (default) to disable auto-closing.",
+                                   help = "Delay in milliseconds after which the GUI window will close (for automated testing). Use 0 to disable auto-closing.",
                                    min=0)
     )->None:
     """
