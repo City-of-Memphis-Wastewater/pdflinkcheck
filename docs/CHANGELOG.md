@@ -6,7 +6,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.1.59] - 2025-12-18
 ### Fixed:
 - `build_pyz.py`: Managed Shiv command based on if the platform is Termux or not.
-- `__init__.py`: Change import reference from analyze_pypdf to analyze_pypdf_v2. I need to choose the defacto and delete the dfunct version, but I havent taken the time to perform the rigorous oversight.
+- `__init__.py`: Change import reference from analyze_pypdf to analyze_pypdf_v2 in __init__.py. I need to choose the defacto and delete the dfunct version, but I havent taken the time to perform the rigorous oversight.
 
 ### Changed:
 - build_executable.form_dynamic_name() adjusted to no longer include "-PyMuPDF" if that package is included in the build. 
