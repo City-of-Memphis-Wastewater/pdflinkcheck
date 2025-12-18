@@ -11,7 +11,7 @@ import pyhabitat
 # Import the core analysis function
 from pdflinkcheck.report import run_report 
 from pdflinkcheck.version_info import get_version_from_pyproject
-from pdflinkcheck.io import get_first_pdf_in_cwd, PDFLINKCHECK_HOME
+from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -337,7 +337,7 @@ class PDFLinkCheckerApp(tk.Tk):
             filetypes=[("PDF files", "*.pdf"), ("All files", "*.*")]
         )
         if file_path:
-            self.pdf_path.set(file_path)
+            self.pdf_path.set(get_friendly_path(file_path))
 
 
     def _toggle_max_links_entry(self):
@@ -356,15 +356,31 @@ class PDFLinkCheckerApp(tk.Tk):
         """Checkbox toggle for TXT filetype report."""
         if self.do_export_report_txt_var.get():
             pass # placeholder # no side effects
+    
+    def _assess_pdf_path_str(self):
+        pdf_path_str = self.pdf_path.get().strip()
+        if not pdf_path_str: 
+            pdf_path_str = get_first_pdf_in_cwd()
+            if not pdf_path_str:
+                self._display_error("Error: No PDF found in current directory.")
+                return
+
+        p = Path(pdf_path_str).expanduser().resolve()
+
+        if not p.exists():
+            self._display_error(f"Error: PDF file not found at: {p}")
+            return
+            
+        # Use the resolved string version for the rest of the function
+        pdf_path_str_assessed = str(p)
+        return pdf_path_str_assessed
 
     def _run_report_gui(self):
-        pdf_path_str = self.pdf_path.get()
-        if pdf_path_str.strip() == "" or pdf_path_str is None: 
-            pdf_path_str = get_first_pdf_in_cwd()
-        if not Path(pdf_path_str).exists():
-            self._display_error("Error: PDF file not found or path is invalid.")
-            return
         
+        pdf_path_str = self._assess_pdf_path_str()
+        if not pdf_path_str:
+            return
+
         if self.show_all_links_var.get():
             max_links_to_pass = 0 
         else:
@@ -410,7 +426,12 @@ class PDFLinkCheckerApp(tk.Tk):
             #self.output_text.insert(tk.END, "\n--- Analysis Complete ---\n")
 
         except Exception as e:
-            self.output_text.insert(tk.END, "\n")
+            # 1. Log the full technical detail to the console for debugging
+            import traceback
+            traceback.print_exc()
+            # 2. Inform the user in the GUI with a clean message
+            self.output_text.config(state=tk.NORMAL)
+            self.output_text.insert(tk.END, f"\n\n[ERROR] Analysis failed.\n")
             self._display_error(f"An unexpected error occurred during analysis: {e}")
 
         finally:

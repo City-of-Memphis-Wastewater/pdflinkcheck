@@ -90,7 +90,7 @@ def export_report_data(
             # Use indent for readability
             json.dump(report_data, f, indent=4)
             
-        print(f"\nReport successfully exported to: {output_path}")
+        print(f"\nReport successfully exported to: {get_friendly_path(output_path)}")
         return output_path
         
     except Exception as e:
@@ -110,7 +110,7 @@ def export_report_json(
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(report_data, f, indent=4)
-        print(f"\nJSON report exported: {output_path}")
+        print(f"\nJSON report exported: {get_friendly_path(output_path)}")
         return output_path
     except Exception as e:
         error_logger.error(f"JSON export failed: {e}", exc_info=True)
@@ -127,7 +127,7 @@ def export_report_txt(
 
     try:
         output_path.write_text(report_text, encoding='utf-8')
-        print(f"\nTXT report exported: {output_path}")
+        print(f"\nTXT report exported: {get_friendly_path(output_path)}")
         return output_path
     except Exception as e:
         error_logger.error(f"TXT export failed: {e}", exc_info=True)
