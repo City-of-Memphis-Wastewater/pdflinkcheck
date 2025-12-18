@@ -4,6 +4,25 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.56] - 2025-12-18
+### Added
+- **Environment Variable Configuration:** Added support for `PDFLINKCHECK_ANALYZE_PDF_LIBRARY` to allow persistent user preferences without repetitive flagging.
+- **Strict CLI Validation:** Implemented `Literal` type hinting for `--pdf-library` and `--export-format`, providing automatic validation and better help menu clarity.
+    
+### Changed
+- **Version Discovery Logic:** Updated `version_info.find_pyproject()` to prioritize the developer root `pyproject.toml` over the packaged data file, ensuring local development reflects the correct versioning.
+- **GUI Layout Refinement:** Reorganized the control panel into a three-column grid to resolve frame overlap issues between PDF Library selection and Export settings.
+- **Action Row UX:** Expanded the "Run Analysis" button to span two columns and increased the "README" button width for better visual balance and accessibility.
+- **CLI Command Names:** Renamed internal CLI functions (e.g., `analyze_pdf`) and command names for better maintainability.
+    
+### Fixed
+- **Reporting Hints:** Corrected the "Max Links" hint logic within the generated reports to accurately reflect brevity settings.
+
+### Internal Note for 1.1.56/1.1.57 transition:
+> **To-Do:** Clean up `analyze_pypdf.py`, verify `__init__.py` compatibility, and refresh the `README` before the next major push to `main`.
+
+---
+
 ## [1.1.55] - 2025-12-17
 
 ### Added
