@@ -52,7 +52,8 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 [project.optional-dependencies]
 # This allows users to do: pip install pdflinkcheck[full]
 full = [
-    "pymupdf>=1.26.7 ; platform_system == 'Linux' and platform_machine != 'aarch64'" # to avoid on termux
+    #"pymupdf>=1.26.7 ; platform_system == 'Linux' and platform_machine != 'aarch64'" # to avoid on termux
+    "pymupdf>=1.26.7"  # let them try
 ]
 
 [dependency-groups]
