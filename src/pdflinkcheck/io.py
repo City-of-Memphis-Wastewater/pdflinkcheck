@@ -140,7 +140,14 @@ def export_report_txt(
 # except Exception as e:
 #     error_logger.exception("An exception occurred during link extraction.")
 
-
+def get_friendly_path(full_path: str) -> str:
+    p = Path(full_path).resolve()
+    try:
+        # Replaces /home/oolong with ~
+        return str(p).replace(str(Path.home()), "~")
+    except ValueError:
+        return str(p)
+    
 def get_first_pdf_in_cwd() -> Optional[str]:
     """
     Scans the current working directory (CWD) for the first file ending 
