@@ -58,7 +58,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
         return
     try:
-        log(f"Running {pdf_library} analysis on {Path(pdf_path).name}...")
+        log(f"Target file: {Path(pdf_path).name}")
+        log(f"PDF Engine: {pdf_library}")
 
         # 1. Extract all active links and TOC
         extracted_links = extract_links(pdf_path)
