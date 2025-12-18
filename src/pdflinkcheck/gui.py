@@ -45,7 +45,7 @@ class PDFLinkCheckerApp(tk.Tk):
         self.show_all_links_var = tk.BooleanVar(value=True)  
         self.do_export_report_json_var = tk.BooleanVar(value=True) 
         self.do_export_report_txt_var = tk.BooleanVar(value=False) 
-        
+
         self.supported_export_formats = ["JSON", "MD", "TXT"]
         self.supported_export_formats = ["JSON"]
         
@@ -203,14 +203,26 @@ class PDFLinkCheckerApp(tk.Tk):
         
         # === END: File Selection Frame ===
 
-        # Report brevity options:
+        # --- Report brevity options ----
         report_brevity_frame = ttk.LabelFrame(control_frame, text="Report Brevity Options:")
-        report_brevity_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=1, sticky='nsew')
+        #report_brevity_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=1, sticky='nsew')
+        report_brevity_frame.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
+        #
+        ttk.Checkbutton(
+            report_brevity_frame, 
+            text="Show All Links.", 
+            variable=self.show_all_links_var,
+            command=self._toggle_max_links_entry
+        ).pack(side='left', padx=5, pady=1)
 
-        # PDF Library Selection
+        ttk.Label(report_brevity_frame, text="Max Links to Display:").pack(side='left', padx=5, pady=1)
+        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=4)
+        self.max_links_entry.pack(side='left', padx=5, pady=5)
+
+        # --- PDF Library Selection ---
         # Create a labeled group for the PDF options
         pdf_library_frame = ttk.LabelFrame(control_frame, text="Select PDF Library:")
-        pdf_library_frame.grid(row=1, column=2, columnspan=2, padx=5, pady=1, sticky='nsew')
+        pdf_library_frame.grid(row=1, column=1, padx=5, pady=5, sticky='nsew')
 
         # Radio options inside the frame
         ttk.Radiobutton(
@@ -228,24 +240,10 @@ class PDFLinkCheckerApp(tk.Tk):
             value="pypdf",
         ).pack(side='left', padx=5, pady=1)
 
-        #
-        ttk.Checkbutton(
-            report_brevity_frame, 
-            text="Show All Links (Override Max)", 
-            variable=self.show_all_links_var,
-            command=self._toggle_max_links_entry
-        ).pack(side='left', padx=5, pady=1)
-
-
-        ttk.Label(report_brevity_frame, text="Max Links to Display:").pack(side='left', padx=5, pady=1)
-        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=4)
-        self.max_links_entry.pack(side='left', padx=5, pady=1)
-
-        export_group_frame = ttk.Frame(control_frame)
+        export_group_frame = ttk.LabelFrame(control_frame, text="Export Format:")
         #export_group_frame = ttk.LabelFrame(control_frame, text = "Export Filetype Selection:")
-        export_group_frame.grid(row=3, column=1, padx=5, pady=1, sticky='e') # Placed in the original Checkbutton's column
-        ttk.Label(export_group_frame , text="Export Filetype:").pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Label()
+        export_group_frame.grid(row=1, column=2, padx=5, pady=5, sticky='nseew') # Placed in the original Checkbutton's column
+        
         ttk.Checkbutton(
             export_group_frame, 
             #text="Export Report",
@@ -259,12 +257,12 @@ class PDFLinkCheckerApp(tk.Tk):
             variable=self.do_export_report_txt_var,
         ).pack(side=tk.LEFT, padx=(0, 5)) # Pack Checkbutton to the left with small internal padding
         
-        # Pack Entry tightly next to it
-
-        # Row 3: Run Button and License Button
+        # Row 3: Run Button, Export Filetype selection, License Button, and readme button
         # 1. Run Button (Spans columns 0 and 1)
         run_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton')
-        run_btn.grid(row=3, column=0, columnspan=1, pady=10, sticky='ew', padx=(0, 5))
+        run_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
+        # Ensure the run button frame expands to fill its column
+        #run_btn.grid_columnconfigure(0, weight=1)
 
         # 2. Create a Frame to hold the two file link buttons (This frame goes into column 2)
         info_btn_frame = ttk.Frame(control_frame)
@@ -281,11 +279,13 @@ class PDFLinkCheckerApp(tk.Tk):
         readme_btn = ttk.Button(info_btn_frame, text="Readme", command=self._show_readme)
         readme_btn.grid(row=0, column=1, sticky='ew', padx=(2, 0)) # Right side of the frame
 
+        # Force the columns to distribute space evenly
+        control_frame.grid_columnconfigure(0, weight=2)
         control_frame.grid_columnconfigure(1, weight=1)
         control_frame.grid_columnconfigure(2, weight=1)
 
         # --- Output Frame (Bottom) ---
-        output_frame = ttk.Frame(self, padding="10")
+        output_frame = ttk.Frame(self, padding=(10, 2, 10, 10)) # Left, Top, Right, Bottom
         output_frame.pack(fill='both', expand=True)
 
         output_header_frame = ttk.Frame(output_frame)
