@@ -426,12 +426,7 @@ class PDFLinkCheckerApp(tk.Tk):
             #self.output_text.insert(tk.END, "\n--- Analysis Complete ---\n")
 
         except Exception as e:
-            # 1. Log the full technical detail to the console for debugging
-            import traceback
-            traceback.print_exc()
-            # 2. Inform the user in the GUI with a clean message
-            self.output_text.config(state=tk.NORMAL)
-            self.output_text.insert(tk.END, f"\n\n[ERROR] Analysis failed.\n")
+            # Inform the user in the GUI with a clean message
             self._display_error(f"An unexpected error occurred during analysis: {e}")
 
         finally:
@@ -457,6 +452,7 @@ class PDFLinkCheckerApp(tk.Tk):
         #self.output_text.delete('1.0', tk.END)
         self.output_text.insert(tk.END, f"[ERROR] {message}\n", 'error')
         self.output_text.tag_config('error', foreground='red')
+        self.output_text.see(tk.END)
 
         # Restore state
         self.output_text.config(state=tk.DISABLED)
