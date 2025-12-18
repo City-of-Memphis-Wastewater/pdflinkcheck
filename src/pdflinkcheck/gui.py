@@ -255,7 +255,7 @@ class PDFLinkCheckerApp(tk.Tk):
         ttk.Checkbutton(
             export_group_frame, 
             text = "TXT" ,
-            state=tk.DISABLED,
+            #state=tk.DISABLED,
             variable=self.do_export_report_txt_var,
         ).pack(side=tk.LEFT, padx=(0, 5)) # Pack Checkbutton to the left with small internal padding
         
