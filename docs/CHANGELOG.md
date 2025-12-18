@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
+
 ## [1.1.59] - 2025-12-18
 ### Fixed:
 - `build_pyz.py`: Managed Shiv command based on if the platform is Termux or not.
@@ -12,7 +13,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - build_executable.form_dynamic_name() adjusted to no longer include "-PyMuPDF" if that package is included in the build. 
 - Update the README to indicate the assumption that PyMuPDF is included in all artifacts except for ones built on Android.
 
+### Internal
+- To Do: Validation logic:
+    - Check if file references exist relative to PDF path, and if page numbers are reasonable based on file length.
+    - Check if GoTo link page numbers are reasonable based on file length.
+
 ---
+
 ## [1.1.58] - 2025-12-18
 
 ### Added
