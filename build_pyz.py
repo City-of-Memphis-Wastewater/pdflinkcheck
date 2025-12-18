@@ -141,7 +141,7 @@ def build_shiv_pyz():
     ]
 
     # Clarify if PyMuPDF should be included or not
-    if not pyhabitat.on_temux():
+    if not pyhabitat.on_termux():
         whl_call = f"{str(wheel_path)}[full]"  # include pymupdf
     else:
         whl_call = str(wheel_path) # do not include pymupdf
