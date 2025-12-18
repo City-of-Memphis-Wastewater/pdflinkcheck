@@ -104,7 +104,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
 
             if limit is not None and len(all_internal) > limit:
-                log(f"... and {len(all_internal) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+                log(f"... and {len(all_internal) - limit} more links (use --max-links 0 to show all).")
         else:
             log(" No internal GoTo or Resolved Action links found.")
         
@@ -120,7 +120,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 link_text = link.get('link_text', 'N/A')
                 log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
             if limit is not None and len(uri_and_other) > limit:
-                log(f"... and {len(uri_and_other) - limit} more links (use --max-links to see all or --max-links 0 to show all).")
+                log(f"... and {len(uri_and_other) - limit} more links (use --max-links 0 to show all).")
 
         else: 
             log(" No external or 'Other' links found.")

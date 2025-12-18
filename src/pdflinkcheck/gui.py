@@ -355,7 +355,6 @@ class PDFLinkCheckerApp(tk.Tk):
         pdf_path_str = self.pdf_path.get()
         if pdf_path_str.strip() == "" or pdf_path_str is None: 
             pdf_path_str = get_first_pdf_in_cwd()
-            print(f"pdf_path_str is blank. Using one found locally: {pdf_path_str}")
         if not Path(pdf_path_str).exists():
             self._display_error("Error: PDF file not found or path is invalid.")
             return
