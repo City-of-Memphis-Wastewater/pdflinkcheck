@@ -1,10 +1,10 @@
 # pdflinkcheck
 
-A purpose-built tool for comprehensive analysis of hyperlinks and link remnants within PDF documents, primarily using the PyMuPDF library. Use the CLI or the GUI.
+A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links within PDF documents. Users may leverage either the PyMuPDF or the pypdf library. Use the CLI or the GUI.
 
 -----
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.51.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.56.png)
 
 -----
 
@@ -59,14 +59,14 @@ We are actively working on the following enhancements:
 
 The core functionality is accessed via the `analyze` command. All commands include the built-in `--help` flag for quick reference.
 
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.51_tree_help.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.57_tree_help.png)
 
 
 ### Available Commands
 
 |**Command**|**Description**|
 |---|---|
-|`pdflinkcheck analyze`|Analyzes a PDF file for links and remnants.|
+|`pdflinkcheck analyze`|Analyzes a PDF file for links |
 |`pdflinkcheck gui`|Explicitly launch the Graphical User Interface.|
 |`pdflinkcheck license`|**Displays the full AGPLv3+ license text in the terminal.**|
 
@@ -75,8 +75,7 @@ The core functionality is accessed via the `analyze` command. All commands inclu
 |**Option**|**Description**|**Default**|
 |---|---|---|
 |`<PDF_PATH>`|**Required.** The path to the PDF file to analyze.|N/A|
-|`--check-remnants / --no-check-remnants`|Toggle scanning the text layer for unlinked URLs/Emails.|`--check-remnants`|
-|`--max-links INTEGER`|Maximum number of links/remnants to display in the detailed report sections. Use `0` to show all.|`0` (Show All)|
+|`--max-links INTEGER`|Maximum number of links to display in the detailed report sections. Use `0` to show all.|`0` (Show All)|
 |`--export-format FORMAT`|Format for the exported report. If specified, the report is saved to a file named after the PDF. Currently supported: `JSON`.|`JSON`|
 |`--help`|Show command help and exit.|N/A|
 
@@ -90,11 +89,8 @@ The core functionality is accessed via the `analyze` command. All commands inclu
 
 
 ```bash 
-# Analyze a document, show all links/remnants, and save the report as JSON
+# Analyze a document, show all links, and save the report as JSON
 pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --export-format JSON
-
-# Analyze a document but skip the time-consuming remnant check
-pdflinkcheck analyze "another_doc.pdf" --no-check-remnants 
 
 # Analyze a document but keep the print block short, showing only the first 10 links for each type
 pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
@@ -129,7 +125,6 @@ from pdflinkcheck.analysis import extract_links, extract_toc
 
   * **Active Link Extraction:** Identifies and categorizes all programmed links (External URIs, Internal GoTo/Destinations, Remote Jumps).
   * **Anchor Text Retrieval:** Extracts the visible text corresponding to each link's bounding box.
-  * **Remnant Detection:** Scans the document's text layer for unlinked URIs and email addresses that should potentially be converted into active links.
   * **Structural TOC:** Extracts the PDF's internal Table of Contents (bookmarks/outline).
 
 -----
@@ -163,6 +158,14 @@ pdflinkcheck.start_gui()
 ```
 
 If the `PDFLINKCHECK_GUI_EASTEREGG` environment variable is not set—or if GUI support is unavailable—`pdflinkcheck` behaves as a normal library with no GUI functions exposed.
+
+### Another Easter Egg
+
+```bash
+DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree
+```
+
+This `help-tree` feature has not yet been submitted for inclusion into Typer.
 
 -----
 
