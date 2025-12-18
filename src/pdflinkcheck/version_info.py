@@ -46,16 +46,16 @@ def find_pyproject(start: Path) -> Path | None:
         if candidate.exists():
             return candidate
 
-    # 2. Handle Installed / Wheel / Shiv state (using your force-include path)
-    internal_path = Path(__file__).parent / "data" / "pyproject.toml"
-    if internal_path.exists():
-        return internal_path
-
-    # 3. Handle Development state (walking up the tree)
+    # 4. Handle Development state (walking up the tree)
     for p in start.resolve().parents:
         candidate = p / "pyproject.toml"
         if candidate.exists():
             return candidate
+        
+    # 3. Handle Installed / Wheel / Shiv state (using your force-include path)
+    internal_path = Path(__file__).parent / "data" / "pyproject.toml"
+    if internal_path.exists():
+        return internal_path
 
     return None
 
