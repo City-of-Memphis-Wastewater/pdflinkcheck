@@ -6,9 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.62] - 2025-12-19
+### Fixed:
+- Handle invalid headers and also missing EOF blocks, for scans without links.
+
+---
+
 ## [1.1.61] - 2025-12-19
 ### Fixed:
 - Favicon handling error, missing return -> now favicon errors are silent, and the missing return above is fixed.
+
 ---
 
 ## [1.1.60] - 2025-12-19
