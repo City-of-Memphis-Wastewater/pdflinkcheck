@@ -53,6 +53,7 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
             return
             
         if self.path == "/favicon.ico":
+            return
             # Silent no-content response (most browsers cache this)
             self.send_response(204)
             self.end_headers()
