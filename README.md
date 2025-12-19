@@ -246,7 +246,11 @@ uv sync
 # To include developer depedecies:
 uv sync --all-extras --group dev
 
+# Run the CLI
 uv run python src/pdflinkcheck/cli.py --help
+
+# Run a basic webapp and Termux-facing browser-based interface
+uv run  python -m pdflinkcheck.stdlib_server
 ```
 
 -----
