@@ -17,14 +17,14 @@ HTML_FORM = """
 <html>
 <head><title>pdflinkcheck Stdlib Server</title></head>
 <body style="font-family: sans-serif; max-width: 800px; margin: 40px auto;">
-  <h1>pdflinkcheck API (Pure Stdlib – No cgi!)</h1>
+  <h1>pdflinkcheck API (Pure Stdlib, without cgi)</h1>
   <p>Upload a PDF for link/TOC analysis. Zero third-party deps, future-proof.</p>
   <form action="/" method="post" enctype="multipart/form-data">
     <p><input type="file" name="file" accept=".pdf" required></p>
     <p>
       <label>Engine:</label>
       <select name="pdf_library">
-        <option value="pypdf" selected>pypdf (pure Python, always works)</option>
+        <option value="pypdf" selected>pypdf (pure Python, Termux-friendly)</option>
         <option value="pymupdf">pymupdf (faster, if installed)</option>
       </select>
     </p>
