@@ -1,6 +1,36 @@
 # Changelog
+
 All notable changes to this project will be documented in this file.
+
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+---
+
+## [1.1.60] - 2025-12-19
+
+### Added
+
+- New `validate` CLI command that performs validation of internal GoTo links, remote GoToR file references, and TOC bookmark targets
+- New `serve` CLI command that starts a pure-stdlib HTTP server for browser-based PDF upload and analysis
+- New `validate.py` module with reusable validation logic
+- Support for direct validation testing via `python -m pdflinkcheck.validate`
+- Handling for browser favicon requests in the web server to reduce extraneous 404 log entries
+
+### Changed
+
+- Updated server HTML form for clarity and usability
+- Improved validation handling of page numbers stored as strings when using the `pypdf` engine
+- Updated README with documentation for the new `serve` and `validate` commands
+- Minor adjustments to exposed imports in `__init__.py`
+
+### Internal
+
+- To Do: Solve incorrect validation failures when internal destination pages were returned as strings by `pypdf`
+
+
+--- 
+
+(Previous entries remain unchanged below this point.)
 
 ---
 
