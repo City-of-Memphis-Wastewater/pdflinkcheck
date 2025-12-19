@@ -244,7 +244,44 @@ def validate_pdf(
         console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!")
 
     raise typer.Exit(code=0 if broken_count == 0 else 1)
-    
+
+@app.command(name="serve")
+def serve(
+    host: str = typer.Option("0.0.0.0", "--host", "-h", help="Host to bind (use 0.0.0.0 for network access)"),
+    port: int = typer.Option(8000, "--port", "-p", help="Port to listen on"),
+    reload: bool = typer.Option(False, "--reload", help="Auto-reload on code changes (dev only)"),
+):
+    """
+    Start the built-in web server for uploading and analyzing PDFs in the browser.
+
+    Pure stdlib — no extra dependencies. Works great on Termux!
+    """
+    console.print(f"[bold green]Starting pdflinkcheck web server[/bold green]")
+    console.print(f"   → Open your browser at: [bold blue]http://{host}:{port}[/bold blue]")
+    console.print(f"   → Upload a PDF to analyze links and TOC")
+    if reload:
+        console.print("   → [yellow]Reload mode enabled[/yellow]")
+
+    # Import here to avoid slow imports on other commands
+    from pdflinkcheck.stdlib_server import ThreadedTCPServer, PDFLinkCheckHandler
+    import socketserver
+
+    try:
+        with ThreadedTCPServer((host, port), PDFLinkCheckHandler) as httpd:
+            console.print(f"[green]Server running — press Ctrl+C to stop[/green]\n")
+            httpd.serve_forever()
+    except OSError as e:
+        if "Address already in use" in str(e):
+            console.print(f"[red]Error: Port {port} is already in use.[/red]")
+            console.print("Try a different port with --port 8080")
+        else:
+            console.print(f"[red]Server error: {e}[/red]")
+        raise typer.Exit(code=1)
+    except KeyboardInterrupt:
+        console.print("\n[bold yellow]Server stopped.[/bold yellow]")
+        raise typer.Exit(code=0)
+
+        
 @app.command(name="gui") 
 def gui_command(
     auto_close: int = typer.Option(0, 
