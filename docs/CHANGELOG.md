@@ -33,10 +33,6 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - To Do: Solve incorrect validation failures when internal destination pages were returned as strings by `pypdf`
 
 
---- 
-
-(Previous entries remain unchanged below this point.)
-
 ---
 
 ## [1.1.59] - 2025-12-18
