@@ -61,7 +61,7 @@ We are actively working on the following enhancements:
 
 ## 🚀 CLI Usage
 
-The core functionality is accessed via the `analyze` command. All commands include the built-in `--help` flag for quick reference.
+The core functionality is accessed via the `analyze` command. 
 
 `DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree`:
 ![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.58_tree_help.png)
@@ -118,14 +118,22 @@ For developers importing `pdflinkcheck` into other Python projects, the core ana
 |**Function**|**Description**|
 |---|---|
 |`run_report()`|**(Primary function)** Performs the full analysis, prints to console, and handles file export.|
-|`extract_links()`|Low-level function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path.|
-|`extract_toc()`|Low-level function to extract the PDF's internal Table of Contents (bookmarks/outline).|
+|`extract_links_pynupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path.|
+|`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline).|
+|`extract_links_pynupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path, using the pypdf library.|
+|`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline), using the pypdf library.|
 
-Python
+Exanple:
 
-```
+```python
 from pdflinkcheck.report import run_report
-from pdflinkcheck.analysis import extract_links, extract_toc
+from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf, extract_toc_pymupdf                                                                          130 from pdflinkcheck.analysis_pymupdf import extract_links_pynupdf, extract_toc_pymupdf
+from pdflinkcheck.analysis_pypdf import extract_links_pypdf, extract_toc_pypdf
+
+file = "document1.pdf"
+report_data = run_report(file)
+links_pymupdf = extract_links_pymupdf(file)
+links_pypdf = extract_links_pypdf(file)
 ```
 
 -----
