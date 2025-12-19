@@ -1,0 +1,206 @@
+# src/pdflinkcheck/validate.py
+
+import sys
+from pathlib import Path
+from typing import Dict, Any
+
+from pdflinkcheck.report import run_report
+
+def run_validation(
+    report_result: Dict[str, Any],
+    pdf_path: str,
+    pdf_library: str = "pypdf",
+    check_external: bool = False,
+    print_bool: bool = True
+) -> Dict[str, Any]:
+    """
+    Validates links using the output from run_report().
+
+    Args:
+        report_result: The dict returned by run_report()
+        pdf_path: Path to the original PDF (needed for relative file checks and page count)
+        pdf_library: Engine used ("pypdf" or "pymupdf")
+        check_external: Whether to validate HTTP URLs (requires network + requests)
+        print_bool: Whether to print results to console
+
+    Returns:
+        Validation summary with valid/broken counts and detailed issues
+    """
+    data = report_result.get("data", {})
+    metadata = report_result.get("metadata", {})
+
+    all_links = data.get("external_links", []) + data.get("internal_links", [])
+    toc = data.get("toc", [])
+
+    if not all_links and not toc:
+        if print_bool:
+            print("No links or TOC to validate.")
+        return {"summary": {"valid": 0, "broken": 0}, "issues": []}
+
+    # Get total page count (critical for internal validation)
+    try:
+        if pdf_library == "pymupdf":
+            import fitz
+            doc = fitz.open(pdf_path)
+            total_pages = doc.page_count
+            doc.close()
+        else:
+            from pypdf import PdfReader
+            reader = PdfReader(pdf_path)
+            total_pages = len(reader.pages)
+    except Exception as e:
+        if print_bool:
+            print(f"Could not determine page count: {e}")
+        total_pages = None
+
+    pdf_dir = Path(pdf_path).parent
+
+    issues = []
+    valid_count = 0
+    broken_count = 0
+
+    # Validate active links
+    for link in all_links:
+        link_type = link.get("type")
+        status = "valid"
+        reason = None
+
+        if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
+            target = link.get("destination_page")
+            if not isinstance(target, int):
+                status = "broken"
+                reason = f"Target page not a number: {target}"
+            elif total_pages is None:
+                status = "unknown"
+                reason = "Total page count unavailable"
+            elif not (1 <= target <= total_pages):
+                status = "broken"
+                reason = f"Page {target} out of range (1–{total_pages})"
+
+        elif link_type == "Remote (GoToR)":
+            remote_file = link.get("remote_file")
+            if not remote_file:
+                status = "broken"
+                reason = "Missing remote file name"
+            else:
+                target_path = (pdf_dir / remote_file).resolve()
+                if target_path.exists() and target_path.is_file():
+                    reason = f"Found: {target_path.name}"
+                else:
+                    status = "broken"
+                    reason = f"File not found: {remote_file}"
+
+        elif link_type == "External (URI)":
+            url = link.get("url")
+            if url and url.startswith(("http://", "https://")) and check_external:
+                # Optional: add requests-based check later
+                status = "unknown"
+                reason = "External URL validation not enabled"
+            else:
+                status = "unknown"
+                reason = "External link (no network check)"
+
+        else:
+            status = "unknown"
+            reason = "Other/unsupported link type"
+
+        link_with_val = link.copy()
+        link_with_val["validation"] = {"status": status, "reason": reason}
+
+        if status == "valid":
+            valid_count += 1
+        else:
+            broken_count += 1
+            if status == "broken":
+                issues.append(link_with_val)
+
+    # Validate TOC entries
+    for entry in toc:
+        page = entry.get("target_page")
+        if isinstance(page, int):
+            if total_pages is None:
+                reason = "Page count unknown"
+                status = "unknown"
+            elif 1 <= page <= total_pages:
+                valid_count += 1
+                continue
+            else:
+                status = "broken"
+                reason = f"TOC targets page {page} (out of 1–{total_pages})"
+        else:
+            status = "broken"
+            reason = f"Invalid page: {page}"
+
+        broken_count += 1
+        issues.append({
+            "type": "TOC Entry",
+            "title": entry["title"],
+            "level": entry["level"],
+            "target_page": page,
+            "validation": {"status": status, "reason": reason}
+        })
+
+    summary = {
+        "total_checked": len(all_links) + len(toc),
+        "valid": valid_count,
+        "broken": broken_count,
+        "unknown": len(all_links) + len(toc) - valid_count - broken_count
+    }
+
+    result = {
+        "summary": summary,
+        "issues": issues,
+        "total_pages": total_pages
+    }
+
+    if print_bool:
+        print("\n" + "=" * 70)
+        print("## Validation Results")
+        print("=" * 70)
+        print(f"Total items checked: {summary['total_checked']}")
+        print(f"✅ Valid:   {summary['valid']}")
+        print(f"❌ Broken:  {summary['broken']}")
+        print(f"⚠️  Unknown: {summary['unknown']}")
+        print("=" * 70)
+
+        if issues:
+            print("\n## Issues Found")
+            print("{:<5} | {:<12} | {:<30} | {}".format("Idx", "Type", "Text", "Problem"))
+            print("-" * 70)
+            for i, issue in enumerate(issues[:25], 1):
+                link_type = issue.get("type", "Link")
+                text = issue.get("link_text", "") or issue.get("title", "") or "N/A"
+                text = text[:30]
+                reason = issue["validation"]["reason"]
+                print("{:<5} | {:<12} | {:<30} | {}".format(i, link_type, text, reason))
+            if len(issues) > 25:
+                print(f"... and {len(issues) - 25} more issues")
+        else:
+            print("No issues found — all links and TOC entries are valid!")
+
+    return result
+
+if __name__ == "__main__":
+
+    from pdflinkcheck.io import get_first_pdf_in_cwd
+    pdf_path = get_first_pdf_in_cwd()
+    # Run analysis first
+    report = run_report(
+        pdf_path=pdf_path,
+        max_links=0,
+        export_format="",
+        pdf_library="pypdf",
+        print_bool=False  # We handle printing in validation
+    )
+
+    if not report or not report.get("data"):
+        print("No data extracted — nothing to validate.")
+        sys.exit(1)
+
+    # Then validate
+    validation_result = run_validation(
+        report_result=report,
+        pdf_path=pdf_path,
+        pdf_library="pypdf",
+        print_bool=not args.no_print
+    )
