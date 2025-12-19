@@ -7,6 +7,7 @@ from typing import Optional # Added Optional
 import unicodedata
 from importlib.resources import files
 import pyhabitat
+import sv_ttk
 
 # Import the core analysis function
 from pdflinkcheck.report import run_report 
@@ -517,6 +518,10 @@ def start_gui(time_auto_close:int=0):
 
     auto_close_window(tk_app, time_auto_close)
 
+    # Apply Sun Valley Tk theme
+    #sv_ttk.set_theme("dark")
+    sv_ttk.set_theme("light")
+    
     tk_app.mainloop()
     print("pdflinkcheck: gui closed.")
 
