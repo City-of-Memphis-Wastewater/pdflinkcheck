@@ -37,7 +37,10 @@ classifiers=[
     #"Development Status :: 5 - Production/Stable",
 ]
 authors = [
-    {name = "George Clayton Bennett", email = "george.bennett@memphistn.gov"},
+    { name = "George Clayton Bennett", email = "george.bennett@memphistn.gov" },
+]
+maintainers = [
+    { name = "George Clayton Bennett", email = "george.bennett@memphistn.gov" },
 ]
 
 [project.urls]
