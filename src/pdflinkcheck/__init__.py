@@ -28,6 +28,8 @@ from pdflinkcheck.report import run_report as run_analysis # for backwards compa
 
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
 # Is this Pythonic? No. Oh well. PEP 8, PEP 20.
+# Why is this not Pythonic? Devs expect no side effects when importing library functions.
+# What is a side effect?
 _gui_easteregg_env_flag = _os.environ.get('PDFLINKCHECK_GUI_EASTEREGG', '')
 _load_gui_func = str(_gui_easteregg_env_flag).strip().lower() in ('true', '1', 'yes', 'on')
 if _load_gui_func:
@@ -37,7 +39,7 @@ if _load_gui_func:
             from pdflinkcheck.gui import start_gui
     except ImportError:
         # Optional: log or ignore silently
-        pass
+        print("start_gui() not imported")
 
 # Breadcrumbs, for stumbling upon.
 if _load_gui_func:
