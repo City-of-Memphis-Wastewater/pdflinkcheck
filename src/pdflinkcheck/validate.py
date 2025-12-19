@@ -60,13 +60,13 @@ def run_validation(
     broken_count = 0
 
     # Validate active links
-    for link in all_links:
+    for i, link in enumerate(all_links):
         link_type = link.get("type")
         status = "valid"
         reason = None
-
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
-            target = link.get("destination_page")
+            target = int(link.get("destination_page"))
+            print(f"{i}, {link_type}, target = {target}")
             if not isinstance(target, int):
                 status = "broken"
                 reason = f"Target page not a number: {target}"
@@ -76,22 +76,27 @@ def run_validation(
             elif not (1 <= target <= total_pages):
                 status = "broken"
                 reason = f"Page {target} out of range (1–{total_pages})"
+            print(f"\tstatus = {status}, reason = {reason}")
 
         elif link_type == "Remote (GoToR)":
             remote_file = link.get("remote_file")
+            print(f"{i}, {link_type}, remote_file = {remote_file}")
             if not remote_file:
                 status = "broken"
                 reason = "Missing remote file name"
             else:
                 target_path = (pdf_dir / remote_file).resolve()
                 if target_path.exists() and target_path.is_file():
+                    status = "found"
                     reason = f"Found: {target_path.name}"
                 else:
                     status = "broken"
                     reason = f"File not found: {remote_file}"
+            print(f"\tstatus = {status}, reason = {reason}")
 
         elif link_type == "External (URI)":
             url = link.get("url")
+            print(f"{i}, {link_type}, url = {url}")
             if url and url.startswith(("http://", "https://")) and check_external:
                 # Optional: add requests-based check later
                 status = "unknown"
@@ -99,10 +104,13 @@ def run_validation(
             else:
                 status = "unknown"
                 reason = "External link (no network check)"
+            print(f"\tstatus = {status}, reason = {reason}")
 
         else:
+            print(f"{i}")
             status = "unknown"
             reason = "Other/unsupported link type"
+            print(f"\tstatus = {status}, reason = {reason}")
 
         link_with_val = link.copy()
         link_with_val["validation"] = {"status": status, "reason": reason}
@@ -110,13 +118,17 @@ def run_validation(
         if status == "valid":
             valid_count += 1
         else:
-            broken_count += 1
-            if status == "broken":
+            if status =="found":
+                pass
+            elif status == "unknown":
+                pass
+            elif status == "broken":
+                broken_count += 1
                 issues.append(link_with_val)
 
     # Validate TOC entries
     for entry in toc:
-        page = entry.get("target_page")
+        page = int(entry.get("target_page"))
         if isinstance(page, int):
             if total_pages is None:
                 reason = "Page count unknown"
