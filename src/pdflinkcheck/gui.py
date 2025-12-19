@@ -7,7 +7,13 @@ from typing import Optional # Added Optional
 import unicodedata
 from importlib.resources import files
 import pyhabitat
-import sv_ttk
+try:
+    import sv_ttk
+    # Apply Sun Valley Tk theme
+    sv_ttk.set_theme("light")
+except Exception:
+    # Theme not available in bundle — use default
+    pass
 
 # Import the core analysis function
 from pdflinkcheck.report import run_report 
@@ -482,8 +488,11 @@ class PDFLinkCheckerApp(tk.Tk):
 
 
 def toggle_theme():
-    current = sv_ttk.get_theme()
-    sv_ttk.set_theme("dark" if current == "light" else "light")
+    try:
+        current = sv_ttk.get_theme()
+        sv_ttk.set_theme("dark" if current == "light" else "light")
+    except Exception:
+        pass
         
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """
@@ -523,10 +532,6 @@ def start_gui(time_auto_close:int=0):
 
     auto_close_window(tk_app, time_auto_close)
 
-    # Apply Sun Valley Tk theme
-    #sv_ttk.set_theme("dark")
-    sv_ttk.set_theme("light")
-    
     tk_app.mainloop()
     print("pdflinkcheck: gui closed.")
 
