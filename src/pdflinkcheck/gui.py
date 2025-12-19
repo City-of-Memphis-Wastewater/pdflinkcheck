@@ -480,6 +480,11 @@ class PDFLinkCheckerApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("View Error", f"Could not launch editor: {e}")
 
+
+def toggle_theme():
+    current = sv_ttk.get_theme()
+    sv_ttk.set_theme("dark" if current == "light" else "light")
+        
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """
     Converts complex Unicode characters (like emojis and symbols) 
