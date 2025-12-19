@@ -77,6 +77,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
 
         if not extracted_links and not structural_toc:
             log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
+            log("(This is common for scanned/image-only PDFs.)")
             return {}
             
         # 3. Separate the lists based on the 'type' key
@@ -171,6 +172,24 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 "pdf_name": Path(pdf_path).name,
                 "library_used": pdf_library,
                 "total_links": len(extracted_links)
+            }
+        }
+
+    # Specific handling for common read failures
+    if "invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
+        log(f"\nWarning: Could not parse PDF structure — likely an image-only or malformed PDF.")
+        log("No hyperlinks or TOC can exist in this file.")
+        log("Result: No links found.")
+        return {
+            "data": {"external_links": [], "internal_links": [], "toc": []},
+            "text": "\n".join(report_buffer + [
+                "\nWarning: PDF appears to be image-only or malformed.",
+                "No hyperlinks or structural TOC found."
+            ]),
+            "metadata": {
+                "pdf_name": Path(pdf_path).name,
+                "library_used": pdf_library,
+                "total_links": 0
             }
         }
 
