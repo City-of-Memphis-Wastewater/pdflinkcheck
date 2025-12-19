@@ -43,7 +43,7 @@ from pdflinkcheck.version_info import get_version_from_pyproject # change to imp
 def add_typer_help_tree(app,
                   console):
     @app.command(name="help-tree",
-                 #envvar="PDFLINKCHECK_ANALYZE_PDF_LIBRARY",
+                 #envvar="PDF_ENGINE",
                  help="Show all commands and options in a tree structure.")
     def help_tree_command(ctx: typer.Context):
         """

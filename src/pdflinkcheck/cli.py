@@ -126,7 +126,7 @@ def analyze_pdf( # Renamed function for clarity
     pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
         "pypdf",#"pymupdf",
         "--pdf-library","-p",
-        envvar="PDFLINKCHECK_ANALYZE_PDF_LIBRARY",
+        envvar="PDF_ENGINE",
         help="Select PDF parsing library, pymupdf or pypdf.",
     )
 ):
@@ -141,7 +141,7 @@ def analyze_pdf( # Renamed function for clarity
 
     CLI Flag: (Highest priority) analyze -p pypdf will always win.
 
-    Env Var: If no flag is present, it checks PDFLINKCHECK_ANALYZE_PDF_LIBRARY.
+    Env Var: If no flag is present, it checks PDF_ENGINE.
 
     Code Default: (Lowest priority) It falls back to "pypdf" as defined in your typer.Option.
     """

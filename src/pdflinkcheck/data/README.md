@@ -210,7 +210,7 @@ Processing may fail or yield incomplete results for:
 ## PDF Library Selection
 At long last, `PyMuPDF` is an optional dependency. The default is `pypdf`. All testing has shown identical performance, though the `analyze_pymupdf.py` is faster and more direct and robust than `analyze_pypdf.py`, which requires a lot of intentional parsing. 
 
-Binaries and artifacts that are distibuted with both PDF librarys will include "pymupdf" in the filename. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
+Binaries and artifacts are expected to contain PyMuPDF, unless they are build on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
 
 To install the complete version use one of these options:
 
