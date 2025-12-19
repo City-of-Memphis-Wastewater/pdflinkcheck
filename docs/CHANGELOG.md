@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.63] - 2025-12-19
+### Fixed:
+- GUI: sv_ttk fails on macos. put inside a try block.
+
+---
+
 ## [1.1.62] - 2025-12-19
 ### Fixed:
 - Handle invalid headers and also missing EOF blocks, for scans without links.
