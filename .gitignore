@@ -22,3 +22,5 @@ src/defunct/
 src/pdflinkcheck/data/pyproject.toml
 src/pdflinkcheck/data/LICENSE
 src/pdflinkcheck/data/README.md
+
+uv.lock
