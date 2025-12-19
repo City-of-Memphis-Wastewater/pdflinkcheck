@@ -50,6 +50,11 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
             self.wfile.write(HTML_FORM.encode("utf-8"))
+        if self.path == "/favicon.ico":
+            # Silent no-content response (most browsers cache this)
+            self.send_response(204)
+            self.end_headers()
+            return
         else:
             self.send_error(404, "Not Found")
 
