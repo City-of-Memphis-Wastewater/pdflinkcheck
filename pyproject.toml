@@ -58,6 +58,9 @@ full = [
     #"pymupdf>=1.26.7 ; platform_system == 'Linux' and platform_machine != 'aarch64'" # to avoid on termux
     "pymupdf>=1.26.7"  # let them try
 ]
+gui = [
+    "sv-ttk>=2.6.1",
+]
 
 [dependency-groups]
 dev = [
@@ -67,6 +70,7 @@ dev = [
     "ruff>=0.7.0 ; platform_system == 'Linux' and platform_machine != 'aarch64'", # to avoid on termux
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
+    "sv-ttk>=2.6.1",
 ]
 
 [build-system]
