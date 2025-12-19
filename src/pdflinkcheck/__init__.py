@@ -18,12 +18,9 @@ import os as _os
 
 # Library functions
 from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf, extract_toc_pymupdf
-from pdflinkcheck.analyze_pypdf_v2 import extract_links_pypdf, extract_toc_pypdf
-from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as extract_links # to expose functions referred to in README
-from pdflinkcheck.analyze_pymupdf import extract_toc_pymupdf as extract_toc # to expose functions referred to in README
+from pdflinkcheck.analyze_pypdf import extract_links_pypdf, extract_toc_pypdf
 from pdflinkcheck import analyze_pypdf
 from pdflinkcheck.report import run_report
-from pdflinkcheck.report import run_report as run_analysis # for backwards compatibility with previos versions
 #from pdflinkcheck import dev
 
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
@@ -51,15 +48,14 @@ else:
 __all__ = [
     "run_report",
     "run_analysis",
-    "extract_links",
-    "extract_toc",
-    #"extract_links_pymupdf", # redundant
-    #"extract_toc_pymupdf", # redundant
-    #"extract_links_pypdf", # not mature yet 
-    #"extract_toc_pypdf", # not mature yet
+    "extract_links_pymupdf", 
+    "extract_toc_pymupdf", 
+    "extract_links_pypdf",  
+    "extract_toc_pypdf", 
     #"start_gui" if _load_gui_func else None,
-    #"dev", # can i expose a set of functions like this?
+    #"dev", 
 ]
+
 if _load_gui_func:
     __all__.append("start_gui")
 
