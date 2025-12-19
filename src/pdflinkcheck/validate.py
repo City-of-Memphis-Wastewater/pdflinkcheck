@@ -202,5 +202,5 @@ if __name__ == "__main__":
         report_result=report,
         pdf_path=pdf_path,
         pdf_library="pypdf",
-        print_bool=not args.no_print
+        print_bool=True
     )
