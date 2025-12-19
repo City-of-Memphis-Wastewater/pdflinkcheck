@@ -12,6 +12,7 @@ import os
 from importlib.resources import files
 
 from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck.validate import run_validation 
 
 
 console = Console() # to be above the tkinter check, in case of console.print
@@ -166,6 +167,84 @@ def analyze_pdf( # Renamed function for clarity
         pdf_library = pdf_library,
     )
 
+@app.command(name="validate")
+def validate_pdf(
+    pdf_path: Optional[Path] = typer.Argument(
+        None,
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Path to the PDF file to validate. If omitted, searches current directory."
+    ),
+    pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
+        "pypdf",
+        "--library", "-l",
+        envvar="PDF_ENGINE",
+        help="PDF parsing engine: pypdf (pure Python) or pymupdf (faster, if available)"
+    ),
+    fail_on_broken: bool = typer.Option(
+        False,
+        "--fail",
+        help="Exit with code 1 if any broken links are found (useful for CI)"
+    )
+):
+    """
+    Validate internal, remote, and TOC links in a PDF.
+
+    Checks:
+    • Internal GoTo links point to valid pages
+    • Remote GoToR links point to existing files
+    • TOC bookmarks target valid pages
+    """
+    from pdflinkcheck.io import get_first_pdf_in_cwd
+
+    if pdf_path is None:
+        pdf_path = get_first_pdf_in_cwd()
+        if pdf_path is None:
+            console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
+            raise typer.Exit(code=1)
+        console.print(f"[dim]No file specified — using: {pdf_path.name}[/dim]")
+
+    pdf_path_str = str(pdf_path)
+
+    console.print(f"[bold]Validating links in:[/bold] {pdf_path.name}")
+    console.print(f"[bold]Using engine:[/bold] {pdf_library}\n")
+
+    # Step 1: Run analysis (quietly)
+    report = run_report(
+        pdf_path=pdf_path_str,
+        max_links=0,
+        export_format="",
+        pdf_library=pdf_library,
+        print_bool=False
+    )
+
+    if not report or not report.get("data"):
+        console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
+        raise typer.Exit(code=0)
+
+    # Step 2: Run validation
+    validation_result = run_validation(
+        report_result=report,
+        pdf_path=pdf_path_str,
+        pdf_library=pdf_library,
+        print_bool=True
+    )
+
+    # Optional: fail on broken links
+    broken_count = validation_result["summary"]["broken"]
+    if fail_on_broken and broken_count > 0:
+        console.print(f"\n[bold red]Validation failed:[/bold red] {broken_count} broken link(s) found.")
+        raise typer.Exit(code=1)
+    elif broken_count > 0:
+        console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_count} broken link(s) found.")
+    else:
+        console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!")
+
+    raise typer.Exit(code=0 if broken_count == 0 else 1)
+    
 @app.command(name="gui") 
 def gui_command(
     auto_close: int = typer.Option(0, 
