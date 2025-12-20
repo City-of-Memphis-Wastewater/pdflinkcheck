@@ -70,11 +70,18 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           New-Item -Path dist/upload -ItemType Directory -ErrorAction Stop
-          
-          #Copy-Item dist/*.pyz dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now
-          #Copy-Item dist/*.bat dist/upload/ -ErrorAction SilentlyContinue # suppress windows PYZ for now 
-          Copy-Item dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
-      
+          #Copy-Item dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
+          # Find the single exe file
+          $exe = Get-ChildItem dist/*.exe | Select-Object -First 1
+          if (-not $exe) {
+            Write-Error "No .exe found in dist/"
+            exit 1
+          }
+
+          # Create zip with the same base name + .zip extension
+          $zipPath = Join-Path dist/upload ($exe.BaseName + ".exe.zip")
+          Compress-Archive -Path $exe.FullName -DestinationPath $zipPath -Force
+
       - name: Collect Unix artifacts
         if: runner.os != 'Windows'
         run: |  

@@ -82,7 +82,7 @@ def ensure_dependencies_and_shiv():
         # This prevents the script from calling 'uv' which isn't available.
         return
     
-    print("\n2. Ensuring 'shiv', 'build', and runtime dependencies are installed via uv...")
+    #print("\n2. Ensuring 'shiv', 'build', and runtime dependencies are installed via uv...")
     # 2a. Check/Install 'build' package (using the activated python, which works in your venv)
     #try:
     #    run_command([sys.executable, "-m", "build", "--version"], check=True)
