@@ -60,10 +60,11 @@ def build_wheel():
     """Builds the source distribution and wheel using the standard Python build module."""
     print("\n1. Building project wheel using 'python -m build'...")
     # PASS THE CURRENT ENVIRONMENT (os.environ.copy())
-    run_command([
-        sys.executable, "-m", "build", 
-        "--wheel", 
-        "--outdir", str(DIST_DIR)
+    run_command(["hatch", "build", "--target", "wheel", "--outdir", str(DIST_DIR)])
+    #run_command([
+    #    sys.executable, "-m", "build", 
+    #    "--wheel", 
+    #    "--outdir", str(DIST_DIR)
     ], env=os.environ.copy()) 
     print("Wheel build complete.")
 
@@ -80,12 +81,12 @@ def ensure_dependencies_and_shiv():
     
     print("\n2. Ensuring 'shiv', 'build', and runtime dependencies are installed via uv...")
     # 2a. Check/Install 'build' package (using the activated python, which works in your venv)
-    try:
-        run_command([sys.executable, "-m", "build", "--version"], check=True)
-    except subprocess.CalledProcessError:
-        print("Installing 'build' ...")
-        run_command([sys.executable, "-m", "pip", "install", "build"])
-        #run_command(["uv", "pip", "install", "build"])
+    #try:
+    #    run_command([sys.executable, "-m", "build", "--version"], check=True)
+    #except subprocess.CalledProcessError:
+    #    print("Installing 'build' ...")
+    #    run_command([sys.executable, "-m", "pip", "install", "build"])
+    #    #run_command(["uv", "pip", "install", "build"])
 
     # 2b. INSTALL/SYNC ALL PROJECT DEPENDENCIES (The Fix)
     print("Installing all project dependencies via uv pip install -e .")
