@@ -200,8 +200,8 @@ def run_validation(
         print(f"✅ Valid:   {summary['valid']}")
         print(f"❌ Broken:  {summary['broken']}")
         print(f"⚠️  Unknown: {summary['unknown']}")
-        print(f"⚠️  Unknown Page Reasonableness: {summary['unknown-reasonableness']}")
-        print(f"⚠️  Unknown Web: {summary['unknown-web']}")
+        print(f"⚠️  Unknown Page Reasonableness (Mising Total Page Count): {summary['unknown-reasonableness']}")
+        print(f"⚠️  Unknown Web (Not Checked): {summary['unknown-web']}")
         print(f"⚠️  Unknown Other: {summary['unknown-other']}")
         print("=" * 70)
 
