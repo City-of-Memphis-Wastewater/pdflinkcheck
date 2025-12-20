@@ -42,20 +42,9 @@ The tool can be run as simple cross-platform graphical interface (Tkinter).
 
 ### Launching the GUI
 
-There are three ways to launch the GUI interface:
-
+Ways to launch the GUI interface:
 1.  **Implicit Launch:** Run the main command with no arguments, subcommands, or flags (`pdflinkcheck`).
 2.  **Explicit Command:** Use the dedicated GUI subcommand (`pdflinkcheck gui`).
-3.  **Binary Double-Click:**
-      * **Windows:** Double-click the `pdflinkcheck-VERSION-gui.bat` file.
-      * **macOS/Linux:** Double-click the downloaded `.pyz` or `.elf` file.
-
-### Planned GUI Updates
-
-We are actively working on the following enhancements:
-
-  * **Report Export:** Functionality to export the full analysis report to a plain text file.
-  * **License Visibility:** A dedicated "License Info" button within the GUI to display the terms of the AGPLv3+ license.
 
 -----
 
