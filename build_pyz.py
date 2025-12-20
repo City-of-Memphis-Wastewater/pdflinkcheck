@@ -92,10 +92,8 @@ def ensure_dependencies_and_shiv():
     #    #run_command(["uv", "pip", "install", "build"])
 
     # 2b. INSTALL/SYNC ALL PROJECT DEPENDENCIES (The Fix)
-    #print("Installing all project dependencies via uv pip install -e .")
-    #run_command([sys.executable, "-m", "pip", "install", "-e", "."])
-    print("Installing the built wheel for testing...")
-    run_command([sys.executable, "-m", "pip", "install", str(wheel_path)])
+    print("Installing all project dependencies via uv pip install -e .")
+    run_command([sys.executable, "-m", "pip", "install", "-e", "."])
     
     # 2c. Ensure shiv is installed
     try:
