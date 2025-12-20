@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.72] - 2025-12-20
+### Fixed:
+- Fix missing comma in run_validation() call in gui.py
+
+---
+
 ## [1.1.70] - 2025-12-20
 ### Changed:
 - Compress Windows EXE to ZIP before copying for upload, for speed.
