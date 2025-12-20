@@ -197,12 +197,12 @@ def run_validation(
         log("=" * 70)
         log(f"PDF Path = {get_friendly_path(pdf_path)}")
         log(f"Total items checked: {summary_stats['total_checked']}")
-        log(f"✅ Valid:   {summary_stats['valid']}")
+        log(f"✅ Valid: {summary_stats['valid']}")
         log(f"🌐 Web Addresses (Not Checked): {summary_stats['unknown-web']}")
         log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
-        log(f"❌ Broken Page Reference:  {summary_stats['broken-page']}")
-        log(f"❌ Broken File Reference:  {summary_stats['broken-file']}")
+        log(f"❌ Broken Page Reference: {summary_stats['broken-page']}")
+        log(f"❌ Broken File Reference: {summary_stats['broken-file']}")
         log("=" * 70)
 
         if issues:
