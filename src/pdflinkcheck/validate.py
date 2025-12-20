@@ -93,7 +93,7 @@ def run_validation(
             remote_file = link.get("remote_file")
             print(f"{i}, {link_type}, remote_file = {remote_file}")
             if not remote_file:
-                status = "broken"
+                status = "broken-file"
                 reason = "Missing remote file name"
             else:
                 target_path = (pdf_dir / remote_file).resolve()
@@ -101,7 +101,7 @@ def run_validation(
                     status = "file-found"
                     reason = f"Found: {target_path.name}"
                 else:
-                    status = "broken"
+                    status = "broken-file"
                     reason = f"File not found: {remote_file}"
             print(f"\tstatus = {status}, reason = {reason}")
 
@@ -136,8 +136,11 @@ def run_validation(
             unknown_reasonableness_count += 1
         elif status == "unknown-link":
             unknown_link_count += 1
-        elif status == "broken":
-            broken_count += 1
+        elif status == "broken-file":
+            broken_page_count += 1
+            issues.append(link_with_val)
+        elif status == "broken-file":
+            broken_page_count += 1
             issues.append(link_with_val)
 
     # Validate TOC entries
@@ -149,18 +152,18 @@ def run_validation(
                 status = "unknown-reasonableness"
                 unknown_reasonableness_count += 1
             elif target_page < 1:
-                status = "broken"
+                status = "broken-page"
                 broken_count += 1
                 reason = f"TOC targets negative page: {target_page}."
             elif 1 <= target_page <= total_pages:
                 valid_count += 1
                 continue
             else:
-                status = "broken"
+                status = "broken-page"
                 reason = f"TOC targets page {page} (out of 1–{total_pages})"
                 broken_count += 1
         else:
-            status = "broken"
+            status = "broken-page"
             reason = f"Invalid page: {target_page}"
             broken_count += 1
 
@@ -219,6 +222,115 @@ def run_validation(
             print("No issues found — all links and TOC entries are valid!")
 
     return result
+
+
+def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "pypdf", check_external_links:bool = False) -> Dict[str, Any]:
+    """
+    Experimental. Ignore for now.
+
+    Extends the report logic by programmatically testing every extracted link.
+    Validates Internal Jumps (page bounds), External URIs (HTTP status), 
+    and Launch actions (file existence).
+    """
+    if check_external_links:
+        import requests
+
+    # 1. Setup Library Engine (Reuse your logic)
+    pdf_library = pdf_library.lower()
+    if pdf_library == "pypdf":
+        from pdflinkcheck.analyze_pypdf import extract_links_pypdf as extract_links
+    else:
+        from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as extract_links
+
+    if pdf_path is None:
+        pdf_path = get_first_pdf_in_cwd()
+    
+    if not pdf_path:
+        print("Error: No PDF found for validation.")
+        return {}
+
+    print(f"\nValidating links in {Path(pdf_path).name}...")
+
+    # 2. Extract links and initialize validation counters
+    links = extract_links(pdf_path)
+    total_links = len(links)
+    results = {"valid": [], "broken": [], "error": []}
+
+    # 3. Validation Loop
+    for i, link in enumerate(links, 1):
+        # Progress indicator for long manuals
+        sys.stdout.write(f"\rChecking link {i}/{total_links}...")
+        sys.stdout.flush()
+
+        link_type = link.get('type')
+        status = {"is_valid": False, "reason": "Unknown Type"}
+
+        # --- A. Validate Internal Jumps ---
+        if "Internal" in link_type:
+            target_page = link.get('destination_page')
+            if isinstance(target_page, int) and target_page > 0:
+                # In a real run, you'd compare against reader.pages_count
+                status = {"is_valid": True, "reason": "Resolves"}
+            else:
+                status = {"is_valid": False, "reason": f"Invalid Page: {target_page}"}
+
+        # --- B. Validate Web URIs ---
+        elif link_type == 'External (URI)':
+
+            url = link.get('url')
+            if url and url.startswith("http") and check_external_links:
+                try:
+                    # Use a short timeout and HEAD request to be polite/fast
+                    resp = requests.head(url, timeout=5, allow_redirects=True)
+                    if resp.status_code < 400:
+                        status = {"is_valid": True, "reason": f"HTTP {resp.status_code}"}
+                    else:
+                        status = {"is_valid": False, "reason": f"HTTP {resp.status_code}"}
+                except Exception as e:
+                    status = {"is_valid": False, "reason": "Connection Failed"}
+            else:
+                status = {"is_valid": False, "reason": "Malformed URL"}
+
+        # --- C. Validate Local File/Launch Links ---
+        elif link_type == 'Launch' or 'remote_file' in link:
+            file_path = link.get('remote_file') or link.get('url')
+            if file_path:
+                # Clean URI formatting
+                clean_path = file_path.replace("file://", "").replace("%20", " ")
+                # Check relative to the PDF's location
+                abs_path = Path(pdf_path).parent / clean_path
+                if abs_path.exists():
+                    status = {"is_valid": True, "reason": "File Exists"}
+                else:
+                    status = {"is_valid": False, "reason": "File Missing"}
+
+        # Append result
+        link['validation'] = status
+        if status['is_valid']:
+            results['valid'].append(link)
+        else:
+            results['broken'].append(link)
+
+    print("\n" + "=" * 70)
+    print(f"--- Validation Summary for {Path(pdf_path).name} ---")
+    print(f"Total Checked: {total_links}")
+    print(f"✅ Valid:  {len(results['valid'])}")
+    print(f"❌ Broken: {len(results['broken'])}")
+    print("=" * 70)
+
+    # 4. Print Detail Report for Broken Links
+    if results['broken']:
+        print("\n## ❌ Broken Links Found:")
+        print("{:<5} | {:<5} | {:<30} | {}".format("Idx", "Page", "Reason", "Target"))
+        print("-" * 70)
+        for i, link in enumerate(results['broken'], 1):
+            target = link.get('url') or link.get('destination_page') or link.get('remote_file')
+            print("{:<5} | {:<5} | {:<30} | {}".format(
+                i, link['page'], link['validation']['reason'], str(target)[:30]
+            ))
+    
+    return results
+
 
 if __name__ == "__main__":
 
