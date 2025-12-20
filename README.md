@@ -43,7 +43,7 @@ The tool can be run as simple cross-platform graphical interface (Tkinter).
 ### Launching the GUI
 
 Ways to launch the GUI interface:
-1.  **Implicit Launch:** Run the main command with no arguments, subcommands, or flags (`pdflinkcheck`).
+1.  **Implicit Launch:** Run the tool or file with no arguments, subcommands, or flags. (Note: PyInstaller builds use the --noconsole flag, except for on Termux.)
 2.  **Explicit Command:** Use the dedicated GUI subcommand (`pdflinkcheck gui`).
 
 -----
@@ -188,9 +188,10 @@ While using `PyMuPDF` in Python dependency resolution on Termux simply isn't pos
 Now, there is PDF Engine selection in both the CLI and the GUI. 
 `pypdf` is the default in pdflinkcheck.report.run_report(); PyMuPDF can be explicitly requested in the CLI and is the default in the TKinter GUI.
 
-Now that `pdflinkcheck` can run on Termux, we may find a work-around and be able to drop the PyMuPDF dependency. 
-- Build `pypdf`-only artifacts, to reduce size.
-- Build a web-stack GUI as an alternative to the Tkinter GUI, to be compatible with Termux.
+Now `pdflinkcheck` can run on Termux by using the `pypdf` engine. 
+Benefits:
+- `pypdf`-only artifacts, to reduce size to about 6% compared to artifacts that include `PyMuPDF`.
+- Web-stack GUI as an alternative to the Tkinter GUI, which can be run locally on Termux or as a web app.
 
 Because it works, we plan to keep the `PyMuPDF` portion of the codebase.
 
