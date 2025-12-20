@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.1.74] - 2025-12-20
+### Fixed:
+- Improve empty returns in edge cases for report.py, so that they can handled by the server cleanly.
 
 ---
 
