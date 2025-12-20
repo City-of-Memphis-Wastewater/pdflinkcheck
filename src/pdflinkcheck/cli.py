@@ -183,6 +183,11 @@ def validate_pdf(
         resolve_path=True,
         help="Path to the PDF file to validate. If omitted, searches current directory."
     ),
+    export: bool = typer.Option(
+        True,
+        "--export",#"--no-export",
+        help = "JSON export for validation check."
+    )
     pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
         "pypdf",
         "--library", "-l",
@@ -235,7 +240,7 @@ def validate_pdf(
         report_result=report,
         pdf_path=pdf_path_str,
         pdf_library=pdf_library,
-        export_json=True,
+        export_json=export,
         print_bool=True
     )
 
