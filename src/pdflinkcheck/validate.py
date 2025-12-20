@@ -57,12 +57,12 @@ def run_validation(
 
     issues = []
     valid_count = 0
-    broken_count = 0
+    broken_file_count = 0
+    broken_page_count = 0
     file_found_count = 0
-    unknown_count = 0
     unknown_web_count = 0
     unknown_reasonableness_count = 0
-    unknown_other_count = 0
+    unknown_link_count = 0
 
     # Validate active links
     for i, link in enumerate(all_links):
@@ -70,23 +70,23 @@ def run_validation(
         status = "valid"
         reason = None
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
-            target = int(link.get("destination_page"))
-            print(f"{i}, {link_type}, target = {target}")
-            if not isinstance(target, int):
-                status = "broken"
-                reason = f"Target page not a number: {target}"
-            elif (1 <= target) and total_pages is None:
+            target_page = int(link.get("destination_page"))
+            print(f"{i}, {link_type}, target = {target_page}")
+            if not isinstance(target_page, int):
+                status = "broken-page"
+                reason = f"Target page not a number: {target_page}"
+            elif (1 <= target_page) and total_pages is None:
                 status = "unknown-reasonableness"
                 reason = "Total page count unavailable, but the page number is reasonable"
-            elif (1 <= target <= total_pages):
+            elif (1 <= target_page <= total_pages):
                 status = "valid"
-                reason = f"Page {target} within range (1–{total_pages})"
-            elif page < 1:
-                status = "broken"
-                reason = f"TOC targets page negative {page}."
-            elif not (1 <= target <= total_pages):
-                status = "broken"
-                reason = f"Page {target} out of range (1–{total_pages})"
+                reason = f"Page {target_page} within range (1–{total_pages})"
+            elif target_page < 1:
+                status = "broken-page"
+                reason = f"TOC targets page negative {target_page}."
+            elif not (1 <= target_page <= total_pages):
+                status = "broken-page"
+                reason = f"Page {target_page} out of range (1–{total_pages})"
             print(f"\tstatus = {status}, reason = {reason}")
 
         elif link_type == "Remote (GoToR)":
@@ -119,7 +119,7 @@ def run_validation(
 
         else:
             print(f"{i}")
-            status = "unknown-other"
+            status = "unknown-link"
             reason = "Other/unsupported link type"
             print(f"\tstatus = {status}, reason = {reason}")
 
@@ -130,31 +130,29 @@ def run_validation(
             valid_count += 1
         elif status =="file-found":
             file_found_count += 1
-        elif status == "unknown":
-            unknown_count += 1
         elif status == "unknown-web":
             unknown_web_count += 1
         elif status == "unknown-reasonableness":
             unknown_reasonableness_count += 1
-        elif status == "unknown-other":
-            unknown_other_count += 1
+        elif status == "unknown-link":
+            unknown_link_count += 1
         elif status == "broken":
             broken_count += 1
             issues.append(link_with_val)
 
     # Validate TOC entries
     for entry in toc:
-        page = int(entry.get("target_page"))
-        if isinstance(page, int):
-            if (1 <= page) and total_pages is None:
+        target_page = int(entry.get("target_page"))
+        if isinstance(target_page, int):
+            if (1 <= target_page) and total_pages is None:
                 reason = "Page count unknown"
                 status = "unknown-reasonableness"
                 unknown_reasonableness_count += 1
-            elif page < 1:
+            elif target_page < 1:
                 status = "broken"
                 broken_count += 1
-                reason = f"TOC targets page negative {page}."
-            elif 1 <= page <= total_pages:
+                reason = f"TOC targets negative page: {target_page}."
+            elif 1 <= target_page <= total_pages:
                 valid_count += 1
                 continue
             else:
@@ -163,14 +161,14 @@ def run_validation(
                 broken_count += 1
         else:
             status = "broken"
-            reason = f"Invalid page: {page}"
+            reason = f"Invalid page: {target_page}"
             broken_count += 1
 
         issues.append({
             "type": "TOC Entry",
             "title": entry["title"],
             "level": entry["level"],
-            "target_page": page,
+            "target_page": target_page,
             "validation": {"status": status, "reason": reason}
         })
 
@@ -178,11 +176,11 @@ def run_validation(
         "total_checked": len(all_links) + len(toc),
         "valid": valid_count,
         "file-found": file_found_count,
-        "broken": broken_count,
-        "unknown": unknown_count,
+        "broken-page": broken_page_count,
+        "broken-file": broken_file_count,
         "unknown-web": unknown_web_count,
         "unknown-reasonableness": unknown_reasonableness_count,
-        "unknown-other": unknown_other_count,
+        "unknown-link": unknown_link_count,
         #"unknown": len(all_links) + len(toc) - valid_count - broken_count # nah this is not granuar enough 
     }
 
@@ -198,11 +196,11 @@ def run_validation(
         print("=" * 70)
         print(f"Total items checked: {summary['total_checked']}")
         print(f"✅ Valid:   {summary['valid']}")
-        print(f"❌ Broken:  {summary['broken']}")
-        print(f"⚠️  Unknown: {summary['unknown']}")
-        print(f"⚠️  Unknown Page Reasonableness (Mising Total Page Count): {summary['unknown-reasonableness']}")
-        print(f"⚠️  Unknown Web (Not Checked): {summary['unknown-web']}")
-        print(f"⚠️  Unknown Other: {summary['unknown-other']}")
+        print(f"🌐 Web Addresses (Not Checked): {summary['unknown-web']}")
+        print(f"⚠️ Unknown Page Reasonableness (Mising Total Page Count): {summary['unknown-reasonableness']}")
+        print(f"⚠️ Unsupported PDF Links: {summary['unknown-link']}")
+        print(f"❌ Broken Page Reference:  {summary['broken-page']}")
+        print(f"❌ Broken File Reference:  {summary['broken-file']}")
         print("=" * 70)
 
         if issues:
