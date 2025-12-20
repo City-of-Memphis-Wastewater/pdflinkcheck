@@ -61,11 +61,17 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
     
     log("\n--- Starting Analysis ... ---\n")
     if pdf_path is None:
-        pdf_path = get_first_pdf_in_cwd()
-    if pdf_path is None:
         log("pdf_path is None")
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
-        return
+        return {
+            "data": {"external_links": [], "internal_links": [], "toc": []},
+            "text": "\n".join(report_buffer),
+            "metadata": {
+                "pdf_name": "None",
+                "library_used": pdf_library,
+                "total_links": 0
+            }
+        }
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
@@ -78,10 +84,24 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         
 
         if not extracted_links and not structural_toc:
-            log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
-            log("(This is common for scanned/image-only PDFs.)")
-            return {}
-            
+    log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
+    log("(This is common for scanned/image-only PDFs.)")
+
+    empty_result = {
+        "data": {
+            "external_links": [],
+            "internal_links": [],
+            "toc": []
+        },
+        "text": "\n".join(report_buffer),
+        "metadata": {
+            "pdf_name": Path(pdf_path).name,
+            "library_used": pdf_library,
+            "total_links": 0
+        }
+    }
+    return empty_result
+    
         # 3. Separate the lists based on the 'type' key
         uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
         goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
@@ -201,37 +221,6 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
         log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
         raise # Allow the exception to propagate or handle gracefully
-
-
-def print_structural_toc_print(structural_toc:dict)->str|None:
-    """
-    Prints the structural TOC data (bookmarks/outline) in a clean, 
-    hierarchical, and readable console format.
-
-    Args:
-        structural_toc: A list of TOC dictionaries.
-    """
-    print("\n" + "=" * SEP_COUNT)
-    print("## Structural Table of Contents (PDF Bookmarks/Outline)")
-    print("=" * SEP_COUNT)
-    if not structural_toc:
-        print("No structural TOC (bookmarks/outline) found.")
-        return
-
-    # Determine max page width for consistent alignment (optional but nice)
-    max_page = max(item['target_page'] for item in structural_toc) if structural_toc else 1
-    page_width = len(str(max_page))
-    
-    # Iterate and format
-    for item in structural_toc:
-        # Use level for indentation (e.g., Level 1 = 0 spaces, Level 2 = 4 spaces, Level 3 = 8 spaces)
-        indent = " " * 4 * (item['level'] - 1)
-        # Format the title and target page number
-        page_str = str(item['target_page']).rjust(page_width)
-        print(f"{indent}{item['title']} . . . page {page_str}")
-
-    print("-" * SEP_COUNT)
-
 
 def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
     """

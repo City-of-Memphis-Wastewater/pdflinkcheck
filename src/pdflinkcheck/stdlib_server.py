@@ -137,11 +137,13 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
                 pdf_library=pdf_library,
                 print_bool=False
             )
+            metadata = result.get("metadata", {"total_links": 0, "pdf_name": file_filename})
+            total_links = metadata.get("total_links", 0)
 
             response = {
                 "filename": file_filename,
                 "pdf_library_used": pdf_library,
-                "total_links": result["metadata"]["total_links"],
+                "total_links": total_links,
                 "data": result["data"],
                 "text_report": result["text"]
             }
