@@ -84,24 +84,24 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         
 
         if not extracted_links and not structural_toc:
-    log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
-    log("(This is common for scanned/image-only PDFs.)")
+            log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
+            log("(This is common for scanned/image-only PDFs.)")
 
-    empty_result = {
-        "data": {
-            "external_links": [],
-            "internal_links": [],
-            "toc": []
-        },
-        "text": "\n".join(report_buffer),
-        "metadata": {
-            "pdf_name": Path(pdf_path).name,
-            "library_used": pdf_library,
-            "total_links": 0
-        }
-    }
-    return empty_result
-    
+            empty_result = {
+                "data": {
+                    "external_links": [],
+                    "internal_links": [],
+                    "toc": []
+                },
+                "text": "\n".join(report_buffer),
+                "metadata": {
+                    "pdf_name": Path(pdf_path).name,
+                    "library_used": pdf_library,
+                    "total_links": 0
+                }
+            }
+            return empty_result
+            
         # 3. Separate the lists based on the 'type' key
         uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
         goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
