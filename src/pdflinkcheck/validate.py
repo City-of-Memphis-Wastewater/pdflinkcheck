@@ -7,6 +7,7 @@ from typing import Dict, Any
 from pdflinkcheck.report import run_report
 from pdflinkcheck.io import get_friendly_path, export_validation_json
 
+SEP_COUNT=28
 def run_validation(
     report_results: Dict[str, Any],
     pdf_path: str,

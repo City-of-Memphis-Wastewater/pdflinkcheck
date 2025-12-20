@@ -8,6 +8,8 @@ import pyhabitat
 from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
 
 
+SEP_COUNT=28
+
 def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
@@ -91,22 +93,22 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         uri_and_other = uri_links + other_links
         
         # --- ANALYSIS SUMMARY (Using your print logic) ---
-        log("\n" + "=" * 70)
+        log("\n" + "=" * SEP_COUNT)
         log(f"--- Link Analysis Results for {Path(pdf_path).name} ---")
         log(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
         log(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
-        log("=" * 70)
+        log("=" * SEP_COUNT)
 
         # --- Section 1: TOC ---
         str_structural_toc = print_structural_toc(structural_toc)
         log(str_structural_toc)
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
-        log("\n" + "=" * 70)
+        log("\n" + "=" * SEP_COUNT)
         log(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
-        log("=" * 70)
+        log("=" * SEP_COUNT)
         log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
-        log("-" * 70)
+        log("-" * SEP_COUNT)
         
         all_internal = goto_links + resolved_action_links
         if total_internal_links > 0:
@@ -118,13 +120,13 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 log(f"... and {len(all_internal) - limit} more links (use --max-links 0 to show all).")
         else:
             log(" No internal GoTo or Resolved Action links found.")
-        log("-" * 70)
+        log("-" * SEP_COUNT)
         
         # --- Section 3: ACTIVE URI LINKS ---
-        log("\n" + "=" * 70)
+        log("\n" + "=" * SEP_COUNT)
         log(f"## Active URI Links (External & Other) - {len(uri_and_other)} found") 
         log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
-        log("=" * 70)
+        log("=" * SEP_COUNT)
         
         if uri_and_other:
             for i, link in enumerate(uri_and_other[:limit], 1):
@@ -136,7 +138,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
 
         else: 
             log(" No external or 'Other' links found.")
-        log("-" * 70)
+        log("-" * SEP_COUNT)
 
         log("\n--- Analysis Complete ---\n")
 
@@ -209,9 +211,9 @@ def print_structural_toc_print(structural_toc:dict)->str|None:
     Args:
         structural_toc: A list of TOC dictionaries.
     """
-    print("\n" + "=" * 70)
+    print("\n" + "=" * SEP_COUNT)
     print("## Structural Table of Contents (PDF Bookmarks/Outline)")
-    print("=" * 70)
+    print("=" * SEP_COUNT)
     if not structural_toc:
         print("No structural TOC (bookmarks/outline) found.")
         return
@@ -228,7 +230,7 @@ def print_structural_toc_print(structural_toc:dict)->str|None:
         page_str = str(item['target_page']).rjust(page_width)
         print(f"{indent}{item['title']} . . . page {page_str}")
 
-    print("-" * 70)
+    print("-" * SEP_COUNT)
 
 
 def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
@@ -243,9 +245,9 @@ def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
         A formatted string of the structural TOC.
     """
     lines = []
-    lines.append("\n" + "=" * 70)
+    lines.append("\n" + "=" * SEP_COUNT)
     lines.append("## Structural Table of Contents (PDF Bookmarks/Outline)")
-    lines.append("=" * 70)
+    lines.append("=" * SEP_COUNT)
 
     if not structural_toc:
         msg = "No structural TOC (bookmarks/outline) found."
@@ -269,7 +271,7 @@ def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
         
         lines.append(f"{indent}{item['title']} . . . page {page_str}")
 
-    lines.append("-" * 70)
+    lines.append("-" * SEP_COUNT)
     
     # Final aggregation
     str_structural_toc = "\n".join(lines)
