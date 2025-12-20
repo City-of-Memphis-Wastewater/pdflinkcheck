@@ -6,6 +6,11 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.70] - 2025-12-20
+### Changed:
+- Compress Windows EXE to ZIP before copying for upload, for speed.
+---
+
 ## [1.1.68] - 2025-12-20
 ### Fixed:
 - Hunting down errors in buil_pyz.py
