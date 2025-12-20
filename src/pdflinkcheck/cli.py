@@ -187,7 +187,7 @@ def validate_pdf(
         True,
         "--export",#"--no-export",
         help = "JSON export for validation check."
-    )
+    ),
     pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
         "pypdf",
         "--library", "-l",
