@@ -8,7 +8,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ---
 
 ## [1.1.73] - 2025-12-20
-### Addedd:
+### Added:
 - SEP_COUNT=28, variable implemented in report.py and validate.py.
 
 ---
