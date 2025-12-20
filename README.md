@@ -64,7 +64,7 @@ We are actively working on the following enhancements:
 The core functionality is accessed via the `analyze` command. 
 
 `DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree`:
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.58_tree_help.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.73_tree_help.jpg)
 
 `pdflinkcheck --help`:
 ![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.58.png)
