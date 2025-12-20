@@ -33,7 +33,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Hatch
-              run: pip install hatch
+          run: pip install hatch
               
       # --- UV-BASED INSTALLATION AND SETUP ---
       - name: Install uv
@@ -62,10 +62,17 @@ jobs:
         # Use the global `uv run` if you don't want to activate, but since we activated above:
         run: |
           source .venv/bin/activate
+          pip uninstall -y pdflinkcheck || true
           pip install dist/pdflinkcheck-*.whl
           # Use your project's installed CLI command
           pdflinkcheck analyze --help
-
+      # Optional: Also test the sdist (extra safety)
+      - name: Sanity check the built sdist
+        run: |
+          source .venv/bin/activate
+          pip uninstall -y pdflinkcheck || true
+          pip install dist/pdflinkcheck-*.tar.gz
+          pdflinkcheck analyze --help
       # --- PUBLISH ---
       - name: Publish package distributions to PyPI
         # This action uses the OIDC token to securely authenticate and upload.
