@@ -16,7 +16,8 @@ except Exception:
     pass
 
 # Import the core analysis function
-from pdflinkcheck.report import run_report 
+from pdflinkcheck.report import run_report
+from pdflinkcheck.validate import run_validation 
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
 
@@ -54,6 +55,7 @@ class PDFLinkCheckerApp(tk.Tk):
         self.do_export_report_json_var = tk.BooleanVar(value=True) 
         self.do_export_report_txt_var = tk.BooleanVar(value=False) 
         self.current_report_text = None
+        self.current_report_data = None
 
         self.supported_export_formats = ["JSON", "MD", "TXT"]
         self.supported_export_formats = ["JSON"]
@@ -268,10 +270,13 @@ class PDFLinkCheckerApp(tk.Tk):
         
         # Row 3: Run Button, Export Filetype selection, License Button, and readme button
         # 1. Run Button (Spans columns 0 and 1)
-        run_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton')
-        run_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
+        run_analysis_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton')
+        run_analysis_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
+
+        run_validation_btn = ttk.Button(control_frame, text="▶ Run Validation", command=self._run_validation_gui, style='Accent.TButton')
+        run_validation_btn.grid(row=4, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
         # Ensure the run button frame expands to fill its column
-        #run_btn.grid_columnconfigure(0, weight=1)
+        #run_analysis_btn.grid_columnconfigure(0, weight=1)
 
         # 2. Create a Frame to hold the two file link buttons (This frame goes into column 2)
         info_btn_frame = ttk.Frame(control_frame)
@@ -440,7 +445,52 @@ class PDFLinkCheckerApp(tk.Tk):
             # 4. Restore standard output and disable editing
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
+    
+    def _run_validation_gui(self):
         
+        pdf_path_str = self._assess_pdf_path_str()
+        if not pdf_path_str:
+            return
+
+        pdf_library = self._discern_pdf_library()
+
+        # 1. Clear previous output and enable editing
+        self.output_text.config(state=tk.NORMAL)
+        self.output_text.delete('1.0', tk.END)
+
+        # 2. Redirect standard output to the Text widget
+        original_stdout = sys.stdout
+        sys.stdout = RedirectText(self.output_text)
+        
+        if not self.current_report_data:
+            self._run_report_gui()
+        report_results = self.current_report_data
+
+        try:
+            # 3. Call the core logic function
+            #self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
+            validation_results = run_validation(
+                report_results=report_results
+                pdf_path=pdf_path_str,
+                pdf_library=pdf_library,
+                export_json=True,
+                print_bool=True
+            )
+            self.current_report_text = report_results.get("text", "")
+            self.current_report_data = report_results.get("data", {})
+
+            #self.output_text.insert(tk.END, "\n--- Analysis Complete ---\n")
+
+        except Exception as e:
+            # Inform the user in the GUI with a clean message
+            self._display_error(f"An unexpected error occurred during analysis: {e}")
+
+        finally:
+            # 4. Restore standard output and disable editing
+            sys.stdout = original_stdout
+            self.output_text.config(state=tk.DISABLED)
+        
+
     def _discern_pdf_library(self):
         selected_lib = self.pdf_library_var.get().lower()
         

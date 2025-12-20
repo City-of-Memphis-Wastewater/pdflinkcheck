@@ -236,8 +236,8 @@ def validate_pdf(
         raise typer.Exit(code=0)
 
     # Step 2: Run validation
-    validation_result = run_validation(
-        report_result=report,
+    validation_results = run_validation(
+        report_results=report,
         pdf_path=pdf_path_str,
         pdf_library=pdf_library,
         export_json=export,
@@ -245,7 +245,7 @@ def validate_pdf(
     )
 
     # Optional: fail on broken links
-    broken_count = validation_result["summary"]["broken-page"] + validation_result["summary"]["broken-file"]
+    broken_count = validation_results["summary"]["broken-page"] + validation_results["summary"]["broken-file"]
     if fail_on_broken and broken_count > 0:
         console.print(f"\n[bold red]Validation failed:[/bold red] {broken_count} broken link(s) found.")
         raise typer.Exit(code=1)

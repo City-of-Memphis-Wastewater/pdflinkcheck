@@ -163,9 +163,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             
             if "TXT" in fmt_upper:
                 export_report_txt(report_buffer_str, pdf_path, pdf_library)
-                
-        # Return a clean results object
-        return {
+        
+        report_results = {
             "data": final_report_data_dict, # The structured JSON-ready dict
             "text": report_buffer_str,      # The human-readable string
             "metadata": {                  # Helpful for the GUI/Logs
@@ -174,6 +173,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 "total_links": len(extracted_links)
             }
         }
+        # Return a clean results object
+        return report_results
     except Exception as e:
         # Specific handling for common read failures
         if "invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):

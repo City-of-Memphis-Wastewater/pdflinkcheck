@@ -8,7 +8,7 @@ from pdflinkcheck.report import run_report
 from pdflinkcheck.io import get_friendly_path, export_validation_json
 
 def run_validation(
-    report_result: Dict[str, Any],
+    report_results: Dict[str, Any],
     pdf_path: str,
     pdf_library: str = "pypdf",
     check_external: bool = False,
@@ -19,7 +19,7 @@ def run_validation(
     Validates links using the output from run_report().
 
     Args:
-        report_result: The dict returned by run_report()
+        report_results: The dict returned by run_report()
         pdf_path: Path to the original PDF (needed for relative file checks and page count)
         pdf_library: Engine used ("pypdf" or "pymupdf")
         check_external: Whether to validate HTTP URLs (requires network + requests)
@@ -28,8 +28,8 @@ def run_validation(
     Returns:
         Validation summary stats with valid/broken counts and detailed issues
     """
-    data = report_result.get("data", {})
-    metadata = report_result.get("metadata", {})
+    data = report_results.get("data", {})
+    metadata = report_results.get("metadata", {})
 
     all_links = data.get("external_links", []) + data.get("internal_links", [])
     toc = data.get("toc", [])
@@ -229,7 +229,7 @@ def run_validation(
     if print_bool:
         print(summary_txt)
 
-    validation_result = {
+    validation_results = {
         "pdf_path" : pdf_path,
         "summary-stats": summary_stats,
         "issues": issues,
@@ -239,8 +239,8 @@ def run_validation(
 
     # Have export run interally so that the logic need not happen in an interface
 
-    export_validation_json(validation_result,  pdf_path, pdf_library)
-    return validation_result
+    export_validation_json(validation_results,  pdf_path, pdf_library)
+    return validation_results
 
 
 def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "pypdf", check_external_links:bool = False) -> Dict[str, Any]:
@@ -369,8 +369,8 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Then validate
-    validation_result = run_validation(
-        report_result=report,
+    validation_results = run_validation(
+        report_results=report,
         pdf_path=pdf_path,
         pdf_library="pypdf",
         export_json=True,

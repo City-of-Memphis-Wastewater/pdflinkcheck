@@ -14,6 +14,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## Added:
 - validate.py: Add export for validation report, leveraging io.py.
+- cli.py: Add export option to `validate` CLI command.
+- gui.py: Add `▶ Run Validate` button and `_run_validation_gui()` function to GUI.
 
 ---
 
