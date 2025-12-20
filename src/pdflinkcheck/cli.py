@@ -235,6 +235,7 @@ def validate_pdf(
         report_result=report,
         pdf_path=pdf_path_str,
         pdf_library=pdf_library,
+        export_json=True,
         print_bool=True
     )
 

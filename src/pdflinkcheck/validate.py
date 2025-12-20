@@ -12,6 +12,7 @@ def run_validation(
     pdf_path: str,
     pdf_library: str = "pypdf",
     check_external: bool = False,
+    export_json: bool = True,
     print_bool: bool = True
 ) -> Dict[str, Any]:
     """
@@ -372,6 +373,7 @@ if __name__ == "__main__":
         report_result=report,
         pdf_path=pdf_path,
         pdf_library="pypdf",
+        export_json=True,
         print_bool=True
     )
 
