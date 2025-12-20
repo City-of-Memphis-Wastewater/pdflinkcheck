@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.68] - 2025-12-20
+### Fixed:
+- Hunting down errors in buil_pyz.py
+
+---
+
 ## [1.1.65] - 2025-12-20
 ### Changed:
 - Migrate to a uv_build build system, away from hatchling.
