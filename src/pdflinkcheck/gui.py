@@ -471,7 +471,7 @@ class PDFLinkCheckerApp(tk.Tk):
             # 3. Call the core logic function
             #self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
             validation_results = run_validation(
-                report_results=report_results
+                report_results=report_results,
                 pdf_path=pdf_path_str,
                 pdf_library=pdf_library,
                 export_json=True,
