@@ -133,6 +133,11 @@ def analyze_pdf( # Renamed function for clarity
 ):
     """
     Analyzes the specified PDF file for all internal, external, and unlinked references.
+
+    Checks:
+    • Internal GoTo links point to valid pages
+    • Remote GoToR links point to existing files
+    • TOC bookmarks target valid pages
     """
 
     """
@@ -193,10 +198,10 @@ def validate_pdf(
     """
     Validate internal, remote, and TOC links in a PDF.
 
-    Checks:
-    • Internal GoTo links point to valid pages
-    • Remote GoToR links point to existing files
-    • TOC bookmarks target valid pages
+    1. Call the run_report() function, like calling the 'analyze' CLI command.
+    2. Inspects the results from 'run_report():
+        - Are referenced files available?
+        - Are the page numbers referenced by GoTo links within the length of the document?
     """
     from pdflinkcheck.io import get_first_pdf_in_cwd
 
