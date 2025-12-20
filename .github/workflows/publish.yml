@@ -32,6 +32,9 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Install Hatch
+              run: pip install hatch
+              
       # --- UV-BASED INSTALLATION AND SETUP ---
       - name: Install uv
         # Install uv globally (or add it to the path)
@@ -52,12 +55,14 @@ jobs:
 
       - name: Build S-Dist and Wheel
         # This command uses the `build` package installed in the VENV to create package files.
-        run: source .venv/bin/activate && python -m build
-
+        #run: source .venv/bin/activate && python -m build
+        run: hatch build
+        
       - name: Run sanity check (using the installed package)
         # Use the global `uv run` if you don't want to activate, but since we activated above:
         run: |
           source .venv/bin/activate
+          pip install dist/pdflinkcheck-*.whl
           # Use your project's installed CLI command
           pdflinkcheck analyze --help
 
