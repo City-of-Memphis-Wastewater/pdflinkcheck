@@ -348,3 +348,5 @@ if __name__ == "__main__":
         pdf_library="pypdf",
         print_bool=True
     )
+
+    export_validation_results()
