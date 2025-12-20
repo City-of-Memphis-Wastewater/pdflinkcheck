@@ -34,8 +34,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
 
     # Helper to handle conditional printing and mandatory buffering
     def log(msg: str):
-        if print_bool:
-            print(msg)
+        if print_bool: # this should not be here
+            print(msg) # this should not be here. esure elsewhere then remove
         report_buffer.append(msg)
 
     # Expected: "pypdf" or "PyMuPDF"

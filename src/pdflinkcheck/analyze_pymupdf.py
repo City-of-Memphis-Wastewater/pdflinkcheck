@@ -11,7 +11,7 @@ except ImportError:
     fitz = None
 
 from pdflinkcheck.report import run_report
-from pdflinkcheck.validate import run_validation
+#from pdflinkcheck.validate import run_validation
 
 """
 Inspect target PDF for both URI links and for GoTo links.

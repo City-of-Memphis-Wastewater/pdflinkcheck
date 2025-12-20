@@ -8,7 +8,7 @@ from pypdf import PdfReader
 from pypdf.generic import Destination, NameObject, IndirectObject
 
 from pdflinkcheck.report import run_report
-from pdflinkcheck.validate import run_validation
+#from pdflinkcheck.validate import run_validation
 
 """
 Inspect target PDF for both URI links and GoTo links, using only pypdf (no PyMuPDF/Fitz).

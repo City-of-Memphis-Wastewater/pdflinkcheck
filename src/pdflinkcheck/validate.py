@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from pdflinkcheck.report import run_report
+from pdflinkcheck.io import get_friendly_path, export_validation_json
 
 def run_validation(
     report_result: Dict[str, Any],
@@ -24,7 +25,7 @@ def run_validation(
         print_bool: Whether to print results to console
 
     Returns:
-        Validation summary with valid/broken counts and detailed issues
+        Validation summary stats with valid/broken counts and detailed issues
     """
     data = report_result.get("data", {})
     metadata = report_result.get("metadata", {})
@@ -35,7 +36,7 @@ def run_validation(
     if not all_links and not toc:
         if print_bool:
             print("No links or TOC to validate.")
-        return {"summary": {"valid": 0, "broken": 0}, "issues": []}
+        return {"summary-stats": {"valid": 0, "broken": 0}, "issues": []}
 
     # Get total page count (critical for internal validation)
     try:
@@ -167,7 +168,7 @@ def run_validation(
             "validation": {"status": status, "reason": reason}
         })
 
-    summary = {
+    summary_stats = {
         "total_checked": len(all_links) + len(toc),
         "valid": valid_count,
         "file-found": file_found_count,
@@ -179,41 +180,66 @@ def run_validation(
         #"unknown": len(all_links) + len(toc) - valid_count - broken_count # nah this is not granuar enough 
     }
 
-    result = {
-        "summary": summary,
-        "issues": issues,
-        "total_pages": total_pages
-    }
+    
+    def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path):
+        """
+        Prepare the validation overview for modular reuse
+        """
+        validation_buffer = []
 
-    if print_bool:
-        print("\n" + "=" * 70)
-        print("## Validation Results")
-        print("=" * 70)
-        print(f"Total items checked: {summary['total_checked']}")
-        print(f"✅ Valid:   {summary['valid']}")
-        print(f"🌐 Web Addresses (Not Checked): {summary['unknown-web']}")
-        print(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary['unknown-reasonableness']}")
-        print(f"⚠️ Unsupported PDF Links: {summary['unknown-link']}")
-        print(f"❌ Broken Page Reference:  {summary['broken-page']}")
-        print(f"❌ Broken File Reference:  {summary['broken-file']}")
-        print("=" * 70)
+        # Helper to handle conditional printing and mandatory buffering
+        def log(msg: str):
+            validations_buffer.append(msg)
+    
+        log("\n" + "=" * 70)
+        log("## Validation Results")
+        log("=" * 70)
+        log(f"PDF Path = {get_friendly_path(pdf_path)}")
+        log(f"Total items checked: {summary_stats['total_checked']}")
+        log(f"✅ Valid:   {summary_stats['valid']}")
+        log(f"🌐 Web Addresses (Not Checked): {summary_stats['unknown-web']}")
+        log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
+        log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
+        log(f"❌ Broken Page Reference:  {summary_stats['broken-page']}")
+        log(f"❌ Broken File Reference:  {summary_stats['broken-file']}")
+        log("=" * 70)
 
         if issues:
-            print("\n## Issues Found")
-            print("{:<5} | {:<12} | {:<30} | {}".format("Idx", "Type", "Text", "Problem"))
-            print("-" * 70)
+            log("\n## Issues Found")
+            log("{:<5} | {:<12} | {:<30} | {}".format("Idx", "Type", "Text", "Problem"))
+            log("-" * 70)
             for i, issue in enumerate(issues[:25], 1):
                 link_type = issue.get("type", "Link")
                 text = issue.get("link_text", "") or issue.get("title", "") or "N/A"
                 text = text[:30]
                 reason = issue["validation"]["reason"]
-                print("{:<5} | {:<12} | {:<30} | {}".format(i, link_type, text, reason))
+                log("{:<5} | {:<12} | {:<30} | {}".format(i, link_type, text, reason))
             if len(issues) > 25:
-                print(f"... and {len(issues) - 25} more issues")
+                log(f"... and {len(issues) - 25} more issues")
         else:
-            print("No issues found — all links and TOC entries are valid!")
+            log("No issues found — all links and TOC entries are valid!")
 
-    return result
+        # Final aggregation of the buffer into one string
+        validation_buffer_str = "\n".join(validation_buffer)
+        
+        return validation_buffer_str
+    
+    summry_txt = generate_validation_summary_txt_buffer()
+    if print_bool:
+        print(summry_txt)
+
+    validation_result = {
+        "pdf_path" : pdf_path,
+        "summary-stats": summary_stats,
+        "issues": issues,
+        "summary-txt": summary_txt,
+        "total_pages": total_pages
+    }
+
+    # Have export run interally so that the logic need not happen in an interface
+
+    export_validation_json(validation_result,  pdf_path, pdf_library)
+    return validation_result
 
 
 def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "pypdf", check_external_links:bool = False) -> Dict[str, Any]:
@@ -304,7 +330,7 @@ def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "
             results['broken'].append(link)
 
     print("\n" + "=" * 70)
-    print(f"--- Validation Summary for {Path(pdf_path).name} ---")
+    print(f"--- Validation Summary Stats for {Path(pdf_path).name} ---")
     print(f"Total Checked: {total_links}")
     print(f"✅ Valid:  {len(results['valid'])}")
     print(f"❌ Broken: {len(results['broken'])}")

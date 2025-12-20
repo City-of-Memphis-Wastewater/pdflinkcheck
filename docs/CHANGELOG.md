@@ -6,12 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.63] - 2025-12-19
+## [1.1.64] - 2025-12-19
 ### Fixed:
 - validate.py: Add keys to the assessment for granularity and accuracy.
 - validate.py: Move original, unused run_validate() version from report.py to alidate.py and assign placeholder function name run_validation_more_readable_slop().
-- validate.py: correct references to run_validate() in the analyze_*.py files.
+- validate.py: Correct references to run_validate() in the analyze_*.py files.
 
+## Added:
+- validate.py: Add export for validation report, leveraging io.py.
 
 ---
 
