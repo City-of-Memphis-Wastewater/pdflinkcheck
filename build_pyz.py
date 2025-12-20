@@ -62,7 +62,7 @@ def build_wheel():
     # PASS THE CURRENT ENVIRONMENT (os.environ.copy())
     run_command(["uv", "build", 
         "--wheel", 
-        "--outdir", str(DIST_DIR)
+        "--out-dir", str(DIST_DIR)
     ], env=os.environ.copy())
     #run_command([
     #    sys.executable, "-m", "build", 
