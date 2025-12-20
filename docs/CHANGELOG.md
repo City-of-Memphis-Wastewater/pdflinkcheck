@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.1.73] - 2025-12-20
+### Addedd:
+- SEP_COUNT=28, variable implemented in report.py and validate.py.
+
 ---
 
 ## [1.1.72] - 2025-12-20

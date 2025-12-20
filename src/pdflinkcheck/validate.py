@@ -8,6 +8,7 @@ from pdflinkcheck.report import run_report
 from pdflinkcheck.io import get_friendly_path, export_validation_json
 
 SEP_COUNT=28
+
 def run_validation(
     report_results: Dict[str, Any],
     pdf_path: str,
@@ -193,9 +194,9 @@ def run_validation(
         def log(msg: str):
             validation_buffer.append(msg)
     
-        log("\n" + "=" * 70)
+        log("\n" + "=" * SEP_COUNT)
         log("## Validation Results")
-        log("=" * 70)
+        log("=" * SEP_COUNT)
         log(f"PDF Path = {get_friendly_path(pdf_path)}")
         log(f"Total items checked: {summary_stats['total_checked']}")
         log(f"✅ Valid: {summary_stats['valid']}")
@@ -204,12 +205,12 @@ def run_validation(
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
         log(f"❌ Broken Page Reference: {summary_stats['broken-page']}")
         log(f"❌ Broken File Reference: {summary_stats['broken-file']}")
-        log("=" * 70)
+        log("=" * SEP_COUNT)
 
         if issues:
             log("\n## Issues Found")
             log("{:<5} | {:<12} | {:<30} | {}".format("Idx", "Type", "Text", "Problem"))
-            log("-" * 70)
+            log("-" * SEP_COUNT)
             for i, issue in enumerate(issues[:25], 1):
                 link_type = issue.get("type", "Link")
                 text = issue.get("link_text", "") or issue.get("title", "") or "N/A"
@@ -331,18 +332,18 @@ def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "
         else:
             results['broken'].append(link)
 
-    print("\n" + "=" * 70)
+    print("\n" + "=" * SEP_COUNT)
     print(f"--- Validation Summary Stats for {Path(pdf_path).name} ---")
     print(f"Total Checked: {total_links}")
     print(f"✅ Valid:  {len(results['valid'])}")
     print(f"❌ Broken: {len(results['broken'])}")
-    print("=" * 70)
+    print("=" * SEP_COUNT)
 
     # 4. Print Detail Report for Broken Links
     if results['broken']:
         print("\n## ❌ Broken Links Found:")
         print("{:<5} | {:<5} | {:<30} | {}".format("Idx", "Page", "Reason", "Target"))
-        print("-" * 70)
+        print("-" * SEP_COUNT)
         for i, link in enumerate(results['broken'], 1):
             target = link.get('url') or link.get('destination_page') or link.get('remote_file')
             print("{:<5} | {:<5} | {:<30} | {}".format(
