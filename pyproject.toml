@@ -50,8 +50,6 @@ Repository = "https://github.com/city-of-memphis-wastewater/pdflinkcheck"
 [project.scripts]
 pdflinkcheck = "pdflinkcheck.cli:app"
 
-# Hatching has Automatic discovery of src/
-
 [project.optional-dependencies]
 # This allows users to do: pip install pdflinkcheck[full]
 full = [
@@ -74,8 +72,6 @@ dev = [
 ]
 
 [build-system]
-#requires = ["hatchling"]
-#build-backend = "hatchling.build"
 requires = ["uv_build"]
 build-backend = "uv_build"
 
