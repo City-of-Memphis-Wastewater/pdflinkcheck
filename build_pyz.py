@@ -61,8 +61,9 @@ def build_wheel():
     print("\n1. Building project wheel using 'python -m build'...")
     # PASS THE CURRENT ENVIRONMENT (os.environ.copy())
     run_command(["uv", "build", 
-        "--target", "wheel", 
-        "--outdir", str(DIST_DIR)], env=os.environ.copy())
+        "--wheel", 
+        "--outdir", str(DIST_DIR)
+    ], env=os.environ.copy())
     #run_command([
     #    sys.executable, "-m", "build", 
     #    "--wheel", 
@@ -91,8 +92,10 @@ def ensure_dependencies_and_shiv():
     #    #run_command(["uv", "pip", "install", "build"])
 
     # 2b. INSTALL/SYNC ALL PROJECT DEPENDENCIES (The Fix)
-    print("Installing all project dependencies via uv pip install -e .")
-    run_command([sys.executable, "-m", "pip", "install", "-e", "."])
+    #print("Installing all project dependencies via uv pip install -e .")
+    #run_command([sys.executable, "-m", "pip", "install", "-e", "."])
+    print("Installing the built wheel for testing...")
+    run_command([sys.executable, "-m", "pip", "install", str(wheel_path)])
     
     # 2c. Ensure shiv is installed
     try:
