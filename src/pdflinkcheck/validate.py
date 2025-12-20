@@ -225,7 +225,7 @@ def run_validation(
         
         return validation_buffer_str
     
-    summry_txt = generate_validation_summary_txt_buffer()
+    summry_txt = generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path)
     if print_bool:
         print(summry_txt)
 
