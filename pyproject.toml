@@ -83,9 +83,12 @@ artifacts = [
     "src/pdflinkcheck/data/LICENSE",
     "src/pdflinkcheck/data/README.md"
     ]
+    
+#[tool.uv.build-backend.data]
+#data = ["src/pdflinkcheck/data"]
 
-[tool.hatch.build.targets.wheel.force-include]
-"pyproject.toml" = "pdflinkcheck/data/pyproject.toml"
+#[tool.hatch.build.targets.wheel.force-include]
+#"pyproject.toml" = "pdflinkcheck/data/pyproject.toml"
 
 [tool.hatch.build.targets.sdist]
 include = [
