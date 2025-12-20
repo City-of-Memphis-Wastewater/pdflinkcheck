@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.65] - 2025-12-20
+### Changed:
+- Migarte to a uv_build build system, away from hatchling.
+
+---
+
 ## [1.1.64] - 2025-12-19
 ### Fixed:
 - validate.py: Add keys to the assessment for granularity and accuracy.
