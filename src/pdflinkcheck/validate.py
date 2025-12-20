@@ -71,7 +71,6 @@ def run_validation(
         reason = None
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
             target_page = int(link.get("destination_page"))
-            print(f"{i}, {link_type}, target = {target_page}")
             if not isinstance(target_page, int):
                 status = "broken-page"
                 reason = f"Target page not a number: {target_page}"
@@ -87,11 +86,9 @@ def run_validation(
             elif not (1 <= target_page <= total_pages):
                 status = "broken-page"
                 reason = f"Page {target_page} out of range (1–{total_pages})"
-            print(f"\tstatus = {status}, reason = {reason}")
-
+            
         elif link_type == "Remote (GoToR)":
             remote_file = link.get("remote_file")
-            print(f"{i}, {link_type}, remote_file = {remote_file}")
             if not remote_file:
                 status = "broken-file"
                 reason = "Missing remote file name"
@@ -103,11 +100,9 @@ def run_validation(
                 else:
                     status = "broken-file"
                     reason = f"File not found: {remote_file}"
-            print(f"\tstatus = {status}, reason = {reason}")
-
+            
         elif link_type == "External (URI)":
             url = link.get("url")
-            print(f"{i}, {link_type}, url = {url}")
             if url and url.startswith(("http://", "https://")) and check_external:
                 # Optional: add requests-based check later
                 status = "unknown-web"
@@ -115,14 +110,11 @@ def run_validation(
             else:
                 status = "unknown-web"
                 reason = "External link (no network check)"
-            print(f"\tstatus = {status}, reason = {reason}")
-
+            
         else:
-            print(f"{i}")
             status = "unknown-link"
             reason = "Other/unsupported link type"
-            print(f"\tstatus = {status}, reason = {reason}")
-
+            
         link_with_val = link.copy()
         link_with_val["validation"] = {"status": status, "reason": reason}
 
@@ -200,7 +192,7 @@ def run_validation(
         print(f"Total items checked: {summary['total_checked']}")
         print(f"✅ Valid:   {summary['valid']}")
         print(f"🌐 Web Addresses (Not Checked): {summary['unknown-web']}")
-        print(f"⚠️ Unknown Page Reasonableness (Mising Total Page Count): {summary['unknown-reasonableness']}")
+        print(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary['unknown-reasonableness']}")
         print(f"⚠️ Unsupported PDF Links: {summary['unknown-link']}")
         print(f"❌ Broken Page Reference:  {summary['broken-page']}")
         print(f"❌ Broken File Reference:  {summary['broken-file']}")
