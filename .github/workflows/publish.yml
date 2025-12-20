@@ -33,8 +33,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install Hatch
-          run: pip install hatch
-              
+        run: pip install hatch
       # --- UV-BASED INSTALLATION AND SETUP ---
       - name: Install uv
         # Install uv globally (or add it to the path)
