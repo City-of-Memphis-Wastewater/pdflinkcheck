@@ -190,7 +190,7 @@ def run_validation(
 
         # Helper to handle conditional printing and mandatory buffering
         def log(msg: str):
-            validations_buffer.append(msg)
+            validation_buffer.append(msg)
     
         log("\n" + "=" * 70)
         log("## Validation Results")
