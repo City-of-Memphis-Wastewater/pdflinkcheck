@@ -8,7 +8,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.1.65] - 2025-12-20
 ### Changed:
-- Migarte to a uv_build build system, away from hatchling.
+- Migrate to a uv_build build system, away from hatchling.
 
 ---
 
