@@ -7,6 +7,7 @@ from typing import Optional # Added Optional
 import unicodedata
 from importlib.resources import files
 import pyhabitat
+"""
 try:
     import sv_ttk
     # Apply Sun Valley Tk theme
@@ -14,7 +15,7 @@ try:
 except Exception:
     # Theme not available in bundle — use default
     pass
-
+"""
 # Import the core analysis function
 from pdflinkcheck.report import run_report
 from pdflinkcheck.validate import run_validation 
@@ -536,14 +537,14 @@ class PDFLinkCheckerApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("View Error", f"Could not launch editor: {e}")
 
-
+"""
 def toggle_theme():
     try:
         current = sv_ttk.get_theme()
         sv_ttk.set_theme("dark" if current == "light" else "light")
     except Exception:
         pass
-        
+"""     
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """
     Converts complex Unicode characters (like emojis and symbols) 
