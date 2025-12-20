@@ -245,7 +245,7 @@ def validate_pdf(
     )
 
     # Optional: fail on broken links
-    broken_count = validation_results["summary"]["broken-page"] + validation_results["summary"]["broken-file"]
+    broken_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
     if fail_on_broken and broken_count > 0:
         console.print(f"\n[bold red]Validation failed:[/bold red] {broken_count} broken link(s) found.")
         raise typer.Exit(code=1)
