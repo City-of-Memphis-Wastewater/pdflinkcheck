@@ -201,6 +201,7 @@ def validate_pdf(
     fail_on_broken: bool = typer.Option(
         False,
         "--fail",
+        is_flag=True,
         help="Exit with code 1 if any broken links are found (useful for CI)"
     )
 ):
