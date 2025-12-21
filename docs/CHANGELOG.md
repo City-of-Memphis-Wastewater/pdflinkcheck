@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.1.746] - 2025-12-201
 ### Changed:
 - Simplify: Adjust gui, remove the validate button. the logic should handle the combination of the validation json and txt summary into tje existing report structure and txt.
+- CLI: Adjust validate CLI commant to print both the initial analysis and the validation reports.
 
 ---
 
