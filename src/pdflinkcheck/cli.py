@@ -25,7 +25,6 @@ app = typer.Typer(
     no_args_is_help = False,
 )
 
-
 @app.callback()
 def main(ctx: typer.Context):
     """
@@ -112,7 +111,7 @@ def analyze_pdf( # Renamed function for clarity
         help="The path to the PDF file to analyze."
     ), 
     export_format: Optional[Literal["JSON", "TXT", "JSON,TXT", "NONE"]] = typer.Option(
-        "JSON", 
+        "JSON,TXT", 
         "--export-format","-e",
         case_sensitive=False, 
         help="Export format. Use 'None' to suppress file export.",
@@ -185,7 +184,7 @@ def validate_pdf(
     ),
     export: bool = typer.Option(
         True,
-        "--export",#"--no-export",
+        "--export/--no-export",
         help = "JSON export for validation check."
     ),
     pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
@@ -196,7 +195,7 @@ def validate_pdf(
     ),
     print_bool: bool = typer.Option(
         True,
-        "--print",#/"--no-print",
+        "--print/--no-print",
         help = "Print the report to console."
     ),
     fail_on_broken: bool = typer.Option(
@@ -265,7 +264,7 @@ def validate_pdf(
 def serve(
     host: str = typer.Option("0.0.0.0", "--host", "-h", help="Host to bind (use 0.0.0.0 for network access)"),
     port: int = typer.Option(8000, "--port", "-p", help="Port to listen on"),
-    reload: bool = typer.Option(False, "--reload", help="Auto-reload on code changes (dev only)"),
+    reload: bool = typer.Option(False, "--reload", is_flag=True, help="Auto-reload on code changes (dev only)"),
 ):
     """
     Start the built-in web server for uploading and analyzing PDFs in the browser.
