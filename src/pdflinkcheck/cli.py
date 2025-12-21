@@ -198,7 +198,7 @@ def validate_pdf(
         True,
         "--print",#/"--no-print",
         help = "Print the report to console."
-    )
+    ),
     fail_on_broken: bool = typer.Option(
         False,
         "--fail",
