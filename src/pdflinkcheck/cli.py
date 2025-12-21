@@ -194,6 +194,11 @@ def validate_pdf(
         envvar="PDF_ENGINE",
         help="PDF parsing engine: pypdf (pure Python) or pymupdf (faster, if available)"
     ),
+    print_bool: bool = typer.Option(
+        True,
+        "--print",#/"--no-print",
+        help = "Print the report to console."
+    )
     fail_on_broken: bool = typer.Option(
         False,
         "--fail",
@@ -222,13 +227,13 @@ def validate_pdf(
     console.print(f"[bold]Validating links in:[/bold] {pdf_path.name}")
     console.print(f"[bold]Using engine:[/bold] {pdf_library}\n")
 
-    # Step 1: Run analysis (quietly)
+    # Step 1: Run fresh analysis (quietly)
     report = run_report(
         pdf_path=pdf_path_str,
         max_links=0,
-        export_format="",
+        export_format="json,txt",
         pdf_library=pdf_library,
-        print_bool=False
+        print_bool=print_bool
     )
 
     if not report or not report.get("data"):
@@ -241,7 +246,7 @@ def validate_pdf(
         pdf_path=pdf_path_str,
         pdf_library=pdf_library,
         export_json=export,
-        print_bool=True
+        print_bool=print_bool
     )
 
     # Optional: fail on broken links
