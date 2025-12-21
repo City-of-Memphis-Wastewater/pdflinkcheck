@@ -6,11 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.746] - 2025-12-201
+## [1.1.76] - 2025-12-201
 ### Changed:
 - Simplify: Adjust gui, remove the validate button. the logic should handle the combination of the validation json and txt summary into tje existing report structure and txt.
 - CLI: Adjust validate CLI commant to print both the initial analysis and the validation reports.
 
+### Internal:
+- To Do: If a report with a poetebtially identical bame if foujd in the export directory, use a file naming bump like " file (2).txt ", etc.
 ---
 
 ## [1.1.74] - 2025-12-20
