@@ -32,11 +32,14 @@ class PDFLinkCheckerApp(tk.Tk):
     def __init__(self):
         super().__init__()
         
-
+        
         try:
             # Apply Sun Valley Tk theme
             import sv_ttk
-            sv_ttk.set_theme("dark")
+            self.sv_ttk = sv_ttk
+            #self.sv_ttk.set_theme("dark")
+            #self.sv_ttk.set_theme("light")
+            self._toggle_theme()  
         except Exception as e:
             print(f"Theme error: {e}")  # Optional: for debugging
         except Exception:
@@ -541,15 +544,12 @@ class PDFLinkCheckerApp(tk.Tk):
             
         except Exception as e:
             messagebox.showerror("View Error", f"Could not launch editor: {e}")
-
-#"""
-def toggle_theme():
-    try:
-        current = sv_ttk.get_theme()
-        sv_ttk.set_theme("dark" if current == "light" else "light")
-    except Exception:
-        pass
-#"""     
+    def _toggle_theme(self):
+        try:
+            current = self.sv_ttk.get_theme()
+            self.sv_ttk.set_theme("dark" if current == "light" else "light")
+        except Exception:
+            pass
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """
     Converts complex Unicode characters (like emojis and symbols) 
