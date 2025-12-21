@@ -18,7 +18,6 @@ except Exception:
 """
 # Import the core analysis function
 from pdflinkcheck.report import run_report
-from pdflinkcheck.validate import run_validation 
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
 
@@ -274,8 +273,6 @@ class PDFLinkCheckerApp(tk.Tk):
         run_analysis_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton')
         run_analysis_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
 
-        run_validation_btn = ttk.Button(control_frame, text="▶ Run Validation", command=self._run_validation_gui, style='Accent.TButton')
-        run_validation_btn.grid(row=4, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
         # Ensure the run button frame expands to fill its column
         #run_analysis_btn.grid_columnconfigure(0, weight=1)
 
@@ -448,7 +445,10 @@ class PDFLinkCheckerApp(tk.Tk):
             self.output_text.config(state=tk.DISABLED)
     
     def _run_validation_gui(self):
-        
+        """
+        defunct. analyze should do everything, and generate all files
+        JSON should include raw text, and TCT shoukd include report, which should inclue validation summary.
+        """
         pdf_path_str = self._assess_pdf_path_str()
         if not pdf_path_str:
             return
