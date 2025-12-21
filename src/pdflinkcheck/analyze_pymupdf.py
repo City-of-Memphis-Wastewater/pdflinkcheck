@@ -10,9 +10,6 @@ try:
 except ImportError:
     fitz = None
 
-from pdflinkcheck.report import run_report
-#from pdflinkcheck.validate import run_validation
-
 """
 Inspect target PDF for both URI links and for GoTo links.
 """
@@ -331,6 +328,9 @@ def call_stable():
     Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
     passing them as arguments to run_report.
     """
+    from pdflinkcheck.report import run_report
+    #from pdflinkcheck.validate import run_validation
+
     run_report(pdf_library = "pymupdf")
     #run_validation(pdf_library = "pymupdf")
 

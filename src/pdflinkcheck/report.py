@@ -48,15 +48,16 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
     elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
         try:
             import fitz
-        except ImportError:
+        except ImportError as e:
             print("PyMuPDF was explicitly requested as the PDF Engine")
-            print("Use pypdf instead, or install PyMuPDF. ")
+            print("Switch the PDF library to 'pypdf' instead, or install PyMuPDF. ")
             print("To install PyMuPDF locally, try: `uv sync --extra full` OR `pip install .[full]`")
             if pyhabitat.on_termux():
                 print(f"pyhabitat.on_termux() = {pyhabitat.on_termux()}")
                 print("PyMuPDF is not expected to work on Termux. Use pypdf.")
             print("\n")
-            return    
+            #return    
+            raise ImportError(f"The 'fitz' module is required for this functionality. Original error: {e}") from e
         from pdflinkcheck.analyze_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
     
     log("\n--- Starting Analysis ... ---\n")

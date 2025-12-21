@@ -7,9 +7,6 @@ from typing import Dict, Any, List
 from pypdf import PdfReader
 from pypdf.generic import Destination, NameObject, IndirectObject
 
-from pdflinkcheck.report import run_report
-#from pdflinkcheck.validate import run_validation
-
 """
 Inspect target PDF for both URI links and GoTo links, using only pypdf (no PyMuPDF/Fitz).
 Fully fixed and improved version as of December 2025 (compatible with pypdf >= 4.0).
@@ -209,6 +206,9 @@ def call_stable():
     """
     Entry point for command-line execution or integration with reporting module.
     """
+    from pdflinkcheck.report import run_report
+    #from pdflinkcheck.validate import run_validation
+
     run_report(library_pdf="pypdf")
     # run_validation(library_pdf="pypdf")  # Uncomment if validation step is needed
     

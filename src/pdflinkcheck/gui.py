@@ -7,15 +7,7 @@ from typing import Optional # Added Optional
 import unicodedata
 from importlib.resources import files
 import pyhabitat
-"""
-try:
-    import sv_ttk
-    # Apply Sun Valley Tk theme
-    sv_ttk.set_theme("light")
-except Exception:
-    # Theme not available in bundle — use default
-    pass
-"""
+
 # Import the core analysis function
 from pdflinkcheck.report import run_report
 from pdflinkcheck.version_info import get_version_from_pyproject
@@ -39,12 +31,25 @@ class RedirectText:
 class PDFLinkCheckerApp(tk.Tk):
     def __init__(self):
         super().__init__()
+        
+
+        try:
+            # Apply Sun Valley Tk theme
+            import sv_ttk
+            sv_ttk.set_theme("dark")
+        except Exception as e:
+            print(f"Theme error: {e}")  # Optional: for debugging
+        except Exception:
+            # Theme not available in bundle — use default
+            pass
+        
+        
         self.title(f"PDF Link Check v{get_version_from_pyproject()}")
         self.geometry("800x600")
-        
+
         # Style for the application
-        style = ttk.Style(self)
-        style.theme_use('clam')
+        ##style = ttk.Style(self)
+        ##style.theme_use('clam')
         
         # --- 1. Initialize Variables ---
         self.pdf_path = tk.StringVar(value="")
@@ -537,14 +542,14 @@ class PDFLinkCheckerApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("View Error", f"Could not launch editor: {e}")
 
-"""
+#"""
 def toggle_theme():
     try:
         current = sv_ttk.get_theme()
         sv_ttk.set_theme("dark" if current == "light" else "light")
     except Exception:
         pass
-"""     
+#"""     
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """
     Converts complex Unicode characters (like emojis and symbols) 

@@ -6,6 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.77] - 2025-12-201
+### Changed:
+- gui.py: Implementation of sv_ttk
+- gui.py, report.py: Improve error messaging if PyMuPDF is selected but is not available.
+
+### Fixed:
+- Move run_report() import in the analyze_*.py functions to inside of the __main__ loop, for better flow of the program flow chart and mitigating the risk of circular import. 
+
+---
+
 ## [1.1.76] - 2025-12-201
 ### Changed:
 - Simplify: Adjust gui, remove the validate button. the logic should handle the combination of the validation json and txt summary into tje existing report structure and txt.
