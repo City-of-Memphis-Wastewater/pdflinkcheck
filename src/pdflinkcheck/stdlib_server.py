@@ -9,6 +9,7 @@ from pathlib import Path
 import email  # This replaces cgi for multipart parsing
 
 from pdflinkcheck.report import run_report
+from pdflinkcheck.validate import run_validation
 
 PORT = 8000
 
@@ -17,8 +18,8 @@ HTML_FORM = """
 <html>
 <head><title>pdflinkcheck Stdlib Server</title></head>
 <body style="font-family: sans-serif; max-width: 800px; margin: 40px auto;">
-  <h1>pdflinkcheck API (Pure Stdlib, without cgi)</h1>
-  <p>Upload a PDF for link/TOC analysis. Zero third-party deps, future-proof.</p>
+  <h1>pdflinkcheck API (pure stdlib)</h1>
+  <p>Upload a PDF for link/TOC analysis.</p>
   <form action="/" method="post" enctype="multipart/form-data">
     <p><input type="file" name="file" accept=".pdf" required></p>
     <p>
@@ -33,9 +34,13 @@ HTML_FORM = """
       <input type="number" name="max_links" value="0" min="0">
     </p>
     <p><button type="submit">Analyze PDF</button></p>
+    <!--p>
+      <button type="submit" name="action" value="analyze">Analyze PDF</button>
+      <button type="submit" name="action" value="validate">Validate PDF</button>
+    </p-->
   </form>
   <hr>
-  <p>Returns JSON. Works on Termux & Python 3.13+.</p>
+  <p>Returns JSON.</p>
 </body>
 </html>
 """
