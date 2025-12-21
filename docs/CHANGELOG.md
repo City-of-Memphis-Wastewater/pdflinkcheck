@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.746] - 2025-12-201
+### Changed:
+- Simplify: Adjust gui, remove the validate button. the logic should handle the combination of the validation json and txt summary into tje existing report structure and txt.
+
+---
+
 ## [1.1.74] - 2025-12-20
 ### Fixed:
 - Improve empty returns in edge cases for report.py, so that they can handled by the server cleanly.
