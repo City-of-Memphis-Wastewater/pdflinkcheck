@@ -91,7 +91,6 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         '--noconfirm',
         '--clean',
         '--onefile',
-        #'--noconsole', # Worth it for GUI launch experience. Typer CLI might not work or show help. Encourage users who want the CLI to use the PYZ.
         f'--name={dynamic_exe_name}',
         
         # Output paths
@@ -112,10 +111,13 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
     if pyhabitat.tkinter_is_available(): # allows termux, etc build to be primarily CLI, becuase the gui wont work anyways
-        print("Building with the --noconsole flag, to favor GUI usage for the artifact, because GUI is avaialble.")
-        base_command.append('--noconsole')
+        flag = '--windowed'
+        # flag = '--noconsole'
+        print(f"Building with the {flag} flag, to favor GUI usage for the artifact, because GUI is avaialble.")
+        base_command.append(flag)
+        
     else:
-        print("Building without the --noconsole flag, to favor CLI usage for the artifact, because GUI is not available.")
+        print("Building without the --noconsole or --windowed flag, to favor CLI usage for the artifact, because GUI is not available.")
 
     # 3. Add Windows resource file if applicable
     if IS_WINDOWS_BUILD and RC_FILE.exists():

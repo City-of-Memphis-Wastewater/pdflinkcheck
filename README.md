@@ -43,7 +43,7 @@ The tool can be run as simple cross-platform graphical interface (Tkinter).
 ### Launching the GUI
 
 Ways to launch the GUI interface:
-1.  **Implicit Launch:** Run the tool or file with no arguments, subcommands, or flags. (Note: PyInstaller builds use the --noconsole flag, except for on Termux.)
+1.  **Implicit Launch:** Run the tool or file with no arguments, subcommands, or flags. (Note: PyInstaller builds use the --windowed (or -noconsole) flag, except for on Termux.)
 2.  **Explicit Command:** Use the dedicated GUI subcommand (`pdflinkcheck gui`).
 
 -----

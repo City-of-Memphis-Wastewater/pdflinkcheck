@@ -10,6 +10,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - I Have Questions.md, to src/pdflinkcheck/data, to help explorers find answers.
 - Add a dropdown button to the Tools dropdown in gui.py, to show I Have Questions.md. Call it "I Have Questions". 
 
+### Changed:
+- build_executable.py: Change **--noconsole** flag in PyInstaller build to **--windowed**, to use the GUI subsystem bootloader and avoid the quick console popup on  which happens with the **--noconsole** flag.
+
 ---
 
 ## [1.1.80] - 2025-12-22
