@@ -206,7 +206,7 @@ def run_validation(
         log(f"🌐 Web Addresses (Not Checked): {summary_stats['unknown-web']}")
         log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
-        log(f"❌ Broken Page Reference (page number beyond scope of availability): {summary_stats['broken-page']}")
+        log(f"❌ Broken Page Reference (Page number beyond scope of availability): {summary_stats['broken-page']}")
         log(f"❌ Broken File Reference (File not available): {summary_stats['broken-file']}")
         log("=" * SEP_COUNT)
 
@@ -382,4 +382,3 @@ if __name__ == "__main__":
         print_bool=True
     )
 
-    export_validation_results()

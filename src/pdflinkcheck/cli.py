@@ -250,7 +250,7 @@ def validate_pdf_commands(
     console.print(f"[bold]Using engine:[/bold] {pdf_library}\n")
 
     # Step 1: Run fresh analysis (quietly)
-    report = run_report(
+    report_results = run_report(
         pdf_path=pdf_path_str,
         max_links=0,
         export_format="json,txt",
@@ -258,13 +258,13 @@ def validate_pdf_commands(
         print_bool=print_bool
     )
 
-    if not report or not report.get("data"):
+    if not report_results or not report_results.get("data"):
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
         raise typer.Exit(code=0)
 
     # Step 2: Run validation
     validation_results = run_validation(
-        report_results=report,
+        report_results=report_results,
         pdf_path=pdf_path_str,
         pdf_library=pdf_library,
         export_json=export,

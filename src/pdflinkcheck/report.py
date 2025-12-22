@@ -9,6 +9,7 @@ import pyhabitat
 
 from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
 from pdflinkcheck.environment import pymupdf_is_available
+from pdflinkcheck.validate import run_validation
 
 SEP_COUNT=28
 
@@ -38,8 +39,6 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
 
     # Helper to handle conditional printing and mandatory buffering
     def log(msg: str):
-        if print_bool: # this should not be here
-            print(msg) # this should not be here. esure elsewhere then remove
         report_buffer.append(msg)
 
     # Expected: "pypdf" or "PyMuPDF"
@@ -112,6 +111,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         total_internal_links = len(goto_links) + len(resolved_action_links)
         limit = max_links if max_links > 0 else None
         uri_and_other = uri_links + other_links
+
+        str_structural_toc = get_structural_toc(structural_toc)
         
         # --- ANALYSIS SUMMARY (Using your print logic) ---
         log("\n" + "=" * SEP_COUNT)
@@ -121,7 +122,6 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         log("=" * SEP_COUNT)
 
         # --- Section 1: TOC ---
-        str_structural_toc = print_structural_toc(structural_toc)
         log(str_structural_toc)
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
@@ -161,6 +161,9 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             log(" No external or 'Other' links found.")
         log("-" * SEP_COUNT)
 
+        validation_results = run_validation()
+        log(validation_results.get("summary-txt",""))
+
         log("\n--- Analysis Complete ---\n")
 
         # Final aggregation of the buffer into one string
@@ -171,12 +174,16 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             "external_links": uri_links,
             "internal_links": all_internal,
             "toc": structural_toc
+
         }
 
         # 5. Export Report 
         #if export_format:
         #    # Assuming export_to will hold the output format string (e.g., "JSON")
         #    export_report_data(final_report_data_dict, Path(pdf_path).name, export_format, pdf_library)
+
+        if print_bool:
+            print(report_buffer_str)
         
         if export_format:
             fmt_upper = export_format.upper()
@@ -196,6 +203,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 "total_links": len(extracted_links)
             }
         }
+        report_results["data"]["validation"]=validation_results
+        report_results["text"].append(validation_results["summary-txt"])
         # Return a clean results object
         return report_results
     except Exception as e:
@@ -223,7 +232,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
         raise # Allow the exception to propagate or handle gracefully
 
-def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
+def get_structural_toc(structural_toc: list) -> str:
     """
     Formats the structural TOC data into a hierarchical string and optionally prints it.
 
@@ -243,8 +252,6 @@ def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
         msg = "No structural TOC (bookmarks/outline) found."
         lines.append(msg)
         output = "\n".join(lines)
-        if print_bool:
-            print(output)
         return output
 
     # Determine max page width for consistent alignment
@@ -265,8 +272,5 @@ def print_structural_toc(structural_toc: list, print_bool: bool = False) -> str:
     
     # Final aggregation
     str_structural_toc = "\n".join(lines)
-    
-    if print_bool:
-        print(str_structural_toc)
         
     return str_structural_toc
