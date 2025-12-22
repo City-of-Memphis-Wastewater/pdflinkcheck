@@ -34,7 +34,6 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _initialize_forest_theme(self):
         from importlib.resources import files 
-        self.theme = "forest"
         # Path to pdflinkcheck/data/themes/forest/ 
         theme_dir = files("pdflinkcheck.data.themes.forest") 
         # Load the theme files
@@ -46,7 +45,6 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _initialize_sunvalley_theme(self):
 
-        self.theme = "sunvalley"
         try:
             # Apply Sun Valley Tk theme
             import sv_ttk
@@ -88,6 +86,16 @@ class PDFLinkCheckerApp(tk.Tk):
             ttk.Style().theme_use("forest-dark")
         elif ttk.Style().theme_use() == "forest-dark":
             ttk.Style().theme_use("forest-light")
+
+    def _set_icon(self):
+        from importlib.resources import files 
+        # Path to pdflinkcheck/data/icons/
+        icon_dir = files("pdflinkcheck.data.icons") 
+        # Convert to a real filesystem path 
+        icon_path = icon_dir.joinpath("red_pdf_128px.ico")
+        icon_path = icon_dir.joinpath("red_pdf_512px.ico")
+        
+        self.iconbitmap(str(icon_path))
             
     def __init__(self):
         super().__init__()
@@ -97,13 +105,15 @@ class PDFLinkCheckerApp(tk.Tk):
         ##self._initialize_sunvalley_theme() # actually initialize to this, because SV is more smooth than forest, which has a subtle spatial shift
         ttk.Style().theme_use("forest-dark") # but if you use _toggle_theme_just_forest(), then you had better do this
 
-        if is_in_git_repo():
+        if False and is_in_git_repo():
             title_suffix = " [Development]"
         else:
             title_suffix = ""
         
         self.title(f"PDF Link Check v{get_version_from_pyproject()}{title_suffix}")
         self.geometry("800x600")
+
+        self._set_icon()
 
         
         # --- 1. Initialize Variables ---

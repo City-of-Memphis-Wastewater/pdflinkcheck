@@ -184,7 +184,7 @@ def env_command(
         False,
         "--clear-cache",
         is_flag=True,
-        help="Clear the environment all caches"
+        help="Clear the environment caches. \n - pymupdf_is_available() \n - is_in_git_repo() \nMain purpose: Run after adding PyMuPDF to an existing installation where it was previously missing, because pymupdf_is_available() would have been cached as False."
     )
     ):
     from pdflinkcheck.environment import clear_all_caches

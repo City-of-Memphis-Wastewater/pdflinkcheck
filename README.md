@@ -4,7 +4,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links wit
 
 -----
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.58.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.1.79.png)
 
 -----
 
@@ -53,10 +53,10 @@ Ways to launch the GUI interface:
 The core functionality is accessed via the `analyze` command. 
 
 `DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree`:
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.58_tree_help.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.79_tree_help.png)
 
 `pdflinkcheck --help`:
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.58.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.1.79.png)
 
 
 ### Available Commands

@@ -6,6 +6,18 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.79] - 2025-12-22
+### Added:
+- Custom ICO file: red_pdf_512px.ico. The GUI looks great.
+
+### Changed:
+- Tree Help -> Help Tree
+
+### Internal:
+- Screen shot the versioned Help Tree and the GUI and update the references in the README.
+
+---
+
 ## [1.1.78] - 2025-12-22
 ### Changed:
 - GUI improvement: Keep sv_ttk and also implement the files for the forest theme (https://github.com/rdbende/Forest-ttk-theme).

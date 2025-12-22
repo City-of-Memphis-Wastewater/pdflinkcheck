@@ -106,4 +106,4 @@ def add_typer_help_tree(app,
                     params_branch.add(f"[magenta]ARG: {arg_name}[/magenta]: [dim]{param.help}[/dim]")
 
         # 4. Print the final Panel containing the tree
-        console.print(Panel(app_tree, title=f"[bold]{root_app_command.name} CLI Tree Help[/bold]", border_style="blue"))
+        console.print(Panel(app_tree, title=f"[bold]{root_app_command.name} CLI Help Tree[/bold]", border_style="blue"))
