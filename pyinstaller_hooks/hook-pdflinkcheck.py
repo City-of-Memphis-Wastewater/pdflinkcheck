@@ -1,4 +1,4 @@
-# hook-pdflinkcheck.py
+# pyinstaller_hooks/hook-pdflinkcheck.py
 """
 When PyInstaller starts packaging, it does the following:
 

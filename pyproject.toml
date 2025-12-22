@@ -75,24 +75,13 @@ dev = [
 requires = ["uv_build"]
 build-backend = "uv_build"
 
-#[tool.hatch.build.targets.wheel]
-#packages = ["src/pdflinkcheck"]
-#artifacts = [
-#    "src/pdflinkcheck/data/LICENSE",
-#    "src/pdflinkcheck/data/README.md"
-#    ]
+[tool.uv.build]
+packages = ["src/pdflinkcheck"]
+include = ["src/pdflinkcheck/data/**"]
     
-#[tool.uv.build-backend.data]
-#data = ["src/pdflinkcheck/data"]
+#[tool.uv.build.package]
+#data = ["data/**"]
 
-#[tool.hatch.build.targets.wheel.force-include]
-#"pyproject.toml" = "pdflinkcheck/data/pyproject.toml"
 
-#[tool.hatch.build.targets.sdist]
-#include = [
-#    "pyproject.toml",
-#    "src/pdflinkcheck/data/LICENSE",
-#    "src/pdflinkcheck/data/README.md",
-#]
 
 
