@@ -16,7 +16,7 @@ I checked each folder in 'C:/Program Files/' looking for clues.
 
 As I searched, the questions changed.
 What is a DLL?
-Why are little icons and fuzzy images the only files I can open and inspect?
+Mostly, the only files I could open and inspect were little icons and fuzzy images - Why?
 
 I gave up.
 Wait - No I didn't. I am here now.
@@ -25,7 +25,7 @@ Honestly, I still don't understand where the edges of the window come from.
 The easy answer is: **libraries**.
 Many people have done a lot of work to build various GUI libraries, to help people like me (and you) build software.
 
-For this package, the application window in built with Tkinter, which is included in Python's standard library.
+For this package, the application window is built with Tkinter, which is included in Python's standard library.
 You can see how the graphical user interface (GUI) is defined at: https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/src/pdflinkheck/gui.py
 
 This gui.py file isn't perfect, but exploring it will be far more illuminating than trying to open a DLL file in Notepad.
