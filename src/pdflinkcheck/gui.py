@@ -42,48 +42,16 @@ class PDFLinkCheckerApp(tk.Tk):
         self.tk.call("source", str(theme_dir / f"forest-light.tcl")) 
         self.tk.call("source", str(theme_dir / f"forest-dark.tcl")) 
 
-        # Load nothing here
-        # SV is more smooth than forest, which has a subtle spatial shift
-
-    def _initialize_sunvalley_theme(self):
-
-        try:
-            # Apply Sun Valley Tk theme
-            import sv_ttk
-            self.sv_ttk = sv_ttk
-            self.sv_ttk.set_theme("dark") # themes = ("light", "dark") 
-        except Exception as e:
-            self.output_text.insert(f"Theme error: {e}")  # Optional: for debugging
-        except Exception:
-            pass
     
 
     def _toggle_theme(self):
         # You could instead assign the dark to light of a single theme here
         """
-        This calls a five-way theme cycle, self._toggle_theme_cyclic()
-        Or, use just the forest theme with self._toggle_theme_just_forest()
+        Calls light/dark toggle for the forest theme with self._toggle_theme_just_forest()
         """
-        #return self._toggle_theme_cyclic()
-        return self._toggle_theme_just_forest()
+        return self._toggle_theme_forest()
 
-    def _toggle_theme_cyclic(self):
-        if ttk.Style().theme_use() == "sun-valley-dark":
-            ttk.Style().theme_use("sun-valley-light")
-            
-        elif ttk.Style().theme_use() == "sun-valley-light":
-            ttk.Style().theme_use("forest-dark")
-            
-        elif ttk.Style().theme_use() == "forest-dark":
-            ttk.Style().theme_use("forest-light")
-            
-        elif ttk.Style().theme_use() == "forest-light":
-            ttk.Style().theme_use("clam")
-
-        elif ttk.Style().theme_use() == "clam":
-            ttk.Style().theme_use("sun-valley-dark")
-    
-    def _toggle_theme_just_forest(self):
+    def _toggle_theme_forest(self):
         if ttk.Style().theme_use() == "forest-light":
             ttk.Style().theme_use("forest-dark")
         elif ttk.Style().theme_use() == "forest-dark":

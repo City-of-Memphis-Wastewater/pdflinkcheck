@@ -13,6 +13,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - build_executable.py: Change **--noconsole** flag in PyInstaller build to **--windowed**, to use the GUI subsystem bootloader and avoid the quick console popup on  which happens with the **--noconsole** flag.
 
+### Removed:
+- 'sv-ttk' optional dependecy from pyproject.toml - this is a forest theme family now. Remove now-excessive sun-valley-theme-relevant code from gui.py. Ensure there are no references to "[gui]" in the README, etc. 
+
 ---
 
 ## [1.1.80] - 2025-12-22
