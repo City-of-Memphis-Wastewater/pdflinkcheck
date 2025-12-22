@@ -105,7 +105,7 @@ class PDFLinkCheckerApp(tk.Tk):
         ##self._initialize_sunvalley_theme() # actually initialize to this, because SV is more smooth than forest, which has a subtle spatial shift
         ttk.Style().theme_use("forest-dark") # but if you use _toggle_theme_just_forest(), then you had better do this
 
-        if False and is_in_git_repo():
+        if is_in_git_repo():
             title_suffix = " [Development]"
         else:
             title_suffix = ""
