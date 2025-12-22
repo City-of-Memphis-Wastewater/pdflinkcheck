@@ -180,8 +180,8 @@ def analyze_pdf( # Renamed function for clarity
         pdf_library = pdf_library,
     )
 
-@app.command(name="env")
-def env_command(
+@app.command(name="tools", help= "Additional features, hamburger menu.")
+def tools_command(
     clear_cache: bool = typer.Option(
         False,
         "--clear-cache",
