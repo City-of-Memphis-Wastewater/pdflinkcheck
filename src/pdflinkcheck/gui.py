@@ -30,7 +30,6 @@ class RedirectText:
         pass
 
 
-
 class PDFLinkCheckerApp(tk.Tk):
 
     def _initialize_forest_theme(self):
@@ -62,9 +61,11 @@ class PDFLinkCheckerApp(tk.Tk):
     def _toggle_theme(self):
         # You could instead assign the dark to light of a single theme here
         """
-        This calls a four-way theme cycle, _toggle_theme_cyclic()
+        This calls a five-way theme cycle, self._toggle_theme_cyclic()
+        Or, use just the forest theme with self._toggle_theme_just_forest()
         """
-        return self._toggle_theme_cyclic()
+        #return self._toggle_theme_cyclic()
+        return self._toggle_theme_just_forest()
 
     def _toggle_theme_cyclic(self):
         if ttk.Style().theme_use() == "sun-valley-dark":
@@ -81,14 +82,20 @@ class PDFLinkCheckerApp(tk.Tk):
 
         elif ttk.Style().theme_use() == "clam":
             ttk.Style().theme_use("sun-valley-dark")
+    
+    def _toggle_theme_just_forest(self):
+        if ttk.Style().theme_use() == "forest-light":
+            ttk.Style().theme_use("forest-dark")
+        elif ttk.Style().theme_use() == "forest-dark":
+            ttk.Style().theme_use("forest-light")
             
-
     def __init__(self):
         super().__init__()
 
     
         self._initialize_forest_theme() # load but do not set internally
-        self._initialize_sunvalley_theme() # actually initialize to this, because SV is more smooth than forest, which has a subtle spatial shift
+        ##self._initialize_sunvalley_theme() # actually initialize to this, because SV is more smooth than forest, which has a subtle spatial shift
+        ttk.Style().theme_use("forest-dark") # but if you use _toggle_theme_just_forest(), then you had better do this
 
         if is_in_git_repo():
             title_suffix = " [Development]"

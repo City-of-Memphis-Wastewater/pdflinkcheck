@@ -8,7 +8,19 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.1.78] - 2025-12-22
 ### Changed:
-- GUI improvements: Keep sv_ttk, to not handle the file from the forest theme (https://github.com/rdbende/Forest-ttk-theme).
+- GUI improvement: Keep sv_ttk and also implement the files for the forest theme (https://github.com/rdbende/Forest-ttk-theme).
+- GUI improvements: Five way theme toggling!
+- GUI improvements: No, only forest-dark and forest-light is better. KISS.
+
+### Added:
+- environment.py: Cache the avaiability of fitz. Enable cache clearing through the GUI Tools > Clear Cache and also through the env command in the CLI.
+- GUI Menu item, Tools.
+
+### Fixed:
+- Better messaging and behavior isf PyMuPDF is not avaliable, and if it is selected. Default to pypdf at load if not pymupdf_is_available().
+
+### Internal:
+- We still ned to fix the incrporation of the validation logic and logs into the run_report() function, and to have combined behavior. One TXT, on JSON (which carries the two separate sections of TXT, inital analysis and te validation summary).
 
 ---
 
