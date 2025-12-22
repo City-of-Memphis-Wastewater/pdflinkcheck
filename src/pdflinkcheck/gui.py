@@ -29,11 +29,22 @@ class RedirectText:
         """Required for file-like objects, but does nothing here."""
         pass
 
+
+
 class PDFLinkCheckerApp(tk.Tk):
-    def __init__(self):
-        super().__init__()
+
+
+    def _initialize_forest_theme(self):
+        from importlib.resources import files 
+
+        # Path to pdflinkcheck/data/themes/forest/ 
+        theme_dir = files("pdflinkcheck.data.themes.forest") 
+        # Load the theme file 
+        self.tk.call("source", str(theme_dir / "forest-light.tcl")) 
+        # Activate the theme 
+        ttk.Style().theme_use("forest-light")
         
-        
+    def _initialize_sunvalley_theme(self):
         try:
             # Apply Sun Valley Tk theme
             import sv_ttk
@@ -44,10 +55,15 @@ class PDFLinkCheckerApp(tk.Tk):
         except Exception:
             # Theme not available in bundle — use default
             pass
+
+    def __init__(self):
+        super().__init__()
         
+        #self._initialize_sunvalley_theme()
+        self._initialize_forest_theme()
         
         if is_in_git_repo():
-            title_suffix = " [DEV ENV]"
+            title_suffix = " [Development]"
         else:
             title_suffix = ""
         

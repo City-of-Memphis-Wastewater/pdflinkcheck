@@ -8,7 +8,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.1.78] - 2025-12-22
 ### Changed:
-- GUI improvements
+- GUI improvements: Keep sv_ttk, to not handle the file from the forest theme (https://github.com/rdbende/Forest-ttk-theme).
 
 ---
 
