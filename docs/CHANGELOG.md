@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.80] - 2025-12-22
+### Added: 
+- pyproject.toml: Add "License :: OSI Approved :: MIT License" as an additonal OSI to existing the AGPL3+, because portions of the code use the AGPL3+ and other portions use the MIT.
+
+---
+
 ## [1.1.79] - 2025-12-22
 ### Added:
 - Custom ICO file: red_pdf_512px.ico. The GUI looks great.

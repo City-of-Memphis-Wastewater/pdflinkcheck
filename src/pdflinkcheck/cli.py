@@ -1,3 +1,5 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # src/pdflinkcheck/cli.py
 import typer
 from typing import Literal

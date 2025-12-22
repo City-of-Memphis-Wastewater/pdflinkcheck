@@ -1,4 +1,7 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # src/pdflinkcheck/version_info.py
+
 import re
 from pathlib import Path
 import sys
@@ -11,7 +14,7 @@ This portion of the codebase is MIT licensed. It does not rely on any AGPL-licen
 
 MIT License
 
-Copyright (c) 2025 George Clayton Bennett <george.bennett@memphistn.gov>
+Copyright © 2025 George Clayton Bennett <george.bennett@memphistn.gov>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

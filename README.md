@@ -261,8 +261,16 @@ This license has significant implications for **distribution and network use**, 
 
 > **Before deploying or modifying this tool for organizational use, especially for internal web services or distribution, please ensure compliance with the AGPLv3+ terms.**
 
+Because the AGPLv3 is a strong copyleft license, any version of `pdflinkcheck` that includes AGPL‑licensed components (such as `PyMuPDF`) must be distributed as a whole under AGPLv3+. This means that for those versions, anyone who distributes the application—or makes a modified version available over a network—must also provide the complete corresponding source code under the same terms.
+
+However, the MIT‑licensed portions of the codebase remain MIT regardless of the overall project license. They may be reused independently in other projects without triggering AGPL obligations.
+
+If a future version of `pdflinkcheck` removes all AGPL‑licensed dependencies, that version would no longer be subject to AGPLv3+ requirements.
+
 Links:
 - Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/  
+- PyMuPDF source code: https://github.com/pymupdf/PyMuPDF/
+- pypdf source code: https://github.com/py-pdf/pypdf/
 - Official AGPLv3 Text (FSF): https://www.gnu.org/licenses/agpl-3.0.html
 
 Copyright © 2025 George Clayton Bennett

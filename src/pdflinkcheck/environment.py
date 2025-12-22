@@ -1,3 +1,5 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # pdflinkcheck/environment.py
 
 from functools import cache

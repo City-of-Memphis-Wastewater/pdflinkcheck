@@ -1,3 +1,5 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # src/pdflinkcheck/gui.py
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox # Added messagebox
