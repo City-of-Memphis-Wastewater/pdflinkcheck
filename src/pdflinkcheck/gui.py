@@ -33,33 +33,108 @@ class RedirectText:
 
 class PDFLinkCheckerApp(tk.Tk):
 
-
     def _initialize_forest_theme(self):
         from importlib.resources import files 
-
+        self.theme = "forest"
         # Path to pdflinkcheck/data/themes/forest/ 
         theme_dir = files("pdflinkcheck.data.themes.forest") 
-        # Load the theme file 
-        self.tk.call("source", str(theme_dir / "forest-light.tcl")) 
+        # Load the theme files
+        self.tk.call("source", str(theme_dir / f"forest-light.tcl")) 
+        self.tk.call("source", str(theme_dir / f"forest-dark.tcl")) 
         # Activate the theme 
-        ttk.Style().theme_use("forest-light")
-        
+        ttk.Style().theme_use("forest-dark")
+
     def _initialize_sunvalley_theme(self):
+
+        self.theme = "sunvalley"
         try:
             # Apply Sun Valley Tk theme
             import sv_ttk
             self.sv_ttk = sv_ttk
-            self.sv_ttk.set_theme("dark") # themes = ("light", "dark")  
+            self.sv_ttk.set_theme("light") # themes = ("light", "dark")  
         except Exception as e:
             self.output_text.insert(f"Theme error: {e}")  # Optional: for debugging
         except Exception:
-            # Theme not available in bundle — use default
             pass
+    
+
+    def _toggle_theme_sv(self):
+        try:
+            #current = self.sv_ttk.get_theme()
+            #self.sv_ttk.set_theme("dark" if current == "light" else "light")
+            
+            current = ttk.Style().theme_use()
+            ttk.Style().theme_use("sun-valley-dark" if current == "sun-valley-light" else "sun-valley-light")
+            
+        except Exception:
+            pass
+    
+    def _toggle_theme_forest(self):
+        try:
+            current = ttk.Style().theme_use()
+            ttk.Style().theme_use("forest-dark" if current =="forest-light" else "forest-light")
+        except Exception:
+            pass
+
+    def _toggle_theme(self):
+        return self._toggle_theme_cyclic_v2()
+        # --- blocked ---
+        if self.theme == "sunvalley":
+            return self._toggle_theme_sv()
+        elif self.theme == "forest":
+            return self._toggle_theme_forest()
+        
+    def _toggle_theme_cyclic_v2(self):
+        print("\n")
+        print(f"self.sv_ttk.get_theme() = {self.sv_ttk.get_theme()}")
+        print(f"ttk.Style().theme_use() = {ttk.Style().theme_use()}")
+
+        if ttk.Style().theme_use() == "sun-valley-dark":
+            ttk.Style().theme_use("sun-valley-light")
+            
+        elif ttk.Style().theme_use() == "sun-valley-light":
+            ttk.Style().theme_use("forest-dark")
+            
+        elif ttk.Style().theme_use() == "forest-dark":
+            ttk.Style().theme_use("forest-light")
+            
+        elif ttk.Style().theme_use() == "forest-light":
+            ttk.Style().theme_use("sun-valley-dark")
+            
+        
+    def _toggle_theme_cyclic(self):
+        print("\n")
+        print(f"self.sv_ttk.get_theme() = {self.sv_ttk.get_theme()}")
+        print(f"ttk.Style().theme_use() = {ttk.Style().theme_use()}")
+
+        if self.theme == "sunvalley" and self.sv_ttk.get_theme() == "dark":
+            print("sv dark -> sv light")
+            return self._toggle_theme_sv()
+        elif self.theme == "sunvalley" and self.sv_ttk.get_theme() == "light":
+            print("sv light -> forest-dark")
+            return self._toggle_theme_forest()
+        elif self.theme == "forest" and ttk.Style().theme_use() == "forest-dark":
+            print("forest-dark -> forest-light")
+            return self._toggle_theme_forest()
+        elif self.theme == "forest" and ttk.Style().theme_use() == "forest-light":
+            print("forest-light -> sv dark")
+            return self._toggle_theme_sv()
+                
 
     def __init__(self):
         super().__init__()
-        
-        #self._initialize_sunvalley_theme()
+
+        self.themes = ("forest", "sunvalley") 
+        """
+        self.theme = "forest"
+        if self.theme == "sunvalley":
+            self._initialize_sunvalley_theme()
+        elif self.theme == "forest":
+            self._initialize_forest_theme()
+        else: 
+            print(f"Please identify an available theme. self.theme={self.theme}") 
+        """
+        self._initialize_sunvalley_theme()
         self._initialize_forest_theme()
         
         if is_in_git_repo():
@@ -108,7 +183,7 @@ class PDFLinkCheckerApp(tk.Tk):
         tools_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Tools", menu=tools_menu)
 
-        tools_menu.add_command(label="Toggle Theme (Light/Dark)", command=self._toggle_theme)
+        tools_menu.add_command(label="Toggle Theme", command=self._toggle_theme)
         tools_menu.add_command(label="Clear Cache", command=self._clear_all_caches)
 
         # Add existing License/Readme to tools menu
@@ -445,13 +520,8 @@ class PDFLinkCheckerApp(tk.Tk):
         """Checkbox toggle for TXT filetype report."""
         if self.do_export_report_txt_var.get():
             pass # placeholder # no side effects
+    
 
-    def _toggle_theme(self):
-        try:
-            current = self.sv_ttk.get_theme()
-            self.sv_ttk.set_theme("dark" if current == "light" else "light")
-        except Exception:
-            pass
 
     def _toggle_pdf_library(self):
         selected_lib = self.pdf_library_var.get().lower()
