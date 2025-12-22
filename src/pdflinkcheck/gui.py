@@ -12,7 +12,7 @@ import pyhabitat
 from pdflinkcheck.report import run_report
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
-from pdflinkcheck.environment import pymupdf_is_available, clear_all_caches
+from pdflinkcheck.environment import pymupdf_is_available, clear_all_caches, is_in_git_repo
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -46,7 +46,12 @@ class PDFLinkCheckerApp(tk.Tk):
             pass
         
         
-        self.title(f"PDF Link Check v{get_version_from_pyproject()}")
+        if is_in_git_repo():
+            title_suffix = " [DEV ENV]"
+        else:
+            title_suffix = ""
+        
+        self.title(f"PDF Link Check v{get_version_from_pyproject()}{title_suffix}")
         self.geometry("800x600")
 
         # Style for the application
@@ -88,7 +93,7 @@ class PDFLinkCheckerApp(tk.Tk):
         menubar.add_cascade(label="Tools", menu=tools_menu)
 
         tools_menu.add_command(label="Toggle Theme (Light/Dark)", command=self._toggle_theme)
-        tools_menu.add_command(label="Clear All Caches", command=self._clear_all_caches)
+        tools_menu.add_command(label="Clear Cache", command=self._clear_all_caches)
 
         # Optional: Add your existing License/Readme here too
         tools_menu.add_separator()
@@ -139,19 +144,25 @@ class PDFLinkCheckerApp(tk.Tk):
             license_content = license_path_traversable.read_text(encoding="utf-8")
             
         except FileNotFoundError:
-            messagebox.showerror(
-                "License Error", 
-                "LICENSE file not found within the installation package (pdflinkcheck.data/LICENSE). Check build process."
+            if is_in_git_repo():
+                messagebox.showinfo(
+                    "Local Development Mode",
+                    "Embedded data files not found – copying from source repository..."
                 )
-            try:
+                try:
+                    # Your existing copy logic
+                    from pdflinkcheck.datacopy import ensure_package_license  # or ensure_package_readme
+                    ensure_package_license()  # or readme
+                    # Retry display
+                    self._show_license()  # or _show_readme()
+                    return
+                except Exception as e:
+                    messagebox.showerror("Copy Failed", f"Could not copy file: {e}")
+            else:
                 messagebox.showerror(
-                "Attempting to copy LICENSE for local dev environment."
+                    "Packaging Error",
+                    "Embedded file not found. This indicates a problem with the package build/installation."
                 )
-                from pdflinkcheck.datacopy import ensure_package_license
-                ensure_package_license()
-                self._show_license()
-            except Exception as e:
-                messagebox.showerror("Copy Error", f"This probably isn't a cloned dev environrment. This error now indicates a build problem: {e}")
             return
         
         except Exception as e:
@@ -191,21 +202,26 @@ class PDFLinkCheckerApp(tk.Tk):
             readme_path_traversable = files("pdflinkcheck.data") / "README.md"
             readme_content = readme_path_traversable.read_text(encoding="utf-8")
             readme_content = sanitize_glyphs_for_tkinter(readme_content)
-            
         except FileNotFoundError:
-            messagebox.showerror(
-                "Readme Error", 
-                "README.md file not found within the installation package (pdflinkcheck.data/README.md). Check build process."
-            )
-            try:
-                messagebox.showerror(
-                "Attempting to copy LICENSE for local dev environment."
+            if is_in_git_repo():
+                messagebox.showinfo(
+                    "Local Development Mode",
+                    "Embedded data files not found – copying from source repository..."
                 )
-                from pdflinkcheck.datacopy import ensure_package_readme
-                ensure_package_readme()
-                self._show_readme()
-            except Exception as e:
-                messagebox.showerror("Copy Error", f"This probably isn't a cloned dev environrment. This error now indicates a build problem: {e}")
+                try:
+                    # Your existing copy logic
+                    from pdflinkcheck.datacopy import ensure_package_readme 
+                    ensure_package_readme()  
+                    # Retry display
+                    self._show_readme() 
+                    return
+                except Exception as e:
+                    messagebox.showerror("Copy Failed", f"Could not copy file: {e}")
+            else:
+                messagebox.showerror(
+                    "Packaging Error",
+                    "Embedded file not found. This indicates a problem with the package build/installation."
+                )
             return
         except Exception as e:
             messagebox.showerror("Read Error", f"Failed to read embedded README.md file: {e}")
@@ -503,7 +519,16 @@ class PDFLinkCheckerApp(tk.Tk):
             # Inform the user in the GUI with a clean message
             self._display_error(f"An unexpected error occurred during analysis: {e}")
             #self._popup_install_pymupdf_version_or_add_pypdf_as_future_default()
-            self._display_msg("Automatically toggling the PDF library to use 'pymupdf'. Please hit 'Run Analysis' again.")
+            #messagebox.showwarning("PyMuPDF is not available", "Please hit 'Run Analysis' again, now that the 'pypdf' library has been auto-selected. Alternatively, install PyPDF to the virtual environment; once ths is done, run Tools > Clear Cache.")
+            messagebox.showinfo(  # Changed from showwarning – less alarming
+                "PyMuPDF Not Available",
+                "PyMuPDF is not installed or not working.\n"
+                "Switched to pypdf engine automatically.\n\n"
+                "To use the faster PyMuPDF engine:\n"
+                "1. Install it: pip install pymupdf\n"
+                "2. Go to Tools → Clear Cache\n"
+                "3. Run analysis again"
+            )
             self._toggle_pdf_library()
     
             
