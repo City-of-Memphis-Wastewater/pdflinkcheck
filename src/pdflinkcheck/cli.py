@@ -71,6 +71,7 @@ def docs_command(
         return # Typer will automatically show the help message.
 
     if is_in_git_repo():
+        """This is too aggressive. But we don't expect it often. Probably worth it."""
         from pdflinkcheck.datacopy import ensure_package_license, ensure_package_readme
         ensure_package_license()
         ensure_package_readme()

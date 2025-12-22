@@ -78,15 +78,11 @@ build-backend = "uv_build"
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }
 
-# why do i want this?
+# https://docs.astral.sh/uv/concepts/preview/#available-preview-features
 #[tool.uv]
 #preview = true
 
-# These do not exist for uv but the data path is handled automatically
-#[tool.uv.build]
-#include = ["src/pdflinkcheck/data/**"]
-#[tool.uv.build.package]
-#data = ["data/**"]
+# uv handles the data path automatically
 
 
 
