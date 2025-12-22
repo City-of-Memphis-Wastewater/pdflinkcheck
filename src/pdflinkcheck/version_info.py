@@ -52,7 +52,7 @@ def find_pyproject(start: Path) -> Path | None:
         if candidate.exists():
             return candidate
         
-    # 3. Handle Installed / Wheel / Shiv state (using your force-include path)
+    # 3. Handle Installed / Wheel / Shiv state (using force-include path)
     internal_path = Path(__file__).parent / "data" / "pyproject.toml"
     if internal_path.exists():
         return internal_path

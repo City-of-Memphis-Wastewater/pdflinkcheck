@@ -13,6 +13,7 @@ from importlib.resources import files
 
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.validate import run_validation 
+from pdflinkcheck.environment import is_in_git_repo
 
 
 console = Console() # to be above the tkinter check, in case of console.print
@@ -68,6 +69,11 @@ def docs_command(
         # Otherwise, the default behavior (showing help) works fine, but we'll add a message.
         console.print("[yellow]Please use either the --license or --readme flag.[/yellow]")
         return # Typer will automatically show the help message.
+
+    if is_in_git_repo():
+        from pdflinkcheck.datacopy import ensure_package_license, ensure_package_readme
+        ensure_package_license()
+        ensure_package_readme()
 
     # --- Handle --license flag ---
     if license:
@@ -148,7 +154,7 @@ def analyze_pdf( # Renamed function for clarity
 
     Env Var: If no flag is present, it checks PDF_ENGINE.
 
-    Code Default: (Lowest priority) It falls back to "pypdf" as defined in your typer.Option.
+    Code Default: (Lowest priority) It falls back to "pypdf" as defined in typer.Option.
     """
 
     VALID_FORMATS = ("JSON") # extend later
@@ -157,7 +163,7 @@ def analyze_pdf( # Renamed function for clarity
         export_formats = ""
     else:
         # Filter for valid ones: ("JSON", "TXT")
-        # This allows "JSON,TXT" to become "JSONTXT" which your run_report logic can handle
+        # This allows "JSON,TXT" to become "JSONTXT" which run_report logic can handle
         valid = [f for f in requested_formats if f in ("JSON", "TXT")]
         export_formats = "".join(valid)
 

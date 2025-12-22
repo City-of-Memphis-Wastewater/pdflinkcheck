@@ -63,7 +63,7 @@ jobs:
           source .venv/bin/activate
           pip uninstall -y pdflinkcheck || true
           pip install dist/pdflinkcheck-*.whl
-          # Use your project's installed CLI command
+          # Use project's installed CLI command
           pdflinkcheck analyze --help
       # Optional: Also test the sdist (extra safety)
       - name: Sanity check the built sdist

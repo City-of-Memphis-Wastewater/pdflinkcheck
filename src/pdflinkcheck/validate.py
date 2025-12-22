@@ -257,7 +257,7 @@ def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "
     if check_external_links:
         import requests
 
-    # 1. Setup Library Engine (Reuse your logic)
+    # 1. Setup Library Engine (Reuse logic)
     pdf_library = pdf_library.lower()
     if pdf_library == "pypdf":
         from pdflinkcheck.analyze_pypdf import extract_links_pypdf as extract_links

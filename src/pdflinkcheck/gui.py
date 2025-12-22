@@ -95,7 +95,7 @@ class PDFLinkCheckerApp(tk.Tk):
         tools_menu.add_command(label="Toggle Theme (Light/Dark)", command=self._toggle_theme)
         tools_menu.add_command(label="Clear Cache", command=self._clear_all_caches)
 
-        # Optional: Add your existing License/Readme here too
+        # Add existing License/Readme to tools menu
         tools_menu.add_separator()
         tools_menu.add_command(label="License", command=self._show_license)
         tools_menu.add_command(label="Readme", command=self._show_readme)
@@ -147,14 +147,13 @@ class PDFLinkCheckerApp(tk.Tk):
             if is_in_git_repo():
                 messagebox.showinfo(
                     "Local Development Mode",
-                    "Embedded data files not found – copying from source repository..."
+                    "Embedded data files not found – copying from root..."
                 )
                 try:
-                    # Your existing copy logic
-                    from pdflinkcheck.datacopy import ensure_package_license  # or ensure_package_readme
-                    ensure_package_license()  # or readme
+                    from pdflinkcheck.datacopy import ensure_package_license  
+                    ensure_package_license()  
                     # Retry display
-                    self._show_license()  # or _show_readme()
+                    self._show_license() 
                     return
                 except Exception as e:
                     messagebox.showerror("Copy Failed", f"Could not copy file: {e}")
@@ -206,10 +205,9 @@ class PDFLinkCheckerApp(tk.Tk):
             if is_in_git_repo():
                 messagebox.showinfo(
                     "Local Development Mode",
-                    "Embedded data files not found – copying from source repository..."
+                    "Embedded data files not found – copying from root..."
                 )
                 try:
-                    # Your existing copy logic
                     from pdflinkcheck.datacopy import ensure_package_readme 
                     ensure_package_readme()  
                     # Retry display
