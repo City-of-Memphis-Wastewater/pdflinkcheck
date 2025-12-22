@@ -38,9 +38,7 @@ class PDFLinkCheckerApp(tk.Tk):
             # Apply Sun Valley Tk theme
             import sv_ttk
             self.sv_ttk = sv_ttk
-            #self.sv_ttk.set_theme("dark")
-            #self.sv_ttk.set_theme("light")
-            self._toggle_theme()  
+            self.sv_ttk.set_theme("dark") # themes = ("light", "dark")  
         except Exception as e:
             self.output_text.insert(f"Theme error: {e}")  # Optional: for debugging
         except Exception:
