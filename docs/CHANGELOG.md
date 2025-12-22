@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.1.80] - 2025-12-22
 ### Changes:
 - CLI env command -> CLI tools command
+- Licensing: Create a purpose built LICENSE file which references the other two LICENSE-MIT and LICENSE-AGPL3 files.
 
 ### Added: 
 - pyproject.toml: Add "License :: OSI Approved :: MIT License" as an additonal OSI to existing the AGPL3+, because portions of the code use the AGPL3+ and other portions use the MIT.
