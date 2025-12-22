@@ -41,8 +41,9 @@ class PDFLinkCheckerApp(tk.Tk):
         # Load the theme files
         self.tk.call("source", str(theme_dir / f"forest-light.tcl")) 
         self.tk.call("source", str(theme_dir / f"forest-dark.tcl")) 
-        # Activate the theme 
-        ttk.Style().theme_use("forest-dark")
+
+        # Load nothing here
+        # SV is more smooth than forest, which has a subtle spatial shift
 
     def _initialize_sunvalley_theme(self):
 
@@ -51,44 +52,21 @@ class PDFLinkCheckerApp(tk.Tk):
             # Apply Sun Valley Tk theme
             import sv_ttk
             self.sv_ttk = sv_ttk
-            self.sv_ttk.set_theme("light") # themes = ("light", "dark")  
+            self.sv_ttk.set_theme("dark") # themes = ("light", "dark") 
         except Exception as e:
             self.output_text.insert(f"Theme error: {e}")  # Optional: for debugging
         except Exception:
             pass
     
 
-    def _toggle_theme_sv(self):
-        try:
-            #current = self.sv_ttk.get_theme()
-            #self.sv_ttk.set_theme("dark" if current == "light" else "light")
-            
-            current = ttk.Style().theme_use()
-            ttk.Style().theme_use("sun-valley-dark" if current == "sun-valley-light" else "sun-valley-light")
-            
-        except Exception:
-            pass
-    
-    def _toggle_theme_forest(self):
-        try:
-            current = ttk.Style().theme_use()
-            ttk.Style().theme_use("forest-dark" if current =="forest-light" else "forest-light")
-        except Exception:
-            pass
-
     def _toggle_theme(self):
-        return self._toggle_theme_cyclic_v2()
-        # --- blocked ---
-        if self.theme == "sunvalley":
-            return self._toggle_theme_sv()
-        elif self.theme == "forest":
-            return self._toggle_theme_forest()
-        
-    def _toggle_theme_cyclic_v2(self):
-        print("\n")
-        print(f"self.sv_ttk.get_theme() = {self.sv_ttk.get_theme()}")
-        print(f"ttk.Style().theme_use() = {ttk.Style().theme_use()}")
+        # You could instead assign the dark to light of a single theme here
+        """
+        This calls a four-way theme cycle, _toggle_theme_cyclic()
+        """
+        return self._toggle_theme_cyclic()
 
+    def _toggle_theme_cyclic(self):
         if ttk.Style().theme_use() == "sun-valley-dark":
             ttk.Style().theme_use("sun-valley-light")
             
@@ -99,44 +77,19 @@ class PDFLinkCheckerApp(tk.Tk):
             ttk.Style().theme_use("forest-light")
             
         elif ttk.Style().theme_use() == "forest-light":
+            ttk.Style().theme_use("clam")
+
+        elif ttk.Style().theme_use() == "clam":
             ttk.Style().theme_use("sun-valley-dark")
             
-        
-    def _toggle_theme_cyclic(self):
-        print("\n")
-        print(f"self.sv_ttk.get_theme() = {self.sv_ttk.get_theme()}")
-        print(f"ttk.Style().theme_use() = {ttk.Style().theme_use()}")
-
-        if self.theme == "sunvalley" and self.sv_ttk.get_theme() == "dark":
-            print("sv dark -> sv light")
-            return self._toggle_theme_sv()
-        elif self.theme == "sunvalley" and self.sv_ttk.get_theme() == "light":
-            print("sv light -> forest-dark")
-            return self._toggle_theme_forest()
-        elif self.theme == "forest" and ttk.Style().theme_use() == "forest-dark":
-            print("forest-dark -> forest-light")
-            return self._toggle_theme_forest()
-        elif self.theme == "forest" and ttk.Style().theme_use() == "forest-light":
-            print("forest-light -> sv dark")
-            return self._toggle_theme_sv()
-                
 
     def __init__(self):
         super().__init__()
 
-        self.themes = ("forest", "sunvalley") 
-        """
-        self.theme = "forest"
-        if self.theme == "sunvalley":
-            self._initialize_sunvalley_theme()
-        elif self.theme == "forest":
-            self._initialize_forest_theme()
-        else: 
-            print(f"Please identify an available theme. self.theme={self.theme}") 
-        """
-        self._initialize_sunvalley_theme()
-        self._initialize_forest_theme()
-        
+    
+        self._initialize_forest_theme() # load but do not set internally
+        self._initialize_sunvalley_theme() # actually initialize to this, because SV is more smooth than forest, which has a subtle spatial shift
+
         if is_in_git_repo():
             title_suffix = " [Development]"
         else:
@@ -145,9 +98,6 @@ class PDFLinkCheckerApp(tk.Tk):
         self.title(f"PDF Link Check v{get_version_from_pyproject()}{title_suffix}")
         self.geometry("800x600")
 
-        # Style for the application
-        ##style = ttk.Style(self)
-        ##style.theme_use('clam')
         
         # --- 1. Initialize Variables ---
         self.pdf_path = tk.StringVar(value="")
