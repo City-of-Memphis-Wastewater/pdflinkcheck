@@ -680,6 +680,24 @@ class PDFLinkCheckerApp(tk.Tk):
         except Exception as e:
             messagebox.showerror("View Error", f"Could not launch editor: {e}")
     
+def show_splash(duration=1200):
+    splash = tk.Toplevel()
+    splash.overrideredirect(True)
+
+    width, height = 300, 200
+    screen_w = splash.winfo_screenwidth()
+    screen_h = splash.winfo_screenheight()
+    x = (screen_w - width) // 2
+    y = (screen_h - height) // 2
+    splash.geometry(f"{width}x{height}+{x}+{y}")
+
+    frame = ttk.Frame(splash, padding=20)
+    frame.pack(expand=True, fill="both")
+    ttk.Label(frame, text="pdflinkcheck", font=("Segoe UI", 20)).pack()
+    ttk.Label(frame, text="Loading…").pack(pady=10)
+
+    return splash
+
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """
     Converts complex Unicode characters (like emojis and symbols) 
@@ -714,7 +732,22 @@ def start_gui(time_auto_close:int=0):
     Entry point function to launch the application.
     """
     print("pdflinkcheck: start_gui ...")
+    
     tk_app = PDFLinkCheckerApp()
+    if True:
+        # Not worth it. Doesn't hide the console flash and causes a worse GUI flicker
+        tk_app.withdraw() # Hide main window during splash 
+
+        splash = show_splash() # Load your GUI after splash 
+        
+        tk_app.after(1200, lambda: (
+            splash.destroy(),
+            tk_app.deiconify(), # Using deiconify() after withdraw() brings the window back into view.
+            #tk_app.title("pdflinkcheck"),
+            tk_app.lift(), # bring to front 
+            tk_app.focus_force()
+
+        ))
 
     auto_close_window(tk_app, time_auto_close)
 
