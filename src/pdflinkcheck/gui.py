@@ -293,7 +293,7 @@ class PDFLinkCheckerApp(tk.Tk):
         ).pack(side='left', padx=5, pady=1)
 
         ttk.Label(report_brevity_frame, text="Max Links to Display:").pack(side='left', padx=5, pady=1)
-        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=6)
+        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=7)
         self.max_links_entry.pack(side='left', padx=5, pady=5)
 
         # --- PDF Library Selection ---
