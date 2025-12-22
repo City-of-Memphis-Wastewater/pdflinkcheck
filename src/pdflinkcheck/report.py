@@ -74,8 +74,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 "total_links": 0
             }
         }
-    #try:
-    if True:
+    try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
 
@@ -220,7 +219,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         # Return a clean results object
         return report_results
     
-    """except Exception as e:
+    except Exception as e:
         # Specific handling for common read failures
         if "invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
             log(f"\nWarning: Could not parse PDF structure — likely an image-only or malformed PDF.")
@@ -243,7 +242,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         # Log the critical failure
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
         log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
-        raise # Allow the exception to propagate or handle gracefully"""
+        raise # Allow the exception to propagate or handle gracefully
 
 def get_structural_toc(structural_toc: list) -> str:
     """
