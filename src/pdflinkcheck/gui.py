@@ -159,7 +159,7 @@ class PDFLinkCheckerApp(tk.Tk):
         tools_menu.add_separator()
         tools_menu.add_command(label="License", command=self._show_license)
         tools_menu.add_command(label="Readme", command=self._show_readme)
-        
+        tools_menu.add_command(label="I Have Questions", command=self._show_i_have_questions)
     # In class PDFLinkCheckerApp:
 
     def _copy_pdf_path(self):
@@ -198,7 +198,7 @@ class PDFLinkCheckerApp(tk.Tk):
         Reads the embedded LICENSE file (AGPLv3) and displays its content in a new modal window.
         """
         try:
-            # CORRECT WAY: Use the Traversable object's read_text() method.
+            # Use the Traversable object's read_text() method.
             # This handles files located inside zip archives (.pyz, pipx venvs) correctly.
             license_path_traversable = files("pdflinkcheck.data") / "LICENSE"
             license_content = license_path_traversable.read_text(encoding="utf-8")
@@ -256,7 +256,7 @@ class PDFLinkCheckerApp(tk.Tk):
         Reads the embedded README.md file and displays its content in a new modal window.
         """
         try:
-            # CORRECT WAY: Use the Traversable object's read_text() method.
+            # Use the Traversable object's read_text() method.
             # This handles files located inside zip archives (.pyz, pipx venvs) correctly.
             readme_path_traversable = files("pdflinkcheck.data") / "README.md"
             readme_content = readme_path_traversable.read_text(encoding="utf-8")
@@ -307,6 +307,43 @@ class PDFLinkCheckerApp(tk.Tk):
         readme_window.transient(self)
         readme_window.grab_set()
         self.wait_window(readme_window)
+
+    def _show_i_have_questions(self):
+        """
+        Reads the embedded I Have Questions.md file and displays its content in a new modal window.
+        """
+        try:
+            # Use the Traversable object's read_text() method.
+            # This handles files located inside zip archives (.pyz, pipx venvs) correctly.
+            i_have_questions_path_traversable = files("pdflinkcheck.data") / "I Have Questions.md"
+            i_have_questions_content = i_have_questions_path_traversable.read_text(encoding="utf-8")
+            i_have_questions_content = sanitize_glyphs_for_tkinter(i_have_questions_content)
+        except FileNotFoundError:
+            messagebox.showerror("Read Error", f"Failed to read embedded 'I Have Questions.md' file.")
+            return
+
+        # --- Display in a New Toplevel Window ---
+        i_have_questions_window = tk.Toplevel(self)
+        i_have_questions_window.title("I Have Questions.md")
+        i_have_questions_window.geometry("600x400")
+        
+        # Text widget for content
+        text_widget = tk.Text(i_have_questions_window, wrap=tk.WORD, font=('Monospace', 10), padx=10, pady=10)
+        text_widget.insert(tk.END, i_have_questions_content)
+        text_widget.config(state=tk.DISABLED)
+        
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(i_have_questions_window, command=text_widget.yview)
+        text_widget['yscrollcommand'] = scrollbar.set
+        
+        # Layout
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        text_widget.pack(fill='both', expand=True)
+        
+        # Make the window modal (optional, but good practice for notices)
+        i_have_questions_window.transient(self)
+        i_have_questions_window.grab_set()
+        self.wait_window(i_have_questions_window)
 
     def _create_widgets(self):
         # --- Control Frame (Top) ---

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
+## [1.1.81] - 2025-12-22
+### Added:
+- I Have Questions.md, to src/pdflinkcheck/data, to help explorers find answers.
+- Add a dropdown button to the Tools dropdown in gui.py, to show I Have Questions.md. Call it "I Have Questions". 
+
+---
 
 ## [1.1.80] - 2025-12-22
 ### Changes:
