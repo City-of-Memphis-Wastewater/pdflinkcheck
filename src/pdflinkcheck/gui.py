@@ -293,7 +293,7 @@ class PDFLinkCheckerApp(tk.Tk):
         ).pack(side='left', padx=5, pady=1)
 
         ttk.Label(report_brevity_frame, text="Max Links to Display:").pack(side='left', padx=5, pady=1)
-        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=4)
+        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=6)
         self.max_links_entry.pack(side='left', padx=5, pady=5)
 
         # --- PDF Library Selection ---
@@ -339,9 +339,7 @@ class PDFLinkCheckerApp(tk.Tk):
         run_analysis_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton')
         run_analysis_btn.grid(row=3, column=0, columnspan=2, pady=10, sticky='ew', padx=(0, 5))
 
-        # Ensure the run button frame expands to fill its column
-        #run_analysis_btn.grid_columnconfigure(0, weight=1)
-
+        """
         # 2. Create a Frame to hold the two file link buttons (This frame goes into column 2)
         info_btn_frame = ttk.Frame(control_frame)
         info_btn_frame.grid(row=3, column=2, columnspan=1, pady=10, sticky='ew', padx=(5, 0))
@@ -349,13 +347,14 @@ class PDFLinkCheckerApp(tk.Tk):
         info_btn_frame.grid_columnconfigure(0, weight=1)
         info_btn_frame.grid_columnconfigure(1, weight=1)
 
-        # 3. Place License and Readme buttons inside the new frame
-        license_btn = ttk.Button(info_btn_frame, text="License", command=self._show_license)
+        # 3. Placeholder buttons inside the info button frame
+        info_1_btn = ttk.Button(info_btn_frame, text="Empty1", command=self._do_stuff_1)
         # Use PACK or a 2-column GRID inside the info_btn_frame. GRID is cleaner here.
-        license_btn.grid(row=0, column=0, sticky='ew', padx=(0, 2)) # Left side of the frame
+        info_1_btn.grid(row=0, column=0, sticky='ew', padx=(0, 2)) # Left side of the frame
 
-        readme_btn = ttk.Button(info_btn_frame, text="Readme", command=self._show_readme)
-        readme_btn.grid(row=0, column=1, sticky='ew', padx=(2, 0)) # Right side of the frame
+        info_2_btn = ttk.Button(info_btn_frame, text="Empty2", command=self._do_stuff_2)
+        info_2_btn.grid(row=0, column=1, sticky='ew', padx=(2, 0)) # Right side of the frame
+        """
 
         # Force the columns to distribute space evenly
         control_frame.grid_columnconfigure(0, weight=2)
@@ -517,9 +516,6 @@ class PDFLinkCheckerApp(tk.Tk):
 
         except Exception as e:
             # Inform the user in the GUI with a clean message
-            self._display_error(f"An unexpected error occurred during analysis: {e}")
-            #self._popup_install_pymupdf_version_or_add_pypdf_as_future_default()
-            #messagebox.showwarning("PyMuPDF is not available", "Please hit 'Run Analysis' again, now that the 'pypdf' library has been auto-selected. Alternatively, install PyPDF to the virtual environment; once ths is done, run Tools > Clear Cache.")
             messagebox.showinfo(  # Changed from showwarning – less alarming
                 "PyMuPDF Not Available",
                 "PyMuPDF is not installed or not working.\n"
