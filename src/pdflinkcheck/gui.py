@@ -128,7 +128,7 @@ class PDFLinkCheckerApp(tk.Tk):
     def _clear_all_caches(self):
         """Clear caches and show confirmation."""
         clear_all_caches()
-        messagebox.showinfo("Caches Cleared", "All caches have been cleared.\nYou can now retry analysis with PyMuPDF if it was recently installed.")
+        messagebox.showinfo("Caches Cleared", f"All caches have been cleared.\nPyMuPDF available: {pymupdf_is_available()}")
 
     def _show_license(self):
         """
