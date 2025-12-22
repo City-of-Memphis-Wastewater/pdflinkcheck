@@ -1,3 +1,5 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # src/pdflinkcheck/validate.py
 
 import sys

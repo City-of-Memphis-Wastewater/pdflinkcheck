@@ -1,4 +1,6 @@
-# src/pdflinkcheck/analyze_pypdf.py
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
+# src/pdflinkcheck/analyze_pypdf_v2.py
 import sys
 from pathlib import Path
 import logging

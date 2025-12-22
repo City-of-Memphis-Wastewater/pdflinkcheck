@@ -1,5 +1,6 @@
-# build_pyz.py 
-#!/usr/bin/env python3
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
+# ./build_pyz.py 
 import subprocess
 import sys
 import re

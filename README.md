@@ -249,7 +249,8 @@ uv run  python -m pdflinkcheck.stdlib_server
 
 **`pdflinkcheck` is licensed under the `GNU Affero General Public License` version 3 or later (`AGPLv3+`).**
 
-The `AGPL3+` is required for portions of this codebase because `pdflinkcheck` uses `PyMuPDF`, which is licensed under the `AGPL3`.
+The `AGPL3+` is required for this codebase because `pdflinkcheck` uses `PyMuPDF`, which is licensed under the `AGPL3`.
+However, (nearly) every file in thie codebase is explicitly labeled as MIT-licensed. I did not reuse any lines of PyMuPDF, and I have only referenced PyMuPDF functions.
 
 To stay in compliance, the AGPL3 license text is readily available in the CLI and the GUI, and it is included in the build artifacts.
 The `AGPL3` appears as the primary license file in the source code. While this infers that the entire project is AGPL3-licensed, this is not true - portions of the codebase are MIT-licensed.

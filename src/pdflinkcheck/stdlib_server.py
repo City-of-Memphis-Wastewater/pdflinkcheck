@@ -1,3 +1,5 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # src/pdflinkcheck/stdlib_server.py
 import http.server
 import socketserver

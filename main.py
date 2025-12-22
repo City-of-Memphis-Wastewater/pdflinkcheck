@@ -1,3 +1,5 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # main.py
 from src.pdflinkcheck.cli import app
 

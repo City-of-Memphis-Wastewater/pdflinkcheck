@@ -1,4 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
+# ./build_executable.py
 """
 build_executable.py for pdflinkcheck
 Builds the pdflinkcheck standalone binary (EXE/ELF) using PyInstaller.
