@@ -274,3 +274,21 @@ def get_structural_toc(structural_toc: list) -> str:
     str_structural_toc = "\n".join(lines)
         
     return str_structural_toc
+
+if __name__ == "__main__":
+
+    from pdflinkcheck.io import get_first_pdf_in_cwd
+    pdf_path = get_first_pdf_in_cwd()
+    # Run analysis first
+    report = run_report(
+        pdf_path=pdf_path,
+        max_links=0,
+        export_format="",
+        pdf_library="pypdf",
+        print_bool=False  # We handle printing in validation
+    )
+
+    if not report or not report.get("data"):
+        print("No data extracted — nothing to validate.")
+        sys.exit(1)
+

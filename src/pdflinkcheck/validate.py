@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 from typing import Dict, Any
 
-from pdflinkcheck.report import run_report
 from pdflinkcheck.io import get_friendly_path, export_validation_json
 from pdflinkcheck.environment import pymupdf_is_available
 
@@ -354,31 +353,3 @@ def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "
             ))
     
     return results
-
-
-if __name__ == "__main__":
-
-    from pdflinkcheck.io import get_first_pdf_in_cwd
-    pdf_path = get_first_pdf_in_cwd()
-    # Run analysis first
-    report = run_report(
-        pdf_path=pdf_path,
-        max_links=0,
-        export_format="",
-        pdf_library="pypdf",
-        print_bool=False  # We handle printing in validation
-    )
-
-    if not report or not report.get("data"):
-        print("No data extracted — nothing to validate.")
-        sys.exit(1)
-
-    # Then validate
-    validation_results = run_validation(
-        report_results=report,
-        pdf_path=pdf_path,
-        pdf_library="pypdf",
-        export_json=True,
-        print_bool=True
-    )
-

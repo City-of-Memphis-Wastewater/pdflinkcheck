@@ -211,8 +211,8 @@ def call_stable():
     from pdflinkcheck.report import run_report
     #from pdflinkcheck.validate import run_validation
 
-    run_report(library_pdf="pypdf")
-    # run_validation(library_pdf="pypdf")  # Uncomment if validation step is needed
+    run_report(pdf_library="pypdf")
+    # run_validation(pdf_library="pypdf")  # Uncomment if validation step is needed
     
 
 if __name__ == "__main__":
