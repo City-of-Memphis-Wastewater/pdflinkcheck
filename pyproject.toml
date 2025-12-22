@@ -75,10 +75,16 @@ dev = [
 requires = ["uv_build"]
 build-backend = "uv_build"
 
-[tool.uv.build]
-packages = ["src/pdflinkcheck"]
-include = ["src/pdflinkcheck/data/**"]
-    
+[tool.uv.sources]
+pdflinkcheck = { path = "src/pdflinkcheck" }
+
+# why do i want this?
+#[tool.uv]
+#preview = true
+
+# These do not exist for uv but the data path is handled automatically
+#[tool.uv.build]
+#include = ["src/pdflinkcheck/data/**"]
 #[tool.uv.build.package]
 #data = ["data/**"]
 
