@@ -5,8 +5,12 @@ from typing import Dict, Any, Optional, List
 
 logging.getLogger("fitz").setLevel(logging.ERROR) 
 
+from pdflinkcheck.environment import pymupdf_is_available
 try:
-    import fitz  # PyMuPDF
+    if pymupdf_is_available():
+        import fitz  # PyMuPDF
+    else:
+        fitz = None
 except ImportError:
     fitz = None
 

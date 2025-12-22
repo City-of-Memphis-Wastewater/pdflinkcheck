@@ -6,6 +6,7 @@ from typing import Dict, Any
 
 from pdflinkcheck.report import run_report
 from pdflinkcheck.io import get_friendly_path, export_validation_json
+from pdflinkcheck.environment import pymupdf_is_available
 
 SEP_COUNT=28
 
@@ -43,7 +44,7 @@ def run_validation(
 
     # Get total page count (critical for internal validation)
     try:
-        if pdf_library == "pymupdf":
+        if pymupdf_is_available() and pdf_library == "pymupdf":
             import fitz
             doc = fitz.open(pdf_path)
             total_pages = doc.page_count

@@ -12,6 +12,7 @@ import pyhabitat
 from pdflinkcheck.report import run_report
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
+from pdflinkcheck.environment import pymupdf_is_available, clear_all_caches
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -41,7 +42,7 @@ class PDFLinkCheckerApp(tk.Tk):
             #self.sv_ttk.set_theme("light")
             self._toggle_theme()  
         except Exception as e:
-            print(f"Theme error: {e}")  # Optional: for debugging
+            self.output_text.insert(f"Theme error: {e}")  # Optional: for debugging
         except Exception:
             # Theme not available in bundle — use default
             pass
@@ -57,17 +58,20 @@ class PDFLinkCheckerApp(tk.Tk):
         # --- 1. Initialize Variables ---
         self.pdf_path = tk.StringVar(value="")
         self.pdf_library_var = tk.StringVar(value="PyMuPDF")
-        #self.pdf_library_var.set("PyMuPDF")
         self.max_links_var = tk.StringVar(value="50")
         self.show_all_links_var = tk.BooleanVar(value=True)  
         self.do_export_report_json_var = tk.BooleanVar(value=True) 
-        self.do_export_report_txt_var = tk.BooleanVar(value=False) 
+        self.do_export_report_txt_var = tk.BooleanVar(value=True) 
         self.current_report_text = None
         self.current_report_data = None
 
         self.supported_export_formats = ["JSON", "MD", "TXT"]
         self.supported_export_formats = ["JSON"]
-        
+
+        if not pymupdf_is_available():
+            print(f"pymupdf_is_available: {pymupdf_is_available()}")
+            self.pdf_library_var.set("pypdf")
+
         
         # --- 2. Create Widgets ---
         self._create_widgets()
@@ -76,6 +80,22 @@ class PDFLinkCheckerApp(tk.Tk):
         self._toggle_max_links_entry() 
         self._toggle_json_export()
         self._toggle_txt_export()
+
+        # --- Menubar with dropdown ---
+        menubar = tk.Menu(self)
+        self.config(menu=menubar)
+
+        # Tools menu
+        tools_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Tools", menu=tools_menu)
+
+        tools_menu.add_command(label="Toggle Theme (Light/Dark)", command=self._toggle_theme)
+        tools_menu.add_command(label="Clear All Caches", command=self._clear_all_caches)
+
+        # Optional: Add your existing License/Readme here too
+        tools_menu.add_separator()
+        tools_menu.add_command(label="License", command=self._show_license)
+        tools_menu.add_command(label="Readme", command=self._show_readme)
         
     # In class PDFLinkCheckerApp:
 
@@ -105,6 +125,11 @@ class PDFLinkCheckerApp(tk.Tk):
         """Scrolls the output text widget to the bottom."""
         self.output_text.see(tk.END) # tk.END is the index for the position just after the last character
 
+    def _clear_all_caches(self):
+        """Clear caches and show confirmation."""
+        clear_all_caches()
+        messagebox.showinfo("Caches Cleared", "All caches have been cleared.\nYou can now retry analysis with PyMuPDF if it was recently installed.")
+
     def _show_license(self):
         """
         Reads the embedded LICENSE file (AGPLv3) and displays its content in a new modal window.
@@ -119,8 +144,18 @@ class PDFLinkCheckerApp(tk.Tk):
             messagebox.showerror(
                 "License Error", 
                 "LICENSE file not found within the installation package (pdflinkcheck.data/LICENSE). Check build process."
-            )
+                )
+            try:
+                messagebox.showerror(
+                "Attempting to copy LICENSE for local dev environment."
+                )
+                from pdflinkcheck.datacopy import ensure_package_license
+                ensure_package_license()
+                self._show_license()
+            except Exception as e:
+                messagebox.showerror("Copy Error", f"This probably isn't a cloned dev environrment. This error now indicates a build problem: {e}")
             return
+        
         except Exception as e:
             messagebox.showerror("Read Error", f"Failed to read embedded LICENSE file: {e}")
             return
@@ -164,6 +199,15 @@ class PDFLinkCheckerApp(tk.Tk):
                 "Readme Error", 
                 "README.md file not found within the installation package (pdflinkcheck.data/README.md). Check build process."
             )
+            try:
+                messagebox.showerror(
+                "Attempting to copy LICENSE for local dev environment."
+                )
+                from pdflinkcheck.datacopy import ensure_package_readme
+                ensure_package_readme()
+                self._show_readme()
+            except Exception as e:
+                messagebox.showerror("Copy Error", f"This probably isn't a cloned dev environrment. This error now indicates a build problem: {e}")
             return
         except Exception as e:
             messagebox.showerror("Read Error", f"Failed to read embedded README.md file: {e}")
@@ -374,7 +418,21 @@ class PDFLinkCheckerApp(tk.Tk):
         """Checkbox toggle for TXT filetype report."""
         if self.do_export_report_txt_var.get():
             pass # placeholder # no side effects
-    
+
+    def _toggle_theme(self):
+        try:
+            current = self.sv_ttk.get_theme()
+            self.sv_ttk.set_theme("dark" if current == "light" else "light")
+        except Exception:
+            pass
+
+    def _toggle_pdf_library(self):
+        selected_lib = self.pdf_library_var.get().lower()
+        try:
+            self.pdf_library_var.set("pypdf" if selected_lib == "pymupdf" else "pymupdf")
+        except Exception:
+            pass
+
     def _assess_pdf_path_str(self):
         pdf_path_str = self.pdf_path.get().strip()
         if not pdf_path_str: 
@@ -446,69 +504,37 @@ class PDFLinkCheckerApp(tk.Tk):
         except Exception as e:
             # Inform the user in the GUI with a clean message
             self._display_error(f"An unexpected error occurred during analysis: {e}")
-
-        finally:
-            # 4. Restore standard output and disable editing
-            sys.stdout = original_stdout
-            self.output_text.config(state=tk.DISABLED)
+            #self._popup_install_pymupdf_version_or_add_pypdf_as_future_default()
+            self._display_msg("Automatically toggling the PDF library to use 'pymupdf'. Please hit 'Run Analysis' again.")
+            self._toggle_pdf_library()
     
-    def _run_validation_gui(self):
-        """
-        defunct. analyze should do everything, and generate all files
-        JSON should include raw text, and TCT shoukd include report, which should inclue validation summary.
-        """
-        pdf_path_str = self._assess_pdf_path_str()
-        if not pdf_path_str:
-            return
-
-        pdf_library = self._discern_pdf_library()
-
-        # 1. Clear previous output and enable editing
-        self.output_text.config(state=tk.NORMAL)
-        self.output_text.delete('1.0', tk.END)
-
-        # 2. Redirect standard output to the Text widget
-        original_stdout = sys.stdout
-        sys.stdout = RedirectText(self.output_text)
-        
-        if not self.current_report_data:
-            self._run_report_gui()
-        report_results = self.current_report_data
-
-        try:
-            # 3. Call the core logic function
-            #self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
-            validation_results = run_validation(
-                report_results=report_results,
-                pdf_path=pdf_path_str,
-                pdf_library=pdf_library,
-                export_json=True,
-                print_bool=True
-            )
-            self.current_report_text = report_results.get("text", "")
-            self.current_report_data = report_results.get("data", {})
-
-            #self.output_text.insert(tk.END, "\n--- Analysis Complete ---\n")
-
-        except Exception as e:
-            # Inform the user in the GUI with a clean message
-            self._display_error(f"An unexpected error occurred during analysis: {e}")
-
+            
         finally:
             # 4. Restore standard output and disable editing
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
-        
-
+            # -- This call to _toggle_pdf_library() fails currently --
+            
     def _discern_pdf_library(self):
         selected_lib = self.pdf_library_var.get().lower()
         
         if selected_lib == "pymupdf":
-            print("Using high-speed PyMuPDF engine.")
+            self._display_msg("Using high-speed PyMuPDF engine.")
         elif selected_lib == "pypdf":
-            print("Using pure-python pypdf engine.")
+            self._display_msg("Using pure-python pypdf engine.")
         return selected_lib
     
+    def _display_msg(self, message):
+        # Ensure output is in normal state to write
+        original_state = self.output_text.cget('state')
+        if original_state == tk.DISABLED:
+            self.output_text.config(state=tk.NORMAL)
+            
+        #self.output_text.delete('1.0', tk.END)
+        self.output_text.insert(tk.END, f"{message}\n", 'msg')
+        self.output_text.tag_config('msg')#, foreground='red')
+        self.output_text.see(tk.END)
+
     def _display_error(self, message):
         # Ensure output is in normal state to write
         original_state = self.output_text.cget('state')
@@ -544,12 +570,7 @@ class PDFLinkCheckerApp(tk.Tk):
             
         except Exception as e:
             messagebox.showerror("View Error", f"Could not launch editor: {e}")
-    def _toggle_theme(self):
-        try:
-            current = self.sv_ttk.get_theme()
-            self.sv_ttk.set_theme("dark" if current == "light" else "light")
-        except Exception:
-            pass
+    
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     """
     Converts complex Unicode characters (like emojis and symbols) 

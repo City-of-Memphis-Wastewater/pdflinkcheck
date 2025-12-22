@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any
 import pyhabitat
 
 from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
-
+from pdflinkcheck.environment import pymupdf_is_available
 
 SEP_COUNT=28
 
@@ -46,9 +46,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
     if pdf_library in allowed_libraries and pdf_library == "pypdf":
         from pdflinkcheck.analyze_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
     elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
-        try:
-            import fitz
-        except ImportError as e:
+        if not pymupdf_is_available():
             print("PyMuPDF was explicitly requested as the PDF Engine")
             print("Switch the PDF library to 'pypdf' instead, or install PyMuPDF. ")
             print("To install PyMuPDF locally, try: `uv sync --extra full` OR `pip install .[full]`")

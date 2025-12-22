@@ -171,8 +171,21 @@ def analyze_pdf( # Renamed function for clarity
         pdf_library = pdf_library,
     )
 
+@app.command(name="env")
+def env_command(
+    clear_cache: bool = typer.Option(
+        False,
+        "--clear-cache",
+        is_flag=True,
+        help="Clear the environment all caches"
+    )
+    ):
+    from pdflinkcheck.environment import clear_all_caches
+    if clear_cache:
+        clear_all_caches()
+
 @app.command(name="validate")
-def validate_pdf(
+def validate_pdf_commands(
     pdf_path: Optional[Path] = typer.Argument(
         None,
         exists=True,
