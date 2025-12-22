@@ -17,7 +17,7 @@ def run_validation(
     pdf_library: str = "pypdf",
     check_external: bool = False,
     export_json: bool = True,
-    print_bool: bool = True
+    print_bool: bool = False # defunct
 ) -> Dict[str, Any]:
     """
     Validates links using the output from run_report().

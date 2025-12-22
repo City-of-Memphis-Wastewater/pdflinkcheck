@@ -30,4 +30,6 @@ You can see how the graphical user interface (GUI) is defined at: https://raw.gi
 
 This gui.py file isn't perfect, but exploring it will be far more illuminating than trying to open a DLL file in Notepad.
 
+This is not a recomendation to use Tkinter. I would recommend learning how to build a basic web-stack GUI.
+
 Copyright © 2025 George Clayton Bennett

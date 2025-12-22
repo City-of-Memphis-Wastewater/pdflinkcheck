@@ -187,8 +187,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         log("\n--- Validate the Analysis ---\n")
         validation_results = run_validation(report_results=intermediate_report_results,
                                             pdf_path=pdf_path,
-                                            pdf_library=pdf_library,
-                                            print_bool=print_bool)
+                                            pdf_library=pdf_library)
         log(validation_results.get("summary-txt",""))
         log("\n--- Analysis Complete ---\n")
         report_results = intermediate_report_results
