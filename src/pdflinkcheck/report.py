@@ -39,6 +39,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
 
     # Helper to handle conditional printing and mandatory buffering
     def log(msg: str):
+        if print_bool:
+            print(msg)
         report_buffer.append(msg)
 
     # Expected: "pypdf" or "PyMuPDF"
@@ -72,7 +74,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
                 "total_links": 0
             }
         }
-    try:
+    #try:
+    if True:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
 
@@ -161,27 +164,46 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             log(" No external or 'Other' links found.")
         log("-" * SEP_COUNT)
 
-        validation_results = run_validation()
-        log(validation_results.get("summary-txt",""))
-
-        log("\n--- Analysis Complete ---\n")
-
-        # Final aggregation of the buffer into one string
-        report_buffer_str = "\n".join(report_buffer)
         
         # Return the collected data for potential future JSON/other output
-        final_report_data_dict =  {
+        report_data_dict =  {
             "external_links": uri_links,
             "internal_links": all_internal,
-            "toc": structural_toc
+            "toc": structural_toc,
+            "validation": {}
 
         }
+
+        intermediate_report_results = {
+            "data": report_data_dict, # The structured JSON-ready dict
+            "text": "",
+            "metadata": {                  # Helpful for the GUI/Logs
+                "pdf_name": Path(pdf_path).name,
+                "library_used": pdf_library,
+                "total_links": len(extracted_links)
+            }
+        }
+
+        log("\n--- Validate the Analysis ---\n")
+        validation_results = run_validation(report_results=intermediate_report_results,
+                                            pdf_path=pdf_path,
+                                            pdf_library=pdf_library,
+                                            print_bool=print_bool)
+        log(validation_results.get("summary-txt",""))
+        log("\n--- Analysis Complete ---\n")
+        report_results = intermediate_report_results
+
+        # Final aggregation of the buffer into one string, after the last call to log()
+        report_buffer_str = "\n".join(report_buffer)
+
+        report_results["data"]["validation"].update(validation_results)
+        report_results["text"].update(report_buffer_str)      # The human-readable string
 
         # 5. Export Report 
         #if export_format:
         #    # Assuming export_to will hold the output format string (e.g., "JSON")
-        #    export_report_data(final_report_data_dict, Path(pdf_path).name, export_format, pdf_library)
-
+        #    export_report_data(report_data_dict, Path(pdf_path).name, export_format, pdf_library)
+        
         if print_bool:
             print(report_buffer_str)
         
@@ -189,25 +211,16 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             fmt_upper = export_format.upper()
             
             if "JSON" in fmt_upper:
-                export_report_json(final_report_data_dict, pdf_path, pdf_library)
+                export_report_json(report_data_dict, pdf_path, pdf_library)
             
             if "TXT" in fmt_upper:
                 export_report_txt(report_buffer_str, pdf_path, pdf_library)
         
-        report_results = {
-            "data": final_report_data_dict, # The structured JSON-ready dict
-            "text": report_buffer_str,      # The human-readable string
-            "metadata": {                  # Helpful for the GUI/Logs
-                "pdf_name": Path(pdf_path).name,
-                "library_used": pdf_library,
-                "total_links": len(extracted_links)
-            }
-        }
-        report_results["data"]["validation"]=validation_results
-        report_results["text"].append(validation_results["summary-txt"])
+
         # Return a clean results object
         return report_results
-    except Exception as e:
+    
+    """except Exception as e:
         # Specific handling for common read failures
         if "invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
             log(f"\nWarning: Could not parse PDF structure — likely an image-only or malformed PDF.")
@@ -230,7 +243,7 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         # Log the critical failure
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
         log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
-        raise # Allow the exception to propagate or handle gracefully
+        raise # Allow the exception to propagate or handle gracefully"""
 
 def get_structural_toc(structural_toc: list) -> str:
     """
@@ -280,15 +293,24 @@ if __name__ == "__main__":
     from pdflinkcheck.io import get_first_pdf_in_cwd
     pdf_path = get_first_pdf_in_cwd()
     # Run analysis first
+
+    if pymupdf_is_available():
+        pdf_library = "pymupdf"
+    else:
+        pdf_library = "pypdf"
     report = run_report(
         pdf_path=pdf_path,
         max_links=0,
         export_format="",
-        pdf_library="pypdf",
-        print_bool=False  # We handle printing in validation
+        pdf_library=pdf_library,
+        print_bool=True  # We handle printing in validation
     )
 
     if not report or not report.get("data"):
         print("No data extracted — nothing to validate.")
         sys.exit(1)
+
+    else:
+        print("Success!")
+        print(f"list(report_results['data']) = {list(report['data'])}")
 
