@@ -177,38 +177,23 @@ This `help-tree` feature has not yet been submitted for inclusion into Typer.
 
 ## ⚠️ Compatibility Notes
 
-#### Termux Compatibility as a Key Goal
+### Termux Compatibility as a Key Goal
 A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible.
 
-Termux compatibility is important in the modern age as Android devices are common among technicians, field engineers, and maintenace staff. 
+Termux compatibility is important in the modern age, because Android devices are common among technicians, field engineers, and maintenace staff. 
 Android is the most common operating system in the Global South. 
 We aim to produce stable software that can do the most possible good. 
-
-While using `PyMuPDF` in Python dependency resolution on Termux simply isn't possible, we are proud to have achieved a work-around by implementing a parallel solution in `pypdf`! 
-Now, there is PDF Engine selection in both the CLI and the GUI. 
-`pypdf` is the default in pdflinkcheck.report.run_report(); PyMuPDF can be explicitly requested in the CLI and is the default in the TKinter GUI.
 
 Now `pdflinkcheck` can run on Termux by using the `pypdf` engine. 
 Benefits:
 - `pypdf`-only artifacts, to reduce size to about 6% compared to artifacts that include `PyMuPDF`.
 - Web-stack GUI as an alternative to the Tkinter GUI, which can be run locally on Termux or as a web app.
 
-Because it works, we plan to keep the `PyMuPDF` portion of the codebase.
 
-### Document Compatibility: 
-Not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
+### PDF Library Selection
+At long last, `PyMuPDF` is an optional dependency. All testing comparing `pyp df` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benfit of `pypdf` is small size of packages and cross-platform compatibility.
 
-Processing may fail or yield incomplete results for:
-* **Scanned PDFs** (images of text) that lack an accessible text layer.
-* **Encrypted or Password-Protected** documents.
-* **Malformed or non-standard** PDF files.
-
------
-
-## PDF Library Selection
-At long last, `PyMuPDF` is an optional dependency. The default is `pypdf`. All testing has shown identical performance, though the `analyze_pymupdf.py` is faster and more direct and robust than `analyze_pypdf.py`, which requires a lot of intentional parsing. 
-
-Binaries and artifacts are expected to contain PyMuPDF, unless they are build on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
+Expecte that all binaries and artifacts contain PyMuPDF, unlss they are built on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
 
 To install the complete version use one of these options:
 
@@ -218,6 +203,16 @@ pipx install "pdflinkcheck[full]"
 uv tool install "pdflinkcheck[full]"
 uv add "pdflinkcheck[full]"
 ```
+
+---
+
+### Document Compatibility: 
+Not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
+
+Processing may fail or yield incomplete results for:
+* **Scanned PDFs** (images of text) that lack an accessible text layer.
+* **Encrypted or Password-Protected** documents.
+* **Malformed or non-standard** PDF files.
 
 -----
 
