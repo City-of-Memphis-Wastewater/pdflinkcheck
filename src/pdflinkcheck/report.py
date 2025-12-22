@@ -196,7 +196,8 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         report_buffer_str = "\n".join(report_buffer)
 
         report_results["data"]["validation"].update(validation_results)
-        report_results["text"].update(report_buffer_str)      # The human-readable string
+        #report_results["text"].update(report_buffer_str)      # The human-readable string
+        report_results["text"] = report_buffer_str
 
         # 5. Export Report 
         #if export_format:
