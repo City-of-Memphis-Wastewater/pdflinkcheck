@@ -75,7 +75,7 @@ class PDFLinkCheckerApp(tk.Tk):
         
         ttk.Style().theme_use("forest-dark") # but if you use _toggle_theme_just_forest(), then you had better do this
 
-        if is_in_git_repo():
+        if is_in_git_repo() and not pyhabitat.as_pyinstaller() and not pyhabitat.is_pyz():
             title_suffix = " [Development]"
         else:
             title_suffix = ""
