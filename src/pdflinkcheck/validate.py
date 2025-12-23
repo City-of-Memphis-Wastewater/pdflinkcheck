@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Any
 
-from pdflinkcheck.io import get_friendly_path, export_validation_json
+from pdflinkcheck.io import get_friendly_path
 from pdflinkcheck.environment import pymupdf_is_available
 
 SEP_COUNT=28
@@ -15,8 +15,7 @@ def run_validation(
     report_results: Dict[str, Any],
     pdf_path: str,
     pdf_library: str = "pypdf",
-    check_external: bool = False,
-    export_json: bool = False # defunct, now a part of the TXT export
+    check_external: bool = False
 ) -> Dict[str, Any]:
     """
     Validates links using the output from run_report().
@@ -235,9 +234,6 @@ def run_validation(
         "total_pages": total_pages
     }
 
-    # Have export run interally so that the logic need not happen in an interface
-
-    export_validation_json(validation_results,  pdf_path, pdf_library)
     return validation_results
 
 

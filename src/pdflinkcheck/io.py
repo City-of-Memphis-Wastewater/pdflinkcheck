@@ -143,24 +143,6 @@ def export_report_txt(
         error_logger.error(f"TXT export failed: {e}", exc_info=True)
         raise RuntimeError(f"TXT export failed: {e}")
 
-def export_validation_json(
-    report_data: Dict[str, Any], 
-    pdf_filename: str, 
-    pdf_library: str
-) -> Path:
-    """Exports structured dictionary validation results to a .json file."""
-    base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_validation.json"
-
-    try:
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(report_data, f, indent=4)
-        print(f"\nJSON validation exported: {get_friendly_path(output_path)}")
-        return output_path
-    except Exception as e:
-        error_logger.error(f"JSON validation export failed: {e}", exc_info=True)
-        raise RuntimeError(f"JSON validation export failed: {e}")
-
 # --- helpers ---
 def get_friendly_path(full_path: str) -> str:
     p = Path(full_path).resolve()

@@ -108,6 +108,19 @@ def docs_command(
     # Exit successfully if any flag was processed
     raise typer.Exit(code=0)
 
+@app.command(name="tools", help= "Additional features, hamburger menu.")
+def tools_command(
+    clear_cache: bool = typer.Option(
+        False,
+        "--clear-cache",
+        is_flag=True,
+        help="Clear the environment caches. \n - pymupdf_is_available() \n - is_in_git_repo() \nMain purpose: Run after adding PyMuPDF to an existing installation where it was previously missing, because pymupdf_is_available() would have been cached as False."
+    )
+    ):
+    from pdflinkcheck.environment import clear_all_caches
+    if clear_cache:
+        clear_all_caches()
+
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity
     pdf_path: Path = typer.Argument(
@@ -180,19 +193,6 @@ def analyze_pdf( # Renamed function for clarity
         pdf_library = pdf_library,
     )
 
-@app.command(name="tools", help= "Additional features, hamburger menu.")
-def tools_command(
-    clear_cache: bool = typer.Option(
-        False,
-        "--clear-cache",
-        is_flag=True,
-        help="Clear the environment caches. \n - pymupdf_is_available() \n - is_in_git_repo() \nMain purpose: Run after adding PyMuPDF to an existing installation where it was previously missing, because pymupdf_is_available() would have been cached as False."
-    )
-    ):
-    from pdflinkcheck.environment import clear_all_caches
-    if clear_cache:
-        clear_all_caches()
-
 @app.command(name="validate")
 def validate_pdf_commands(
     pdf_path: Optional[Path] = typer.Argument(
@@ -242,11 +242,11 @@ def validate_pdf_commands(
         if pdf_path is None:
             console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
             raise typer.Exit(code=1)
-        console.print(f"[dim]No file specified — using: {pdf_path.name}[/dim]")
+        console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
     pdf_path_str = str(pdf_path)
 
-    console.print(f"[bold]Validating links in:[/bold] {pdf_path.name}")
+    console.print(f"[bold]Validating links in:[/bold] {Path(pdf_path).name}")
     console.print(f"[bold]Using engine:[/bold] {pdf_library}\n")
 
     # Step 1: Run fresh analysis (quietly)
