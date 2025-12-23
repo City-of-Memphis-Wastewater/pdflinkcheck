@@ -66,20 +66,20 @@ jobs:
         with:
           name: msix
           path: pdflinkcheck.msix
-
-  publish-to-store:
-    needs: build-msix
-    runs-on: windows-latest
-
-    steps:
-      - name: Download MSIX artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: msix
-
-      - name: Publish to Microsoft Store
-        run: |
-          curl -X POST `
-            -H "Authorization: Bearer ${{  }}" `
-            -F "package=@pdflinkcheck.msix" `
-            "https://manage.devcenter.microsoft.com/v1.0/my/applications/<YOUR-APP-ID>/submissions"
+#  
+#  publish-to-store:
+#    needs: build-msix
+#    runs-on: windows-latest
+#
+#    steps:
+#      - name: Download MSIX artifact
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: msix
+#
+#      - name: Publish to Microsoft Store
+#        run: |
+#          curl -X POST `
+#            -H "Authorization: Bearer ${{ secrets.STORE_CLIENT_SECRET }}" `
+#            -F "package=@pdflinkcheck.msix" `
+#            "https://manage.devcenter.microsoft.com/v1.0/my/applications/<YOUR-APP-ID>/submissions"
