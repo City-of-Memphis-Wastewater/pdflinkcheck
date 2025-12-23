@@ -10,12 +10,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - I Have Questions.md, to src/pdflinkcheck/data, to help explorers find answers.
 - Add a dropdown button to the Tools dropdown in gui.py, to show I Have Questions.md. Call it "I Have Questions". 
 - Add function run_report_and_call_exports(), which is now called as the primary entry point at the high level points in the CLI, in the GUI, and in the analyze_*.py main blocks, rather than run_report()
-
+- pdflinkcheck.environment.assess_default_pdf_library(), to ascertain the suggested default PDF engine n CLI help for the analyze command.
 
 ### Changed:
 - build_executable.py: Change **--noconsole** flag in PyInstaller build to **--windowed**, to use the GUI subsystem bootloader and avoid the quick console popup on  which happens with the **--noconsole** flag.
 - run_report() is now called run_report_and_validtion() for clarity. We can change stuff  (library function names) later as it settles in.
-- Breaking: run_analysis() alias removed from __init__ 
+- c
 
 ### Removed:
 - 'sv-ttk' optional dependecy from pyproject.toml - this is a forest theme family now. Remove now-excessive sun-valley-theme-relevant code from gui.py. Ensure there are no references to "[gui]" in the README, etc. 

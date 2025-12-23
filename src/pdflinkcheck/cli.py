@@ -15,7 +15,7 @@ from importlib.resources import files
 
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.validate import run_validation 
-from pdflinkcheck.environment import is_in_git_repo
+from pdflinkcheck.environment import is_in_git_repo, assess_default_pdf_library
 from pdflinkcheck.io import get_first_pdf_in_cwd
 
 console = Console() # to be above the tkinter check, in case of console.print
@@ -164,7 +164,7 @@ def analyze_pdf( # Renamed function for clarity
     ),
 
     pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
-        "pypdf",#"pymupdf",
+        assess_default_pdf_library(),
         "--pdf-library","-p",
         envvar="PDF_ENGINE",
         help="PDF parsing library. pypdf (pure Python) or pymupdf (faster, if available).",

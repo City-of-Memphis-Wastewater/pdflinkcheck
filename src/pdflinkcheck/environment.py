@@ -57,3 +57,8 @@ def is_in_git_repo(path='.'):
         print("Error: 'git' command not found. Please ensure Git is installed and in your PATH.")
         return False
 
+def assess_default_pdf_library():
+    if pymupdf_is_available():
+        return "pymupdf"
+    else:
+        return "pypdf"
