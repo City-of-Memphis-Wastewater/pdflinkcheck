@@ -133,7 +133,7 @@ def export_report_txt(
     pdf_library: str
 ) -> Path:
     """Exports the formatted string buffer to a .txt file."""
-    pdf_filename = implement_non_redundant_naming(pdf_filename)
+    #pdf_filename = implement_non_redundant_naming(pdf_filename)
     base_name = Path(pdf_filename).stem
     output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_report.txt"
 
