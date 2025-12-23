@@ -225,7 +225,7 @@ def analyze_pdf( # Renamed function for clarity
         export_format = export_formats,
         pdf_library = pdf_library,
     )
-    #print(f"report_results = {report_results}")
+    
     if not report_results or not report_results.get("data"):
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
         raise typer.Exit(code=0)

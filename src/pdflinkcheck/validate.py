@@ -217,7 +217,7 @@ def run_validation(
             if len(issues) > 25:
                 log(f"... and {len(issues) - 25} more issues")
         else:
-            log("No issues found — all links and TOC entries are valid!")
+            log("Success: No broken links or TOC issues!")
 
         # Final aggregation of the buffer into one string
         validation_buffer_str = "\n".join(validation_buffer)

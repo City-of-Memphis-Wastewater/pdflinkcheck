@@ -79,7 +79,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - CLI: Adjust validate CLI commant to print both the initial analysis and the validation reports.
 
 ### Internal:
-- To Do: If a report with a poetebtially identical bame if foujd in the export directory, use a file naming bump like " file (2).txt ", etc.
+- To Do: If a report with a potentially identical name if found in the export directory, use a file naming bump like " file (2).txt ", etc.
 ---
 
 ## [1.1.74] - 2025-12-20

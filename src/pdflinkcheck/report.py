@@ -222,7 +222,7 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
         
         if print_bool:
             print(report_buffer_str)
-        
+            
         # Return a clean results object
         return report_results
     
