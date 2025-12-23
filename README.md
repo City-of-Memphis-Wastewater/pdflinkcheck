@@ -74,6 +74,8 @@ $env:DEV_TYPER_HELP_TREE = "1"; pdflinkcheck help-tree` # PowerShell
 |`pdflinkcheck analyze`|Analyzes a PDF file for links and validates their reasonableness.|
 |`pdflinkcheck gui`|Explicitly launch the Graphical User Interface.|
 |`pdflinkcheck docs`|Access documentation, including the README and AGPLv3+ license.|
+|`pdflinkcheck serve`|Serve a basic local web app which uses only the Python standard library.|
+|`pdflinkcheck tools`|Access additional tools, like `--clear-cache`.|
 
 ### `analyze` Command Options
 
