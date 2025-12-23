@@ -114,7 +114,7 @@ def export_report_json(
     pdf_library: str
 ) -> Path:
     """Exports structured dictionary results to a .json file."""
-    pdf_filename = implement_non_redundant_naming(pdf_filename)
+    
     base_name = Path(pdf_filename).stem
     output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_report.json"
 

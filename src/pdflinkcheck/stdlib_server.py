@@ -10,8 +10,7 @@ import os
 from pathlib import Path
 import email  # This replaces cgi for multipart parsing
 
-from pdflinkcheck.report import run_report
-from pdflinkcheck.validate import run_validation
+from pdflinkcheck.report import run_report_and_call_exports
 
 PORT = 8000
 
@@ -137,7 +136,7 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
                 tmp_file.write(file_item)
                 tmp_path = tmp_file.name
 
-            result = run_report(
+            result = run_report_and_call_exports(
                 pdf_path=tmp_path,
                 max_links=max_links if max_links > 0 else 0,
                 export_format="",

@@ -208,12 +208,9 @@ def call_stable():
     """
     Entry point for command-line execution or integration with reporting module.
     """
-    from pdflinkcheck.report import run_report
-    #from pdflinkcheck.validate import run_validation
-
-    run_report(pdf_library="pypdf")
-    # run_validation(pdf_library="pypdf")  # Uncomment if validation step is needed
+    from pdflinkcheck.report import run_report_and_call_exports
     
+    run_report_and_call_exports(pdf_library="pypdf")
 
 if __name__ == "__main__":
     call_stable()

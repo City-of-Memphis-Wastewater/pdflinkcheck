@@ -177,11 +177,9 @@ def call_stable():
     Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
     passing them as arguments to run_report.
     """
-    from pdflinkcheck.report import run_report
-    #from pdflinkcheck.validate import run_validation
+    from pdflinkcheck.report import run_report_and_call_exports
 
-    run_report(pdf_library = "pypdf")
-    #run_validation(pdf_library = "pypdf")
+    run_report_and_call_exports(pdf_library = "pypdf")
 
 if __name__ == "__main__":
     call_stable()

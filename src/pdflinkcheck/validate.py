@@ -18,10 +18,10 @@ def run_validation(
     check_external: bool = False
 ) -> Dict[str, Any]:
     """
-    Validates links using the output from run_report().
+    Validates links during run_report() using a partial completion of the data dict.
 
     Args:
-        report_results: The dict returned by run_report()
+        report_results: The dict returned by run_report_and_call_exports()
         pdf_path: Path to the original PDF (needed for relative file checks and page count)
         pdf_library: Engine used ("pypdf" or "pymupdf")
         check_external: Whether to validate HTTP URLs (requires network + requests)

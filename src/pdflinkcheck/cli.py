@@ -6,7 +6,7 @@ from typing import Literal
 from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
-from pdflinkcheck.report import run_report # Assuming core logic moves here
+from pdflinkcheck.report import run_report_and_call_exports # Assuming core logic moves here
 from typing import Dict, Optional, Union, List
 import pyhabitat
 import sys
@@ -219,7 +219,7 @@ def analyze_pdf( # Renamed function for clarity
             typer.echo(f"Warning: No valid formats found in '{export_format}'. Supported: JSON, TXT.")
 
     # The meat and potatoes
-    report_results = run_report(
+    report_results = run_report_and_call_exports(
         pdf_path=str(pdf_path), 
         max_links=max_links,
         export_format = export_formats,

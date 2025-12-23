@@ -13,7 +13,25 @@ from pdflinkcheck.validate import run_validation
 
 SEP_COUNT=28
 
-def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+def run_report_and_call_exports(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+    # The meat and potatoes
+    report_results = run_report_and_validtion(
+        pdf_path=str(pdf_path), 
+        max_links=max_links,
+        pdf_library = pdf_library,
+    )
+    if export_format:
+        report_data_dict = report_results["data"]
+        report_buffer_str = report_results["text"]
+        if "JSON" in export_format.upper():
+            export_report_json(report_data_dict, pdf_path, pdf_library)
+        
+        if "TXT" in export_format.upper():
+            export_report_txt(report_buffer_str, pdf_path, pdf_library)
+    return report_results
+    
+
+def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
     
@@ -170,7 +188,6 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
             "internal_links": all_internal,
             "toc": structural_toc,
             "validation": {}
-
         }
 
         intermediate_report_results = {
@@ -206,16 +223,6 @@ def run_report(pdf_path: str = None,  max_links: int = 0, export_format: str = "
         if print_bool:
             print(report_buffer_str)
         
-        if export_format:
-            fmt_upper = export_format.upper()
-            
-            if "JSON" in fmt_upper:
-                export_report_json(report_data_dict, pdf_path, pdf_library)
-            
-            if "TXT" in fmt_upper:
-                export_report_txt(report_buffer_str, pdf_path, pdf_library)
-        
-
         # Return a clean results object
         return report_results
     

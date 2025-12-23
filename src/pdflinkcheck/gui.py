@@ -11,7 +11,7 @@ from importlib.resources import files
 import pyhabitat
 
 # Import the core analysis function
-from pdflinkcheck.report import run_report
+from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
 from pdflinkcheck.environment import pymupdf_is_available, clear_all_caches, is_in_git_repo
@@ -561,7 +561,7 @@ class PDFLinkCheckerApp(tk.Tk):
         try:
             # 3. Call the core logic function
             #self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
-            report_results = run_report(
+            report_results = run_report_and_call_exports(
                 pdf_path=pdf_path_str,
                 max_links=max_links_to_pass,
                 export_format=export_format,
