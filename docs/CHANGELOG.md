@@ -9,7 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.1.83] - 2025-12-22
 ### Changed:
 - In the GUI, to add the Development label, check that the gui is not being called as part of a PyInstaller build.
-- In the GUI, to not add the Development label, check if the gui is being called from a PYZ - this is probably overkill, because a PYZ s not expecte to carry a .git directory, which is a check that is already completed.
+- In the GUI, to not add the Development label, check if the gui is being called from a PYZ - this is probably overkill, because a PYZ s not expected to carry a .git directory, which is a check that is already completed.
 
 ---
 
