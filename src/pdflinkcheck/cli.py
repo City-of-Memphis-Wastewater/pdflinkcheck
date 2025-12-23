@@ -16,7 +16,7 @@ from importlib.resources import files
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.validate import run_validation 
 from pdflinkcheck.environment import is_in_git_repo
-
+from pdflinkcheck.io import get_first_pdf_in_cwd
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -121,16 +121,34 @@ def tools_command(
     if clear_cache:
         clear_all_caches()
 
+"""
+def validate_pdf_commands(
+    pdf_path: Optional[Path] = typer.Argument(
+        None,
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        resolve_path=True,
+        help="Path to the PDF file to validate. If omitted, searches current directory."
+    ),
+    pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
+        "pypdf",
+        "--library", "-l",
+        envvar="PDF_ENGINE",
+        help="PDF parsing engine: pypdf (pure Python) or pymupdf (faster, if available)"
+    ),
+    """
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity
-    pdf_path: Path = typer.Argument(
-        ..., 
+    pdf_path: Optional[Path] = typer.Argument(
+        None, 
         exists=True, 
         file_okay=True, 
         dir_okay=False, 
         readable=True,
         resolve_path=True,
-        help="The path to the PDF file to analyze."
+        help="Path to the PDF file to analyze. If omitted, searches current directory."
     ), 
     export_format: Optional[Literal["JSON", "TXT", "JSON,TXT", "NONE"]] = typer.Option(
         "JSON,TXT", 
@@ -149,7 +167,7 @@ def analyze_pdf( # Renamed function for clarity
         "pypdf",#"pymupdf",
         "--pdf-library","-p",
         envvar="PDF_ENGINE",
-        help="Select PDF parsing library, pymupdf or pypdf.",
+        help="PDF parsing library. pypdf (pure Python) or pymupdf (faster, if available).",
     )
 ):
     """
@@ -159,6 +177,11 @@ def analyze_pdf( # Renamed function for clarity
     • Internal GoTo links point to valid pages
     • Remote GoToR links point to existing files
     • TOC bookmarks target valid pages
+
+    Validates:
+    • Are referenced files available?
+    • Are the page numbers referenced by GoTo links within the length of the document?
+
     """
 
     """
@@ -173,6 +196,15 @@ def analyze_pdf( # Renamed function for clarity
     Code Default: (Lowest priority) It falls back to "pypdf" as defined in typer.Option.
     """
 
+    if pdf_path is None:
+        pdf_path = get_first_pdf_in_cwd()
+        if pdf_path is None:
+            console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
+            raise typer.Exit(code=1)
+        console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
+
+    pdf_path_str = str(pdf_path)
+
     VALID_FORMATS = ("JSON") # extend later
     requested_formats = [fmt.strip().upper() for fmt in export_format.split(",")]
     if "NONE" in requested_formats or not export_format.strip() or export_format == "0":
@@ -186,78 +218,14 @@ def analyze_pdf( # Renamed function for clarity
         if not valid and "NONE" not in requested_formats:
             typer.echo(f"Warning: No valid formats found in '{export_format}'. Supported: JSON, TXT.")
 
-    run_report(
+    # The meat and potatoes
+    report_results = run_report(
         pdf_path=str(pdf_path), 
         max_links=max_links,
         export_format = export_formats,
         pdf_library = pdf_library,
     )
-
-@app.command(name="validate")
-def validate_pdf_commands(
-    pdf_path: Optional[Path] = typer.Argument(
-        None,
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=True,
-        help="Path to the PDF file to validate. If omitted, searches current directory."
-    ),
-    export: bool = typer.Option(
-        True,
-        "--export/--no-export",
-        help = "JSON export for validation check."
-    ),
-    pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
-        "pypdf",
-        "--library", "-l",
-        envvar="PDF_ENGINE",
-        help="PDF parsing engine: pypdf (pure Python) or pymupdf (faster, if available)"
-    ),
-    print_bool: bool = typer.Option(
-        True,
-        "--print/--no-print",
-        help = "Print the report to console."
-    ),
-    fail_on_broken: bool = typer.Option(
-        False,
-        "--fail",
-        is_flag=True,
-        help="Exit with code 1 if any broken links are found (useful for CI)"
-    )
-):
-    """
-    Validate internal, remote, and TOC links in a PDF.
-
-    1. Call the run_report() function, like calling the 'analyze' CLI command.
-    2. Inspects the results from 'run_report():
-        - Are referenced files available?
-        - Are the page numbers referenced by GoTo links within the length of the document?
-    """
-    from pdflinkcheck.io import get_first_pdf_in_cwd
-
-    if pdf_path is None:
-        pdf_path = get_first_pdf_in_cwd()
-        if pdf_path is None:
-            console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
-            raise typer.Exit(code=1)
-        console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
-
-    pdf_path_str = str(pdf_path)
-
-    console.print(f"[bold]Validating links in:[/bold] {Path(pdf_path).name}")
-    console.print(f"[bold]Using engine:[/bold] {pdf_library}\n")
-
-    # Step 1: Run fresh analysis (quietly)
-    report_results = run_report(
-        pdf_path=pdf_path_str,
-        max_links=0,
-        export_format="json,txt",
-        pdf_library=pdf_library,
-        print_bool=print_bool
-    )
-
+    print(f"report_results = {report_results}")
     if not report_results or not report_results.get("data"):
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
         raise typer.Exit(code=0)
@@ -265,10 +233,8 @@ def validate_pdf_commands(
     validation_results = report_results["data"]["validation"]
     # Optional: fail on broken links
     broken_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
-    if fail_on_broken and broken_count > 0:
-        console.print(f"\n[bold red]Validation failed:[/bold red] {broken_count} broken link(s) found.")
-        raise typer.Exit(code=1)
-    elif broken_count > 0:
+    
+    if broken_count > 0:
         console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_count} broken link(s) found.")
     else:
         console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!")

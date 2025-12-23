@@ -63,7 +63,7 @@ The core functionality is accessed via the `analyze` command.
 
 |**Command**|**Description**|
 |---|---|
-|`pdflinkcheck analyze`|Analyzes a PDF file for links |
+|`pdflinkcheck analyze`|Analyzes a PDF file for links and validates their reasonableness.|
 |`pdflinkcheck gui`|Explicitly launch the Graphical User Interface.|
 |`pdflinkcheck docs`|Access documentation, including the README and AGPLv3+ license.|
 
