@@ -1,3 +1,5 @@
+# .github/workflows/microsoftstore.yml
+
 name: Build and Publish MSIX to Microsoft Store
 
 on:
@@ -11,19 +13,32 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Install uv
+        run: pip install uv
+
+      - name: Ensure updated copies of packaged data files
+        run: python src/pdflinkcheck/datacopy.py
+
+      - name: Create venv and install project with extras
+        shell: bash
         run: |
-          pip install -r requirements.txt
-          pip install pyinstaller
+          uv venv
+          source .venv/Scripts/activate
+          uv pip install --upgrade pip
+          uv pip install ".[full]" pyinstaller
 
       - name: Build EXE with PyInstaller
+        shell: bash
         run: |
+          source .venv/Scripts/activate
           pyinstaller --noconfirm --windowed --name pdflinkcheck src/main.py
 
       - name: Prepare MSIX folder structure
@@ -65,6 +80,6 @@ jobs:
       - name: Publish to Microsoft Store
         run: |
           curl -X POST `
-            -H "Authorization: Bearer ${{ secrets.STORE_CLIENT_SECRET }}" `
+            -H "Authorization: Bearer ${{  }}" `
             -F "package=@pdflinkcheck.msix" `
             "https://manage.devcenter.microsoft.com/v1.0/my/applications/<YOUR-APP-ID>/submissions"
