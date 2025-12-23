@@ -1,0 +1,70 @@
+name: Build and Publish MSIX to Microsoft Store
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build EXE with PyInstaller
+        run: |
+          pyinstaller --noconfirm --windowed --name pdflinkcheck src/main.py
+
+      - name: Prepare MSIX folder structure
+        run: |
+          mkdir msix
+          mkdir msix\Assets
+          copy dist\pdflinkcheck\* msix\
+          copy assets\* msix\Assets\
+          copy AppxManifest.xml msix\AppxManifest.xml
+
+      - name: Decode signing certificate
+        run: |
+          echo "${{ secrets.CERT_PFX }}" | certutil -decode - cert.pfx
+
+      - name: Create MSIX package
+        run: |
+          makeappx pack /d msix /p pdflinkcheck.msix
+
+      - name: Sign MSIX package
+        run: |
+          signtool sign /a /f cert.pfx /p "${{ secrets.CERT_PASSWORD }}" pdflinkcheck.msix
+
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: msix
+          path: pdflinkcheck.msix
+
+  publish-to-store:
+    needs: build-msix
+    runs-on: windows-latest
+
+    steps:
+      - name: Download MSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: msix
+
+      - name: Publish to Microsoft Store
+        run: |
+          curl -X POST `
+            -H "Authorization: Bearer ${{ secrets.STORE_CLIENT_SECRET }}" `
+            -F "package=@pdflinkcheck.msix" `
+            "https://manage.devcenter.microsoft.com/v1.0/my/applications/<YOUR-APP-ID>/submissions"

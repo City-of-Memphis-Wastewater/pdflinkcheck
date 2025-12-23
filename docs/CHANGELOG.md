@@ -11,13 +11,26 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - In the GUI, to add the Development label, check that the gui is not being called as part of a PyInstaller build.
 - In the GUI, to not add the Development label, check if the gui is being called from a PYZ - this is probably overkill, because a PYZ s not expected to carry a .git directory, which is a check that is already completed.
 
+### Added:
+- .github/workflows/microsftstore.yml
+
 ### Internal
 - Wrestle with `MSIX Packaging Tool`. Microsoft Store, here we come.
 
 ---
 
 ## [1.1.81] - 2025-12-22
-### Added:
+### Added:New-SelfSignedCertificate `
+  -Type Custom `
+  -Subject "CN=YourAppName" `
+  -KeyUsage DigitalSignature `
+  -FriendlyName "MSIX Signing Cert" `
+  -CertStoreLocation "Cert:\CurrentUser\My" `
+  -KeyExportPolicy Exportable `
+  -HashAlgorithm sha256 `
+  -KeyLength 2048 `
+  -Provider "Microsoft Enhanced RSA and AES Cryptographic Provider"
+
 - I Have Questions.md, to src/pdflinkcheck/data, to help explorers find answers.
 - Add a dropdown button to the Tools dropdown in gui.py, to show I Have Questions.md. Call it "I Have Questions". 
 - Add function run_report_and_call_exports(), which is now called as the primary entry point at the high level points in the CLI, in the GUI, and in the analyze_*.py main blocks, rather than run_report()
