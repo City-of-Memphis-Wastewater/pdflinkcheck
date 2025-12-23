@@ -533,7 +533,7 @@ class PDFLinkCheckerApp(tk.Tk):
         else:
             try:
                 max_links_to_pass = int(self.max_links_var.get())
-                if max_links_to_pass < 1:
+                if max_links_to_pass < 0:
                      self._display_error("Error: Max Links must be a positive number (or use 'Show All').")
                      return
             except ValueError:
