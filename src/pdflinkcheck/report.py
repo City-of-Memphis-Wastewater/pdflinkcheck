@@ -200,12 +200,12 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
             }
         }
 
-        log("\n--- Validate the Analysis ---\n")
+        log("\n--- Analysis Complete ---")
+
         validation_results = run_validation(report_results=intermediate_report_results,
                                             pdf_path=pdf_path,
                                             pdf_library=pdf_library)
         log(validation_results.get("summary-txt",""))
-        log("\n--- Analysis Complete ---\n")
         report_results = intermediate_report_results
 
         # Final aggregation of the buffer into one string, after the last call to log()

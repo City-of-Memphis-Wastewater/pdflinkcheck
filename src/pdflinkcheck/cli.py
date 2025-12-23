@@ -225,7 +225,7 @@ def analyze_pdf( # Renamed function for clarity
         export_format = export_formats,
         pdf_library = pdf_library,
     )
-    
+
     if not report_results or not report_results.get("data"):
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
         raise typer.Exit(code=0)
@@ -237,7 +237,7 @@ def analyze_pdf( # Renamed function for clarity
     if broken_count > 0:
         console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_count} broken link(s) found.")
     else:
-        console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!")
+        console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!\n")
 
     raise typer.Exit(code=0 if broken_count == 0 else 1)
 
