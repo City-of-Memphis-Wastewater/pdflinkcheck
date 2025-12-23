@@ -16,8 +16,7 @@ def run_validation(
     pdf_path: str,
     pdf_library: str = "pypdf",
     check_external: bool = False,
-    export_json: bool = True,
-    print_bool: bool = False # defunct
+    export_json: bool = False # defunct, now a part of the TXT export
 ) -> Dict[str, Any]:
     """
     Validates links using the output from run_report().
@@ -27,7 +26,6 @@ def run_validation(
         pdf_path: Path to the original PDF (needed for relative file checks and page count)
         pdf_library: Engine used ("pypdf" or "pymupdf")
         check_external: Whether to validate HTTP URLs (requires network + requests)
-        print_bool: Whether to print results to console
 
     Returns:
         Validation summary stats with valid/broken counts and detailed issues
@@ -39,8 +37,7 @@ def run_validation(
     toc = data.get("toc", [])
 
     if not all_links and not toc:
-        if print_bool:
-            print("No links or TOC to validate.")
+        print("No links or TOC to validate.")
         return {"summary-stats": {"valid": 0, "broken": 0}, "issues": []}
 
     # Get total page count (critical for internal validation)
@@ -55,8 +52,7 @@ def run_validation(
             reader = PdfReader(pdf_path)
             total_pages = len(reader.pages)
     except Exception as e:
-        if print_bool:
-            print(f"Could not determine page count: {e}")
+        print(f"Could not determine page count: {e}")
         total_pages = None
 
     pdf_dir = Path(pdf_path).parent
@@ -230,8 +226,6 @@ def run_validation(
         return validation_buffer_str
     
     summary_txt = generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path)
-    if print_bool:
-        print(summary_txt)
 
     validation_results = {
         "pdf_path" : pdf_path,

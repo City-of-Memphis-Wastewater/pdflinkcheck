@@ -262,15 +262,7 @@ def validate_pdf_commands(
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
         raise typer.Exit(code=0)
 
-    # Step 2: Run validation
-    validation_results = run_validation(
-        report_results=report_results,
-        pdf_path=pdf_path_str,
-        pdf_library=pdf_library,
-        export_json=export,
-        print_bool=print_bool
-    )
-
+    validation_results = report_results["data"]["validation"]
     # Optional: fail on broken links
     broken_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
     if fail_on_broken and broken_count > 0:
