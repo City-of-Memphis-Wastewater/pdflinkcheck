@@ -182,8 +182,9 @@ class PDFLinkCheckerApp(tk.Tk):
                     "Embedded data files not found – copying from root..."
                 )
                 try:
-                    from pdflinkcheck.datacopy import ensure_package_license  
-                    ensure_package_license()  
+                    from pdflinkcheck.datacopy import ensure_package_license, ensure_data_files_for_build
+                    #ensure_package_license()
+                    ensure_data_files_for_build()  
                     # Retry display
                     self._show_license() 
                     return
@@ -240,8 +241,9 @@ class PDFLinkCheckerApp(tk.Tk):
                     "Embedded data files not found – copying from root..."
                 )
                 try:
-                    from pdflinkcheck.datacopy import ensure_package_readme 
-                    ensure_package_readme()  
+                    from pdflinkcheck.datacopy import ensure_package_readme, ensure_data_files_for_build 
+                    #ensure_package_readme()
+                    ensure_data_files_for_build()  
                     # Retry display
                     self._show_readme() 
                     return
