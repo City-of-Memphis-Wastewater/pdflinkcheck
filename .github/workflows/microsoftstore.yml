@@ -115,11 +115,11 @@ jobs:
         run: |
           & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
       
-      - name: Install Windows 11 SDK 22621
+      - name: Install Stable Windows SDK 
         # known good
         shell: pwsh
         run: |
-          choco install windows-sdk-11-version-22h2 -y
+          choco install windows-sdk-10-version-2004 -y
           
       - name: Find signtool
         id: find_signtool
@@ -151,7 +151,7 @@ jobs:
           $path = $tools | Sort-Object FullName | Select-Object -First 1 -ExpandProperty FullName 
 
           # hardcode choco installed SDK path
-          $path = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe"
+          $path = C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe
 
           
           
