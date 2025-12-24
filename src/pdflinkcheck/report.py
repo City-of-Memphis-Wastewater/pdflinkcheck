@@ -12,7 +12,20 @@ from pdflinkcheck.environment import pymupdf_is_available
 from pdflinkcheck.validate import run_validation
 
 SEP_COUNT=28
-
+EMPTY_REPORT = {
+                "data": {
+                    "external_links": [],
+                    "internal_links": [],
+                    "toc": []
+                },
+                "text": "\n".join(report_buffer),
+                "metadata": {
+                    "pdf_name": Path(pdf_path).name,
+                    "library_used": pdf_library,
+                    "total_links": 0
+                }
+            }
+            
 def run_report_and_call_exports(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     # The meat and potatoes
     report_results = run_report_and_validtion(
@@ -20,6 +33,7 @@ def run_report_and_call_exports(pdf_path: str = None,  max_links: int = 0, expor
         max_links=max_links,
         pdf_library = pdf_library,
     )
+    print(f"list(report_results) = {list(report_results)}")
     if export_format:
         report_data_dict = report_results["data"]
         report_buffer_str = report_results["text"]
@@ -83,15 +97,9 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
     if pdf_path is None:
         log("pdf_path is None")
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
-        return {
-            "data": {"external_links": [], "internal_links": [], "toc": []},
-            "text": "\n".join(report_buffer),
-            "metadata": {
-                "pdf_name": "None",
-                "library_used": pdf_library,
-                "total_links": 0
-            }
-        }
+        
+        return EMPTY_REPORT 
+        
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
@@ -120,7 +128,7 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
                     "total_links": 0
                 }
             }
-            return empty_result
+            return EMPTY_REPORT # empty_result
             
         # 3. Separate the lists based on the 'type' key
         uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
