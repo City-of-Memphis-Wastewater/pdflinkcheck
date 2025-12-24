@@ -75,12 +75,8 @@ jobs:
               
       - name: Prepare MSIX folder structure
         run: |
-          mkdir msix
-          mkdir msix\Assets
-          # copy dist\pdflinkcheck\* msix\
           copy dist\*.exe msix\
-          copy .\assets\* .\msix\Assets\
-          copy AppxManifest.xml msix\AppxManifest.xml
+
 
       - name: Decode signing certificate
         run: |
