@@ -35,8 +35,10 @@ jobs:
         run: |
           uv venv
           ./.venv/Scripts/activate.ps1
-          uv pip install --upgrade pip
-          uv pip install ".[full]" pyinstaller
+          #uv pip install --upgrade pip
+          #uv pip install ".[full]" pyinstaller
+          .\.venv\Scripts\python.exe -m pip install --upgrade pip 
+          .\.venv\Scripts\python.exe -m pip install ".[full]" pyinstaller
 
       #- name: Build EXE with PyInstaller
       #  shell: PowerShell
@@ -50,6 +52,7 @@ jobs:
         shell: PowerShell
         working-directory: ${{ github.workspace }}
         run: |
+          $script = Join-Path $env:GITHUB_WORKSPACE "build_executable.py"
           $script = Join-Path $env:GITHUB_WORKSPACE "build_executable.py"
           $output = .\.venv\Scripts\python.exe $script 2>&1 | Tee-Object -Variable log
           Write-Host "$log"
