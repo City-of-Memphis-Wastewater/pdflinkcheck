@@ -70,12 +70,12 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           $src = "${{ steps.build_exe.outputs.EXE_PATH }}"
-          $dst = "dist/pdflinkcheck.exe"
+          $dst = Join-Path "dist" "pdflinkcheck.exe"
           Move-Item -Force $src $dst
               
       - name: Prepare MSIX folder structure
         run: |
-          copy dist\*.exe msix\
+          copy dist\pdflinkcheck.exe msix\
 
       - name: Debug, list msix folder, after copying EXE
         shell: PowerShell
