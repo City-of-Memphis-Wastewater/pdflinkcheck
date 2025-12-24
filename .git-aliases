@@ -1,0 +1,10 @@
+[alias]
+    back = checkout -
+    cm = commit -am
+    dout = !git checkout dev
+    lg = log --oneline --graph --decorate --all
+    mout = !git checkout main
+    pl = pull
+    ps = push
+    switch = checkout
+    up = !f() { cur=dev; git checkout main && git merge $cur && git push && git checkout $cur; }; f
