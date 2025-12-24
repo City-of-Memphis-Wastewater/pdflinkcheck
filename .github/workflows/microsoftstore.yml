@@ -6,7 +6,7 @@ on:
   release:
     types: [published]
   push:
-    branches: [main]
+    branches: [main, dev]
 
 jobs:
   build-msix:
@@ -39,6 +39,7 @@ jobs:
 
       - name: Build EXE with PyInstaller
         shell: bash
+        working-directory: ${{ github.workspace }}
         run: |
           source .venv/Scripts/activate
           python build_executable.py
@@ -47,7 +48,8 @@ jobs:
         run: |
           mkdir msix
           mkdir msix\Assets
-          copy dist\pdflinkcheck\* msix\
+          # copy dist\pdflinkcheck\* msix\
+          copy dist\*.exe msix\
           copy assets\* msix\Assets\
           copy AppxManifest.xml msix\AppxManifest.xml
 
