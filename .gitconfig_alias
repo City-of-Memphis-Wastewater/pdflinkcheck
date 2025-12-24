@@ -1,0 +1,5 @@
+[alias]
+	up = "!f() { \\\n  current=$(git rev-parse --abbrev-ref HEAD); \\\n  if [ \"$current\" = \"main\" ]; then \\\n    echo \"Already on main, pushing current state...\"; \\\n    git push origin main; \\\n    return; \\\n  fi; \\\n  git push origin $current; \\\n  git checkout main; \\\n  git pull origin main; \\\n  git merge $current; \\\n  git push origin main; \\\n  git checkout $current; \\\n}; f"
+	switch = checkout
+	ps = push
+	cm = "!f() { git add . && git commit -m \"$1\"; }; f"
