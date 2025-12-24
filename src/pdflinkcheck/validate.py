@@ -66,28 +66,38 @@ def run_validation(
     unknown_link_count = 0
 
     # Validate active links
+    print("DEBUG validate: entering loop with", len(all_links), "links")
     for i, link in enumerate(all_links):
         link_type = link.get("type")
         status = "valid"
         reason = None
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
-            target_page = int(link.get("destination_page"))
-            if not isinstance(target_page, int):
+            dest_page_raw = link.get("destination_page")
+            if dest_page_raw is None:
                 status = "broken-page"
-                reason = f"Target page not a number: {target_page}"
-            elif (1 <= target_page) and total_pages is None:
-                status = "unknown-reasonableness"
-                reason = "Total page count unavailable, but the page number is reasonable"
-            elif (1 <= target_page <= total_pages):
-                status = "valid"
-                reason = f"Page {target_page} within range (1–{total_pages})"
-            elif target_page < 1:
-                status = "broken-page"
-                reason = f"TOC targets page negative {target_page}."
-            elif not (1 <= target_page <= total_pages):
-                status = "broken-page"
-                reason = f"Page {target_page} out of range (1–{total_pages})"
-            
+                reason = "No destination page resolved"
+            else:
+                try:
+                    target_page = int(dest_page_raw)
+                    #target_page = int(link.get("destination_page"))
+                    if not isinstance(target_page, int):
+                        status = "broken-page"
+                        reason = f"Target page not a number: {target_page}"
+                    elif (1 <= target_page) and total_pages is None:
+                        status = "unknown-reasonableness"
+                        reason = "Total page count unavailable, but the page number is reasonable"
+                    elif (1 <= target_page <= total_pages):
+                        status = "valid"
+                        reason = f"Page {target_page} within range (1–{total_pages})"
+                    elif target_page < 1:
+                        status = "broken-page"
+                        reason = f"TOC targets page negative {target_page}."
+                    elif not (1 <= target_page <= total_pages):
+                        status = "broken-page"
+                        reason = f"Page {target_page} out of range (1–{total_pages})"
+                except (ValueError, TypeError):
+                    status = "broken-page"
+                    reason = f"Invalid page value: {dest_page_raw}"
         elif link_type == "Remote (GoToR)":
             remote_file = link.get("remote_file")
             if not remote_file:

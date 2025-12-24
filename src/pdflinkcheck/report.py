@@ -245,12 +245,35 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
                 }
             }
 
+    #except Exception as e:
+    #    # Log the critical failure
+    #    error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
+    #    log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
+    #    raise # Allow the exception to propagate or handle gracefully
     except Exception as e:
-        # Log the critical failure
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
-        log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
-        raise # Allow the exception to propagate or handle gracefully
+        log(f"FATAL: Analysis failed: {str(e)}. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
 
+        # Always return a safe empty result on error
+        return {
+            "data": {
+                "external_links": [],
+                "internal_links": [],
+                "toc": [],
+                "validation": {}
+            },
+            "text": "\n".join(report_buffer + [
+                "\n--- Analysis failed ---",
+                f"Error: {str(e)}",
+                "No links or TOC extracted."
+            ]),
+            "metadata": {
+                "pdf_name": Path(pdf_path).name,
+                "library_used": pdf_library,
+                "total_links": 0
+            }
+        }
+        
 def get_structural_toc(structural_toc: list) -> str:
     """
     Formats the structural TOC data into a hierarchical string and optionally prints it.
