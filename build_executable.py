@@ -15,6 +15,7 @@ import pyhabitat
 
 from pdflinkcheck.datacopy import ensure_data_files_for_build
 from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck.environment import pymupdf_is_available
 
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
@@ -84,12 +85,12 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     
     print(f"--- {PROJECT_NAME} Executable Builder ---")
 
-    # 1. Clean and Setup
+    # Clean and Setup
     clean_artifacts(exe_name=dynamic_exe_name)
     setup_dirs()
 
     
-    # 2. PyInstaller Command Construction
+    # PyInstaller Command Construction
     base_command = [
         'pyinstaller',
         '--noconfirm',
@@ -108,9 +109,8 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # Crucial for Typer/Click based apps
         "--hidden-import", "pkg_resources.py2_warn", 
         "--hidden-import", "typer.models", 
-
-        "--collect-all", "fitz",
-        "--collect-all", "pymupdf",
+        
+        '--log-level=DEBUG',
 
         #"--add-data", "pyproject.toml:pdflinkcheck/data",
         
@@ -126,16 +126,20 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     else:
         print("Building without the --noconsole or --windowed flag, to favor CLI usage for the artifact, because GUI is not available.")
 
-    # 3. Add Windows resource file if applicable
+    # Add Windows resource file if applicable
     if IS_WINDOWS_BUILD and RC_FILE.exists():
         base_command.append(f'--version-file={RC_FILE.name}')
 
-    # 4. Add the main script
+    if pymupdf_is_available():
+        base_command.append("--collect-all")
+        base_command.append("fitz")
+        base_command.append("--collect-all")
+        base_command.append("pymupdf")
+
+     # Add the main script LAST
     base_command.append(str(main_script_path.resolve()))
-    
-    # troubleshoot, temporarily
-    base_command.append('--log-level=DEBUG')
-    # 5. Determine execution path (Run PyInstaller directly, assuming it's in PATH/venv)
+
+    # Determine execution path (Run PyInstaller directly, assuming it's in PATH/venv)
     full_command = base_command
     print(f"Executing PyInstaller: {' '.join(full_command)}")
 
