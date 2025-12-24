@@ -109,6 +109,9 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         "--hidden-import", "pkg_resources.py2_warn", 
         "--hidden-import", "typer.models", 
 
+        "--collect-all", "fitz",
+        "--collect-all", "pymupdf",
+
         #"--add-data", "pyproject.toml:pdflinkcheck/data",
         
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
@@ -130,6 +133,8 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     # 4. Add the main script
     base_command.append(str(main_script_path.resolve()))
     
+    # troubleshoot, temporarily
+    base_command.append("--log-level DEBUG")
     # 5. Determine execution path (Run PyInstaller directly, assuming it's in PATH/venv)
     full_command = base_command
     print(f"Executing PyInstaller: {' '.join(full_command)}")
@@ -170,13 +175,22 @@ if __name__ == "__main__":
 
         # 4. Run the installer
         path = run_pyinstaller(executable_descriptor, CLI_MAIN_FILE)
+
+        # ← Move test here, so it only runs on success
+        print("Testing the PyInstaller artifact...")
+        subprocess.run([str(path), "--help"])
+        print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
+        if pyhabitat.tkinter_is_available():
+            print(f"Testing GUI for {str(path)}...")
+            subprocess.run([str(path), "gui", "--auto-close", "1000"])
+        print("Testing complete.")
         
     except SystemExit:
         pass
     except Exception as e:
         print(f"An unhandled error occurred: {e}", file=sys.stderr)
         sys.exit(1)
-
+    """
     # 5. Test for success
     try:
         print("Testing the PyInstaller artifact...")
@@ -191,3 +205,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n ERROR during PyInstaller post-build test: {e}", file=sys.stderr)
         sys.exit(1)
+    """
