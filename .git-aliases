@@ -7,4 +7,4 @@
     pl = pull
     ps = push
     switch = checkout
-    up = !f() { cur=dev; git checkout main && git merge $cur && git push && git checkout $cur; }; f
+    up = !f() { cur=dev; git checkout main && git merge $cur && git push && git checkout $cur; }; f 
