@@ -51,7 +51,23 @@ def get_anchor_text_pypdf(page, rect) -> str:
     
     return cleaned if cleaned else "Graphic/Empty Link"
 
-def resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) -> str:
+def resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) -> Optional[int]:
+    try:
+        if isinstance(dest, Destination):
+            return dest.page_number + 1  # Return int directly
+
+        if isinstance(dest, IndirectObject):
+            return obj_id_to_page.get(dest.idnum)
+
+        if isinstance(dest, ArrayObject) and len(dest) > 0:
+            if isinstance(dest[0], IndirectObject):
+                return obj_id_to_page.get(dest[0].idnum)
+
+        return None  # Unresolved → None
+    except Exception:
+        return None
+        
+def resolve_pypdf_destination_(reader: PdfReader, dest, obj_id_to_page: dict) -> str:
     """
     Resolves a Destination object or IndirectObject to a 1-based page number string.
     """
@@ -105,7 +121,7 @@ def extract_links_pypdf(pdf_path):
                 'type': 'Other Action',
                 'target': 'Unknown'
             }
-
+            
             # Handle URI (External)
             if "/A" in obj and "/URI" in obj["/A"]:
                 uri = obj["/A"]["/URI"]
@@ -114,7 +130,7 @@ def extract_links_pypdf(pdf_path):
                     'url': uri,
                     'target': uri
                 })
-
+            
             # Handle GoTo (Internal)
             elif "/Dest" in obj or ("/A" in obj and "/D" in obj["/A"]):
                 dest = obj.get("/Dest") or obj["/A"].get("/D")
