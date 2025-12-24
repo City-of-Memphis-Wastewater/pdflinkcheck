@@ -6,7 +6,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.85] - 2025-12-22
+## [1.1.86] - 2025-12-22
 ### Fixed:
 - Ensure ctypes.windll in gui.py is only called on windows
 
