@@ -128,7 +128,7 @@ jobs:
       - name: Sign MSIX package
         shell: pwsh
         run: |
-          & "${{ steps.find_signtool.outputs.SIGNTOOL }}" sign /a /f cert.pfx /p "${{ secrets.CERT_PASSWORD }}" /fd SHA256 pdflinkcheck.msix
+          #& "${{ steps.find_signtool.outputs.SIGNTOOL }}" sign /a /f cert.pfx /p "${{ secrets.CERT_PASSWORD }}" /fd SHA256 pdflinkcheck.msix
           & "${{ steps.find_signtool.outputs.SIGNTOOL }}" sign `
             /a `
             /fd SHA256 `

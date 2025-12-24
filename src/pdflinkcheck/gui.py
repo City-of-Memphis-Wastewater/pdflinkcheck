@@ -686,6 +686,16 @@ def start_gui(time_auto_close:int=0):
     
     tk_app = PDFLinkCheckerApp()
 
+    # Bring window to front 
+    tk_app.lift() 
+    tk_app.attributes('-topmost', True) 
+    tk_app.after(100, lambda: tk_app.attributes('-topmost', False)) 
+    tk_app.focus_force()
+    # beat that dead horse
+    tk_app.update()
+    tk_app.deiconify()
+
+    # Ths is called in the CLI by the --auto-close flag value, for CI scripted testing purposes (like in .github/workflows/build.yml) 
     auto_close_window(tk_app, time_auto_close)
 
     tk_app.mainloop()
