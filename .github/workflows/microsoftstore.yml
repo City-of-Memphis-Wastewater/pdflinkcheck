@@ -45,12 +45,12 @@ jobs:
           ./.venv/Scripts/activate.ps1
           python build_executable.py
 
-      - name: Debug, list files after PyInstaller
+      - name: Debug, list dist folder, after PyInstaller
         shell: PowerShell
         working-directory: ${{ github.workspace }}
         run: |
-          Write-Host "=== Listing repo root ==="
-          Get-ChildItem -Recurse -File | Select-Object FullName
+          Write-Host "=== Listing  dist/ contents ==="
+          Get-ChildItem dist -Recurse -File | Select-Object FullName
 
       - name: Prepare MSIX folder structure
         run: |
