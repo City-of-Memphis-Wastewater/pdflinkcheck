@@ -37,7 +37,14 @@ jobs:
           ./.venv/Scripts/activate.ps1
           uv pip install --upgrade pip
           uv pip install ".[full]" pyinstaller
-          
+
+      #- name: Build EXE with PyInstaller
+      #  shell: PowerShell
+      #  working-directory: ${{ github.workspace }}
+      #  run: |
+      #    ./.venv/Scripts/activate.ps1
+      #    python build_executable.py
+
       - name: Build EXE with PyInstaller
         id: build_exe
         shell: PowerShell
