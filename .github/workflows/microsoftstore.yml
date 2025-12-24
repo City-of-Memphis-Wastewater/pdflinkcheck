@@ -115,40 +115,33 @@ jobs:
         run: |
           & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
       
-      - name: Find Visual Studio signtool
+      - name: Download Windows SDK 22621 installer
+        shell: pwsh
+        run: |
+          Invoke-WebRequest `
+            -Uri "https://go.microsoft.com/fwlink/?linkid=2196240" `
+            -OutFile "winsdksetup.exe"
+      
+      - name: Install Windows SDK 22621 (SignTool only)
+        shell: pwsh
+        run: |
+          Start-Process ".\winsdksetup.exe" `
+            -ArgumentList "/quiet", "/norestart", "/features OptionId.SigningTools" `
+            -Wait
+
+      - name: Find stable signtool
         id: find_signtool
         shell: pwsh
         run: |
-          Write-Host "=== Searching for Visual Studio signtool.exe ==="
-
-          $roots = @(
-            "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools",
-            "C:\Program Files\Microsoft Visual Studio\2022\BuildTools"
-          )
-
-          $found = $false
-
-          foreach ($root in $roots) {
-              if (Test-Path $root) {
-                  $tools = Get-ChildItem $root -Recurse -Filter signtool.exe -ErrorAction SilentlyContinue |
-                          Where-Object { $_.FullName -match "x64" }
-
-                  if ($tools) {
-                      $path = $tools | Select-Object -First 1 -ExpandProperty FullName
-                      Write-Host "Found VS signtool: $path"
-                      "SIGNTOOL=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-                      $found = $true
-                      break
-                  }
-              }
-          }
-
-          if (-not $found) {
-              Write-Error "No Visual Studio signtool.exe found"
+          $path = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe"
+          if (-not (Test-Path $path)) {
+              Write-Error "Stable SignTool not found after SDK install"
               exit 1
           }
+          Write-Host "Found stable SignTool: $path"
+          "SIGNTOOL=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-          
+
       #- name: Find signtool
       #  id: find_signtool
       #  shell: pwsh
