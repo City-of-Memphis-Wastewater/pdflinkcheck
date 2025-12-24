@@ -115,24 +115,38 @@ jobs:
         run: |
           & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
       
-
       - name: Find Visual Studio signtool
         id: find_signtool
         shell: pwsh
         run: |
           Write-Host "=== Searching for Visual Studio signtool.exe ==="
-          $vsTools = Get-ChildItem "C:\Program Files*" -Recurse -Filter signtool.exe -ErrorAction SilentlyContinue |
-                    Where-Object { $_.FullName -match "Visual Studio" -and $_.FullName -match "x64" }
 
-          if ($vsTools.Count -eq 0) {
+          $roots = @(
+            "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools",
+            "C:\Program Files\Microsoft Visual Studio\2022\BuildTools"
+          )
+
+          $found = $false
+
+          foreach ($root in $roots) {
+              if (Test-Path $root) {
+                  $tools = Get-ChildItem $root -Recurse -Filter signtool.exe -ErrorAction SilentlyContinue |
+                          Where-Object { $_.FullName -match "x64" }
+
+                  if ($tools) {
+                      $path = $tools | Select-Object -First 1 -ExpandProperty FullName
+                      Write-Host "Found VS signtool: $path"
+                      "SIGNTOOL=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+                      $found = $true
+                      break
+                  }
+              }
+          }
+
+          if (-not $found) {
               Write-Error "No Visual Studio signtool.exe found"
               exit 1
           }
-
-          $path = $vsTools | Select-Object -First 1 -ExpandProperty FullName
-          Write-Host "Found VS signtool: $path"
-
-          "SIGNTOOL=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
           
       #- name: Find signtool
