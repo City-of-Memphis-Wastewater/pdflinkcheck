@@ -8,3 +8,5 @@
     ps = push
     switch = checkout
     up = !f() { cur=dev; git checkout main && git merge $cur && git push && git checkout $cur; }; f 
+
+#git config --global alias.up '!f() { cur=dev; git checkout main && git merge $cur && git push && git checkout $cur; }; f'
