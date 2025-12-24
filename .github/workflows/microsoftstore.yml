@@ -120,6 +120,20 @@ jobs:
         shell: pwsh
         run: |
           choco install windows-sdk-10-version-2004 -y
+
+          Write-Host "=== Listing Windows SDK versions ==="
+          Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Directory |
+              Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } |
+              ForEach-Object {
+                  Write-Host "Found SDK: $($_.FullName)"
+                  $signtool = Join-Path $_.FullName "x64\signtool.exe"
+                  if (Test-Path $signtool) {
+                      Write-Host "  -> signtool exists: $signtool"
+                  } else {
+                      Write-Host "  -> signtool missing in x64"
+                  }
+              }
+          Write-Host "=== End of SDK listing ==="
           
       - name: Find signtool
         id: find_signtool
