@@ -66,12 +66,12 @@ def clean_artifacts(exe_name: str):
         print(f"Removing old executable: {output_file.resolve()}")
         output_file.unlink()
     
-    if BUILD_DIR.parent.exists():
-        print(f"Removing build folder: {BUILD_DIR.parent.resolve()}")
-        shutil.rmtree(BUILD_DIR.parent)
-    #if BUILD_DIR.exists():
-    #    print(f"Removing only build/pyinstaller_work folder: {BUILD_DIR.parent.resolve()}")
-    #    shutil.rmtree(BUILD_DIR)
+    #if BUILD_DIR.parent.exists():
+    #    print(f"Removing build folder: {BUILD_DIR.parent.resolve()}")
+    #    shutil.rmtree(BUILD_DIR.parent)
+    if BUILD_DIR.exists():
+        print(f"Removing only build/pyinstaller_work folder: {BUILD_DIR.parent.resolve()}")
+        shutil.rmtree(BUILD_DIR)
 
     
     if IS_WINDOWS_BUILD and RC_FILE.exists():
