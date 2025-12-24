@@ -58,15 +58,21 @@ jobs:
               exit 1
           }
 
-
-
       - name: Debug, list dist folder, after PyInstaller
         shell: PowerShell
         working-directory: ${{ github.workspace }}
         run: |
           Write-Host "=== Listing  dist/ contents ==="
           Get-ChildItem dist -Recurse -File | Select-Object FullName
-
+      
+      - name: Rename EXE to stable name
+        shell: PowerShell
+        working-directory: ${{ github.workspace }}
+        run: |
+          $src = "${{ steps.build_exe.outputs.EXE_PATH }}"
+          $dst = "dist/pdflinkcheck.exe"
+          Move-Item -Force $src $dst
+              
       - name: Prepare MSIX folder structure
         run: |
           mkdir msix

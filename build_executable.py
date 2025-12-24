@@ -128,7 +128,8 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
 
     # Add Windows resource file if applicable
     if IS_WINDOWS_BUILD and RC_FILE.exists():
-        base_command.append(f'--version-file={RC_FILE.name}')
+        #base_command.append(f'--version-file={RC_FILE.name}')
+        base_command.append(f'--version-file={RC_FILE.resolve()}')
 
     if pymupdf_is_available():
         base_command.append("--collect-all")
