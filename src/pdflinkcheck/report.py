@@ -12,19 +12,6 @@ from pdflinkcheck.environment import pymupdf_is_available
 from pdflinkcheck.validate import run_validation
 
 SEP_COUNT=28
-EMPTY_REPORT = {
-                "data": {
-                    "external_links": [],
-                    "internal_links": [],
-                    "toc": []
-                },
-                "text": "\n".join(report_buffer),
-                "metadata": {
-                    "pdf_name": Path(pdf_path).name,
-                    "library_used": pdf_library,
-                    "total_links": 0
-                }
-            }
             
 def run_report_and_call_exports(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     # The meat and potatoes
@@ -97,8 +84,21 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
     if pdf_path is None:
         log("pdf_path is None")
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
-        
-        return EMPTY_REPORT 
+        empty_report = {
+                "data": {
+                    "external_links": [],
+                    "internal_links": [],
+                    "toc": []
+                },
+                "text": "\n".join(report_buffer),
+                "metadata": {
+                    "pdf_name": Path(pdf_path).name,
+                    "library_used": pdf_library,
+                    "total_links": 0
+                }
+            }
+
+        return empty_report
         
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
@@ -128,7 +128,7 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
                     "total_links": 0
                 }
             }
-            return EMPTY_REPORT # empty_result
+            return empty_result
             
         # 3. Separate the lists based on the 'type' key
         uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
