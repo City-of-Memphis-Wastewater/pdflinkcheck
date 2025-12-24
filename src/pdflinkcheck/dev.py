@@ -9,7 +9,15 @@ help_tree_command() used click and typer internals which might change version to
 
 This portion of the codebase is MIT licensed. It does not rely on any AGPL-licensed code.
 
+DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree
 
+```
+import os
+os.environ["DEV_TYPER_HELP_TREE"] = "true"
+
+import pdflinkcheck
+subprocess.run("pdflinkcheck", "help-tree")
+```
 """
 
 import typer

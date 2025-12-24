@@ -51,7 +51,7 @@ __all__ = [
     "extract_links_pypdf", 
     "extract_toc_pypdf", 
     #"start_gui" if _load_gui_func else None,
-    #"dev", 
+    "dev", 
 ]
 if _load_gui_func:
     __all__.append("start_gui")
