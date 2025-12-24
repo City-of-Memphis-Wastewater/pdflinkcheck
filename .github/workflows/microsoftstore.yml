@@ -49,21 +49,25 @@ jobs:
           $output = .\.venv\Scripts\python.exe $script 2>&1 | Tee-Object -Variable log
           Write-Host "$log"
 
-          if ($log -match "Executable is located at:\s*(.+\.exe)") {
-              $exePath = $matches[1].Trim()
-              Write-Host "Detected EXE path: $exePath"
-              "EXE_PATH=$exePath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-
-          } else {
-              Write-Error "Could not detect EXE path from PyInstaller output"
+      - name: Detect built EXE
+        id: detect_exe
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          $exe = Get-ChildItem dist -Filter *.exe | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          if (-not $exe) {
+              Write-Error "No EXE found in dist/"
               exit 1
           }
+          Write-Host "Detected EXE: $($exe.FullName)"
+          "EXE_PATH=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
 
       - name: Debug EXE_PATH output
         shell: pwsh
         run: |
           Write-Host "EXE_PATH from outputs:"
-          Write-Host "${{ steps.build_exe.outputs.EXE_PATH }}"
+          Write-Host "${{ steps.detect_exe.outputs.EXE_PATH }}"
 
 
       - name: Debug, list dist folder, after PyInstaller
@@ -77,7 +81,7 @@ jobs:
         shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
-          $src = "${{ steps.build_exe.outputs.EXE_PATH }}"
+          $src = "${{ steps.detect_exe.outputs.EXE_PATH }}"
           $dst = Join-Path "dist" "pdflinkcheck.exe"
           Move-Item -Force $src $dst
               
