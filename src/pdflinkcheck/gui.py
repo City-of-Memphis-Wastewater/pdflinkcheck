@@ -700,9 +700,10 @@ def start_gui(time_auto_close:int=0):
     tk_app.focus_force()
 
     # Win32 nudge (optional but helpful)
-    hwnd = tk_app.winfo_id() 
-    ctypes.windll.user32.SetForegroundWindow(hwnd)
-
+    if pyhabitat.on_windows():
+        hwnd = tk_app.winfo_id() 
+        ctypes.windll.user32.SetForegroundWindow(hwnd)
+    
     # Ths is called in the CLI by the --auto-close flag value, for CI scripted testing purposes (like in .github/workflows/build.yml) 
     auto_close_window(tk_app, time_auto_close)
 

@@ -6,6 +6,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.85] - 2025-12-22
+### Fixed:
+- Ensure ctypes.windll in gui.py is only called on windows
+
 ## [1.1.84] - 2025-12-22
 ### Added:
 - Implement the microsoftstore.yml github flow - ensure that it builds; all i need now is to download a .cer file distributed by [Partner Center](https://partner.microsoft.com/en-us/dashboard), rather than using my own local .cer file.
