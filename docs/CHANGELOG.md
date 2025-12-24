@@ -9,6 +9,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.1.89] - 2025-12-24
 ### Fixed:
 - Valdiate eror - handle Payment Link as no-page-destination-page. There is one new key and one broken page key which had refeences corrected.
+- cli.py and gui.py, force copy when file not found for license and readme. use broad strokes multi file force copy with ensure_data_files_for_build() instead of  ensure_package_license() and the ensure license function. Yhe issue was thsy paths needed to be passed for those internal functions. the ideas was that they wpupd stau modular - the true answer is to use upper case path values in the file, to allow fpr mpdulat exposure but wxpixot internal.use case dpcumentwtipn
+pyproject is now copied forcefully as well, though it is not specifically necessary.
 
 ### Added:
 - ./external/typertree/
