@@ -33,7 +33,9 @@ jobs:
         shell: PowerShell
         working-directory: ${{ github.workspace }}
         run: |
-          uv venv
+          print(f"uv --version = {uv --version}")
+          uv venv --with-pip
+          #uv venv --python pip
           ./.venv/Scripts/activate.ps1
           #uv pip install --upgrade pip
           #uv pip install ".[full]" pyinstaller
