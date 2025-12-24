@@ -129,6 +129,14 @@ jobs:
         shell: pwsh
         run: |
           & "${{ steps.find_signtool.outputs.SIGNTOOL }}" sign /a /f cert.pfx /p "${{ secrets.CERT_PASSWORD }}" /fd SHA256 pdflinkcheck.msix
+          & "${{ steps.find_signtool.outputs.SIGNTOOL }}" sign `
+            /a `
+            /fd SHA256 `
+            /td SHA256 `
+            /tr http://timestamp.digicert.com `
+            /f cert.pfx `
+            /p "${{ secrets.CERT_PASSWORD }}" `
+            pdflinkcheck.msix
 
       - name: Upload MSIX artifact
         uses: actions/upload-artifact@v4
