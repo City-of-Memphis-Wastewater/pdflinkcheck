@@ -77,6 +77,13 @@ jobs:
         run: |
           copy dist\*.exe msix\
 
+      - name: Debug, list msix folder, after copying EXE
+        shell: PowerShell
+        working-directory: ${{ github.workspace }}
+        run: |
+          Write-Host "=== Listing  msix/ contents ==="
+          Get-ChildItem msix -Recurse -File | Select-Object FullName
+
       - name: Decode signing certificate
         shell: pwsh
         run: |
