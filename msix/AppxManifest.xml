@@ -34,7 +34,7 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
-
+  
   <Applications>
     <Application
         Id="pdflinkcheck"
@@ -58,5 +58,14 @@
 
     </Application>
   </Applications>
+  
+  <!-- Ask Windows to treat the MSIX more like a traditional Win32 app, which improves foreground focus behavior. -->
+  <!--Extensions>
+    <uap3:Extension Category="windows.appExecutionAlias">
+      <uap3:AppExecutionAlias>
+        <uap3:ExecutionAlias Alias="pdflinkcheck.exe" />
+      </uap3:AppExecutionAlias>
+    </uap3:Extension>
+  </Extensions-->
 
 </Package>

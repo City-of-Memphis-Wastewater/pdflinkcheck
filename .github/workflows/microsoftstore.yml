@@ -5,8 +5,8 @@ name: Build and Publish MSIX to Microsoft Store
 on:
   release:
     types: [published]
-  push:
-    branches: [main, dev]
+  #push:
+  #  branches: [main, dev]
 
 jobs:
   build-msix:

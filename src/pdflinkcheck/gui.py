@@ -9,6 +9,9 @@ from typing import Optional # Added Optional
 import unicodedata
 from importlib.resources import files
 import pyhabitat
+import ctypes
+
+
 
 # Import the core analysis function
 from pdflinkcheck.report import run_report_and_call_exports
@@ -677,6 +680,10 @@ def auto_close_window(root, delay_ms:int = 0):
     else:
         return
 
+def force_foreground(hwnd):
+    ctypes.windll.user32.SetForegroundWindow(hwnd)
+    ctypes.windll.user32.ShowWindow(hwnd, 5)  # SW_SHOW
+
 
 def start_gui(time_auto_close:int=0):
     """
@@ -688,10 +695,14 @@ def start_gui(time_auto_close:int=0):
 
     # Bring window to front 
     tk_app.lift() 
-    tk_app.attributes('-topmost', True) 
-    tk_app.after(100, lambda: tk_app.attributes('-topmost', False)) 
+    #tk_app.attributes('-topmost', True) 
+    #tk_app.after(100, lambda: tk_app.attributes('-topmost', False)) 
+    tk_app.wm_attributes("-topmost", True) 
+    tk_app.after(200, lambda: tk_app.wm_attributes("-topmost", False))
     tk_app.focus_force()
-    # beat that dead horse
+    # --- Beat that focused horse ---
+    hwnd = tk_app.winfo_id() 
+    force_foreground(hwnd)
     tk_app.update()
     tk_app.deiconify()
 
