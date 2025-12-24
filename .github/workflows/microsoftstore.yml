@@ -5,8 +5,8 @@ name: Build and Publish MSIX to Microsoft Store
 on:
   release:
     types: [published]
-  #push:
-  #  branches: [main, dev]
+  push:
+    branches: [main, dev]
 
 jobs:
   build-msix:
@@ -123,8 +123,11 @@ jobs:
                   Where-Object { $_.FullName -match '\\x64\\' } |
                   Select-Object -First 1 -ExpandProperty FullName
           $path = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" # force stable
-          echo "SIGNTOOL=$path" >> $env:GITHUB_OUTPUT
+          "SIGNTOOL=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
+      - name: Debug signtool path 
+        run: | 
+          echo "Using signtool: ${{ steps.find_signtool.outputs.SIGNTOOL }}"
           
       - name: Sign MSIX package
         shell: pwsh
