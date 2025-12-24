@@ -34,7 +34,8 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           uv --version
-          uv venv --python pip
+          #uv venv --python pip
+          python -m venv .venv
           ./.venv/Scripts/activate.ps1
           #uv pip install --upgrade pip
           #uv pip install ".[full]" pyinstaller
