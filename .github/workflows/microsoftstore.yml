@@ -30,7 +30,7 @@ jobs:
         run: python src/pdflinkcheck/datacopy.py
 
       - name: Create venv and install project with extras
-        shell: PowerShell
+        shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
 
@@ -41,7 +41,7 @@ jobs:
 
       - name: Build EXE with PyInstaller
         id: build_exe
-        shell: PowerShell
+        shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE\.venv\Scripts;$env:PATH"
@@ -59,15 +59,22 @@ jobs:
               exit 1
           }
 
+      - name: Debug EXE_PATH output
+        shell: pwsh
+        run: |
+          Write-Host "EXE_PATH from outputs:"
+          Write-Host "${{ steps.build_exe.outputs.EXE_PATH }}"
+
+
       - name: Debug, list dist folder, after PyInstaller
-        shell: PowerShell
+        shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
           Write-Host "=== Listing  dist/ contents ==="
           Get-ChildItem dist -Recurse -File | Select-Object FullName
       
       - name: Rename EXE to stable name
-        shell: PowerShell
+        shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
           $src = "${{ steps.build_exe.outputs.EXE_PATH }}"
@@ -79,7 +86,7 @@ jobs:
           copy dist\pdflinkcheck.exe msix\
 
       - name: Debug, list msix folder, after copying EXE
-        shell: PowerShell
+        shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
           Write-Host "=== Listing  msix/ contents ==="

@@ -155,7 +155,8 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     print("\n--- PyInstaller Build Complete ---")
     ext = '.exe' if IS_WINDOWS_BUILD else ''
     final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
-    print(f"Executable is located at: {final_path.resolve()}")
+    print(f"Executable is located at: {final_path.resolve()}") # do not change the wording of this line, it is used in microsoftstore.yml
+
     return final_path.resolve()
 
 
