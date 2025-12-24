@@ -77,10 +77,11 @@ jobs:
         run: |
           copy dist\*.exe msix\
 
-
       - name: Decode signing certificate
+        shell: pwsh
         run: |
-          echo "${{ secrets.CERT_PFX }}" | certutil -decode - cert.pfx
+          $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX }}")
+          [IO.File]::WriteAllBytes("cert.pfx", $bytes)
 
       - name: Create MSIX package
         run: |
