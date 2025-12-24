@@ -6,7 +6,17 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.87] - 2025-12-23
+## [1.1.89] - 2025-12-24
+### Fixed:
+- Valdiate eror - handle Payment Link as no-page-destination-page. There is one new key and one broken page key which had refeences corrected.
+
+### Added:
+- ./external/typertree/
+- .gitconfig_alias
+- validate.py - {"no-destinstion-page":no_destination_page_count} 
+---
+
+## [1.1.87] - 2025-12-24
 ### Fixed:
 - Revert CN value in AppxManifest.xml to match my self signed cert. I was getting error code 0x8007000b, because i had preemtively changed the CN value to match my MSIX requirements for my Partner Center upload. 
 
