@@ -74,9 +74,8 @@ def docs_command(
 
     if is_in_git_repo():
         """This is too aggressive. But we don't expect it often. Probably worth it."""
-        from pdflinkcheck.datacopy import ensure_package_license, ensure_package_readme
-        ensure_package_license()
-        ensure_package_readme()
+        from pdflinkcheck.datacopy import ensure_data_files_for_build()
+        ensure_data_files_for_build()
 
     # --- Handle --license flag ---
     if license:
