@@ -680,9 +680,6 @@ def auto_close_window(root, delay_ms:int = 0):
     else:
         return
 
-def force_foreground(hwnd):
-    ctypes.windll.user32.SetForegroundWindow(hwnd)
-    ctypes.windll.user32.ShowWindow(hwnd, 5)  # SW_SHOW
 
 
 def start_gui(time_auto_close:int=0):
@@ -699,12 +696,12 @@ def start_gui(time_auto_close:int=0):
     #tk_app.after(100, lambda: tk_app.attributes('-topmost', False)) 
     tk_app.wm_attributes("-topmost", True) 
     tk_app.after(200, lambda: tk_app.wm_attributes("-topmost", False))
-    tk_app.focus_force()
-    # --- Beat that focused horse ---
-    hwnd = tk_app.winfo_id() 
-    force_foreground(hwnd)
-    tk_app.update()
     tk_app.deiconify()
+    tk_app.focus_force()
+
+    # Win32 nudge (optional but helpful)
+    hwnd = tk_app.winfo_id() 
+    ctypes.windll.user32.SetForegroundWindow(hwnd)
 
     # Ths is called in the CLI by the --auto-close flag value, for CI scripted testing purposes (like in .github/workflows/build.yml) 
     auto_close_window(tk_app, time_auto_close)
