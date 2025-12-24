@@ -58,15 +58,16 @@ def run_validation(
 
     issues = []
     valid_count = 0
+    file_found_count = 0
     broken_file_count = 0
     broken_page_count = 0
-    file_found_count = 0
+    no_destination_page_count = 0
     unknown_web_count = 0
     unknown_reasonableness_count = 0
     unknown_link_count = 0
 
     # Validate active links
-    print("DEBUG validate: entering loop with", len(all_links), "links")
+    #print("DEBUG validate: entering loop with", len(all_links), "links")
     for i, link in enumerate(all_links):
         link_type = link.get("type")
         status = "valid"
@@ -74,7 +75,7 @@ def run_validation(
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
             dest_page_raw = link.get("destination_page")
             if dest_page_raw is None:
-                status = "broken-page"
+                status = "no-destinstion-page"
                 reason = "No destination page resolved"
             else:
                 try:
@@ -145,6 +146,9 @@ def run_validation(
         elif status == "broken-file":
             broken_file_count += 1
             issues.append(link_with_val)
+        elif status == "no-destinstion-page":
+            no_destination_page_count += 1
+            issues.append(link_with_val)
     # Validate TOC entries
     for entry in toc:
         target_page = int(entry.get("target_page"))
@@ -183,6 +187,7 @@ def run_validation(
         "file-found": file_found_count,
         "broken-page": broken_page_count,
         "broken-file": broken_file_count,
+        "no_destination_page_count": no_destination_page_count,
         "unknown-web": unknown_web_count,
         "unknown-reasonableness": unknown_reasonableness_count,
         "unknown-link": unknown_link_count,
