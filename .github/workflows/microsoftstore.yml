@@ -48,10 +48,9 @@ jobs:
       - name: Build EXE with PyInstaller
         id: build_exe
         shell: PowerShell
+        working-directory: ${{ github.workspace }}
         run: |
-          Set-Location ${{ github.workspace }}
-          ./.venv/Scripts/activate.ps1
-          $output = python build_executable.py 2>&1 | Tee-Object -Variable log
+          $output = .\.venv\Scripts\python.exe build_executable.py 2>&1 | Tee-Object -Variable log
           Write-Host "$log"
 
           if ($log -match "Executable is located at:\s*(.+\.exe)") {
@@ -62,6 +61,7 @@ jobs:
               Write-Error "Could not detect EXE path from PyInstaller output"
               exit 1
           }
+
 
 
       - name: Debug, list dist folder, after PyInstaller
