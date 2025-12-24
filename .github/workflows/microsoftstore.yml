@@ -119,10 +119,18 @@ jobs:
         id: find_signtool
         shell: pwsh
         run: |
-          $path = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter signtool.exe |
-                  Where-Object { $_.FullName -match '\\x64\\' } |
-                  Select-Object -First 1 -ExpandProperty FullName
-          $path = "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" # force stable
+          # Get the newest one
+          #$path = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter signtool.exe |
+          #        Where-Object { $_.FullName -match '\\x64\\' } |
+          #        Select-Object -First 1 -ExpandProperty FullName
+          
+          $tools = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter signtool.exe | 
+                 Where-Object { $_.FullName -match '\\x64\\' }
+          
+          # Sort by version number in the path 
+          # Get the oldest one
+          $path = $tools | Sort-Object FullName | Select-Object -First 1 -ExpandProperty FullName 
+          
           "SIGNTOOL=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Debug signtool path 
