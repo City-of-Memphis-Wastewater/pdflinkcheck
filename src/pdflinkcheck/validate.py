@@ -143,7 +143,7 @@ def run_validation(
             broken_page_count += 1
             issues.append(link_with_val)
         elif status == "broken-file":
-            broken_page_count += 1
+            broken_file_count += 1
             issues.append(link_with_val)
     # Validate TOC entries
     for entry in toc:
