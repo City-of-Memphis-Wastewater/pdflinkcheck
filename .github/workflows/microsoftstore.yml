@@ -82,12 +82,14 @@ jobs:
         run: |
           $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX }}")
           [IO.File]::WriteAllBytes("cert.pfx", $bytes)
-      
+
       - name: Find makeappx
         id: find_makeappx
         shell: pwsh
         run: |
-          $path = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter makeappx.exe | Select-Object -First 1 -ExpandProperty FullName
+          $path = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter makeappx.exe |
+                  Where-Object { $_.FullName -match '\\x64\\' } |
+                  Select-Object -First 1 -ExpandProperty FullName
           Write-Host "Found makeappx at: $path"
           echo "MAKEAPPX=$path" >> $env:GITHUB_OUTPUT
 
@@ -95,15 +97,24 @@ jobs:
         shell: pwsh
         run: |
           & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
+
+
+      - name: Create MSIX package
+        shell: pwsh
+        run: |
+          & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
+      
       
       - name: Find signtool
         id: find_signtool
         shell: pwsh
         run: |
-          $path = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter signtool.exe | Select-Object -First 1 -ExpandProperty FullName
-          Write-Host "Found signtool at: $path"
+          $path = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter signtool.exe |
+                  Where-Object { $_.FullName -match '\\x64\\' } |
+                  Select-Object -First 1 -ExpandProperty FullName
           echo "SIGNTOOL=$path" >> $env:GITHUB_OUTPUT
 
+          
       - name: Sign MSIX package
         shell: pwsh
         run: |
