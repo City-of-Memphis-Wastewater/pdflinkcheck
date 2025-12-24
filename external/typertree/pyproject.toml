@@ -1,0 +1,23 @@
+[project]
+name = "typertree"
+version = "0.1.0"
+description = "A Typer extension providing a Rich-based CLI help tree visualizer."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    { name = "George Clayton Bennett" }
+]
+
+dependencies = [
+    "typer>=0.20.0",
+    "rich>=14.2.0",
+    "click>=8.1.0"
+]
+
+[project.scripts]
+typertree = "typertree.cli:app"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
