@@ -6,7 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.1.86] - 2025-12-22
+## [1.1.87] - 2025-12-23
+### Fixed:
+- Revert CN value in AppxManifest.xml to match my self signed cert. I was getting error code 0x8007000b, because i had preemtively changed the CN value to match my MSIX requirements for my Partner Center upload. 
+
+### Internal:
+- Signing Error 0x8007000b information: https://learn.microsoft.com/en-us/windows/win32/appxpkg/how-to-sign-a-package-using-signtool?redirectedfrom=MSDN
+
+---
+
+## [1.1.86] - 2025-12-23
 ### Fixed:
 - Ensure ctypes.windll in gui.py is only called on windows
 
