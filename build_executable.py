@@ -110,7 +110,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         "--hidden-import", "pkg_resources.py2_warn", 
         "--hidden-import", "typer.models", 
         
-        '--log-level=DEBUG',
+        #'--log-level=DEBUG',
 
         #"--add-data", "pyproject.toml:pdflinkcheck/data",
         
