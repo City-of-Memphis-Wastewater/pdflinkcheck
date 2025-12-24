@@ -134,7 +134,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     base_command.append(str(main_script_path.resolve()))
     
     # troubleshoot, temporarily
-    base_command.append("--log-level DEBUG")
+    base_command.append('--log-level=DEBUG')
     # 5. Determine execution path (Run PyInstaller directly, assuming it's in PATH/venv)
     full_command = base_command
     print(f"Executing PyInstaller: {' '.join(full_command)}")
