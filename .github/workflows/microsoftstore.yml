@@ -5,6 +5,8 @@ name: Build and Publish MSIX to Microsoft Store
 on:
   release:
     types: [published]
+  push:
+    branches: [main]
 
 jobs:
   build-msix:
@@ -39,7 +41,7 @@ jobs:
         shell: bash
         run: |
           source .venv/Scripts/activate
-          pyinstaller --noconfirm --windowed --name pdflinkcheck src/main.py
+          python build_executable.py
 
       - name: Prepare MSIX folder structure
         run: |

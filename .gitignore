@@ -24,3 +24,5 @@ src/pdflinkcheck/data/LICENSE
 src/pdflinkcheck/data/README.md
 
 uv.lock
+
+/msix-build/
