@@ -54,7 +54,7 @@ jobs:
         shell: PowerShell
         working-directory: ${{ github.workspace }}
         run: |
-          $script = Join-Path $env:GITHUB_WORKSPACE "build_executable.py"
+          $env:PYTHONPATH = $env:GITHUB_WORKSPACE
           $script = Join-Path $env:GITHUB_WORKSPACE "build_executable.py"
           $output = .\.venv\Scripts\python.exe $script 2>&1 | Tee-Object -Variable log
           Write-Host "$log"
