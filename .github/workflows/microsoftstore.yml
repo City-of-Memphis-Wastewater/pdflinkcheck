@@ -31,6 +31,7 @@ jobs:
 
       - name: Create venv and install project with extras
         shell: PowerShell
+        working-directory: ${{ github.workspace }}
         run: |
           uv venv
           ./.venv/Scripts/activate.ps1
