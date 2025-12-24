@@ -50,7 +50,8 @@ jobs:
         shell: PowerShell
         working-directory: ${{ github.workspace }}
         run: |
-          $output = .\.venv\Scripts\python.exe build_executable.py 2>&1 | Tee-Object -Variable log
+          $script = Join-Path $env:GITHUB_WORKSPACE "build_executable.py"
+          $output = .\.venv\Scripts\python.exe $script 2>&1 | Tee-Object -Variable log
           Write-Host "$log"
 
           if ($log -match "Executable is located at:\s*(.+\.exe)") {
