@@ -37,13 +37,24 @@ jobs:
           ./.venv/Scripts/activate.ps1
           uv pip install --upgrade pip
           uv pip install ".[full]" pyinstaller
-
+          
       - name: Build EXE with PyInstaller
+        id: build_exe
         shell: PowerShell
         working-directory: ${{ github.workspace }}
         run: |
           ./.venv/Scripts/activate.ps1
-          python build_executable.py
+          $output = python build_executable.py 2>&1 | Tee-Object -Variable log
+          Write-Host "$log"
+          # Extract the final EXE path from the printed line
+          if ($log -match "Executable is located at:\s*(.+\.exe)") {
+              $exePath = $matches[1].Trim()
+              echo "EXE_PATH=$exePath" >> $env:GITHUB_OUTPUT
+              Write-Host "Detected EXE path: $exePath"
+          } else {
+              Write-Error "Could not detect EXE path from PyInstaller output"
+              exit 1
+          }
 
       - name: Debug, list dist folder, after PyInstaller
         shell: PowerShell
