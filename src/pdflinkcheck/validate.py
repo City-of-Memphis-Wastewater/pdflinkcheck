@@ -139,13 +139,12 @@ def run_validation(
             unknown_reasonableness_count += 1
         elif status == "unknown-link":
             unknown_link_count += 1
-        elif status == "broken-file":
+        elif status == "broken-page":
             broken_page_count += 1
             issues.append(link_with_val)
         elif status == "broken-file":
             broken_page_count += 1
             issues.append(link_with_val)
-
     # Validate TOC entries
     for entry in toc:
         target_page = int(entry.get("target_page"))
