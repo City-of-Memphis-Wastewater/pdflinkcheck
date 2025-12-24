@@ -119,6 +119,19 @@ jobs:
         id: find_signtool
         shell: pwsh
         run: |
+          Write-Host "=== Listing Windows SDK versions ==="
+          Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Directory |
+              Where-Object { $_.Name -match '^\d+\.\d+\.\d+\.\d+$' } |
+              ForEach-Object {
+                  Write-Host "Found SDK: $($_.FullName)"
+                  $signtool = Join-Path $_.FullName "x64\signtool.exe"
+                  if (Test-Path $signtool) {
+                      Write-Host "  -> signtool exists: $signtool"
+                  } else {
+                      Write-Host "  -> signtool missing in x64"
+                  }
+              }
+          Write-Host "=== End of SDK listing ==="
           # Get the newest one
           #$path = Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\bin\" -Recurse -Filter signtool.exe |
           #        Where-Object { $_.FullName -match '\\x64\\' } |
@@ -128,7 +141,7 @@ jobs:
                  Where-Object { $_.FullName -match '\\x64\\' }
           
           # Sort by version number in the path 
-          # Get the oldest one
+          # Get the oldestZ one
           $path = $tools | Sort-Object FullName | Select-Object -First 1 -ExpandProperty FullName 
           
           "SIGNTOOL=$path" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
