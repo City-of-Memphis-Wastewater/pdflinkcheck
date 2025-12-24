@@ -51,8 +51,9 @@ jobs:
 
           if ($log -match "Executable is located at:\s*(.+\.exe)") {
               $exePath = $matches[1].Trim()
-              echo "EXE_PATH=$exePath" >> $env:GITHUB_OUTPUT
               Write-Host "Detected EXE path: $exePath"
+              "EXE_PATH=$exePath" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
           } else {
               Write-Error "Could not detect EXE path from PyInstaller output"
               exit 1
