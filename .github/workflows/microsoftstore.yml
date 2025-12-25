@@ -216,20 +216,44 @@ jobs:
         with:
           name: msix
           path: pdflinkcheck.msix
-#  
-#  publish-to-store:
-#    needs: build-msix
-#    runs-on: windows-latest
-#
-#    steps:
-#      - name: Download MSIX artifact
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: msix
-#
-#      - name: Publish to Microsoft Store
-#        run: |
-#          curl -X POST `
-#            -H "Authorization: Bearer ${{ secrets.STORE_CLIENT_SECRET }}" `
-#            -F "package=@pdflinkcheck.msix" `
-#            "https://manage.devcenter.microsoft.com/v1.0/my/applications/<YOUR-APP-ID>/submissions"
+
+  publish-to-store:
+    needs: build-msix
+    runs-on: windows-latest
+
+    steps:
+      - name: Download MSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: msix
+
+      # 1. Get OAuth token from Azure AD
+      - name: Get OAuth token
+        id: get_token
+        shell: pwsh
+        run: |
+          $tenant = "${{ secrets.AZURE_TENANT_ID }}"
+          $client = "${{ secrets.STORE_CLIENT_ID }}"
+          $secret = "${{ secrets.STORE_CLIENT_SECRET }}"
+
+          $body = @{
+            grant_type    = "client_credentials"
+            client_id     = $client
+            client_secret = $secret
+            resource      = "https://manage.devcenter.microsoft.com"
+          }
+
+          $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$tenant/oauth2/token" -Body $body
+          "TOKEN=$($response.access_token)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      # 2. Upload MSIX to Microsoft Store API
+      - name: Publish to Microsoft Store
+        shell: pwsh
+        run: |
+          $token = "${{ steps.get_token.outputs.TOKEN }}"
+
+          curl -X POST `
+            -H "Authorization: Bearer $token" `
+            -F "package=@pdflinkcheck.msix" `
+            "https://manage.devcenter.microsoft.com/v1.0/my/applications/9N11HXVLS1WG/submissions"
+
