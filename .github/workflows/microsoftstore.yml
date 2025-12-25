@@ -216,8 +216,8 @@ jobs:
         with:
           name: msix
           path: pdflinkcheck.msix
-
-  draft-store-submission:
+          
+  publish-submission:
     needs: build-msix
     runs-on: windows-latest
 
@@ -227,7 +227,6 @@ jobs:
         with:
           name: msix
 
-      # 1. Get OAuth token from Azure AD
       - name: Get OAuth token
         id: get_token
         shell: pwsh
@@ -246,17 +245,56 @@ jobs:
           $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$tenant/oauth2/token" -Body $body
           "TOKEN=$($response.access_token)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
-      # 2. Upload MSIX to Microsoft Store API
-      - name: Publish to Microsoft Store
+      - name: Create submission
+        id: create_submission
         shell: pwsh
         run: |
           $token = "${{ steps.get_token.outputs.TOKEN }}"
+          $appId = "9N11HXVLS1WG"
 
-          curl -X POST `
-            -H "Authorization: Bearer $token" `
-            -F "package=@pdflinkcheck.msix" `
-            "https://manage.devcenter.microsoft.com/v1.0/my/applications/9N11HXVLS1WG/submissions"
+          $submission = Invoke-RestMethod `
+            -Method POST `
+            -Uri "https://manage.devcenter.microsoft.com/v1.0/my/applications/$appId/submissions" `
+            -Headers @{ Authorization = "Bearer $token" }
 
-  #publish-submission:
-    
+          $submission | ConvertTo-Json -Depth 20 | Out-File submission.json
+
+          "SUBMISSION_ID=$($submission.id)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "UPLOAD_URL=$($submission.fileUploadUrl)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+      - name: Upload MSIX to Azure Blob
+        shell: pwsh
+        run: |
+          $uploadUrl = "${{ steps.create_submission.outputs.UPLOAD_URL }}"
+          $file = "pdflinkcheck.msix"
+
+          Write-Host "Uploading MSIX to Azure Blob..."
+          Invoke-RestMethod -Method PUT -Uri $uploadUrl -InFile $file -ContentType "application/octet-stream"
+
+      - name: Commit submission
+        id: commit_submission
+        shell: pwsh
+        run: |
+          $token = "${{ steps.get_token.outputs.TOKEN }}"
+          $appId = "9N11HXVLS1WG"
+          $submissionId = "${{ steps.create_submission.outputs.SUBMISSION_ID }}"
+
+          # Reload submission JSON
+          $submission = Get-Content submission.json | ConvertFrom-Json
+
+          # Commit the submission
+          $result = Invoke-RestMethod `
+            -Method PUT `
+            -Uri "https://manage.devcenter.microsoft.com/v1.0/my/applications/$appId/submissions/$submissionId" `
+            -Headers @{ Authorization = "Bearer $token" } `
+            -Body ($submission | ConvertTo-Json -Depth 20) `
+            -ContentType "application/json"
+
+          Write-Host "Submission committed successfully."
+
+      - name: Done
+        run: |
+          Write-Host "Microsoft Store submission created, uploaded, and committed."
+
+      
 
