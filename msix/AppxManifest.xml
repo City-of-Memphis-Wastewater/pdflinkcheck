@@ -8,10 +8,11 @@
   <!-- Package created by MSIX Packaging Tool version: 1.2024.405.0 -->
   <!--Package Family Name = GeorgeClaytonBennett.PDFLinkCheck_23scd3v36907r (was: pdflinkcheck_5ns4vcjhm6yga)-->
   <!--Publisher="CN=806FDEBD-B014-4625-85AE-058C714FC7F2"-->
+  <!--Publisher="CN=George Clayton Bennett"-->
 
   <Identity
       Name="GeorgeClaytonBennett.PDFLinkCheck"
-      Publisher="CN=George Clayton Bennett"
+      Publisher="CN=806FDEBD-B014-4625-85AE-058C714FC7F2"
       Version="1.1.83.0"
       ProcessorArchitecture="x64" />
 
