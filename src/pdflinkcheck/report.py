@@ -20,7 +20,6 @@ def run_report_and_call_exports(pdf_path: str = None,  max_links: int = 0, expor
         max_links=max_links,
         pdf_library = pdf_library,
     )
-    print(f"list(report_results) = {list(report_results)}")
     if export_format:
         report_data_dict = report_results["data"]
         report_buffer_str = report_results["text"]
