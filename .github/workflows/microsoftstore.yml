@@ -93,7 +93,8 @@ jobs:
         working-directory: ${{ github.workspace }}
         run: |
           $env:PATH = "$env:GITHUB_WORKSPACE\.venv\Scripts;$env:PATH"
-          .\.venv\Scripts\python.exe update_msix_version.py
+          $script = Join-Path $env:GITHUB_WORKSPACE "src\pdflinkcheck\update_msix_version.py"
+          .\.venv\Scripts\python.exe $script
 
       - name: Debug, list msix folder, after copying EXE
         shell: pwsh
