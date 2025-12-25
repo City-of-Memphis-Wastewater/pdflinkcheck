@@ -233,8 +233,8 @@ jobs:
         shell: pwsh
         run: |
           $tenant = "${{ secrets.AZURE_TENANT_ID }}"
-          $client = "${{ secrets.STORE_CLIENT_ID }}"
-          $secret = "${{ secrets.STORE_CLIENT_SECRET }}"
+          $client = "${{ secrets.ENTRA_CLIENT_ID }}"
+          $secret = "${{ secrets.ENTRA_CLIENT_SECRET }}"
 
           $body = @{
             grant_type    = "client_credentials"
