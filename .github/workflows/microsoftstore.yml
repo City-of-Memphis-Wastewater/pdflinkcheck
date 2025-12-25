@@ -5,8 +5,8 @@ name: Build and Publish MSIX to Microsoft Store
 on:
   release:
     types: [published]
-  #push:
-  #  branches: [main, dev] 
+  push:
+    branches: [main, dev] 
 
 jobs:
   build-msix:
@@ -97,7 +97,7 @@ jobs:
       - name: Decode signing certificate
         shell: pwsh
         run: |
-          $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX }}")
+          $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX_MSSTORE }}")
           [IO.File]::WriteAllBytes("cert.pfx", $bytes)
 
       - name: Find makeappx
