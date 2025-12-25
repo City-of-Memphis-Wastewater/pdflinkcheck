@@ -9,7 +9,7 @@
   <Identity
       Name="GeorgeClaytonBennett.PDFLinkCheck"
       Publisher="CN=806FDEBD-B014-4625-85AE-058C714FC7F2"
-      Version="1.1.92.0"
+      Version="@@VERSION_PLACEHOLDER@@"
       ProcessorArchitecture="x64" />
 
   <Properties>
