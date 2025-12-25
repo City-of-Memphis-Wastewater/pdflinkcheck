@@ -472,8 +472,10 @@ class PDFLinkCheckerApp(tk.Tk):
     def _select_pdf(self):
         if self.pdf_path.get():
             initialdir = str(Path(self.pdf_path.get()).parent)
-        else:
+        elif is_in_git_repo():
             initialdir = str(Path.cwd())
+        else:
+            initialdir = str(Path.home())
 
         file_path = filedialog.askopenfilename(
             initialdir=initialdir,
