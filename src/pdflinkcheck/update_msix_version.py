@@ -1,52 +1,47 @@
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from pdflinkcheck.version_info import get_version_from_pyproject
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
-# Register all namespaces to use proper prefixes
-ET.register_namespace('', "http://schemas.microsoft.com/appx/manifest/foundation/windows10")
-ET.register_namespace('uap', "http://schemas.microsoft.com/appx/manifest/uap/windows10")
-ET.register_namespace('rescap', "http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities")
+UNVERSIONED_MANIFEST = PROJECT_ROOT / "msix" / "AppxManifest_unversioned.xml"
+OUTPUT_MANIFEST = PROJECT_ROOT / "msix" / "AppxManifest.xml"
 
-def update_appxmanifest_version(manifest_path: Path, new_version: str):
-    # Pad version to 4 parts: 1.1.90 -> 1.1.90.0
-    parts = new_version.split(".")
+
+PLACEHOLDER = "@@VERSION_PLACEHOLDER@@"
+
+
+def generate_versioned_manifest(version):
+
+    # Pad to four parts: 1.1 -> 1.1.0.0, 1.1.92 -> 1.1.92.0
+    parts = version.split(".")
     if len(parts) == 2:
         parts += ["0", "0"]
     elif len(parts) == 3:
         parts.append("0")
     elif len(parts) > 4:
-        raise ValueError(f"Version has too many parts: {new_version}")
-    
+        raise ValueError(f"Version has too many parts: {version}")
+
     msix_version = ".".join(parts[:4])
 
-    # Parse the file
-    tree = ET.parse(manifest_path)
-    root = tree.getroot()
+    if not UNVERSIONED_MANIFEST.exists():
+        raise FileNotFoundError(f"Unversioned manifest not found: {UNVERSIONED_MANIFEST}")
 
-    # Find the Identity element using the default namespace
-    identity = root.find("./{http://schemas.microsoft.com/appx/manifest/foundation/windows10}Identity")
-    if identity is None:
-        raise ValueError("No <Identity> element found in manifest")
+    text = UNVERSIONED_MANIFEST.read_text(encoding="utf-8")
 
-    # Update the Version attribute
-    identity.set("Version", msix_version)
-    print(f"Updated AppxManifest.xml version to {msix_version}")
+    placeholder_full = f'Version="{PLACEHOLDER}"'
 
-    # Write back with proper XML declaration and UTF-8 encoding
-    tree.write(
-        manifest_path,
-        encoding="utf-8",
-        xml_declaration=True,
-        default_namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10",  # This keeps <Package>, not <ns0:Package>
-        method="xml"
-    )
+    if placeholder_full not in text:
+        raise ValueError(f"Placeholder {placeholder_full} not found in the unversioned manifest!")
+
+    updated_text = text.replace(placeholder_full, f'Version="{msix_version}"')
+
+    # Ensure the directory exists and write the new manifest
+    OUTPUT_MANIFEST.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_MANIFEST.write_text(updated_text, encoding="utf-8")
+
+    print(f"Successfully generated AppxManifest.xml with version {msix_version}")
+
 
 if __name__ == "__main__":
-    manifest_path = PROJECT_ROOT / "msix" / "AppxManifest.xml"
-    if not manifest_path.exists():
-        raise FileNotFoundError(f"Manifest not found at {manifest_path}")
-    
     version = get_version_from_pyproject()
-    update_appxmanifest_version(manifest_path, version)
+    generate_versioned_manifest(version)
