@@ -136,7 +136,12 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         base_command.append("fitz")
         base_command.append("--collect-all")
         base_command.append("pymupdf")
-
+        
+    if pyhabitat.on_macOS():
+        base_command.append("--osx-bundle-identifier")
+        base_command.append("com.georgeclaytonbennett.pdflinkcheck")
+        #base_command.append("--icon=icon.icns")
+        
      # Add the main script LAST
     base_command.append(str(main_script_path.resolve()))
 
