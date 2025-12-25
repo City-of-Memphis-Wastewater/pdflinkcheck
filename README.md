@@ -2,7 +2,9 @@
 
 A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links within PDF documents. Users may leverage either the PyMuPDF or the pypdf library. Use the CLI or the GUI.
 
-[![Build and Publish MSIX to Microsoft Store](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/actions/workflows/microsoftstore.yml/badge.svg)](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/actions/workflows/microsoftstore.yml)
+[![Build MSIX for Microsoft Store](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/actions/workflows/microsoftstore.yml/badge.svg)](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/actions/workflows/microsoftstore.yml)
+
+![Build MSIX for Microsoft Store - Dev](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/actions/workflows/microsoftstore.yml/badge.svg?branch=dev)
 
 -----
 

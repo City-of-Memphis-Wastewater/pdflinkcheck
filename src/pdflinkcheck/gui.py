@@ -80,7 +80,7 @@ class PDFLinkCheckerApp(tk.Tk):
 
         if is_in_git_repo() and not pyhabitat.as_pyinstaller() and not pyhabitat.is_pyz():
             # Checking for PYZ is overkill, because a PYZ s not expected to carry a .git directory, which is a check that is already completed.
-            title_suffix = " [Development]"
+            title_suffix = ""# " [Development]"
         else:
             title_suffix = ""
         
