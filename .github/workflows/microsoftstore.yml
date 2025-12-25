@@ -216,7 +216,7 @@ jobs:
         with:
           name: msix
           path: pdflinkcheck.msix
-          
+
   publish-submission:
     needs: build-msix
     runs-on: windows-latest
@@ -255,7 +255,8 @@ jobs:
           $submission = Invoke-RestMethod `
             -Method POST `
             -Uri "https://manage.devcenter.microsoft.com/v1.0/my/applications/$appId/submissions" `
-            -Headers @{ Authorization = "Bearer $token" }
+            -Headers @{ Authorization = "Bearer $token" } `
+            -ContentType "application/json"
 
           $submission | ConvertTo-Json -Depth 20 | Out-File submission.json
 
