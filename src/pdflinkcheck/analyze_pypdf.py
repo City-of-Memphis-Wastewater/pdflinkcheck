@@ -135,7 +135,7 @@ def extract_links_pypdf(pdf_path):
             elif "/Dest" in obj or ("/A" in obj and "/D" in obj["/A"]):
                 dest = obj.get("/Dest") or obj["/A"].get("/D")
                 target_page = resolve_pypdf_destination(reader, dest, obj_id_to_page)
-                print(f"DEBUG: resolved target_page = {target_page} (type: {type(target_page)})")
+                # print(f"DEBUG: resolved target_page = {target_page} (type: {type(target_page)})")
                 link_dict.update({
                     'type': 'Internal (GoTo/Dest)',
                     'destination_page': target_page,
