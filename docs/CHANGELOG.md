@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.92] - 2025-12-25
+### Fixed:
+- Default browse path is now Path.home() rather than Path.cwd(), or in the most recent selection dir.
+
+### Added:
+- Microsoft Store updates now automated upon release in CI/CD Actions.
+
+---
+
 ## [1.1.91] - 2025-12-25
 ### Fixed: 
 - Correct referneces to CERT_* GitHub Secrets, for the proper GUID for the partner center

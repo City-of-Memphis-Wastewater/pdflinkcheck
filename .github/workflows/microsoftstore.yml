@@ -217,7 +217,7 @@ jobs:
           name: msix
           path: pdflinkcheck.msix
 
-  publish-to-store:
+  draft-store-submission:
     needs: build-msix
     runs-on: windows-latest
 
@@ -256,4 +256,7 @@ jobs:
             -H "Authorization: Bearer $token" `
             -F "package=@pdflinkcheck.msix" `
             "https://manage.devcenter.microsoft.com/v1.0/my/applications/9N11HXVLS1WG/submissions"
+
+  #publish-submission:
+    
 
