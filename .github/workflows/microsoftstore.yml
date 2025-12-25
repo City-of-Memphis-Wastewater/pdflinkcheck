@@ -5,8 +5,8 @@ name: Build and Publish MSIX to Microsoft Store
 on:
   release:
     types: [published]
-  push:
-    branches: [main, dev] 
+  #push:
+  #  branches: [main, dev] 
 
 jobs:
   build-msix:
@@ -87,6 +87,13 @@ jobs:
         run: |
           copy dist\pdflinkcheck.exe msix\
 
+      - name: Update AppxManifest version from pyproject.toml
+        shell: pwsh
+        working-directory: ${{ github.workspace }}
+        run: |
+          $env:PATH = "$env:GITHUB_WORKSPACE\.venv\Scripts;$env:PATH"
+          .\.venv\Scripts\python.exe update_msix_version.py
+
       - name: Debug, list msix folder, after copying EXE
         shell: pwsh
         working-directory: ${{ github.workspace }}
@@ -99,6 +106,7 @@ jobs:
         run: |
           $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX_PC }}")
           [IO.File]::WriteAllBytes("cert.pfx", $bytes)
+      
 
       - name: Find makeappx
         id: find_makeappx
