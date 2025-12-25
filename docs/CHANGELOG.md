@@ -6,6 +6,17 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.91] - 2025-12-25
+### Fixed: 
+- Correct referneces to CERT_* GitHub Secrets, for the proper GUID for the partner center
+- We can now upload to partner center!!
+- Remove extraneous print statement checking keys in the report_results dictionary.
+
+### Added:
+- build_executable.py: Add **--osx-bundle-identifier** for macOS expecte feature.
+
+---
+
 ## [1.1.89] - 2025-12-24
 ### Fixed:
 - Valdiate eror - handle Payment Link as no-page-destination-page. There is one new key and one broken page key which had refeences corrected.
