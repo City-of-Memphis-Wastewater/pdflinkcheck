@@ -1,6 +1,7 @@
 # .github/workflows/microsoftstore.yml
 
-name: Build and Publish MSIX to Microsoft Store
+name: Build MSIX for Microsoft Store
+#name: Build and Publish MSIX to Microsoft Store
 
 on:
   release:
