@@ -1,0 +1,142 @@
+# Reusable workflow: Create Microsoft Store submission with retry
+name: Create MSIX Submission with Retry
+
+on:
+  workflow_call:
+    inputs:
+      app_id:
+        description: 'Microsoft Store App ID (e.g., 9N11HXVLS1WG)'
+        required: true
+        type: string
+      target_time_minutes:
+        description: 'Maximum time to keep retrying (minutes)'
+        required: false
+        type: number
+        default: 480   # 8 hours
+      retry_delay_minutes:
+        description: 'Delay between retry attempts (minutes)'
+        required: false
+        type: number
+        default: 5
+      max_retries:
+        description: 'Override max retries (overrides calculated value)'
+        required: false
+        type: number
+        default: 0     # 0 means calculate from target_time / retry_delay
+    secrets:
+      azure_tenant_id:
+        required: true
+      entra_client_id:
+        required: true
+      entra_client_secret:
+        required: true
+    outputs:
+      submission_id:
+        description: "The ID of the created submission"
+        value: ${{ jobs.create-submission.outputs.SUBMISSION_ID }}
+      upload_url:
+        description: "The Azure Blob upload URL for the MSIX"
+        value: ${{ jobs.create-submission.outputs.UPLOAD_URL }}
+
+jobs:
+  create-submission:
+    runs-on: windows-latest
+    outputs:
+      SUBMISSION_ID: ${{ steps.create-submission.outputs.SUBMISSION_ID }}
+      UPLOAD_URL: ${{ steps.create-submission.outputs.UPLOAD_URL }}
+    steps:
+      - name: Create submission with retry
+        id: create-submission
+        shell: pwsh
+        env:
+          TARGET_TIME_MINUTES: ${{ inputs.target_time_minutes }}
+          RETRY_DELAY_MINUTES: ${{ inputs.retry_delay_minutes }}
+          APP_ID: ${{ inputs.app_id }}
+        run: |
+          # Calculate max retries (unless overridden)
+          $maxRetries = if (${{ inputs.max_retries }} -gt 0) {
+            ${{ inputs.max_retries }}
+          } else {
+            [math]::Floor($env:TARGET_TIME_MINUTES / $env:RETRY_DELAY_MINUTES)
+          }
+
+          $retryDelaySeconds = $env:RETRY_DELAY_MINUTES * 60
+
+          Write-Host "Starting submission creation..."
+          Write-Host "Target time: $env:TARGET_TIME_MINUTES minutes"
+          Write-Host "Retry delay: $env:RETRY_DELAY_MINUTES minutes"
+          Write-Host "Max retries: $maxRetries"
+
+          $submission = $null
+          $submissionId = $null
+          $uploadUrl = $null
+
+          for ($i = 1; $i -le $maxRetries; $i++) {
+            Write-Host "Attempt $i of $maxRetries"
+
+            # ─────────────────────────────────────────────────────────────
+            # Get fresh token every attempt
+            # ─────────────────────────────────────────────────────────────
+            $body = @{
+              grant_type    = "client_credentials"
+              client_id     = "${{ secrets.entra_client_id }}"
+              client_secret = "${{ secrets.entra_client_secret }}"
+              resource      = "https://manage.devcenter.microsoft.com"
+            }
+
+            try {
+              $response = Invoke-RestMethod -Method Post `
+                -Uri "https://login.microsoftonline.com/${{ secrets.azure_tenant_id }}/oauth2/token" `
+                -Body $body `
+                -ContentType "application/x-www-form-urlencoded"
+
+              $token = $response.access_token
+            }
+            catch {
+              Write-Error "Failed to acquire token: $_"
+              exit 1
+            }
+            # ─────────────────────────────────────────────────────────────
+
+            try {
+              $result = Invoke-RestMethod `
+                -Method POST `
+                -Uri "https://manage.devcenter.microsoft.com/v1.0/my/applications/$env:APP_ID/submissions" `
+                -Headers @{ Authorization = "Bearer $token" } `
+                -ContentType "application/json"
+
+              $submission = $result
+              $submissionId = $result.id
+              $uploadUrl = $result.fileUploadUrl
+
+              Write-Host "Submission created successfully!"
+              $submission | ConvertTo-Json -Depth 20 | Out-File submission.json
+
+              break
+            }
+            catch {
+              $errorDetails = $_.ErrorDetails.Message | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+              if ($errorDetails -and $errorDetails.code -eq "InvalidState") {
+                Write-Host "Submission slot busy. Waiting $env:RETRY_DELAY_MINUTES minutes..."
+                Start-Sleep -Seconds $retryDelaySeconds
+              }
+              else {
+                Write-Host "Unexpected error on attempt $i:"
+                Write-Host $_.Exception.Message
+                if ($_.Exception.Response) {
+                  Write-Host "Status: $($_.Exception.Response.StatusCode)"
+                }
+                # Continue retrying on non-fatal errors
+              }
+            }
+          }
+
+          if (-not $submissionId) {
+            Write-Error "Failed to create submission after $maxRetries attempts."
+            exit 1
+          }
+
+          # Output the results
+          "SUBMISSION_ID=$submissionId" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "UPLOAD_URL=$uploadUrl"       | Out-File -FilePath $env:GITHUB_OUTPUT -Append

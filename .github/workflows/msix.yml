@@ -238,18 +238,14 @@ jobs:
         id: get_token
         shell: pwsh
         run: |
-          $tenant = "${{ secrets.AZURE_TENANT_ID }}"
-          $client = "${{ secrets.ENTRA_CLIENT_ID }}"
-          $secret = "${{ secrets.ENTRA_CLIENT_SECRET }}"
-
           $body = @{
             grant_type    = "client_credentials"
-            client_id     = $client
-            client_secret = $secret
+            client_id     = "${{ secrets.ENTRA_CLIENT_ID }}"
+            client_secret = "${{ secrets.ENTRA_CLIENT_SECRET }}"
             resource      = "https://manage.devcenter.microsoft.com"
           }
 
-          $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/$tenant/oauth2/token" -Body $body
+          $response = Invoke-RestMethod -Method Post -Uri "https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/token" -Body $body
           "TOKEN=$($response.access_token)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Create submission

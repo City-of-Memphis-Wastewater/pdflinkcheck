@@ -19,14 +19,25 @@ def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
     )
+    # 2. Initialize file path tracking
+    output_path_json = None
+    output_path_txt = None
+    
     if export_format:
         report_data_dict = report_results["data"]
         report_buffer_str = report_results["text"]
+        
         if "JSON" in export_format.upper():
-            export_report_json(report_data_dict, pdf_path, pdf_library)
+            output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library)
         
         if "TXT" in export_format.upper():
-            export_report_txt(report_buffer_str, pdf_path, pdf_library)
+            output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library)
+
+    # 4. Inject the file info into the results dictionary
+    report_results["files"] = {
+        "export_path_json": output_path_json, 
+        "export_path_txt": output_path_txt
+    }
     return report_results
     
 
@@ -90,7 +101,15 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "metadata": {
                     "pdf_name": Path(pdf_path).name,
                     "library_used": pdf_library,
-                    "total_links": 0
+                    "link_counts": {
+                        "toc_entry_count": 0,
+                        "interal_goto_links_count": 0,
+                        "interal_resolve_action_links_count": 0,
+                        "total_internal_links_count": 0,
+                        "external_uri_links_count": 0,
+                        "other_links_count": 0,
+                        "total_links_count": 0
+                    }
                 }
             }
 
@@ -105,6 +124,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         structural_toc = extract_toc(pdf_path) 
         #structural_toc = extract_toc_pypdf(pdf_path) 
         toc_entry_count = len(structural_toc)
+        str_structural_toc = get_structural_toc(structural_toc)
         
 
         if not extracted_links and not structural_toc:
@@ -121,26 +141,38 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "metadata": {
                     "pdf_name": Path(pdf_path).name,
                     "library_used": pdf_library,
-                    "total_links": 0
+                    "link_counts": {
+                        "toc_entry_count": 0,
+                        "interal_goto_links_count": 0,
+                        "interal_resolve_action_links_count": 0,
+                        "total_internal_links_count": 0,
+                        "external_uri_links_count": 0,
+                        "other_links_count": 0,
+                        "total_links_count": 0
+                    }
                 }
             }
             return empty_result
             
         # 3. Separate the lists based on the 'type' key
-        uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
+        external_uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
         goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
         resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
         other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
 
-        total_internal_links = len(goto_links) + len(resolved_action_links)
-        uri_and_other = uri_links + other_links
+        interal_resolve_action_links_count = len(resolved_action_links)
+        interal_goto_links_count = len(goto_links) 
+        total_internal_links_count = interal_goto_links_count + interal_resolve_action_links_count
 
-        str_structural_toc = get_structural_toc(structural_toc)
-        
+        external_uri_links_count = len(external_uri_links)
+        other_links_count = len(other_links)
+
+        total_links_count = len(extracted_links)
+
         # --- ANALYSIS SUMMARY (Using your print logic) ---
         log("\n" + "=" * SEP_COUNT)
         log(f"--- Link Analysis Results for {Path(pdf_path).name} ---")
-        log(f"Total active links: {len(extracted_links)} (External: {len(uri_links)}, Internal Jumps: {total_internal_links}, Other: {len(other_links)})")
+        log(f"Total active links: {total_links_count} (External: {external_uri_links_count}, Internal Jumps: {total_internal_links_count}, Other: {other_links_count})")
         log(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
         log("=" * SEP_COUNT)
 
@@ -149,7 +181,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
         log("\n" + "=" * SEP_COUNT)
-        log(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links} found")
+        log(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links_count} found")
         log("=" * SEP_COUNT)
         log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
         log("-" * SEP_COUNT)
@@ -169,24 +201,39 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
         # --- Section 3: ACTIVE URI LINKS ---
         log("\n" + "=" * SEP_COUNT)
-        log(f"## Active URI Links (External & Other) - {len(uri_and_other)} found") 
+        log(f"## Active URI Links (External) - {len(external_uri_links)} found") 
         log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
         log("=" * SEP_COUNT)
         
-        if uri_and_other:
-            for i, link in enumerate(uri_and_other, 1):
+        if external_uri_links:
+            for i, link in enumerate(external_uri_links, 1):
                 target = link.get('url') or link.get('remote_file') or link.get('target')
                 link_text = link.get('link_text', 'N/A')
                 log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
 
         else: 
-            log(" No external or 'Other' links found.")
+            log(" No external links found.")
         log("-" * SEP_COUNT)
 
+        # --- Section 4: OTHER LINKS ---
+        log("\n" + "=" * SEP_COUNT)
+        log(f"## Other Links  - {len(other_links)} found") 
+        log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target Action"))
+        log("=" * SEP_COUNT)
+        
+        if other_links:
+            for i, link in enumerate(other_links, 1):
+                target = link.get('url') or link.get('remote_file') or link.get('target')
+                link_text = link.get('link_text', 'N/A')
+                log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
+
+        else: 
+            log(" No 'Other' links found.")
+        log("-" * SEP_COUNT)
         
         # Return the collected data for potential future JSON/other output
         report_data_dict =  {
-            "external_links": uri_links,
+            "external_links": external_uri_links,
             "internal_links": all_internal,
             "toc": structural_toc,
             "validation": {}
@@ -198,7 +245,15 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "metadata": {                  # Helpful for the GUI/Logs
                 "pdf_name": Path(pdf_path).name,
                 "library_used": pdf_library,
-                "total_links": len(extracted_links)
+                "link_counts": {
+                    "toc_entry_count": toc_entry_count,
+                    "interal_goto_links_count": interal_goto_links_count,
+                    "interal_resolve_action_links_count": interal_resolve_action_links_count,
+                    "total_internal_links_count": total_internal_links_count,
+                    "external_uri_links_count": external_uri_links_count,
+                    "other_links_count": other_links_count,
+                    "total_links_count": total_links_count
+                }
             }
         }
 
@@ -243,7 +298,15 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "metadata": {
                     "pdf_name": Path(pdf_path).name,
                     "library_used": pdf_library,
-                    "total_links": 0
+                    "link_counts": {
+                        "toc_entry_count": 0,
+                        "interal_goto_links_count": 0,
+                        "interal_resolve_action_links_count": 0,
+                        "total_internal_links_count": 0,
+                        "external_uri_links_count": 0,
+                        "other_links_count": 0,
+                        "total_links_count": 0
+                    }
                 }
             }
 
@@ -272,7 +335,15 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "metadata": {
                 "pdf_name": Path(pdf_path).name,
                 "library_used": pdf_library,
-                "total_links": 0
+                "link_counts": {
+                        "toc_entry_count": 0,
+                        "interal_goto_links_count": 0,
+                        "interal_resolve_action_links_count": 0,
+                        "total_internal_links_count": 0,
+                        "external_uri_links_count": 0,
+                        "other_links_count": 0,
+                        "total_links_count": 0
+                    }
             }
         }
         

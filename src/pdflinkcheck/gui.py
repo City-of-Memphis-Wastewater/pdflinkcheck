@@ -11,9 +11,7 @@ from importlib.resources import files
 import pyhabitat
 import ctypes
 
-
-
-# Import the core analysis function
+# --- Core Imports ---
 from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
@@ -37,6 +35,8 @@ class RedirectText:
 
 class PDFLinkCheckerApp(tk.Tk):
 
+    # --- Theme & Visual Initialization --
+
     def _initialize_forest_theme(self):
         from importlib.resources import files 
         # Path to pdflinkcheck/data/themes/forest/ 
@@ -44,8 +44,6 @@ class PDFLinkCheckerApp(tk.Tk):
         # Load the theme files
         self.tk.call("source", str(theme_dir / f"forest-light.tcl")) 
         self.tk.call("source", str(theme_dir / f"forest-dark.tcl")) 
-
-    
 
     def _toggle_theme(self):
         # You could instead assign the dark to light of a single theme here
@@ -82,7 +80,9 @@ class PDFLinkCheckerApp(tk.Tk):
                 self.iconbitmap(str(icon_path))
         except:
             pass
-            
+    
+    # --- Lifecycle & Initialization ---
+
     def __init__(self):
         super().__init__()
 
@@ -111,16 +111,17 @@ class PDFLinkCheckerApp(tk.Tk):
         self.current_report_text = None
         self.current_report_data = None
 
-        self.supported_export_formats = ["JSON", "MD", "TXT"]
-        self.supported_export_formats = ["JSON"]
+        # Track exported file paths for direct opening
+        self.last_json_path: Optional[Path] = None
+        self.last_txt_path: Optional[Path] = None
 
         if not pymupdf_is_available():
             print(f"pymupdf_is_available: {pymupdf_is_available()}")
             self.pdf_library_var.set("pypdf")
 
-        
         # --- 2. Create Widgets ---
         self._create_widgets()
+        self._initialize_menubar()
         
         # --- 3. Set Initial Dependent Widget States ---
         self._toggle_json_export()

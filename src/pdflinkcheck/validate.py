@@ -211,6 +211,8 @@ def run_validation(
         log(f"PDF Path = {get_friendly_path(pdf_path)}")
         log(f"Total items checked: {summary_stats['total_checked']}")
         log(f"✅ Valid: {summary_stats['valid']}")
+        log(f"✅ Valid: {summary_stats['valid']}")
+        log(f"✅ Valid: {summary_stats['valid']}")
         log(f"🌐 Web Addresses (Not Checked): {summary_stats['unknown-web']}")
         log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
@@ -280,13 +282,13 @@ def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "
 
     # 2. Extract links and initialize validation counters
     links = extract_links(pdf_path)
-    total_links = len(links)
+    total_links_count = len(links)
     results = {"valid": [], "broken": [], "error": []}
 
     # 3. Validation Loop
     for i, link in enumerate(links, 1):
         # Progress indicator for long manuals
-        sys.stdout.write(f"\rChecking link {i}/{total_links}...")
+        sys.stdout.write(f"\rChecking link {i}/{total_links_count}...")
         sys.stdout.flush()
 
         link_type = link.get('type')
@@ -340,7 +342,7 @@ def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "
 
     print("\n" + "=" * SEP_COUNT)
     print(f"--- Validation Summary Stats for {Path(pdf_path).name} ---")
-    print(f"Total Checked: {total_links}")
+    print(f"Total Checked: {total_links_count}")
     print(f"✅ Valid:  {len(results['valid'])}")
     print(f"❌ Broken: {len(results['broken'])}")
     print("=" * SEP_COUNT)
