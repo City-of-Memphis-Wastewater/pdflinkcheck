@@ -1,17 +1,17 @@
 # .github/workflows/microsoftstore.yml
 
 name: Build MSIX for Microsoft Store
-#name: Build and Publish MSIX to Microsoft Store
 
 on:
   #release:
   #  types: [published]
-  workflow_run:
-    workflows: ["Check and Publish Python Package to PyPI and Releases"]  # Must match the 'name' field of your first workflow
-    types:
-      - completed
+  #workflow_run:
+  #  workflows: ["Check and Publish Python Package to PyPI and Releases"]  # Must match the 'name' field of your first workflow
+  #  types:
+  #    - completed
   push:
-    branches: [main, dev] 
+    #branches: [main, dev]
+    branches: [nope] 
   
 
 jobs:
