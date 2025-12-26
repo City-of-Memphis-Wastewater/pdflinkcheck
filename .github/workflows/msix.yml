@@ -224,10 +224,12 @@ jobs:
 
   publish-submission:
     needs: build-msix
+    if: false
     runs-on: windows-latest
 
     steps:
       - name: Download MSIX artifact
+        if: false
         uses: actions/download-artifact@v4
         with:
           name: msix
@@ -271,6 +273,7 @@ jobs:
       
       - name: Create submission (with retry)
         id: create_submission
+        if: false
         shell: pwsh
         run: |
           $token = "${{ steps.get_token.outputs.TOKEN }}"
@@ -321,6 +324,7 @@ jobs:
           
       - name: Upload MSIX to Azure Blob
         shell: pwsh
+        if: false
         run: |
           $uploadUrl = "${{ steps.create_submission.outputs.UPLOAD_URL }}"
           $file = "pdflinkcheck.msix"
@@ -330,6 +334,7 @@ jobs:
 
       - name: Commit submission
         id: commit_submission
+        if: false
         shell: pwsh
         run: |
           $token = "${{ steps.get_token.outputs.TOKEN }}"
