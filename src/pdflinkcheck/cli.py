@@ -56,10 +56,10 @@ if os.environ.get('DEV_TYPER_HELP_TREE',0) in ('true','1'):
 @app.command(name="docs", help="Show the docs for this software.")
 def docs_command(
     license: Optional[bool] = typer.Option(
-        None, "--license", "-l", help="Show the full AGPLv3 license text."
+        None, "--license", "-l", help="Show the LICENSE text."
     ),
     readme: Optional[bool] = typer.Option(
-        None, "--readme", "-r", help="Show the full README.md content."
+        None, "--readme", "-r", help="Show the README.md content."
     ),
 ):
     """
