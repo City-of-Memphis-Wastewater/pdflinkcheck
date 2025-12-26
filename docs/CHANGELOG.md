@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.94] - 2025-12-26
+### Added:
+- At long last, a version flag in the CLI.
+
+---
+
 ## [1.1.93] - 2025-12-25
 ### Changed:
 - Remove Badge from README until we can test further.

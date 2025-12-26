@@ -29,11 +29,18 @@ app = typer.Typer(
 )
 
 @app.callback()
-def main(ctx: typer.Context):
+def main(ctx: typer.Context,
+    version: Optional[bool] = typer.Option(
+    None, "--version", is_flag=True, help="Show the version."
+    )
+    ):
     """
     If no subcommand is provided, launch the GUI.
     """
-    
+    if version:
+        typer.echo(get_version_from_pyproject())
+        raise typer.Exit(code=0)
+        
     if ctx.invoked_subcommand is None:
         gui_command()
         raise typer.Exit(code=0)
