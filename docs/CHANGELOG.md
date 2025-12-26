@@ -6,6 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.93] - 2025-12-25
+### Changed:
+- Remove Badge from README until we can test further.
+```[![Build MSIX for Microsoft Store](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/actions/workflows/microsoftstore.yml/badge.svg)](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/actions/workflows/microsoftstore.yml)
+```
+
+---
+
 ## [1.1.92] - 2025-12-25
 ### Fixed:
 - Default browse path is now Path.home() rather than Path.cwd(), or in the most recent selection dir.
