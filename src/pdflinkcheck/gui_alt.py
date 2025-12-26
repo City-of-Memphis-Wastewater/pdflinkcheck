@@ -258,10 +258,11 @@ class PDFLinkCheckerApp(tk.Tk):
         finally:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
-    
+ 
     def _open_export_file(self, file_type: str):
         """Launches the system default editor for the specified report file in a new process."""
         # Dogfood this for non-blocking solution to pyhabitat.edit_textfile()
+        # this solution is not Termux friendly, but neither is the Tkinter GUI at all, so it is scoped properly
         import subprocess
         
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
@@ -271,7 +272,7 @@ class PDFLinkCheckerApp(tk.Tk):
                 # We use subprocess.Popen to ensure the GUI does not wait 
                 # for the editor to close (non-blocking).
                 if pyhabitat.on_windows():
-                    # 'shell=True' allows Windows to use the default file association (e.g., Notepad)
+                    # The second argument '' is the window title; necessary if path has spaces
                     subprocess.Popen(['start', '', str(target_path)], shell=True)
                 else:
                     # For Linux (xdg-open) or macOS (open)
@@ -283,8 +284,9 @@ class PDFLinkCheckerApp(tk.Tk):
         else:
             messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.")
 
-    def _open_export_file_(self, file_type: str):
+    def _open_export_file_under_construction(self, file_type: str):
         """Launches the system default editor for the specified report file."""
+        # awaiting pyhabitat v1.0.54
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
         
         if target_path and Path(target_path).exists():
