@@ -62,13 +62,15 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _set_icon(self):
         from importlib.resources import files 
-        # Path to pdflinkcheck/data/icons/
-        icon_dir = files("pdflinkcheck.data.icons") 
-        # Convert to a real filesystem path 
-        icon_path = icon_dir.joinpath("red_pdf_128px.ico")
-        icon_path = icon_dir.joinpath("red_pdf_512px.ico")
-        
-        self.iconbitmap(str(icon_path))
+        try:
+            # Fail if the file is missing
+            # Path to pdflinkcheck/data/icons/
+            icon_dir = files("pdflinkcheck.data.icons") 
+            # Convert to a real filesystem path 
+            icon_path = icon_dir.joinpath("red_pdf_512px.ico")
+            self.iconbitmap(str(icon_path))
+        except:
+            pass
             
     def __init__(self):
         super().__init__()
@@ -93,8 +95,6 @@ class PDFLinkCheckerApp(tk.Tk):
         # --- 1. Initialize Variables ---
         self.pdf_path = tk.StringVar(value="")
         self.pdf_library_var = tk.StringVar(value="PyMuPDF")
-        self.max_links_var = tk.StringVar(value="50")
-        self.show_all_links_var = tk.BooleanVar(value=True)  
         self.do_export_report_json_var = tk.BooleanVar(value=True) 
         self.do_export_report_txt_var = tk.BooleanVar(value=True) 
         self.current_report_text = None
@@ -112,7 +112,6 @@ class PDFLinkCheckerApp(tk.Tk):
         self._create_widgets()
         
         # --- 3. Set Initial Dependent Widget States ---
-        self._toggle_max_links_entry() 
         self._toggle_json_export()
         self._toggle_txt_export()
 
@@ -350,20 +349,8 @@ class PDFLinkCheckerApp(tk.Tk):
         # === END: File Selection Frame ===
 
         # --- Report brevity options ----
-        report_brevity_frame = ttk.LabelFrame(control_frame, text="Report Brevity Options:")
-        #report_brevity_frame.grid(row=1, column=0, columnspan=2, padx=5, pady=1, sticky='nsew')
-        report_brevity_frame.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
-        #
-        ttk.Checkbutton(
-            report_brevity_frame, 
-            text="Show All Links.", 
-            variable=self.show_all_links_var,
-            command=self._toggle_max_links_entry
-        ).pack(side='left', padx=5, pady=1)
+        #report_brevity_frame.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
 
-        ttk.Label(report_brevity_frame, text="Max Links to Display:").pack(side='left', padx=5, pady=1)
-        self.max_links_entry = ttk.Entry(report_brevity_frame, textvariable=self.max_links_var, width=7)
-        self.max_links_entry.pack(side='left', padx=5, pady=5)
 
         # --- PDF Library Selection ---
         # Create a labeled group for the PDF options
@@ -482,14 +469,6 @@ class PDFLinkCheckerApp(tk.Tk):
         )
         if file_path:
             self.pdf_path.set(get_friendly_path(file_path))
-
-
-    def _toggle_max_links_entry(self):
-        """Disables/enables the max_links entry based on show_all_links_var."""
-        if self.show_all_links_var.get():
-            self.max_links_entry.config(state=tk.DISABLED)
-        else:
-            self.max_links_entry.config(state=tk.NORMAL)
     
     def _toggle_json_export(self):
         """Checkbox toggle for json filetype report."""
@@ -534,18 +513,6 @@ class PDFLinkCheckerApp(tk.Tk):
         if not pdf_path_str:
             return
 
-        if self.show_all_links_var.get():
-            max_links_to_pass = 0 
-        else:
-            try:
-                max_links_to_pass = int(self.max_links_var.get())
-                if max_links_to_pass < 0:
-                     self._display_error("Error: Max Links must be a positive number (or use 'Show All').")
-                     return
-            except ValueError:
-                self._display_error("Error: Max Links must be an integer.")
-                return
-
         export_format = None # default value, if selection is not made (if selection is not active)
         export_format = ""
         if self.do_export_report_json_var.get():
@@ -569,7 +536,6 @@ class PDFLinkCheckerApp(tk.Tk):
             #self.output_text.insert(tk.END, "--- Starting Analysis ---\n")
             report_results = run_report_and_call_exports(
                 pdf_path=pdf_path_str,
-                max_links=max_links_to_pass,
                 export_format=export_format,
                 pdf_library = pdf_library, 
             )

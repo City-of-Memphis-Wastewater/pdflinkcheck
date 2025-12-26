@@ -13,11 +13,10 @@ from pdflinkcheck.validate import run_validation
 
 SEP_COUNT=28
             
-def run_report_and_call_exports(pdf_path: str = None,  max_links: int = 0, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     # The meat and potatoes
-    report_results = run_report_and_validtion(
+    report_results = run_report(
         pdf_path=str(pdf_path), 
-        max_links=max_links,
         pdf_library = pdf_library,
     )
     if export_format:
@@ -31,7 +30,7 @@ def run_report_and_call_exports(pdf_path: str = None,  max_links: int = 0, expor
     return report_results
     
 
-def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
     
@@ -41,8 +40,6 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
 
     Args:
         pdf_path: The file system path (str) to the target PDF document.
-        max_links: Maximum number of links to display in each console 
-                   section. If <= 0, all links will be displayed.
 
     Returns:
         A dictionary containing the structured results of the analysis:
@@ -57,8 +54,8 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
 
     # Helper to handle conditional printing and mandatory buffering
     def log(msg: str):
-        if print_bool:
-            print(msg)
+        #if print_bool:
+        #    print(msg)
         report_buffer.append(msg)
 
     # Expected: "pypdf" or "PyMuPDF"
@@ -76,7 +73,7 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
                 print("PyMuPDF is not expected to work on Termux. Use pypdf.")
             print("\n")
             #return    
-            raise ImportError(f"The 'fitz' module is required for this functionality. Original error: {e}") from e
+            raise ImportError("The 'fitz' module (PyMuPDF) is required but not installed.")
         from pdflinkcheck.analyze_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
     
     log("\n--- Starting Analysis ... ---\n")
@@ -136,7 +133,6 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
         other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
 
         total_internal_links = len(goto_links) + len(resolved_action_links)
-        limit = max_links if max_links > 0 else None
         uri_and_other = uri_links + other_links
 
         str_structural_toc = get_structural_toc(structural_toc)
@@ -159,13 +155,14 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
         log("-" * SEP_COUNT)
         
         all_internal = goto_links + resolved_action_links
-        if total_internal_links > 0:
-            for i, link in enumerate(all_internal[:limit], 1):
+        #If links were found: all_internal is a list with dictionaries. It evaluates to True.
+        # If NO links were found: all_internal is an empty list []. It evaluates to False.
+        if all_internal:
+            for i, link in enumerate(all_internal, 1):
                 link_text = link.get('link_text', 'N/A')
                 log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
 
-            if limit is not None and len(all_internal) > limit:
-                log(f"... and {len(all_internal) - limit} more links (use --max-links 0 to show all).")
+
         else:
             log(" No internal GoTo or Resolved Action links found.")
         log("-" * SEP_COUNT)
@@ -177,12 +174,10 @@ def run_report_and_validtion(pdf_path: str = None,  max_links: int = 0, pdf_libr
         log("=" * SEP_COUNT)
         
         if uri_and_other:
-            for i, link in enumerate(uri_and_other[:limit], 1):
+            for i, link in enumerate(uri_and_other, 1):
                 target = link.get('url') or link.get('remote_file') or link.get('target')
                 link_text = link.get('link_text', 'N/A')
                 log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
-            if limit is not None and len(uri_and_other) > limit:
-                log(f"... and {len(uri_and_other) - limit} more links (use --max-links 0 to show all).")
 
         else: 
             log(" No external or 'Other' links found.")
@@ -334,9 +329,8 @@ if __name__ == "__main__":
         pdf_library = "pymupdf"
     else:
         pdf_library = "pypdf"
-    report = run_report(
+    report = run_report_and_call_exports(
         pdf_path=pdf_path,
-        max_links=0,
         export_format="",
         pdf_library=pdf_library,
         print_bool=True  # We handle printing in validation

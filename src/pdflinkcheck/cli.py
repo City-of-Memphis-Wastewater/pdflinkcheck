@@ -162,12 +162,6 @@ def analyze_pdf( # Renamed function for clarity
         case_sensitive=False, 
         help="Export format. Use 'None' to suppress file export.",
     ),
-    max_links: int = typer.Option(
-        0,
-        "--max-links", "-m",
-        min=0,
-        help="Report brevity control. Use 0 to show all."
-    ),
 
     pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
         assess_default_pdf_library(),
@@ -227,7 +221,6 @@ def analyze_pdf( # Renamed function for clarity
     # The meat and potatoes
     report_results = run_report_and_call_exports(
         pdf_path=str(pdf_path), 
-        max_links=max_links,
         export_format = export_formats,
         pdf_library = pdf_library,
     )

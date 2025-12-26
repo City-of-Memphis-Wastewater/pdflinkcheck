@@ -84,7 +84,6 @@ $env:DEV_TYPER_HELP_TREE = "1"; pdflinkcheck help-tree` # PowerShell
 |`<PDF_PATH>`|**Required.** The path to the PDF file to analyze.|N/A|
 |`--pdf-library / -p`|Select engine: `pymupdf` or `pypdf`.|`pypdf`|
 |`--export-format / -e`|Export to `JSON`, `TXT`, or `None` to suppress file output.|`JSON`|
-|`--max-links / -m`|Maximum links to display per section. Use `0` for all.|`0`|
 
 ### `gui` Command Options
 
@@ -97,9 +96,6 @@ $env:DEV_TYPER_HELP_TREE = "1"; pdflinkcheck help-tree` # PowerShell
 ```bash 
 # Analyze a document, show all links, and save the report as JSON and TXT
 pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --export-format JSON,TXT
-
-# Analyze a document but keep the print block short, showing only the first 10 links for each type
-pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --max-links 10
 
 # Show the GUI for only a moment, like in a build check
 pdflinkcheck gui --auto-close 3000 
