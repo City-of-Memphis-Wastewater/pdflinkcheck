@@ -11,13 +11,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - Function naming; report.run_report_and_validtion() AKA run_report_and_validation(), now reverted back to run_report(), so that the naming scheme fits complement the over arching report.run_report_and_call_exports(). See CHANGELOG 1.1.81.
 - Remove the max links feature entirely, from report.py, from the CLI, and from the GUI.
+- Adjust the use of Open Report Button - now have two buttons - Open Report JSON and Open Report TXT. Have these buttons greyed out if a report has not been run. They will open the currently known files, which can be a object attribute of the gui class instance. Now that there is a single Run Analysis button with the validation folded in to the singular process, there is no reason to not allow direct file opening of the actual exports, as opposed to generating a tmp file when hitting the **Open Report** button.
 
 ### Fixed:
--Redundant prints to window in report.py, at print_bool instances. Choose - print until hypothetical failure inside of log or print once the buffer is finished, which is cleanest but expects safe. We chose to print the completed buffer after it is converted to a string completion.
-- GUI: If the icon file is not found for setting with `self.iconbitmap(str(icon_path))`, pass. The gitignore shows that the icons/dir is not marked as untrakced, but it is not available.
+- Redundant prints to window in report.py, at print_bool instances. Choose - print until hypothetical failure inside of log or print once the buffer is finished, which is cleanest but expects safe. We chose to print the completed buffer after it is converted to a string completion.
+- GUI: Improve _set_icon() to try the PNG logo first and then to try the ICO. The ICO is expected to fail on Linux. If both the PNG and the ICO succeed, the ICO will overrride the PNG -this is slightly innefficient, but worth the robustness.
 
-## Internal:
-- To Do: Now that there is a single Run Analysis button with the validation folded in to the singular process, there is no reason to not allow direct file opening of the actual exports, as opposed to generating a tmp file when hitting the **Open Report** button.
 
 ---
 

@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/gui.py
 import tkinter as tk
-from tkinter import filedialog, ttk, messagebox # Added messagebox
+from tkinter import filedialog, ttk, messagebox, PhotoImage
 import sys
 from pathlib import Path
 from typing import Optional # Added Optional
@@ -62,13 +62,24 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _set_icon(self):
         from importlib.resources import files 
+    
+        # Path to pdflinkcheck/data/icons/
+        icon_dir = files("pdflinkcheck.data.icons") 
         try:
-            # Fail if the file is missing
-            # Path to pdflinkcheck/data/icons/
-            icon_dir = files("pdflinkcheck.data.icons") 
-            # Convert to a real filesystem path 
+            # 1. For Linux/macOS (and modern Windows), use iconphoto with a PNG
+            png_path = icon_dir.joinpath("Logo-150x150.png")
+            if png_path.exists():
+                self.icon_img = PhotoImage(file=str(png_path))
+                self.iconphoto(True, self.icon_img)
+        except:
+            pass
+        try:
+            # 2. Specifically for Windows taskbar/window title.
+            # We wrap this in a try because it will fail on Linux.
+            # If both the PNG and the ICO succeed, the ICO will override the PNG. 
             icon_path = icon_dir.joinpath("red_pdf_512px.ico")
-            self.iconbitmap(str(icon_path))
+            if icon_path.exists():
+                self.iconbitmap(str(icon_path))
         except:
             pass
             
