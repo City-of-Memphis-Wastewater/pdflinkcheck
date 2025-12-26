@@ -12,7 +12,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Function naming; report.run_report_and_validtion() AKA run_report_and_validation(), now reverted back to run_report(), so that the naming scheme fits complement the over arching report.run_report_and_call_exports(). See CHANGELOG 1.1.81.
 - Remove the max links feature entirely, from report.py, from the CLI, and from the GUI.
 - Adjust the use of Open Report Button - now have two buttons - Open Report JSON and Open Report TXT. Have these buttons greyed out if a report has not been run. They will open the currently known files, which can be a object attribute of the gui class instance. Now that there is a single Run Analysis button with the validation folded in to the singular process, there is no reason to not allow direct file opening of the actual exports, as opposed to generating a tmp file when hitting the **Open Report** button.
-- Update link count metadata and dictionary schema to be more granular. Do not mix other links with external URI links.
+- Update report results link count metadata and dictionary schema to be more granular. Do not mix other links with external URI links.
 
 ### Fixed:
 - Redundant prints to window in report.py, at print_bool instances. Choose - print until hypothetical failure inside of log or print once the buffer is finished, which is cleanest but expects safe. We chose to print the completed buffer after it is converted to a string completion.
