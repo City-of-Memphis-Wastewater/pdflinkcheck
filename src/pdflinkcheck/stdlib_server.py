@@ -30,10 +30,6 @@ HTML_FORM = """
         <option value="pymupdf">pymupdf (faster, if installed)</option>
       </select>
     </p>
-    <p>
-      <label>Max links to show (0 = all):</label>
-      <input type="number" name="max_links" value="0" min="0">
-    </p>
     <p><button type="submit">Analyze PDF</button></p>
     <!--p>
       <button type="submit" name="action" value="analyze">Analyze PDF</button>
@@ -96,7 +92,6 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
         # Extract parts
         file_item = None
         pdf_library = "pypdf"
-        max_links = 0
 
         for part in msg.get_payload():
             disposition = part.get("Content-Disposition", "")
@@ -119,12 +114,6 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
                     self._send_json_error("Invalid pdf_library", 400)
                     return
 
-            elif name == "max_links":
-                try:
-                    max_links = int(part.get_payload(decode=True).decode())
-                except ValueError:
-                    max_links = 0
-
         if not file_item:
             self._send_json_error("No PDF file uploaded", 400)
             return
@@ -138,7 +127,6 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
 
             result = run_report_and_call_exports(
                 pdf_path=tmp_path,
-                max_links=max_links if max_links > 0 else 0,
                 export_format="",
                 pdf_library=pdf_library,
                 print_bool=False

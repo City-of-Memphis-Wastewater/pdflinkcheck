@@ -14,6 +14,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ### Fixed:
 -Redundant prints to window in report.py, at print_bool instances. Choose - print until hypothetical failure inside of log or print once the buffer is finished, which is cleanest but expects safe. We chose to print the completed buffer after it is converted to a string completion.
+- GUI: If the icon file is not found for setting with `self.iconbitmap(str(icon_path))`, pass. The gitignore shows that the icons/dir is not marked as untrakced, but it is not available.
 
 ## Internal:
 - To Do: Now that there is a single Run Analysis button with the validation folded in to the singular process, there is no reason to not allow direct file opening of the actual exports, as opposed to generating a tmp file when hitting the **Open Report** button.
