@@ -4,10 +4,15 @@ name: Build MSIX for Microsoft Store
 #name: Build and Publish MSIX to Microsoft Store
 
 on:
-  release:
-    types: [published]
+  #release:
+  #  types: [published]
+  workflow_run:
+    workflows: ["Check and Publish Python Package to PyPI and Releases"]  # Must match the 'name' field of your first workflow
+    types:
+      - completed
   push:
     branches: [main, dev] 
+  
 
 jobs:
   build-msix:
@@ -246,7 +251,8 @@ jobs:
           "TOKEN=$($response.access_token)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
       - name: Create submission
-        id: create_submission
+        id: create_submission_eager
+        if: false
         shell: pwsh
         run: |
           $token = "${{ steps.get_token.outputs.TOKEN }}"
@@ -262,7 +268,57 @@ jobs:
 
           "SUBMISSION_ID=$($submission.id)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           "UPLOAD_URL=$($submission.fileUploadUrl)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+      
+      - name: Create submission (with retry)
+        id: create_submission
+        shell: pwsh
+        run: |
+          $token = "${{ steps.get_token.outputs.TOKEN }}"
+          $appId = "9N11HXVLS1WG"
 
+          $maxRetries = 12        # 12 retries × 10 minutes = 2 hours
+          $delayMinutes = 10
+
+          for ($i = 1; $i -le $maxRetries; $i++) {
+
+            Write-Host "Attempt $i to create submission..."
+
+            try {
+              $submission = Invoke-RestMethod `
+                -Method POST `
+                -Uri "https://manage.devcenter.microsoft.com/v1.0/my/applications/$appId/submissions" `
+                -Headers @{ Authorization = "Bearer $token" } `
+                -ContentType "application/json"
+
+              Write-Host "Submission created successfully."
+              $submission | ConvertTo-Json -Depth 20 | Out-File submission.json
+
+              "SUBMISSION_ID=$($submission.id)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+              "UPLOAD_URL=$($submission.fileUploadUrl)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+              break
+            }
+            catch {
+              $errorJson = $_.ErrorDetails.Message | ConvertFrom-Json
+
+              if ($errorJson.code -eq "InvalidState") {
+                Write-Host "Submission slot is busy. Waiting $delayMinutes minutes before retry..."
+                Start-Sleep -Seconds ($delayMinutes * 60)
+              }
+              else {
+                Write-Host "Unexpected error:"
+                Write-Host $_
+                exit 1
+              }
+            }
+          }
+
+          if (-not $submission) {
+            Write-Error "Failed to create submission after $maxRetries attempts."
+            exit 1
+          }
+
+          
       - name: Upload MSIX to Azure Blob
         shell: pwsh
         run: |
