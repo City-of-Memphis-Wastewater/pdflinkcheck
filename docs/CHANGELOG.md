@@ -16,6 +16,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - Redundant prints to window in report.py, at print_bool instances. Choose - print until hypothetical failure inside of log or print once the buffer is finished, which is cleanest but expects safe. We chose to print the completed buffer after it is converted to a string completion.
 - GUI: Improve _set_icon() to try the PNG logo first and then to try the ICO. The ICO is expected to fail on Linux. If both the PNG and the ICO succeed, the ICO will overrride the PNG -this is slightly innefficient, but worth the robustness.
+- analyze_pymupdf.py: There is a plus-one page issue, in the pymupdf-based method, not the pypdf-based method.
 
 
 ---

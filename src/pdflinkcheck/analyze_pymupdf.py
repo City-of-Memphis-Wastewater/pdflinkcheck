@@ -269,9 +269,23 @@ def extract_links_pymupdf(pdf_path):
 
                 # B. Correct Internal Link Page Numbering (The -1 correction hack)
                 # This will be skipped by URI, which is not expected to have a page key
-                target_page_num_reported = "N/A"
-                if link.get('page') is not None:
-                    target_page_num_reported = int(link.get('page'))+1 # accurate for link target, don't add 1 (weird)
+                target_page_num_reported = None
+                p_index = link.get('page')
+                
+                if p_index is not None:
+                    try:
+                        # 1. Cast to int (handles the string/int confusion)
+                        p_index_int = int(p_index)
+                        
+                        # 2. Logic Clamp: PyMuPDF sometimes reports the 'next' page 
+                        # if a link points to the very bottom/edge of the target.
+                        # If the index is >= total pages, clamp it to the last page.
+                        if p_index_int >= doc.page_count:
+                            p_index_int = doc.page_count - 1
+                        
+                        target_page_num_reported = p_index_int + 1
+                    except (ValueError, TypeError):
+                        target_page_num_reported = "Error"
 
                 if link['kind'] == fitz.LINK_URI:
                     target =  link.get('uri', 'URI (Unknown Target)')
