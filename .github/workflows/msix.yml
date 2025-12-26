@@ -6,7 +6,7 @@ on:
   #release:
   #  types: [published]
   #workflow_run:
-  #  workflows: ["Check and Publish Python Package to PyPI and Releases"]  # Must match the 'name' field of your first workflow
+  #  workflows: ["Check and Publish Python Package to PyPI and Releases"]  # Must match the 'name' field of your first workflow 
   #  types:
   #    - completed
   push:
