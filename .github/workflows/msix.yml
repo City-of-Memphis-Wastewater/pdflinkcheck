@@ -279,9 +279,11 @@ jobs:
           $token = "${{ steps.get_token.outputs.TOKEN }}"
           $appId = "9N11HXVLS1WG"
 
-          $maxRetries = 12        # 12 retries × 10 minutes = 2 hours
-          $delayMinutes = 10
-
+          # The Token is known to expire after 1 hour, sotokenExpirarionTimeshoukd not.exceed this
+          # Future work: Assess token with credentials inside the loop on each attempt.
+          $tokenExpirationTime = 60 # minutes, expected
+          $delayMinutes = 21 # what hapoens atexactly 60 min? i'd rather not test it
+          $maxRetries = int($tokenExpirationTime/$delayMinutes) # int rounds down and cuts off decimal
           for ($i = 1; $i -le $maxRetries; $i++) {
 
             Write-Host "Attempt $i to create submission..."
