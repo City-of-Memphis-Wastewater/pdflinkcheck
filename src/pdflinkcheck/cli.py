@@ -305,7 +305,8 @@ def gui_command(
     if not pyhabitat.tkinter_is_available():
         _gui_failure_msg()
         return
-    from pdflinkcheck.gui import start_gui
+    #from pdflinkcheck.gui import start_gui
+    from pdflinkcheck.gui_alt import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
 # --- Helper, consistent gui failure message. --- 
