@@ -193,8 +193,18 @@ class PDFLinkCheckerApp(tk.Tk):
 
     # --- Event Handlers & Business Logic ---
 
+
     def _select_pdf(self):
-        initialdir = str(Path(self.pdf_path.get()).parent) if self.pdf_path.get() else str(Path.home())
+        if self.pdf_path.get():
+            initialdir = str(Path(self.pdf_path.get()).parent)
+        elif pyhabitat.is_msix(): 
+            # Don't look in system 32; add additonal checks for any expected installed GUI-only rollouts, to various stores. 
+            # CLI should default to cwd(), whether installed or portable.
+            # awaiting pyhabitat 1.0.54
+            initialdir = str(Path.home())
+        else: # best for CLI usage and portable usage
+            initialdir = str(Path.cwd())
+
         file_path = filedialog.askopenfilename(
             initialdir=initialdir,
             defaultextension=".pdf",
@@ -286,7 +296,7 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _open_export_file_under_construction(self, file_type: str):
         """Launches the system default editor for the specified report file."""
-        # awaiting pyhabitat v1.0.54
+        # awaiting py
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
         
         if target_path and Path(target_path).exists():
