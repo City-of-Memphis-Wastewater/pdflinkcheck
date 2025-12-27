@@ -57,7 +57,7 @@ def run_validation(
     pdf_dir = Path(pdf_path).parent
 
     issues = []
-    valid_count = 0
+    valid_count = 0 # add more granulaity for types of valid links
     file_found_count = 0
     broken_file_count = 0
     broken_page_count = 0
@@ -180,9 +180,10 @@ def run_validation(
             "target_page": target_page,
             "validation": {"status": status, "reason": reason}
         })
-
+    
+    total_checked = metadata.get("link_counts",{}).get("total_links_count",0) + metadata.get("link_counts",{}).get("toc_entry_count",0)
     summary_stats = {
-        "total_checked": len(all_links) + len(toc),
+        "total_checked": total_checked,
         "valid": valid_count,
         "file-found": file_found_count,
         "broken-page": broken_page_count,
@@ -190,8 +191,7 @@ def run_validation(
         "no_destination_page_count": no_destination_page_count,
         "unknown-web": unknown_web_count,
         "unknown-reasonableness": unknown_reasonableness_count,
-        "unknown-link": unknown_link_count,
-        #"unknown": len(all_links) + len(toc) - valid_count - broken_count # nah this is not granuar enough 
+        "unknown-link": unknown_link_count 
     }
 
     
@@ -211,8 +211,8 @@ def run_validation(
         log(f"PDF Path = {get_friendly_path(pdf_path)}")
         log(f"Total items checked: {summary_stats['total_checked']}")
         log(f"✅ Valid: {summary_stats['valid']}")
-        log(f"✅ Valid: {summary_stats['valid']}")
-        log(f"✅ Valid: {summary_stats['valid']}")
+        #log(f"✅ Valid: {summary_stats['valid']}")
+        #log(f"✅ Valid: {summary_stats['valid']}")
         log(f"🌐 Web Addresses (Not Checked): {summary_stats['unknown-web']}")
         log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
