@@ -14,8 +14,8 @@ Architecture notes (developer-facing):
 - No malware detection claims. This is *risk scoring*, not antivirus.
 - The API mirrors validate.py:
       - score_link(url, anchor_text)
-      - analyze_report(report_dict)
-- analyze_report() returns a dict that can be merged into report["data"].
+      - compute_risk(report_dict)
+- compute_risk() returns a dict that can be merged into report["data"].
 
 This keeps the feature optional, safe, and easy to integrate.
 """
@@ -164,10 +164,10 @@ def score_link(url: str, anchor_text: Optional[str] = None) -> LinkRiskResult:
 
 
 # ---------------------------------------------------------------------------
-# Report-level analysis (mirrors validate.py)
+# Report-level risk computation (mirrors validate.py)
 # ---------------------------------------------------------------------------
 
-def analyze_report(report: Dict[str, object]) -> Dict[str, object]:
+def compute_risk(report: Dict[str, object]) -> Dict[str, object]:
     external_links = report.get("data", {}).get("external_links", [])
     results = []
 
