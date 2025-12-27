@@ -341,6 +341,70 @@ class PDFLinkCheckerApp(tk.Tk):
         self._display_resource_window("I Have Questions.md", "I Have Questions.md")
 
     def _display_resource_window(self, filename: str, title: str):
+        """Generic modal window for displaying data directory text files, with dev-mode fallback."""
+        content = None
+        try:
+            # Primary: Try to read from embedded package resources
+            content = (files("pdflinkcheck.data") / filename).read_text(encoding="utf-8")
+        except FileNotFoundError:
+            if is_in_git_repo():
+                # Development mode: embedded files not present → copy from root
+                messagebox.showinfo(
+                    "Development Mode",
+                    f"Embedded {filename} not found.\nTrying to copy from project root..."
+                )
+                try:
+                    from pdflinkcheck.datacopy import ensure_data_files_for_build
+                    ensure_data_files_for_build()  # This should copy LICENSE, README.md, etc.
+                    
+                    # Retry reading after copy
+                    content = (files("pdflinkcheck.data") / filename).read_text(encoding="utf-8")
+                except ImportError:
+                    messagebox.showerror(
+                        "Fallback Failed",
+                        "Cannot import datacopy module. Please ensure pdflinkcheck.datacopy exists."
+                    )
+                    return
+                except Exception as e:
+                    messagebox.showerror(
+                        "Copy Failed",
+                        f"Failed to copy {filename} from root: {e}"
+                    )
+                    return
+            else:
+                # Packaged mode: no fallback possible
+                messagebox.showerror(
+                    "Resource Missing",
+                    f"Embedded file '{filename}' not found.\n"
+                    "This indicates a packaging or installation issue."
+                )
+                return
+        except Exception as e:
+            messagebox.showerror("Read Error", f"Failed to read {filename}: {e}")
+            return
+
+        # Sanitize content for Tkinter display
+        content = sanitize_glyphs_for_tkinter(content)
+
+        # Display in modal window
+        win = tk.Toplevel(self)
+        win.title(title)
+        win.geometry("700x500")
+
+        txt = tk.Text(win, wrap=tk.WORD, font=('Monospace', 10), padx=10, pady=10)
+        txt.insert(tk.END, content)
+        txt.config(state=tk.DISABLED)
+
+        sb = ttk.Scrollbar(win, command=txt.yview)
+        txt['yscrollcommand'] = sb.set
+
+        sb.pack(side=tk.RIGHT, fill=tk.Y)
+        txt.pack(fill='both', expand=True)
+
+        win.transient(self)
+        win.grab_set()
+    
+    def _display_resource_window_defunct(self, filename: str, title: str):
         """Generic modal window for displaying data directory text files."""
         try:
             content = (files("pdflinkcheck.data") / filename).read_text(encoding="utf-8")
