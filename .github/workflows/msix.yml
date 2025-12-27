@@ -10,8 +10,8 @@ on:
   #  types:
   #    - completed
   push:
-    #branches: [main, dev]
-    branches: [nope] 
+    branches: [main, dev]
+    #branches: [nope] 
   
 
 jobs:
