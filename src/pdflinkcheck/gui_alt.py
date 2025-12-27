@@ -197,12 +197,13 @@ class PDFLinkCheckerApp(tk.Tk):
     def _select_pdf(self):
         if self.pdf_path.get():
             initialdir = str(Path(self.pdf_path.get()).parent)
+        
+        # MSIX environments often start in System32; redirect to Home for better UX.
         elif pyhabitat.is_msix(): 
-            # Don't look in system 32; add additonal checks for any expected installed GUI-only rollouts, to various stores. 
-            # CLI should default to cwd(), whether installed or portable.
-            # awaiting pyhabitat 1.0.54
             initialdir = str(Path.home())
-        else: # best for CLI usage and portable usage
+
+        # Ideal for CLI usage and portable usage
+        else: 
             initialdir = str(Path.cwd())
 
         file_path = filedialog.askopenfilename(
@@ -270,42 +271,18 @@ class PDFLinkCheckerApp(tk.Tk):
             self.output_text.config(state=tk.DISABLED)
  
     def _open_export_file(self, file_type: str):
-        """Launches the system default editor for the specified report file in a new process."""
-        # Dogfood this for non-blocking solution to pyhabitat.edit_textfile()
-        # this solution is not Termux friendly, but neither is the Tkinter GUI at all, so it is scoped properly
-        import subprocess
-        
+        """Launches the system default editor using pyhabitat's robust ladder logic."""
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
         
         if target_path and Path(target_path).exists():
             try:
-                # We use subprocess.Popen to ensure the GUI does not wait 
-                # for the editor to close (non-blocking).
-                if pyhabitat.on_windows():
-                    # The second argument '' is the window title; necessary if path has spaces
-                    subprocess.Popen(['start', '', str(target_path)], shell=True)
-                else:
-                    # For Linux (xdg-open) or macOS (open)
-                    launcher = 'xdg-open' if sys.platform.startswith('linux') else 'open'
-                    subprocess.Popen([launcher, str(target_path)])
-                    
-            except Exception as e:
-                messagebox.showerror("Open Error", f"Failed to launch process for {file_type.upper()}: {e}")
-        else:
-            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.")
-
-    def _open_export_file_under_construction(self, file_type: str):
-        """Launches the system default editor for the specified report file."""
-        # awaiting py
-        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
-        
-        if target_path and Path(target_path).exists():
-            try:
+                # pyhabitat 1.1.1+ automatically detects if it should be non-blocking
+                # based on the absence of a TTY/REPL (perfect for this Tkinter GUI).
                 pyhabitat.edit_textfile(target_path)
             except Exception as e:
                 messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
         else:
-            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exists.")
+            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.")
 
     def _assess_pdf_path_str(self):
         pdf_path_str = self.pdf_path.get().strip()

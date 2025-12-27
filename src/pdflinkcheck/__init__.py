@@ -32,7 +32,8 @@ if _load_gui_func:
     try:
         import pyhabitat as _pyhabitat # pyhabitat is a dependency of this package already
         if _pyhabitat.tkinter_is_available():
-            from pdflinkcheck.gui import start_gui
+            #from pdflinkcheck.gui import start_gui
+            from pdflinkcheck.gui_alt import start_gui
     except ImportError:
         # Optional: log or ignore silently
         print("start_gui() not imported")
