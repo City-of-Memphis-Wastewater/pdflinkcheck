@@ -1,6 +1,3 @@
-**Copyright © 2025 George Clayton Bennett**  
-<https://github.com/City-of-Memphis-Wastewater/pdflinkcheck>
-
 Some distributed binaries of this project include the PyMuPDF library, which is licensed under **AGPL‑3.0‑or‑later**. 
 Any binary that incorporates PyMuPDF is therefore distributed under **AGPL‑3.0‑or‑later**. 
 Other binaries use only the `pypdf` library and do not include PyMuPDF; these binaries are distributed under the **MIT License**.
@@ -22,3 +19,4 @@ Full‑text copies of **LICENSE‑MIT** and **LICENSE‑AGPL3** are included in 
 - AGPLv3 text (FSF): https://www.gnu.org/licenses/agpl-3.0.html  
 - MIT License text: https://opensource.org/license/mit  
 
+Copyright © 2025 George Clayton Bennett
