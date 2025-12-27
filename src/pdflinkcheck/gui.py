@@ -121,7 +121,7 @@ class PDFLinkCheckerApp(tk.Tk):
 
         # --- 2. Create Widgets ---
         self._create_widgets()
-        self._initialize_menubar()
+        #self._initialize_menubar()
         
         # --- 3. Set Initial Dependent Widget States ---
         self._toggle_json_export()

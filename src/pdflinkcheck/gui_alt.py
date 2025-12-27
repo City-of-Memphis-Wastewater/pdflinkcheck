@@ -282,7 +282,7 @@ class PDFLinkCheckerApp(tk.Tk):
             except Exception as e:
                 messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
         else:
-            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.")
+            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist. \n\nPlease click 'Run Analysis' to generate one.")
 
     def _assess_pdf_path_str(self):
         pdf_path_str = self.pdf_path.get().strip()

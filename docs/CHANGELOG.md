@@ -22,7 +22,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Browsing location for MSIX: Ensure msix installation browses in Path.home(), while all else defause to Path.cwd(). If there is a filepath in the text field, it's parent diretory will be used
 
 ### Internal:
-- pyhabitat.edit_textfile() blocks the current console.
+- pyhabitat.edit_textfile() 1.0.53 blocks the console. Updated made in pyhabitat 1.1.1 so that this is no longer an issue.
+
 ---
 
 ## [1.1.94] - 2025-12-26
