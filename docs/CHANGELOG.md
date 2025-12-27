@@ -6,7 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.98] - 2025-12-27
+### Changed
+- Update screenshots for README.
+
+---
+
 ## [1.1.97] - 2025-12-27
+### Changed
 - Change geometry in gui_alt.py to self.geometry("800x600"), like gui.py.
 
 ---
