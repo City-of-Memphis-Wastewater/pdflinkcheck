@@ -6,6 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.97] - 2025-12-27
+- Change geometry in gui_alt.py to self.geometry("800x600"), like gui.py.
+
+---
+
+## [1.1.96] - 2025-12-27
+### Fixed
+- Upgrade to pyhabitat v1.1.3, which now handles file explicitly on Windows to use notepad.exe if a program is unassociated, like for JSON.
+
+---
 
 ## [1.1.95] - 2025-12-26
 ### Changed:

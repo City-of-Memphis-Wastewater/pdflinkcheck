@@ -71,7 +71,8 @@ class PDFLinkCheckerApp(tk.Tk):
 
         title_suffix = ""
         self.title(f"PDF Link Check v{get_version_from_pyproject()}{title_suffix}")
-        self.geometry("900x650") # Slightly wider for new layout columns
+        #self.geometry("900x650") # Slightly wider for new layout columns
+        self.geometry("800x600")
 
         self._set_icon()
 
