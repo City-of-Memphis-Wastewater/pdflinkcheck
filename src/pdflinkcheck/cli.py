@@ -287,8 +287,6 @@ def gui_command(
     """
     Launch tkinter-based GUI.
     """
-
-    # --- START FIX ---
     assured_auto_close_value = 0
     
     if isinstance(auto_close, OptionInfo):
@@ -300,7 +298,6 @@ def gui_command(
         # Case 2: Called explicitly by Typer (pdflinkcheck gui -c 3000)
         # Typer has successfully converted the command line argument, and auto_close is an int.
         assured_auto_close_value = int(auto_close)
-    # --- END FIX ---
 
     if not pyhabitat.tkinter_is_available():
         _gui_failure_msg()
