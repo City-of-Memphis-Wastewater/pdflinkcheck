@@ -266,6 +266,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         log(validation_results.get("summary-txt",""))
         report_results = intermediate_report_results
 
+        # --- Offline Risk Analysis (Security Layer) ---
+        risk_results = compute_risk(report_results)
+        report_results["data"]["risk"] = risk_results
+        
         # Final aggregation of the buffer into one string, after the last call to log()
         report_buffer_str = "\n".join(report_buffer)
 
