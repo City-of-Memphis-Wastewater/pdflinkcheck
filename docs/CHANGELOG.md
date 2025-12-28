@@ -9,7 +9,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.1.99] - 2025-12-28
 
 ### Fixed:
-- Reduced Tkinter padding. Included minimum size"
+- Reduced Tkinter padding. Included minimum size. Do this in parallel new file, gui_tight.py.
+- Change import reference from gui_alt.py to gui_tight.py in cli.py.
 
 ### Added:
 - security.py, for checking external links. Look at TLD, homoglyphs, and tracking parameters. Currently the risk structures in the JSON export are separate but they should become integrated with the existing sections of external links.
