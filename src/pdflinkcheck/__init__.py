@@ -17,11 +17,45 @@ The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed unde
 import os as _os
 
 # Library functions
-from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf, extract_toc_pymupdf
-from pdflinkcheck.analyze_pypdf import extract_links_pypdf, extract_toc_pypdf
-from pdflinkcheck.report import run_report_and_call_exports as run_report
+#from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf, extract_toc_pymupdf
+#from pdflinkcheck.analyze_pypdf import extract_links_pypdf, extract_toc_pypdf
+#from pdflinkcheck.report import run_report_and_call_exports as run_report
 #from pdflinkcheck import dev
 
+
+# -----------------------------
+# Optional imports (safe mode)
+# -----------------------------
+
+# PyMuPDF engine
+try:
+    from pdflinkcheck.analyze_pymupdf import (
+        extract_links_pymupdf,
+        extract_toc_pymupdf,
+    )
+except Exception:
+    extract_links_pymupdf = None
+    extract_toc_pymupdf = None
+
+# PyPDF engine
+try:
+    from pdflinkcheck.analyze_pypdf import (
+        extract_links_pypdf,
+        extract_toc_pypdf,
+    )
+except Exception:
+    extract_links_pypdf = None
+    extract_toc_pypdf = None
+
+# Rust FFI engine (always optional)
+try:
+    from pdflinkcheck import ffi
+except Exception:
+    ffi = None
+
+# -----------------------------
+# GUI easter egg
+# -----------------------------
 # For the kids. This is what I wanted when learning Python in a mysterious new REPL.
 # Is this Pythonic? No. Oh well. PEP 8, PEP 20.
 # Why is this not Pythonic? Devs expect no side effects when importing library functions.
@@ -44,6 +78,10 @@ if _load_gui_func:
 else:
     __pdflinkcheck_gui_easteregg_enabled__ = False
 
+
+# -----------------------------
+# Public API
+# -----------------------------
 # Define __all__ such that the library functions are self documenting.
 __all__ = [
     "run_report",
