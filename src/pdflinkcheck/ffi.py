@@ -1,24 +1,43 @@
+from functools import cache
 import ctypes
 import json
-import os
-import sys
 from pathlib import Path
 
-# ------------------------------------------------------------
-# Locate the Rust shared library
-# ------------------------------------------------------------
+try:
+    import pyhabitat as habitat
+except Exception:
+    habitat = None
+
+
+def _should_attempt_rust():
+    # Termux: never load Rust/pdfium
+    if habitat and habitat.platform.is_termux():
+        return False
+
+    # Android: same story
+    if habitat and habitat.platform.is_android():
+        return False
+
+    # Headless CI: skip Rust/pdfium
+    if habitat and habitat.is_headless():
+        return False
+
+    return True
+
 
 def _find_rust_lib():
-    """
-    Search for the compiled Rust shared library in common locations.
-    """
+    if not _should_attempt_rust():
+        return None
+
     lib_names = {
         "linux": "librust_pdflinkcheck.so",
         "darwin": "librust_pdflinkcheck.dylib",
         "win32": "rust_pdflinkcheck.dll",
     }
 
+    import sys
     platform = sys.platform
+
     if platform.startswith("linux"):
         target = lib_names["linux"]
     elif platform == "darwin":
@@ -28,66 +47,57 @@ def _find_rust_lib():
     else:
         return None
 
-    # Search in package directory
     here = Path(__file__).resolve().parent
     candidate = here / target
     if candidate.exists():
         return str(candidate)
 
-    # Search in project root (editable installs)
-    root_candidate = Path(__file__).resolve().parents[2] / "rust_pdflinkcheck" / "target" / "release" / target
+    root_candidate = (
+        Path(__file__).resolve().parents[2]
+        / "rust_pdflinkcheck"
+        / "target"
+        / "release"
+        / target
+    )
     if root_candidate.exists():
         return str(root_candidate)
 
     return None
 
 
-# ------------------------------------------------------------
-# Load the Rust library (if available)
-# ------------------------------------------------------------
+@cache
+def _load_rust():
+    path = _find_rust_lib()
+    if not path:
+        return None
 
-_rust_lib_path = _find_rust_lib()
-_rust = None
-
-if _rust_lib_path:
     try:
-        _rust = ctypes.CDLL(_rust_lib_path)
-        _rust.pdflinkcheck_analyze_pdf.argtypes = [ctypes.c_char_p]
-        _rust.pdflinkcheck_analyze_pdf.restype = ctypes.c_char_p
-
-        _rust.pdflinkcheck_free_string.argtypes = [ctypes.c_char_p]
-        _rust.pdflinkcheck_free_string.restype = None
-
+        lib = ctypes.CDLL(path)
+        lib.pdflinkcheck_analyze_pdf.argtypes = [ctypes.c_char_p]
+        lib.pdflinkcheck_analyze_pdf.restype = ctypes.c_char_p
+        lib.pdflinkcheck_free_string.argtypes = [ctypes.c_char_p]
+        lib.pdflinkcheck_free_string.restype = None
+        return lib
     except OSError:
-        _rust = None
+        return None
 
 
-# ------------------------------------------------------------
-# Public API
-# ------------------------------------------------------------
-
-def rust_available() -> bool:
-    """Return True if the Rust engine is available."""
-    return _rust is not None
+def rust_available():
+    return _load_rust() is not None
 
 
 def analyze_pdf_rust(path: str):
-    """
-    Call the Rust engine. Returns a Python dict.
-    Raises RuntimeError if Rust is unavailable.
-    """
-    if _rust is None:
+    lib = _load_rust()
+    if lib is None:
         raise RuntimeError("Rust engine not available")
 
-    path_bytes = path.encode("utf-8")
-    raw = _rust.pdflinkcheck_analyze_pdf(path_bytes)
-
+    raw = lib.pdflinkcheck_analyze_pdf(path.encode("utf-8"))
     if not raw:
         raise RuntimeError("Rust returned NULL")
 
     try:
         json_str = ctypes.cast(raw, ctypes.c_char_p).value.decode("utf-8")
     finally:
-        _rust.pdflinkcheck_free_string(raw)
+        lib.pdflinkcheck_free_string(raw)
 
     return json.loads(json_str)
