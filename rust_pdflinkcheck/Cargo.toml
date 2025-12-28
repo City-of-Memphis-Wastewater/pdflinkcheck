@@ -17,3 +17,6 @@ thiserror = "1"
 #lopdf = "0.32"
 pdfium-render = { version = "0.8", features = ["pdfium-lib"] }
 
+lopdf = "0.38"          # latest as of late 2025
+pdf-extract = "0.10"
+anyhow = "1.0"
