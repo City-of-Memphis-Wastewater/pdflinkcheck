@@ -26,3 +26,7 @@ src/pdflinkcheck/data/README.md
 uv.lock
 
 /msix-build/
+
+# Rust build artifacts
+rust_pdflinkcheck/target/
+rust_pdflinkcheck/Cargo.lock		
