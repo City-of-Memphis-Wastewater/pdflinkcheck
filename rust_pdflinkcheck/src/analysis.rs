@@ -18,18 +18,32 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
     // -------------------------------
     // Extract Link Annotations
     // -------------------------------
-    for (page_num, page_id) in doc.get_pages().into_iter().enumerate() {
-        if let Ok(page) = doc.get_object(page_id) {
-            if let Some(annots) = page.as_dict().and_then(|d| d.get(b"Annots")) {
-                if let Ok(annot_array) = annots.as_array() {
-                    for annot_ref in annot_array {
-                        if let Ok(annot_id) = annot_ref.as_reference() {
-                            if let Ok(annot_obj) = doc.get_object(annot_id) {
-                                if let Some(link) = parse_annotation(&doc, page_num as i32, annot_obj) {
-                                    links.push(link);
-                                }
-                            }
-                        }
+    let pages = doc.get_pages(); // BTreeMap<u32, ObjectId>
+
+    for (page_num, (_page_number, page_id)) in pages.iter().enumerate() {
+        let page_obj = doc.get_object(*page_id)
+            .map_err(|e| format!("Page error: {:?}", e))?;
+
+        let page_dict = match page_obj.as_dict() {
+            Some(d) => d,
+            None => continue,
+        };
+
+        let annots = match page_dict.get(b"Annots") {
+            Some(a) => a,
+            None => continue,
+        };
+
+        let annot_array = match annots.as_array() {
+            Ok(arr) => arr,
+            Err(_) => continue,
+        };
+
+        for annot_ref in annot_array {
+            if let Ok(annot_id) = annot_ref.as_reference() {
+                if let Ok(annot_obj) = doc.get_object(annot_id) {
+                    if let Some(link) = parse_annotation(&doc, page_num as i32, annot_obj) {
+                        links.push(link);
                     }
                 }
             }
@@ -42,43 +56,40 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
 fn extract_outlines(doc: &Document) -> Option<Vec<TocEntry>> {
     let mut results = Vec::new();
 
-    let catalog = doc.trailer.get(b"Root").ok()?.as_reference().ok()?;
-    let catalog_dict = doc.get_object(catalog).ok()?.as_dict().ok()?;
+    let catalog_id = doc.trailer.get(b"Root")?.as_reference().ok()?;
+    let catalog = doc.get_object(catalog_id).ok()?.as_dict()?;
 
-    let outlines_ref = catalog_dict.get(b"Outlines")?.as_reference().ok()?;
-    let outlines_dict = doc.get_object(outlines_ref).ok()?.as_dict().ok()?;
+    let outlines_id = catalog.get(b"Outlines")?.as_reference().ok()?;
+    let outlines = doc.get_object(outlines_id).ok()?.as_dict()?;
 
-    let first = outlines_dict.get(b"First")?.as_reference().ok()?;
-    let mut current = first;
-
-    let mut level = 1;
+    let mut current = outlines.get(b"First")?.as_reference().ok()?;
 
     while let Ok(obj) = doc.get_object(current) {
-        if let Some(dict) = obj.as_dict() {
-            let title = dict.get(b"Title")
-                .and_then(|t| t.as_str().ok())
-                .unwrap_or("")
-                .to_string();
+        let dict = match obj.as_dict() {
+            Some(d) => d,
+            None => break,
+        };
 
-            let dest_page = dict.get(b"Dest")
-                .and_then(|d| d.as_array().ok())
-                .and_then(|arr| arr.get(0))
-                .and_then(|first| first.as_reference().ok())
-                .and_then(|page_id| doc.get_page_number(page_id).ok())
-                .unwrap_or(0);
+        let title = dict.get(b"Title")
+            .and_then(|t| t.as_str().ok())
+            .unwrap_or("")
+            .to_string();
 
-            results.push(TocEntry {
-                level,
-                title,
-                target_page: serde_json::json!(dest_page),
-            });
+        let dest_page = dict.get(b"Dest")
+            .and_then(|d| d.as_array().ok())
+            .and_then(|arr| arr.get(0))
+            .and_then(|o| o.as_reference().ok())
+            .and_then(|page_id| doc.get_page_number(*page_id).ok())
+            .unwrap_or(0);
 
-            // Move to next outline item
-            if let Some(next) = dict.get(b"Next").and_then(|n| n.as_reference().ok()) {
-                current = next;
-            } else {
-                break;
-            }
+        results.push(TocEntry {
+            level: 1,
+            title,
+            target_page: serde_json::json!(dest_page),
+        });
+
+        if let Some(next) = dict.get(b"Next").and_then(|n| n.as_reference().ok()) {
+            current = next;
         } else {
             break;
         }
@@ -88,7 +99,7 @@ fn extract_outlines(doc: &Document) -> Option<Vec<TocEntry>> {
 }
 
 fn parse_annotation(doc: &Document, page_num: i32, annot_obj: &Object) -> Option<LinkRecord> {
-    let dict = annot_obj.as_dict().ok()?;
+    let dict = annot_obj.as_dict()?;
 
     let subtype = dict.get(b"Subtype")?.as_name().ok()?;
     if subtype != b"Link" {
@@ -138,6 +149,11 @@ fn parse_annotation(doc: &Document, page_num: i32, annot_obj: &Object) -> Option
                     record.action_kind = Some("GoTo".to_string());
                 }
             }
+        }
+
+        if let Some(file) = action.get(b"F").and_then(|f| f.as_str().ok()) {
+            record.remote_file = Some(file.to_string());
+            record.action_kind = Some("GoToR".to_string());
         }
     }
 
