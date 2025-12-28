@@ -306,7 +306,8 @@ def gui_command(
         _gui_failure_msg()
         return
     #from pdflinkcheck.gui import start_gui
-    from pdflinkcheck.gui_alt import start_gui
+    #from pdflinkcheck.gui_alt import start_gui
+    from pdflinkcheck.gui_tight import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
 # --- Helper, consistent gui failure message. --- 
