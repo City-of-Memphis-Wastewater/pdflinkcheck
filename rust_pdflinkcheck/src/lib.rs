@@ -7,15 +7,14 @@ mod analysis;
 use analysis::analyze_pdf;
 
 /// Convert a Rust String into a raw C string pointer.
-/// Python must call pdflinkcheckfreestring to free it.
-fn intocstring(s: String) -> *mut c_char {
+/// Python must call `pdflinkcheck_free_string` to free it.
+fn into_c_string(s: String) -> *mut c_char {
     CString::new(s).unwrap().into_raw()
 }
 
 /// Free memory allocated by Rust.
-
-[no_mangle]
-pub extern "C" fn pdflinkcheckfreestring(ptr: *mut c_char) {
+#[no_mangle]
+pub extern "C" fn pdflinkcheck_free_string(ptr: *mut c_char) {
     if ptr.is_null() {
         return;
     }
@@ -26,29 +25,30 @@ pub extern "C" fn pdflinkcheckfreestring(ptr: *mut c_char) {
 
 /// Main FFI entry point.
 /// Accepts a file path, returns JSON string or error JSON.
-
-[no_mangle]
-pub extern "C" fn pdflinkcheckanalyzepdf(path: const cchar) -> mut cchar {
+#[no_mangle]
+pub extern "C" fn pdflinkcheck_analyze_pdf(path: *const c_char) -> *mut c_char {
     if path.is_null() {
-        return intocstring("{\"error\": \"null path\"}".to_string());
+        return into_c_string("{\"error\": \"null path\"}".to_string());
     }
 
-    let cstr = unsafe {
-    let cstr = unsafe { CStr::fromptr(path) };
-    let pathstr = match cstr.to_str() {
+    // Convert C string to Rust string
+    let cstr = unsafe { CStr::from_ptr(path) };
+    let path_str = match cstr.to_str() {
         Ok(s) => s,
-        Err() => return intocstring("{\"error\": \"invalid UTF-8 path\"}".tostring()),
+        Err(_) => {
+            return into_c_string("{\"error\": \"invalid UTF-8 path\"}".to_string());
+        }
     };
 
-    match analyzepdf(pathstr) {
-        Ok(result) => {
-            let json = serdejson::tostring(&result)
-                .unwraporelse(|| "{\"error\": \"serialization failure\"}".tostring());
-            intocstring(json)
-        }
-        Err(err) => {
-            let json = format!("{{\"error\": \"{}\"}}", err);
-            intocstring(json)
-        }
-    }
+    // Run analysis
+    let result = analyze_pdf(path_str);
+
+    // Convert to JSON
+    let json = match result {
+        Ok(val) => serde_json::to_string(&val)
+            .unwrap_or_else(|_| "{\"error\": \"serialization failure\"}".to_string()),
+        Err(err) => format!("{{\"error\": \"{}\"}}", err),
+    };
+
+    into_c_string(json)
 }

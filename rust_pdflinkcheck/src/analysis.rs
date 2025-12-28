@@ -5,7 +5,7 @@ use pdf::error::PdfError;
 use crate::types::{AnalysisResult, LinkRecord, TocEntry};
 
 pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
-    let file = PdfFile::<Vec<u8>>::open(path)
+    let file = PdfFile::<Vec<u8>, Vec<u8>, Vec<u8>>::open(path)
         .map_err(|e| format!("Failed to open PDF: {:?}", e))?;
 
     let mut links = Vec::new();
@@ -20,7 +20,9 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
             let level = item.level as i32;
 
             let target_page = match &item.dest {
-                Some(Destination::Page(p, _)) => serde_json::json!(p.page_number(&file).unwrap_or(0)),
+                Some(Destination::Page { page, .. }) => {
+                    serde_json::json!(page.get_page_number(&file).unwrap_or(0))
+                }
                 _ => serde_json::json!(null),
             };
 
@@ -61,21 +63,23 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
                     };
 
                     match action {
-                        Action::URI { uri } => {
+                        Action::Uri { uri } => {
                             record.url = Some(uri.clone());
                             record.action_kind = Some("URI".to_string());
                         }
-                        Action::GoTo { dest } => {
-                            record.action_kind = Some("GoTo".to_string());
-                            if let Destination::Page(p, _) = dest {
-                                record.destination_page = Some(p.page_number(&file).unwrap_or(0) as i32);
+                        Action::Goto { dest } => {
+                            record.action_kind = Some("Goto".to_string());
+                            if let Destination::Page { page, .. } = dest {
+                                record.destination_page =
+                                    Some(page.get_page_number(&file).unwrap_or(0) as i32);
                             }
                         }
-                        Action::RemoteGoTo { file: f, dest } => {
-                            record.action_kind = Some("RemoteGoTo".to_string());
+                        Action::RemoteGoto { file: f, dest } => {
+                            record.action_kind = Some("RemoteGoto".to_string());
                             record.remote_file = Some(f.clone());
-                            if let Destination::Page(p, _) = dest {
-                                record.destination_page = Some(p.page_number(&file).unwrap_or(0) as i32);
+                            if let Destination::Page { page, .. } = dest {
+                                record.destination_page =
+                                    Some(page.get_page_number(&file).unwrap_or(0) as i32);
                             }
                         }
                         _ => {
