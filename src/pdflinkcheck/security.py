@@ -128,14 +128,16 @@ def score_link(url: str) -> LinkRiskResult:
     if _contains_homoglyphs(host + parsed.path):
         reasons.append(RiskReason("homoglyph_suspected", "URL contains homoglyph characters.", 3))
         score += 3
-
     # Risk level mapping
-    if score >= 7:
-        level = "high"
-    elif score >= 3:
+    if score == 0:
+        level = "none"
+    elif score <= 2:
+        level = "low"
+    elif score <= 6:
         level = "medium"
     else:
-        level = "low"
+        level = "high"
+
 
     return LinkRiskResult(url, score, level, reasons)
 
