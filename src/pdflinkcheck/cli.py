@@ -163,7 +163,7 @@ def analyze_pdf( # Renamed function for clarity
         help="Export format. Use 'None' to suppress file export.",
     ),
 
-    pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
+    pdf_library: Literal["auto","rust","pypdf", "pymupdf"] = typer.Option(
         assess_default_pdf_library(),
         "--pdf-library","-p",
         envvar="PDF_ENGINE",

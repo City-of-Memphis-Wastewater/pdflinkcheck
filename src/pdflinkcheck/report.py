@@ -70,11 +70,33 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         #    print(msg)
         report_buffer.append(msg)
 
-    # Expected: "pypdf" or "PyMuPDF"
-    allowed_libraries = ("pypdf","pymupdf")
+    # Expected: "pypdf" or "PyMuPDF" pr "rust"
+    allowed_libraries = ("pypdf", "pymupdf", "rust")
     pdf_library = pdf_library.lower()
-    if pdf_library in allowed_libraries and pdf_library == "pypdf":
+
+    # AUTO MODE
+    if pdf_library == "auto":
+        from pdflinkcheck.ffi import rust_available
+        if rust_available():
+            pdf_library = "rust"
+        elif pymupdf_is_available():
+            pdf_library = "pymupdf"
+        else:
+            pdf_library = "pypdf"
+
+    # RUST ENGINE
+    if pdf_library in allowed_libraries and pdf_library == "rust":
+	from pdflinkcheck.ffi import rust_available, analyze_pdf_rust
+    	if not rust_available():
+            raise ImportError("Rust engine requested but Rust library not available.")
+    	extract_links = lambda path: analyze_pdf_rust(path)["links"]
+    	extract_toc = lambda path: analyze_pdf_rust(path)["toc"]
+
+    # pypdf ENGINE
+    elif pdf_library in allowed_libraries and pdf_library == "pypdf":
         from pdflinkcheck.analyze_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
+
+    # PyMuPDF Engine
     elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
         if not pymupdf_is_available():
             print("PyMuPDF was explicitly requested as the PDF Engine")
