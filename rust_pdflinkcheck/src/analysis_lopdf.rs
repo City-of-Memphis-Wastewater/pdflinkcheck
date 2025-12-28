@@ -24,6 +24,23 @@ pub struct TocEntry {
     pub target_page: Option<u32>,
 }
 
+
+// In analysis_lopdf.rs
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct LinkInfo {
+    pub page: u32,
+    pub rect: Vec<f64>,
+    pub link_text: String,
+    pub link_type: String,
+    pub target: String,
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+    pub struct TocEntry {
+    pub level: usize,
+    pub title: String,
+    pub target_page: Option<u32>,
+}
 /// Extracts all links (with anchor text) and TOC from a PDF using pure-Rust crates.
 pub fn extract_pdf_data(pdf_path: &Path) -> Result<(Vec<LinkInfo>, Vec<TocEntry>)> {
     let doc = Document::load(pdf_path).context("Failed to load PDF")?;
