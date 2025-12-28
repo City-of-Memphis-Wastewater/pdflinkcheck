@@ -71,7 +71,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         report_buffer.append(msg)
 
     # Expected: "pypdf" or "PyMuPDF" pr "rust"
-    allowed_libraries = ("pypdf", "pymupdf", "rust")
+    allowed_libraries = ("pypdf", "pymupdf", "rust", "auto")
     pdf_library = pdf_library.lower()
 
     # AUTO MODE
