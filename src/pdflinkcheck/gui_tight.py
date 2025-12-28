@@ -185,7 +185,7 @@ class PDFLinkCheckerApp(tk.Tk):
 
         ttk.Label(output_header_frame, text="Analysis Report Logs:").pack(side=tk.LEFT, fill='x', expand=True)
 
-        ttk.Button(output_header_frame, text="▼ Bottom", command=self._scroll_to_bottom, width=8).pack(side=tk.RIGHT, padx=(0, 2))
+        ttk.Button(output_header_frame, text="▼ Bottom", command=self._scroll_to_bottom, width=10).pack(side=tk.RIGHT, padx=(0, 2))
         ttk.Button(output_header_frame, text="▲ Top", command=self._scroll_to_top, width=6).pack(side=tk.RIGHT, padx=2)
 
         # Scrollable Text Area
