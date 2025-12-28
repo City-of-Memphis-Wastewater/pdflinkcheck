@@ -6,6 +6,20 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.1.99] - 2025-12-28
+
+### Fixed:
+- Reduced Tkinter padding. Included minimum size"
+
+### Added:
+- security.py, for checking external links. Look at TLD, homoglyphs, and tracking parameters. Currently the risk structures in the JSON export are separate but they should become integrated with the existing sections of external links.
+
+### Internal:
+- There is no getting around the Windows program picker is os.startfile() is used. Ergo, we no longer expect or enable fallback to Notepad, etc.
+- Researched mhtml file link artifacts. They do nit need to be checked as local relative file links.
+
+---
+
 ## [1.1.98] - 2025-12-27
 ### Changed
 - Update screenshots for README.
