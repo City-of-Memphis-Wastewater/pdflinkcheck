@@ -22,16 +22,39 @@ from typing import List, Dict, Optional
 # Static rule tables (embedded; no external files)
 # ---------------------------------------------------------------------------
 
+# Top level domain (tld)
 SUSPICIOUS_TLDS = {
     "xyz", "top", "click", "link", "rest", "gq", "ml", "cf", "tk"
 }
 
+# Tracking parameters
+"""
+These parameters collectively allow detailed attribution of website traffic and conversions:
+- **utm_** parameters are universal for tracking campaigns across all traffic sources.
+- **fbclid** and **gclid** are platform-specific identifiers for Facebook and Google Ads.
+- **mc_eid** is specific to email marketing, like Mailchimp campaigns.
+"""
 TRACKING_PARAMS = {
     "utm_source", "utm_medium", "utm_campaign",
     "fbclid", "gclid", "mc_eid"
 }
 
 # Minimal homoglyph table (expandable)
+"""
+"а" → Latin "a" (Cyrillic small letter a, U+0430 vs Latin a U+0061)
+"е" → Latin "e" (Cyrillic small letter ie, U+0435 vs Latin e U+0065)
+"і" → Latin "i" (Cyrillic small letter i, U+0456 vs Latin i U+0069)
+"ο" → Latin "o" (Greek small omicron, U+03BF vs Latin o U+006F)
+"р" → Latin "p" (Cyrillic small er, U+0440 vs Latin p U+0070)
+"ѕ" → Latin "s" (Cyrillic small letter dze, U+0455 vs Latin s U+0073)
+"у" → Latin "y" (Cyrillic small letter u, U+0443 vs Latin y U+0079)
+
+These characters have distinct Unicode code points from their Latin lookalikes 
+but are visually nearly identical, making them classic homoglyphs. 
+The purpose of such mappings is often to detect or simulate homoglyph attacks, 
+such as phishing domains, email spoofing, or source code obfuscation, 
+where attackers substitute visually similar characters from alternate scripts to deceive users or systems.
+"""
 HOMOGLYPHS = {
     "а": "a",  # Cyrillic
     "е": "e",
@@ -41,7 +64,6 @@ HOMOGLYPHS = {
     "ѕ": "s",
     "у": "y",
 }
-
 
 # ---------------------------------------------------------------------------
 # Data structures
