@@ -89,7 +89,6 @@ def docs_command(
         try:
             license_path = files("pdflinkcheck.data") / "LICENSE"
             license_text = license_path.read_text(encoding="utf-8")
-            
             console.print(f"\n[bold green]=== GNU AFFERO GENERAL PUBLIC LICENSE V3+ ===[/bold green]")
             console.print(license_text, highlight=False)
             
