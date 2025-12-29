@@ -26,8 +26,25 @@ app = typer.Typer(
     add_completion=False,
     invoke_without_command = True, 
     no_args_is_help = False,
+    context_settings={"ignore_unknown_options": True, "allow_extra_args": True},
 )
 
+
+def debug_callback(value: bool):
+#def debug_callback(ctx: typer.Context, value: bool):
+    if value:
+        # This runs IMMEDIATELY when --debug is parsed, even before --help
+         # 1. Access the list of all command-line arguments
+        full_command_list = sys.argv
+        # 2. Join the list into a single string to recreate the command
+        command_string = " ".join(full_command_list)
+        # 3. Print the command
+        typer.echo(f"command:\n{command_string}\n")
+    return value
+
+if "--show-command" in sys.argv or "--debug" in sys.argv:
+    debug_callback(True)
+    
 @app.callback()
 def main(ctx: typer.Context,
     version: Optional[bool] = typer.Option(
@@ -44,13 +61,6 @@ def main(ctx: typer.Context,
     if ctx.invoked_subcommand is None:
         gui_command()
         raise typer.Exit(code=0)
-    
-    # 1. Access the list of all command-line arguments
-    full_command_list = sys.argv
-    # 2. Join the list into a single string to recreate the command
-    command_string = " ".join(full_command_list)
-    # 3. Print the command
-    typer.echo(f"command:\n{command_string}\n")
 
 
 # help-tree() command: fragile, experimental, defaults to not being included.
