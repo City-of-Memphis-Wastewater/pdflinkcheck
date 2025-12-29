@@ -1,12 +1,12 @@
 # Rust PDF Link Check Core
 
 This crate is a high-performance native core for **PDF link and table-of-contents analysis**.
-It is one of three analysis engines used by the PDF Link Check project:
+It is one of the analysis engines used by the PDF Link Check project, which include:
 
 - **pypdf-based engine** — maximizes portability (including Termux)
 - **PyMuPDF-based engine** — exposes a rich, high-level PDF object model
-- **PDFium-based Rust engine (this crate)** — prioritizes performance and
-  non-APGL3+ opportunities on supported platforms
+- **PDFium-based Rust engine (this crate)** — prioritizes performance, while avoiding
+  PyMuPDF's AGPLv3+ licensing restrictions, on supported platforms
 
 Source repository:
 https://github.com/City-of-Memphis-Wastewater/pdflinkcheck
@@ -42,7 +42,7 @@ This crate is intentionally focused on **PDF analysis**, not general-purpose
 PDF manipulation.
 
 Internally, it uses PDFium via the `pdfium-render` crate, but PDFium types are
-treated strictly as implementation details. The public API exposes only
+treated strictly as implementation details. The public API exposes only the crate-defined,
 stable Rust data structures (`AnalysisResult`, `LinkRecord`, `TocEntry`) and
 JSON output via an FFI boundary.
 
