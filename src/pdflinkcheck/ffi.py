@@ -74,13 +74,14 @@ def _load_rust():
     try:
         lib = ctypes.CDLL(path)
         lib.pdflinkcheck_analyze_pdf.argtypes = [ctypes.c_char_p]
-        lib.pdflinkcheck_analyze_pdf.restype = ctypes.c_char_p
-        lib.pdflinkcheck_free_string.argtypes = [ctypes.c_char_p]
+        # Use void_p so we keep the raw address for freeing later
+        lib.pdflinkcheck_analyze_pdf.restype = ctypes.c_void_p 
+        
+        lib.pdflinkcheck_free_string.argtypes = [ctypes.c_void_p]
         lib.pdflinkcheck_free_string.restype = None
         return lib
     except OSError:
         return None
-
 
 def rust_available():
     return _load_rust() is not None
@@ -91,13 +92,16 @@ def analyze_pdf_rust(path: str):
     if lib is None:
         raise RuntimeError("Rust engine not available")
 
-    raw = lib.pdflinkcheck_analyze_pdf(path.encode("utf-8"))
-    if not raw:
+    # Get the raw pointer address
+    ptr = lib.pdflinkcheck_analyze_pdf(path.encode("utf-8"))
+    if not ptr:
         raise RuntimeError("Rust returned NULL")
 
     try:
-        json_str = ctypes.cast(raw, ctypes.c_char_p).value.decode("utf-8")
+        # Manually extract the string from the pointer address
+        json_str = ctypes.string_at(ptr).decode("utf-8")
+        return json.loads(json_str)
     finally:
-        lib.pdflinkcheck_free_string(raw)
-
-    return json.loads(json_str)
+        # Now we can safely free the pointer address
+        lib.pdflinkcheck_free_string(ptr)
+        
