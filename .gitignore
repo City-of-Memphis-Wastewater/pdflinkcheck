@@ -29,4 +29,6 @@ uv.lock
 
 # Rust build artifacts
 rust_pdflinkcheck/target/
-rust_pdflinkcheck/Cargo.lock		
+rust_pdflinkcheck/Cargo.lock
+rust_pdflinkcheck/defunct/
+

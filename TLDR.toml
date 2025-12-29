@@ -1,0 +1,18 @@
+# TLDR
+This is a PDF link validation tool.
+It identifies the links in the target PDF file.
+The links are sorted by:
+- URI web
+- URI relative file local 
+- GoTo page-to-page internal link
+- Table of contents internal bookmark links
+- Unknown link
+
+There are three different backend engines for PDF analysis:
+1. PyMuPDF | APGL3+ licensed, large, C language, fast, will not build on Termux
+2. pypdf | MIT licensed, small, slow, pure-python, will build on Termux
+3. pdfium | Rust crate, fast, will not build on Termux
+
+We have tried other rust libraries, like lopdf and pdf, which would be Termux compatible, 
+but these cannot analyze links effectively or find the anchor text.
+
