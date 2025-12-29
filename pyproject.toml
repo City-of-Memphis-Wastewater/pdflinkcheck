@@ -11,7 +11,7 @@ dependencies = [
     "typer>=0.20.0",
 ]
 
-license = "MIT AND AGPL-3.0-or-later"
+#license = "MIT AND AGPL-3.0-or-later"
 license-files = ["LICENSE", "LICENSE-MIT", "LICENSE-AGPL3"]
 
 classifiers=[
@@ -77,8 +77,11 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build"]
-build-backend = "uv_build"
+#requires = ["uv_build"]
+#build-backend = "uv_build"
+
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }
