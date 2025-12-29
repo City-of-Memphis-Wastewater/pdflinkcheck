@@ -24,3 +24,6 @@ pdfium-render = { version = "0.8.37", features = ["bindings", "thread_safe"] }
 #lopdf = "0.38"          # latest as of late 2025
 #pdf-extract = "0.10"
 #anyhow = "1.0"
+
+[features]
+pdfium-raw = []
