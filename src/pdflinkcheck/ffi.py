@@ -48,6 +48,13 @@ def _find_rust_lib():
         return None
 
     here = Path(__file__).resolve().parent
+    data_dir = here / "data"
+
+    # Check data dir first (for distributed packages)
+    candidate = data_dir / target
+    if candidate.exists():
+        return str(candidate)
+        
     candidate = here / target
     if candidate.exists():
         return str(candidate)
