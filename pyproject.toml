@@ -61,10 +61,7 @@ full = [
     #"pymupdf>=1.26.7 ; platform_system == 'Linux' and platform_machine != 'aarch64'" # to avoid on termux
     "pymupdf>=1.26.7"  # let them try
 ]
-#mobilegui = [
-#    "kivy>=2.3.1",
-#    "kivymd",
-#]
+
 
 [dependency-groups]
 dev = [
@@ -77,11 +74,10 @@ dev = [
 ]
 
 [build-system]
-#requires = ["uv_build"]
-#build-backend = "uv_build"
-
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build"]
+build-backend = "uv_build"
+#requires = ["setuptools"]
+#build-backend = "setuptools.build_meta"
 
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }
