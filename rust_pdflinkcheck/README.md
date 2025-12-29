@@ -3,10 +3,10 @@
 This crate is a high-performance native core for **PDF link and table-of-contents analysis**.
 It is one of the analysis engines used by the PDF Link Check project, which include:
 
-- **pypdf-based engine** — maximizes portability (including Termux)
-- **PyMuPDF-based engine** — exposes a rich, high-level PDF object model
-- **PDFium-based Rust engine (this crate)** — prioritizes performance, while avoiding
-  PyMuPDF's AGPLv3+ licensing restrictions, on supported platforms
+- **pypdf-based engine** — Maximizes portability (including Termux)
+- **PyMuPDF-based engine** — Exposes a rich, high-level PDF object model
+- **PDFium-based Rust engine (this crate)** — Prioritizes performance on supported platforms while avoiding
+  PyMuPDF's AGPLv3+ licensing restrictions.
 
 Source repository:
 https://github.com/City-of-Memphis-Wastewater/pdflinkcheck
