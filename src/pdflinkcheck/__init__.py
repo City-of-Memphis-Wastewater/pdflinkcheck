@@ -17,41 +17,32 @@ The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed unde
 import os as _os
 
 # Library functions
-#from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf, extract_toc_pymupdf
-#from pdflinkcheck.analyze_pypdf import extract_links_pypdf, extract_toc_pypdf
-#from pdflinkcheck.report import run_report_and_call_exports as run_report
 #from pdflinkcheck import dev
 
+# lazy loaded  library functions
+def run_report(*args, **kwargs):
+    from pdflinkcheck.report import run_report_and_call_exports as _run
+    return _run(*args, **kwargs)
+    
+def extract_links_pypdf(*args, **kwargs):
+    from pdflinkcheck.analyze_pypdf import extract_links_pypdf as _extract_links
+    return _extract_links(*args, **kwargs)
 
-# -----------------------------
-# Optional imports (safe mode)
-# -----------------------------
+def extract_links_pymupdf(*args, **kwargs):
+    from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as _extract_links
+    return _extract_links(*args, **kwargs)
 
-# PyMuPDF engine
-try:
-    from pdflinkcheck.analyze_pymupdf import (
-        extract_links_pymupdf,
-        extract_toc_pymupdf,
-    )
-except Exception:
-    extract_links_pymupdf = None
-    extract_toc_pymupdf = None
+def extract_links_rust(*args, **kwargs):
+    import pdflinkcheck.ffi
+    return pdflinkcheck.ffi.analyze_pdf_rust(*args, **kwargs)
 
-# PyPDF engine
-try:
-    from pdflinkcheck.analyze_pypdf import (
-        extract_links_pypdf,
-        extract_toc_pypdf,
-    )
-except Exception:
-    extract_links_pypdf = None
-    extract_toc_pypdf = None
+def extract_toc_pypdf(*args, **kwargs):
+    from pdflinkcheck.analyze_pypdf import extract_toc_pypdf as _extract_toc
+    return _extract_toc(*args, **kwargs)
 
-# Rust FFI engine (always optional)
-try:
-    from pdflinkcheck import ffi
-except Exception:
-    ffi = None
+def extract_toc_pymupdf(*args, **kwargs):
+    from pdflinkcheck.analyze_pymupdf import extract_toc_pymupdf as _extract_toc
+    return _extract_toc(*args, **kwargs)
 
 # -----------------------------
 # GUI easter egg
@@ -84,7 +75,7 @@ else:
 # -----------------------------
 # Define __all__ such that the library functions are self documenting.
 __all__ = [
-    "run_report",
+    "run_report_and_call_exports",
     "extract_links_pymupdf", 
     "extract_toc_pymupdf", 
     "extract_links_pypdf", 
