@@ -2,8 +2,15 @@ use pdfium_render::prelude::*;
 use crate::types::{AnalysisResult, LinkRecord, TocEntry};
 
 pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
-    let bindings = Pdfium::bind_to_system_library().map_err(|e| format!("{:?}", e))?;
-    let pdfium = Pdfium::new(bindings);
+    //let bindings = Pdfium::bind_to_system_library().map_err(|e| format!("{:?}", e))?;
+    //let pdfium = Pdfium::new(bindings);
+
+    // This consolidated logic handles the binding in one go
+    let pdfium = Pdfium::new(
+        Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
+            .or_else(|_| Pdfium::bind_to_system_library())
+            .map_err(|e| format!("Could not find libpdfium.so in ./ or system: {:?}", e))?
+    );
 
     let doc = pdfium.load_pdf_from_file(path, None)
         .map_err(|e| format!("Failed to open PDF: {:?}", e))?;

@@ -7,7 +7,9 @@ description = "Rust core for pdflinkcheck: fast PDF link & TOC extraction"
 authors = ["City of Memphis Wastewater <george.bennett@memphistn.gov>"]
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
+name = "rust_pdflinkcheck"  #  matches the package name
+path = "src/lib.rs"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -16,7 +18,7 @@ thiserror = "1"
 
 # --- For pdfium version ---
 #pdfium-render = { version = "0.8", features = ["pdfium-lib"] }
-pdfium-render = { version = "0.8.37", features = ["bindings"] }
+pdfium-render = { version = "0.8.37", features = ["bindings", "thread_safe"] }
 
 # --- For lopdf version ---
 #lopdf = "0.38"          # latest as of late 2025
