@@ -51,13 +51,36 @@ long-term maintainability.
 
 ---
 
+## Prerequisites
+
+This crate requires the **PDFium** shared library at runtime.
+
+## Setup (Linux x64)
+```bash
+wget https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-x64.tgz
+tar -xvf pdfium-linux-x64.tgz
+cp lib/libpdfium.so .
+```
+
+### Building the Rust crate
+
+To build the release library and ensure it finds `libpdfium.so` at runtime:
+
+```bash
+RUSTFLAGS="-C link-arg=-Wl,-rpath,\$ORIGIN" cargo build --release
+```
+
+This embeds a runtime search path so the resulting binary or shared library will look in its own directory for `libpdfium.so`.
+
+---
+
 ## Raw PDFium access (advanced)
 
 For advanced users who need direct access to PDFium APIs, this crate re-exports
 the low-level `pdfium_sys` bindings behind a feature flag:
 
 ```bash
-cargo build --features pdfium-raw
+RUSTFLAGS="-C link-arg=-Wl,-rpath,\$ORIGIN" cargo build --release --features pdfium-raw
 ```
 
 **Note**: 
@@ -70,13 +93,5 @@ All PDFium interaction is encapsulated within the analysis engine.
 
 ---
 
-## Prerequisites
 
-This crate requires the **PDFium** shared library at runtime.
 
-## Setup (Linux x64)
-```bash
-wget https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-x64.tgz
-tar -xvf pdfium-linux-x64.tgz
-cp lib/libpdfium.so .
-```
