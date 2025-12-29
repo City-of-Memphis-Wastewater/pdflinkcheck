@@ -35,3 +35,4 @@ rust_pdflinkcheck/pdfium-linux-x64.tgz
 rust_pdflinkcheck/libpdfium.so
 rust_pdflinkcheck/include/
 rust_pdflinkcheck/lib/
+rust_pdflinkcheck/licenses/
