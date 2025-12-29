@@ -32,3 +32,7 @@ rust_pdflinkcheck/target/
 rust_pdflinkcheck/Cargo.lock
 rust_pdflinkcheck/defunct/
 
+rust-pdflinkcheck/pdfium-linux-x64.tgz
+rust-pdflinkcheck/libpdfium.so
+rust-pdflinkcheck/include/
+rust-pdflinkcheck/lib/
