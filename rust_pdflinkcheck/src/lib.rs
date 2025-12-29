@@ -2,11 +2,10 @@ use std::ffi::{CString, CStr};
 use std::os::raw::c_char;
 
 mod types;
-/// mod analysis;
-mod analysis_lopdf;  
+mod analysis;
 
-///use analysis::analyze_pdf;
-use analysis_lopdf::{extract_pdf_data, LinkInfo, TocEntry};
+use analysis::analyze_pdf;
+///use analysis_lopdf::{extract_pdf_data, LinkInfo, TocEntry};
 
 /// Convert a Rust String into a raw C string pointer.
 /// Python must call `pdflinkcheck_free_string` to free it.
