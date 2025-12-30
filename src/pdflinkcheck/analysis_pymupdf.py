@@ -224,7 +224,9 @@ def extract_links_pymupdf(pdf_path):
         doc = fitz.open(pdf_path)        
         # This represents the maximum valid 0-index in the doc
         last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count)
-        print(f"last_page_ref = {last_page_ref}")
+
+        #print(last_page_ref)       # Output: "358" (Because of __str__)
+        #print(int(last_page_ref))  # Output: 357   (Because of __int__)
 
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
@@ -243,12 +245,19 @@ def extract_links_pymupdf(pdf_path):
                 
                 kind = link.get('kind')
                 destination_view = serialize_fitz_object(link.get('to'))
-                p_index = link.get('page')
+                p_index = link.get('page') # excpeted to be human facing, per PyMuPDF's known quirks
                 
                 # --- CASE 1: INTERNAL JUMPS (GoTo) ---
                 if p_index is not None:
+
+                    # Ensure we are working with an integer
+                    raw_pymupdf_idx = int(p_index)
+                    corrected_machine_idx = PageRef.corrected_down(raw_pymupdf_idx).index
+                    
                     # Logic: Normalize to 0-index and store as int
-                    idx = min(int(p_index), int(last_page_ref))
+                    idx = min(corrected_machine_idx, int(last_page_ref))
+                    #print(f"DEBUG: Link Text: {anchor_text} | Raw p_index: {p_index}")
+                    #print(f"[DEBUG] idx: {idx}")
                     dest_ref = PageRef.from_index(idx) # does not impact the value
 
                     link_dict.update({
@@ -294,206 +303,6 @@ def extract_links_pymupdf(pdf_path):
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)
     return links_data
-
-def extract_links_pymupdf__(pdf_path):
-    links_data = []
-    try:
-        doc = fitz.open(pdf_path)        
-        last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count).index
-        for page_num in range(doc.page_count):
-            page = doc.load_page(page_num)
-            # source_ref handles the 'where the link is' conversion
-            source_ref = PageRef.from_index(page_num)
-
-            for link in page.get_links():
-                link_rect = get_link_rect(link)
-                anchor_text = get_anchor_text(page, link_rect)
-                
-                link_dict = {
-                    'page': source_ref.machine, # ALWAYS stored as 0-indexed machine int
-                    'rect': link_rect,
-                    'link_text': anchor_text,
-                    'xref': link.get("xref")
-                }
-                
-                kind = link.get('kind')
-                destination_view = serialize_fitz_object(link.get('to'))
-                p_index = link.get('page')
-                
-                if p_index is not None:
-                    # PyMuPDF link target index is already 0-indexed.
-                    # We clamp to doc.page_count - 1 to handle edge-case overflow.
-                    idx = min(int(p_index), last_page_ref)
-                    dest_ref = PageRef.from_index(idx)
-
-                    # Store machine 0-index for logic, but human label for reporting
-                    # the target key value pair is a human facing string
-                    link_dict.update({
-                        'destination_page': dest_ref.machine,
-                        'destination_view': destination_view,
-                        'target': f"Page {dest_ref.human}"
-                    })
-
-                # Categorize the link type
-                if kind == fitz.LINK_URI:
-                    link_dict.update({
-                        'type': 'External (URI)',
-                        'url': link.get('uri'),
-                        'target': link.get('uri', 'URI (Unknown Target)')
-                    })
-                elif kind == fitz.LINK_GOTO:
-                    link_dict['type'] = 'Internal (GoTo/Dest)'
-                elif kind == fitz.LINK_GOTOR:
-                    link_dict.update({
-                        'type': 'Remote (GoToR)',
-                        'remote_file': link.get('file')
-                    })
-                else:
-                    link_dict['type'] = 'Other/Internal'
-
-                links_data.append(link_dict)
-        doc.close()
-    except Exception as e:
-        print(f"An error occurred: {e}", file=sys.stderr)
-    return links_data
-
-def extract_links_pymupdf_(pdf_path):
-    """
-    Opens a PDF, iterates through all pages and extracts all link annotations. 
-    It categorizes the links into External, Internal, or Other actions, and extracts the anchor text.
-    
-    Args:
-        pdf_path: The file system path (str) to the target PDF document.
-
-    Returns:
-        A list of dictionaries, where each dictionary is a comprehensive 
-           representation of an active hyperlink found in the PDF.
-        
-    """
-    links_data = []
-    try:
-        doc = fitz.open(pdf_path)        
-
-        for page_num in range(doc.page_count):
-            page = doc.load_page(page_num)
-            
-            for link in page.get_links():
-
-                page_obj = doc.load_page(page_num)
-                link_rect = get_link_rect(link)
-                
-                rect_obj = link.get("from")
-                xref = link.get("xref")
-                #print(f"rect_obj = {rect_obj}")
-                #print(f"xref = {xref}")
-                
-
-                # --- Examples of various keys associated with various link instances ---
-                #print(f"keys: list(link) = {list(link)}")
-                # keys: list(link) = ['kind', 'xref', 'from', 'page', 'viewrect', 'id']
-                # keys: list(link) = ['kind', 'xref', 'from', 'uri', 'id']
-                # keys: list(link) = ['kind', 'xref', 'from', 'page', 'view', 'id']
-
-                # 1. Extract the anchor text
-                anchor_text = get_anchor_text(page_obj, link_rect)
-
-                # 2. Extract the target and kind
-                target = ""
-                kind = link.get('kind')
-                
-                
-                link_dict = {
-                    #'page': int(page_num) + 1, # accurate for link location, add 1
-                    'page': int(PageRef.from_index(page_num)),
-                    'rect': link_rect,
-                    'link_text': anchor_text,
-                    'xref':xref
-                }
-                
-                # A. Clean Geom. Objects: Use the helper function on 'to' / 'destination'
-                # Use the clean serialize_fitz_object() helper function on all keys that might contain objects
-                destination_view = serialize_fitz_object(link.get('to'))
-
-                # B. Correct Internal Link Page Numbering (The -1 correction hack)
-                # This will be skipped by URI, which is not expected to have a page key
-                target_page_num_reported = None
-                p_index = link.get('page')
-                
-                if p_index is not None:
-                    # fitz gives us 0 in the case of , so we pass it straight to PageRef
-                    dest_ref = PageRef(int(p_index))
-
-                    try:
-                        # 1. Cast to int (handles the string/int confusion)
-                        p_index_int = int(p_index)
-                        
-                        # 2. Logic Clamp: PyMuPDF sometimes reports the 'next' page 
-                        # if a link points to the very bottom/edge of the target.
-                        # If the index is >= total pages, clamp it to the last page.
-                        if p_index_int >= doc.page_count:
-                            p_index_int = doc.page_count - 1
-                        
-                        #target_page_num_reported = p_index_int + 1
-                        target_page_num_reported = dest_ref.human
-                    except (ValueError, TypeError):
-                        target_page_num_reported = "Error"
-
-                if link['kind'] == fitz.LINK_URI:
-                    target =  link.get('uri', 'URI (Unknown Target)')
-                    link_dict.update({
-                        'type': 'External (URI)',
-                        'url': link.get('uri'),
-                        'target': target
-                    })
-                
-                elif link['kind'] == fitz.LINK_GOTO:
-                    target = f"Page {target_page_num_reported}"
-                    link_dict.update({
-                        'type': 'Internal (GoTo/Dest)',
-                        'destination_page': target_page_num_reported,
-                        'destination_view': destination_view,
-                        'target': target
-                    })
-                
-                elif link['kind'] == fitz.LINK_GOTOR:
-                    link_dict.update({
-                        'type': 'Remote (GoToR)',
-                        'remote_file': link.get('file'),
-                        'destination': destination_view
-                    })
-                
-                elif link.get('page') is not None and link['kind'] != fitz.LINK_GOTO: 
-                    target = f"Page {target_page_num_reported}"
-                    link_dict.update({
-                        'type': 'Internal (Resolved Action)',
-                        'destination_page': target_page_num_reported,
-                        'destination_view': destination_view,
-                        'source_kind': link.get('kind'),
-                        'target': target
-                    })
-                    
-                else:
-                    target = link.get('url') or link.get('remote_file') or link.get('target')
-                    link_dict.update({
-                        'type': 'Other Action',
-                        'action_kind': link.get('kind'),
-                        'target': target
-                    })
-
-                ## --- General Serialization Cleaner ---
-                #for key, value in link_dict.items():
-                #    if hasattr(value, 'rect') and hasattr(value, 'point'):
-                #        # This handles Rect and Point objects that may slip through
-                #        link_dict[key] = str(value)
-                ## --- End Cleaner ---
-                    
-                links_data.append(link_dict)
-
-        doc.close()
-    except Exception as e:
-        print(f"An error occurred: {e}", file=sys.stderr)
-    return links_data
-
 
 def call_stable():
     """
