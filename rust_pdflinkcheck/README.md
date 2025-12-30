@@ -74,24 +74,9 @@ This embeds a runtime search path so the resulting binary or shared library will
 
 ---
 
-## Raw PDFium access (advanced)
-
-For advanced users who need direct access to PDFium APIs, this crate re-exports
-the low-level `pdfium_sys` bindings behind a feature flag:
-
-```bash
-RUSTFLAGS="-C link-arg=-Wl,-rpath,\$ORIGIN" cargo build --release --features pdfium-raw
-```
-
-**Note**: 
-These bindings are unsafe and are not considered part of the stable public API. 
-They may change without notice.
-
 ## What is *not* exposed
 This crate does not expose PDF document, page, or annotation objects as part of its public API. 
 All PDFium interaction is encapsulated within the analysis engine.
-
----
 
 
 

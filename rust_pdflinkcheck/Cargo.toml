@@ -18,12 +18,13 @@ thiserror = "1"
 
 # --- For pdfium version ---
 #pdfium-render = { version = "0.8", features = ["pdfium-lib"] }
-pdfium-render = { version = "0.8.37", features = ["bindings", "thread_safe"] }
+#pdfium-render = { version = "0.8.37", features = ["bindings", "thread_safe"] }
+#pdfium-render = { version = "0.8.37", features = ["pdfium-lib", "thread_safe"] }
+pdfium-render = { version = "0.8.37", features = ["thread_safe"] }
 
 # --- For lopdf version ---
 #lopdf = "0.38"          # latest as of late 2025
 #pdf-extract = "0.10"
 #anyhow = "1.0"
 
-[features]
-pdfium-raw = []
+#[features]

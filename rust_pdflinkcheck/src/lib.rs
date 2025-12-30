@@ -4,11 +4,6 @@ use std::os::raw::c_char;
 pub mod types;
 pub mod analysis;
 
-// Expose raw or semi-raw low-level PDFium access for feature opt-in
-#[cfg(feature = "pdfium-raw")]
-pub mod pdfium {
-    pub use pdfium_sys::*;
-}
 // Re-export once for both internal and external use
 pub use crate::analysis::analyze_pdf;
 
