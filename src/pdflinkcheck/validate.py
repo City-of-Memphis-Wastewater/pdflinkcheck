@@ -104,7 +104,7 @@ def run_validation(
                         reason = f"Page {target_page_ref.human} seems reasonable, but total page count is unavailable."
 
                     # 3. Case: Out of Upper Bounds
-                    elif target_page >= total_pages:
+                    elif target_page_ref.machine >= total_pages:
                         status = "broken-page"
                         # User sees 1-based, e.g., "Page 101 out of range (1-100)"
                         reason = f"Page {target_page_ref.human} out of range (1–{total_pages})"
@@ -181,6 +181,7 @@ def run_validation(
     for entry in toc:
         try:
             # Coerce to int; we expect 0-based index from the engine
+            # In the context of the ing Map, -1 acts as a "Sentinel Value." It represents a state that is strictly outside the "Machine" range
             target_page_raw = int(entry.get("target_page", -1))
             target_page_ref = PageRef.from_index(int(target_page_raw))
 
