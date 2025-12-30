@@ -1,3 +1,4 @@
+# src/pdflinkcheck/ffi.py
 from functools import cache
 import ctypes
 import json
@@ -81,8 +82,18 @@ def _load_rust():
 def rust_available():
     return _load_rust() is not None
 
-
 def extract_links_rust(pdf_path: str):
+    """Returns only the links list from the Rust engine."""
+    data = _run_rust_analysis(pdf_path)
+    return data.get("links", [])
+
+def extract_toc_rust(pdf_path: str):
+    """Returns only the TOC list from the Rust engine."""
+    data = _run_rust_analysis(pdf_path)
+    return data.get("toc", [])
+
+def _run_rust_analysis(pdf_path: str):
+    """Internal helper to call the shared library and handle JSON/Memory."""
     lib = _load_rust()
     if lib is None:
         raise RuntimeError("Rust engine not available")
@@ -90,7 +101,7 @@ def extract_links_rust(pdf_path: str):
     # Get the raw pointer address
     ptr = lib.pdflinkcheck_analyze_pdf(pdf_path.encode("utf-8"))
     if not ptr:
-        raise RuntimeError("Rust returned NULL")
+        raise RuntimeError(f"Rust engine failed to analyze: {pdf_path}")
 
     try:
         # Manually extract the string from the pointer address
@@ -99,4 +110,3 @@ def extract_links_rust(pdf_path: str):
     finally:
         # Now we can safely free the pointer address
         lib.pdflinkcheck_free_string(ptr)
-

@@ -23,26 +23,35 @@ import os as _os
 def run_report(*args, **kwargs):
     from pdflinkcheck.report import run_report_and_call_exports as _run
     return _run(*args, **kwargs)
-    
+
+# --- pypdf ---
 def extract_links_pypdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pypdf import extract_links_pypdf as _extract_links
-    return _extract_links(*args, **kwargs)
-
-def extract_links_pymupdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as _extract_links
-    return _extract_links(*args, **kwargs)
-
-def extract_links_rust(*args, **kwargs):
-    import pdflinkcheck.ffi
-    return pdflinkcheck.ffi.extract_links_rust(*args, **kwargs)
+    from pdflinkcheck.analyze_pypdf import extract_links_pypdf as _extract
+    return _extract(*args, **kwargs)
 
 def extract_toc_pypdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pypdf import extract_toc_pypdf as _extract_toc
-    return _extract_toc(*args, **kwargs)
+    from pdflinkcheck.analyze_pypdf import extract_toc_pypdf as _extract
+    return _extract(*args, **kwargs)
+
+# --- PyMuPDF ---
+def extract_links_pymupdf(*args, **kwargs):
+    from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as _extract
+    return _extract(*args, **kwargs)
 
 def extract_toc_pymupdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pymupdf import extract_toc_pymupdf as _extract_toc
-    return _extract_toc(*args, **kwargs)
+    from pdflinkcheck.analyze_pymupdf import extract_toc_pymupdf as _extract
+    return _extract(*args, **kwargs)
+
+# --- Rust ---
+def extract_links_rust(*args, **kwargs):
+    from pdflinkcheck.ffi import extract_links_rust as _extract
+    return _extract(*args, **kwargs)
+
+def extract_toc_rust(*args, **kwargs):
+    # Even if this just calls the same underlying Rust engine, 
+    # it keeps the API predictable for people switching backends.
+    from pdflinkcheck.ffi import extract_toc_rust as _extract
+    return _extract(*args, **kwargs)
 
 # -----------------------------
 # GUI easter egg
