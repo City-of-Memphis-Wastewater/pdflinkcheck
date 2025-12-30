@@ -144,24 +144,7 @@ def tools_command(
     if clear_cache:
         clear_all_caches()
 
-"""
-def validate_pdf_commands(
-    pdf_path: Optional[Path] = typer.Argument(
-        None,
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        resolve_path=True,
-        help="Path to the PDF file to validate. If omitted, searches current directory."
-    ),
-    pdf_library: Literal["pypdf", "pymupdf"] = typer.Option(
-        "pypdf",
-        "--library", "-l",
-        envvar="PDF_ENGINE",
-        help="PDF parsing engine: pypdf (pure Python) or pymupdf (faster, if available)"
-    ),
-    """
+
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity
     pdf_path: Optional[Path] = typer.Argument(
@@ -185,6 +168,11 @@ def analyze_pdf( # Renamed function for clarity
         "--pdf-library","-p",
         envvar="PDF_ENGINE",
         help="PDF parsing library. pypdf (pure Python) or pymupdf (faster, if available).",
+    ),
+    print_bool: bool = typer.Option(
+        True,
+        "--print/--quiet",
+        help="Print or do not print the analysis and validation report to console."
     )
 ):
     """
@@ -240,6 +228,7 @@ def analyze_pdf( # Renamed function for clarity
         pdf_path=str(pdf_path), 
         export_format = export_formats,
         pdf_library = pdf_library,
+        print_bool = print_bool,
     )
 
     if not report_results or not report_results.get("data"):
@@ -248,14 +237,14 @@ def analyze_pdf( # Renamed function for clarity
 
     validation_results = report_results["data"]["validation"]
     # Optional: fail on broken links
-    broken_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
+    broken_page_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
     
-    if broken_count > 0:
-        console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_count} broken link(s) found.")
+    if broken_page_count > 0:
+        console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_page_count} broken link(s) found.")
     else:
         console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!\n")
 
-    raise typer.Exit(code=0 if broken_count == 0 else 1)
+    raise typer.Exit(code=0 if broken_page_count == 0 else 1)
 
 @app.command(name="serve")
 def serve(

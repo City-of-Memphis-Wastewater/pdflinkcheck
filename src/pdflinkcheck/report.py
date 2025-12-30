@@ -11,14 +11,34 @@ from pdflinkcheck.io import error_logger, export_report_json, export_report_txt,
 from pdflinkcheck.environment import pymupdf_is_available
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
+from pdflinkcheck.helpers import debug_head
 
 SEP_COUNT=28
-            
+# Define a safe "empty" validation state
+EMPTY_VALIDATION = {
+        "summary-stats": {
+            "total_checked": 0,
+            "valid": 0,
+            "file-found": 0,
+            "broken-page": 0,
+            "broken-file": 0,
+            "no_destination_page_count": 0,
+            "unknown-web": 0,
+            "unknown-reasonableness": 0,
+            "unknown-link": 0 
+        },
+        "issues": [],
+        "summary-txt": "Analysis failed: No validation performed.",
+        "total_pages": 0
+    }
+
+
 def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     # The meat and potatoes
     report_results = run_report(
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
+        print_bool=print_bool,
     )
     # 2. Initialize file path tracking
     output_path_json = None
@@ -66,8 +86,6 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
     # Helper to handle conditional printing and mandatory buffering
     def log(msg: str):
-        #if print_bool:
-        #    print(msg)
         report_buffer.append(msg)
 
     # Expected: "pypdf" or "PyMuPDF" pr "rust"
@@ -92,10 +110,17 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         if not rust_available():
             raise ImportError("Rust engine requested but Rust library not available.")
         
-        # Call once, store the result
+        # Rust returns a dict: {"links": [...], "toc": [...]}
         rust_data = analyze_pdf_rust(pdf_path)
-        all_links = rust_data["links"]
-        toc_entries = rust_data["toc"]
+        # Normalize Rust types to match Python expectations
+        for link in rust_data.get("links", []):
+            if link.get("action_kind") == "GoTo":
+                link['type'] = 'Internal (GoTo/Dest)'
+            elif link.get("action_kind") == "URI":
+                link['type'] = 'External (URI)'
+        
+        extracted_links = rust_data.get("links", [])
+        structural_toc = rust_data.get("toc", [])
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
@@ -143,17 +168,28 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
         return empty_report
         
-    try:
+    if True: #try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
 
         # 1. Extract all active links and TOC
-        extracted_links = extract_links(pdf_path)
-        structural_toc = extract_toc(pdf_path) 
-        #structural_toc = extract_toc_pypdf(pdf_path) 
+        if pdf_library != "rust": 
+            extracted_links = extract_links(pdf_path)
+            structural_toc = extract_toc(pdf_path) 
+
         toc_entry_count = len(structural_toc)
         str_structural_toc = get_structural_toc(structural_toc)
         
+        # check the structure, that it matches
+        print(f"pdf_library={pdf_library}")
+        #print(f"[DEBUG] extracted_links[0:4] = {extracted_links[0:4]}")
+        #print(f"[DEBUG] structural_toc[0:4] = {structural_toc[0:4]}")
+        #print(f"[DEBUG] list(extracted_links)[0:4] = {list(extracted_links)[0:4]}")
+        #print(f"[DEBUG] list(structural_toc)[0:4] = {list(structural_toc)[0:4]}")
+        debug_head("TOC", structural_toc, n=1)
+        debug_head("Links", list(extracted_links), n=1)
+        
+        # THIS HITS
 
         if not extracted_links and not structural_toc:
             log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
@@ -264,7 +300,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "external_links": external_uri_links,
             "internal_links": all_internal,
             "toc": structural_toc,
-            "validation": {}
+            "validation": EMPTY_VALIDATION
         }
 
         intermediate_report_results = {
@@ -291,6 +327,8 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                                             pdf_path=pdf_path,
                                             pdf_library=pdf_library)
         log(validation_results.get("summary-txt",""))
+
+        # CRITICAL: Re-assign to report_results so it's available for the final return
         report_results = intermediate_report_results
 
         # --- Offline Risk Analysis (Security Layer) ---
@@ -312,17 +350,23 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         if print_bool:
             print(report_buffer_str)
             
-        # Return a clean results object
         return report_results
-    
-    except Exception as e:
+        """except Exception as e:
+        error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
+        # Ensure we always return a valid structure even in total failure
+        return {
+            "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION},
+            "text": f"FATAL Error: {str(e)}",
+            "metadata": {"pdf_name": Path(pdf_path).name, "library_used": pdf_library}
+        }"""
+    if False:#except Exception as e:
         # Specific handling for common read failures
-        if "invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
+        if True:#"invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
             log(f"\nWarning: Could not parse PDF structure — likely an image-only or malformed PDF.")
             log("No hyperlinks or TOC can exist in this file.")
             log("Result: No links found.")
             return {
-                "data": {"external_links": [], "internal_links": [], "toc": []},
+                "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION},
                 "text": "\n".join(report_buffer + [
                     "\nWarning: PDF appears to be image-only or malformed.",
                     "No hyperlinks or structural TOC found."
@@ -347,7 +391,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     #    error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
     #    log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
     #    raise # Allow the exception to propagate or handle gracefully
-    except Exception as e:
+    if False:#except Exception as e:
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
         log(f"FATAL: Analysis failed: {str(e)}. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
 
@@ -357,7 +401,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "external_links": [],
                 "internal_links": [],
                 "toc": [],
-                "validation": {}
+                "validation": EMPTY_VALIDATION
             },
             "text": "\n".join(report_buffer + [
                 "\n--- Analysis failed ---",

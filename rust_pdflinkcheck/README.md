@@ -53,7 +53,7 @@ long-term maintainability.
 
 ## Prerequisites
 
-This crate requires the **PDFium** shared library at runtime.
+This crate requires the **PDFium** (`libpdfium`) shared library at runtime.
 
 ## Setup (Linux x64)
 ```bash
@@ -71,6 +71,13 @@ RUSTFLAGS="-C link-arg=-Wl,-rpath,\$ORIGIN" cargo build --release
 ```
 
 This embeds a runtime search path so the resulting binary or shared library will look in its own directory for `libpdfium.so`.
+
+**For Development:**
+If you are running the project from source, ensure the dynamic linker can find the shared objects:
+
+```bash
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/rust_pdflinkcheck/target/release
+```
 
 ---
 

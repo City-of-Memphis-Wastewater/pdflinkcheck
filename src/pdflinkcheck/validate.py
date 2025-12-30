@@ -159,7 +159,7 @@ def run_validation(
                 unknown_reasonableness_count += 1
             elif target_page < 1:
                 status = "broken-page"
-                broken_count += 1
+                broken_page_count += 1
                 reason = f"TOC targets negative page: {target_page}."
             elif 1 <= target_page <= total_pages:
                 valid_count += 1
@@ -167,11 +167,11 @@ def run_validation(
             else:
                 status = "broken-page"
                 reason = f"TOC targets page {target_page} (out of 1–{total_pages})"
-                broken_count += 1
+                broken_page_count += 1
         else:
             status = "broken-page"
             reason = f"Invalid page: {target_page}"
-            broken_count += 1
+            broken_page_count += 1
 
         issues.append({
             "type": "TOC Entry",
@@ -232,6 +232,14 @@ def run_validation(
                 log("{:<5} | {:<12} | {:<30} | {}".format(i, link_type, text, reason))
             if len(issues) > 25:
                 log(f"... and {len(issues) - 25} more issues")
+
+        elif summary_stats.get('total_checked', 0) == 0:
+            # Check if this was a total crash or just an empty PDF
+            if summary_stats.get('is_error_fallback'): 
+                 log("\nStatus: Validation could not be performed due to a processing error.")
+            else:
+                 log("\nStatus: No links or TOC entries were found to validate.")
+
         else:
             log("Success: No broken links or TOC issues!")
 

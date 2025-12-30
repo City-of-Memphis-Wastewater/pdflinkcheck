@@ -4,6 +4,7 @@ import ctypes
 import json
 from pathlib import Path
 import pyhabitat 
+import os
 
 
 def _should_attempt_rust():
@@ -67,8 +68,16 @@ def _load_rust():
     if not path:
         return None
 
+    # On Linux, we can try to pre-load libpdfium or 
+    # tell ctypes where to look if it's in the same folder
+    if os.name == "posix":
+        # This helps the Rust lib find its sibling libpdfium.so
+        lib_dir = os.path.dirname(path)
+        os.environ["LD_LIBRARY_PATH"] = f"{lib_dir}:{os.environ.get('LD_LIBRARY_PATH', '')}"
+
     try:
         lib = ctypes.CDLL(path)
+        # return lib
         lib.pdflinkcheck_analyze_pdf.argtypes = [ctypes.c_char_p]
         # Use void_p so we keep the raw address for freeing later
         lib.pdflinkcheck_analyze_pdf.restype = ctypes.c_void_p 
@@ -79,6 +88,7 @@ def _load_rust():
     except OSError:
         return None
 
+    
 def rust_available():
     return _load_rust() is not None
 
