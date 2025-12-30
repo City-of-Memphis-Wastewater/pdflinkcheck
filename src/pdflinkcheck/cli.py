@@ -165,7 +165,7 @@ def analyze_pdf( # Renamed function for clarity
 
     pdf_library: Literal["auto","rust","pypdf", "pymupdf"] = typer.Option(
         assess_default_pdf_library(),
-        "--pdf-library","-p",
+        "--library","-l",
         envvar="PDF_ENGINE",
         help="PDF parsing library. pypdf (pure Python) or pymupdf (faster, if available).",
     ),
