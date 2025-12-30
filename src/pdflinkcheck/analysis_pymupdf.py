@@ -1,6 +1,6 @@
 #!/usr/bin/env python3 
 # SPDX-License-Identifier: MIT
-# pdflinkcheck/analyze_pymupdf.py
+# pdflinkcheck/analysis_pymupdf.py
 
 import sys
 from pathlib import Path
