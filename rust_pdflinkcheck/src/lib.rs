@@ -2,10 +2,10 @@ use std::ffi::{CString, CStr};
 use std::os::raw::c_char;
 
 pub mod types;
-pub mod analysis;
+pub mod analysis_pdfium;
 
 // Re-export once for both internal and external use
-pub use crate::analysis::analyze_pdf;
+pub use crate::analysis_pdfium::analyze_pdf;
 
 fn into_c_string(s: String) -> *mut c_char {
     CString::new(s).unwrap().into_raw()

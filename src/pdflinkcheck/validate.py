@@ -267,9 +267,9 @@ def run_validation_more_readable_slop(pdf_path: str = None, pdf_library: str = "
     # 1. Setup Library Engine (Reuse logic)
     pdf_library = pdf_library.lower()
     if pdf_library == "pypdf":
-        from pdflinkcheck.analyze_pypdf import extract_links_pypdf as extract_links
+        from pdflinkcheck.analysis_pypdf import extract_links_pypdf as extract_links
     else:
-        from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as extract_links
+        from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf as extract_links
 
     if pdf_path is None:
         pdf_path = get_first_pdf_in_cwd()

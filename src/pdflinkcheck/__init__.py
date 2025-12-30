@@ -1,18 +1,11 @@
+#!/usr/bin/env python3 
+# SPDX-License-Identifier: MIT
 # src/pdflinkcheck/__init__.py
 """
-# License information
 pdflinkcheck - A PDF Link Checker
-
-Copyright (C) 2025 George Clayton Bennett
 
 Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
 
-This program is free software: You can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.                    
-
-The AGPL3+ is required because pdflinkcheck uses PyMuPDF, which is licensed under the AGPL3.
 """
 import os as _os
 
@@ -26,20 +19,20 @@ def run_report(*args, **kwargs):
 
 # --- pypdf ---
 def extract_links_pypdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pypdf import extract_links_pypdf as _extract
+    from pdflinkcheck.analysis_pypdf import extract_links_pypdf as _extract
     return _extract(*args, **kwargs)
 
 def extract_toc_pypdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pypdf import extract_toc_pypdf as _extract
+    from pdflinkcheck.analysis_pypdf import extract_toc_pypdf as _extract
     return _extract(*args, **kwargs)
 
 # --- PyMuPDF ---
 def extract_links_pymupdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pymupdf import extract_links_pymupdf as _extract
+    from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf as _extract
     return _extract(*args, **kwargs)
 
 def extract_toc_pymupdf(*args, **kwargs):
-    from pdflinkcheck.analyze_pymupdf import extract_toc_pymupdf as _extract
+    from pdflinkcheck.analysis_pymupdf import extract_toc_pymupdf as _extract
     return _extract(*args, **kwargs)
 
 # --- Rust ---

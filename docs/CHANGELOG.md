@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.1] - 2025-12-29
+### Changed
+- Standardized internal module naming convention to analysis_{engine} across Python and Rust source files.
+- Renamed Rust analysis core to analysis_pdfium.rs to clarify the underlying technology and support future engine expansion.
+
+---
+
 ## [1.1.99] - 2025-12-28
 
 ### Fixed:

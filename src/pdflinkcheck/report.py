@@ -97,7 +97,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
-        from pdflinkcheck.analyze_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
+        from pdflinkcheck.analysis_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
 
     # PyMuPDF Engine
     elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
@@ -111,7 +111,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             print("\n")
             #return    
             raise ImportError("The 'fitz' module (PyMuPDF) is required but not installed.")
-        from pdflinkcheck.analyze_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
+        from pdflinkcheck.analysis_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
     
     log("\n--- Starting Analysis ... ---\n")
     if pdf_path is None:
