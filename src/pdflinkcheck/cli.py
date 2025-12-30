@@ -241,8 +241,8 @@ def analyze_pdf( # Renamed function for clarity
     
     if broken_page_count > 0:
         console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_page_count} broken link(s) found.")
-    else:
-        console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!\n")
+    #else:
+    #    console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!\n")
 
     raise typer.Exit(code=0 if broken_page_count == 0 else 1)
 

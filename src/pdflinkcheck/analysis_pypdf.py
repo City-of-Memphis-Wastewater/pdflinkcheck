@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional, List
 
 from pypdf import PdfReader
 from pypdf.generic import Destination, NameObject, ArrayObject, IndirectObject
+from pdflinkcheck.helpers import PageRef
 
 
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
@@ -54,7 +55,8 @@ def get_anchor_text_pypdf(page, rect) -> str:
 def resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) -> Optional[int]:
     try:
         if isinstance(dest, Destination):
-            return dest.page_number + 1  # Return int directly
+            # .page_number in pypdf is already 0-indexed
+            return dest.page_number 
 
         if isinstance(dest, IndirectObject):
             return obj_id_to_page.get(dest.idnum)
@@ -95,14 +97,16 @@ def extract_links_pypdf(pdf_path):
     
     # Pre-map Object IDs to Page Numbers for fast internal link resolution
     obj_id_to_page = {
-        page.indirect_reference.idnum: i + 1 
+        page.indirect_reference.idnum: i
         for i, page in enumerate(reader.pages)
     }
 
     all_links = []
     
     for i, page in enumerate(reader.pages):
-        page_num = i + 1
+        #page_num = i 
+        # Use PageRef to stay consistent
+        page_source = PageRef.from_index(i)
         if "/Annots" not in page:
             continue
             
@@ -115,7 +119,7 @@ def extract_links_pypdf(pdf_path):
             anchor_text = get_anchor_text_pypdf(page, rect)
             
             link_dict = {
-                'page': page_num,
+                'page': page_source.machine,
                 'rect': list(rect) if rect else None,
                 'link_text': anchor_text,
                 'type': 'Other Action',
@@ -136,11 +140,14 @@ def extract_links_pypdf(pdf_path):
                 dest = obj.get("/Dest") or obj["/A"].get("/D")
                 target_page = resolve_pypdf_destination(reader, dest, obj_id_to_page)
                 # print(f"DEBUG: resolved target_page = {target_page} (type: {type(target_page)})")
-                link_dict.update({
-                    'type': 'Internal (GoTo/Dest)',
-                    'destination_page': target_page,
-                    'target': f"Page {target_page}"
-                })
+                if target_page is not None:
+                    dest_page = PageRef.from_index(target_page)
+                    link_dict.update({
+                        'type': 'Internal (GoTo/Dest)',
+                        'destination_page': dest_page.machine,
+                        #'target': f"Page {target_page}"
+                        'target': dest_page.machine
+                    })
             
             # Handle Remote GoTo (GoToR)
             elif "/A" in obj and obj["/A"].get("/S") == "/GoToR":
@@ -169,7 +176,10 @@ def extract_toc_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
                     # Using the reader directly is the only way to avoid 
                     # the 'Destination' object has no attribute error
                     try:
-                        page_num = reader.get_destination_page_number(item) + 1
+                        page_num_raw = reader.get_destination_page_number(item)
+                        # page_num_raw is 0-indexed. Use PageRef to store it.
+                        ref = PageRef.from_index(page_num_raw)
+                        page_num = ref.machine
                     except:
                         page_num = "N/A"
 
