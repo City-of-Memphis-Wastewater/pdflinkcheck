@@ -34,7 +34,7 @@ def extract_links_pymupdf(*args, **kwargs):
 
 def extract_links_rust(*args, **kwargs):
     import pdflinkcheck.ffi
-    return pdflinkcheck.ffi.analyze_pdf_rust(*args, **kwargs)
+    return pdflinkcheck.ffi.extract_links_rust(*args, **kwargs)
 
 def extract_toc_pypdf(*args, **kwargs):
     from pdflinkcheck.analyze_pypdf import extract_toc_pypdf as _extract_toc

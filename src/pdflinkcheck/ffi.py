@@ -82,13 +82,13 @@ def rust_available():
     return _load_rust() is not None
 
 
-def analyze_pdf_rust(path: str):
+def extract_links_rust(pdf_path: str):
     lib = _load_rust()
     if lib is None:
         raise RuntimeError("Rust engine not available")
 
     # Get the raw pointer address
-    ptr = lib.pdflinkcheck_analyze_pdf(path.encode("utf-8"))
+    ptr = lib.pdflinkcheck_analyze_pdf(pdf_path.encode("utf-8"))
     if not ptr:
         raise RuntimeError("Rust returned NULL")
 
@@ -99,4 +99,4 @@ def analyze_pdf_rust(path: str):
     finally:
         # Now we can safely free the pointer address
         lib.pdflinkcheck_free_string(ptr)
-        
+
