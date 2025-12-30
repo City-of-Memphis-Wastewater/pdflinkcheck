@@ -87,6 +87,8 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     # RUST ENGINE
     if pdf_library == "rust":
         from pdflinkcheck.ffi import rust_available, analyze_pdf_rust
+        # overkill, encourages redundancy: from pdflinkcheck.ffi import (rust_available, extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
+
         if not rust_available():
             raise ImportError("Rust engine requested but Rust library not available.")
         

@@ -13,7 +13,7 @@ import os as _os
 #from pdflinkcheck import dev
 
 # lazy loaded  library functions
-def run_report(*args, **kwargs):
+def run_report_and_call_exports(*args, **kwargs):
     from pdflinkcheck.report import run_report_and_call_exports as _run
     return _run(*args, **kwargs)
 
@@ -37,6 +37,7 @@ def extract_toc_pymupdf(*args, **kwargs):
 
 # --- Rust ---
 def extract_links_rust(*args, **kwargs):
+    # Named for consistency
     from pdflinkcheck.ffi import extract_links_rust as _extract
     return _extract(*args, **kwargs)
 
@@ -45,6 +46,11 @@ def extract_toc_rust(*args, **kwargs):
     # it keeps the API predictable for people switching backends.
     from pdflinkcheck.ffi import extract_toc_rust as _extract
     return _extract(*args, **kwargs)
+
+def analyze_pdf_rust(*args, **kwargs):
+    # Does both the toc analysis and the links, more smoothly than separate
+    from pdflinkcheck.ffi import analyze_pdf_rust as _analyze
+    return _analyze(*args, **kwargs)
 
 # -----------------------------
 # GUI easter egg
@@ -65,6 +71,8 @@ if _load_gui_func:
         # Optional: log or ignore silently
         print("start_gui() not imported")
 
+
+
 # Breadcrumbs, for stumbling upon.
 if _load_gui_func:
     __pdflinkcheck_gui_easteregg_enabled__ = True
@@ -82,11 +90,21 @@ __all__ = [
     "extract_toc_pymupdf", 
     "extract_links_pypdf", 
     "extract_toc_pypdf", 
-    #"start_gui" if _load_gui_func else None,
-    "dev", 
+    "extract_links_rust",   
+    "extract_toc_rust",     
+    "analyze_pdf_rust",     
 ]
+
+# Handle the Easter Egg export
 if _load_gui_func:
     __all__.append("start_gui")
+
+# Handle dev module if you want it public
+try:
+    from pdflinkcheck import dev
+    __all__.append("dev")
+except ImportError:
+    pass
 
 # 4. THE CLEANUP (This removes items from dir())
 del _os

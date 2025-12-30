@@ -83,14 +83,17 @@ def rust_available():
     return _load_rust() is not None
 
 def extract_links_rust(pdf_path: str):
-    """Returns only the links list from the Rust engine."""
+    """Returns only the links list from the Rust engine, for consistent naming with the pypdf and pymupdf functions"""
     data = _run_rust_analysis(pdf_path)
     return data.get("links", [])
 
 def extract_toc_rust(pdf_path: str):
-    """Returns only the TOC list from the Rust engine."""
+    """Returns only the TOC list from the Rust engine, for consistent naming with the pypdf and pymupdf functions"""
     data = _run_rust_analysis(pdf_path)
     return data.get("toc", [])
+
+def analyze_pdf_rust(pdf_path: str):
+    return _run_rust_analysis(pdf_path)
 
 def _run_rust_analysis(pdf_path: str):
     """Internal helper to call the shared library and handle JSON/Memory."""
