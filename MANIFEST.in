@@ -1,6 +1,6 @@
 # MANIFEST.in
-# Include the LICENSE file at the root of the distribution
 include LICENSE
-
-# Include the README.md file (optional, as it's often covered by project.readme)
 include README.md
+
+# Include the native binaries
+recursive-include src/pdflinkcheck/data *.so *.dll *.dylib

@@ -106,22 +106,35 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     # RUST ENGINE
     if pdf_library == "rust":
         from pdflinkcheck.ffi import rust_available, analyze_pdf_rust
-        # overkill, encourages redundancy: from pdflinkcheck.ffi import (rust_available, extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
 
         if not rust_available():
             raise ImportError("Rust engine requested but Rust library not available.")
         
         # Rust returns a dict: {"links": [...], "toc": [...]}
-        rust_data = analyze_pdf_rust(pdf_path)
-        # Normalize Rust types to match Python expectations
-        for link in rust_data.get("links", []):
-            if link.get("action_kind") == "GoTo":
-                link['type'] = 'Internal (GoTo/Dest)'
-            elif link.get("action_kind") == "URI":
-                link['type'] = 'External (URI)'
+        rust_data = analyze_pdf_rust(pdf_path) or {"links": [], "toc": []}
         
         extracted_links = rust_data.get("links", [])
         structural_toc = rust_data.get("toc", [])
+
+        # Normalize Rust types to match Python expectations
+        for link in extracted_links:
+            kind = link.get("action_kind")
+            # Rust usually provides 0-indexed 'source_page_index'
+            raw_src = link.get("source_page_index", 0)
+            src_ref = PageRef.from_index(raw_src)
+            link['page'] = src_ref.machine  # Keep as machine index for consistency with other engines
+            if kind == "GoTo":
+                link['type'] = 'Internal (GoTo/Dest)'
+                # Ensure the destination_page is a machine index
+                raw_target = link.get("page_index") 
+                ref = PageRef.from_index(raw_target)
+                link['destination_page'] = ref.machine
+                #link['target'] = f"Page {ref.human}"
+                link['target'] = ref.machine
+            elif kind == "URI":
+                link['type'] = 'External (URI)'
+            else:
+                link['type'] = 'Other'
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
@@ -169,7 +182,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
         return empty_report
         
-    if True: #try:
+    try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
 
@@ -308,7 +321,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "external_links": external_uri_links,
             "internal_links": all_internal,
             "toc": structural_toc,
-            "validation": EMPTY_VALIDATION
+            "validation": EMPTY_VALIDATION.copy()
         }
 
         intermediate_report_results = {
@@ -337,7 +350,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         log(validation_results.get("summary-txt",""))
 
         # CRITICAL: Re-assign to report_results so it's available for the final return
-        report_results = intermediate_report_results
+        report_results = intermediate_report_results.copy()
 
         # --- Offline Risk Analysis (Security Layer) ---
         risk_results = compute_risk(report_results)
@@ -363,18 +376,18 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
         # Ensure we always return a valid structure even in total failure
         return {
-            "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION},
+            "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION.copy()},
             "text": f"FATAL Error: {str(e)}",
             "metadata": {"pdf_name": Path(pdf_path).name, "library_used": pdf_library}
         }"""
-    if False:#except Exception as e:
+    except Exception as e:
         # Specific handling for common read failures
         if True:#"invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
             log(f"\nWarning: Could not parse PDF structure — likely an image-only or malformed PDF.")
             log("No hyperlinks or TOC can exist in this file.")
             log("Result: No links found.")
             return {
-                "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION},
+                "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION.copy()},
                 "text": "\n".join(report_buffer + [
                     "\nWarning: PDF appears to be image-only or malformed.",
                     "No hyperlinks or structural TOC found."
@@ -399,7 +412,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     #    error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
     #    log(f"FATAL: Analysis failed. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
     #    raise # Allow the exception to propagate or handle gracefully
-    if False:#except Exception as e:
+    except Exception as e:
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
         log(f"FATAL: Analysis failed: {str(e)}. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
 
@@ -409,7 +422,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "external_links": [],
                 "internal_links": [],
                 "toc": [],
-                "validation": EMPTY_VALIDATION
+                "validation": EMPTY_VALIDATION.copy()
             },
             "text": "\n".join(report_buffer + [
                 "\n--- Analysis failed ---",

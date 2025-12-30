@@ -1,3 +1,4 @@
+// analysis_pdfium.rs
 use pdfium_render::prelude::*;
 use crate::types::{AnalysisResult, LinkRecord, TocEntry};
 
@@ -20,16 +21,7 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
 
     // 1. TOC Extraction
     for b in doc.bookmarks().iter() {
-        let title = b.title().unwrap_or_default();
-        let target_page = b.destination()
-            .and_then(|d| d.page_index().ok())
-            .unwrap_or(0) as i32;
-
-        toc.push(TocEntry {
-            level: 0, 
-            title,
-            target_page: serde_json::json!(target_page),
-        });
+        walk_bookmarks(&b, 1, &mut toc); // Levels usually start at 1
     }
 
     for (page_index, page) in doc.pages().iter().enumerate() {
@@ -93,4 +85,29 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
     }
 
     Ok(AnalysisResult { links, toc })
+}
+
+// Helper for recursive TOC extraction
+fn walk_bookmarks(bookmark: &PdfBookmark, level: i32, toc: &mut Vec<TocEntry>) {
+    let title = bookmark.title().unwrap_or_default();
+    let target_page = bookmark.destination()
+        .and_then(|d| d.page_index().ok())
+        .unwrap_or(0) as i32;
+
+    toc.push(TocEntry {
+        level,
+        title,
+        target_page: serde_json::json!(target_page),
+    });
+
+    // Recursively handle children
+    for child in bookmark.children().iter() {
+        walk_bookmarks(&child, level + 1, toc);
+    }
+}
+
+// Update your main loop
+let mut toc = Vec::new();
+for b in doc.bookmarks().iter() {
+    walk_bookmarks(&b, 1, &mut toc); // Levels usually start at 1
 }

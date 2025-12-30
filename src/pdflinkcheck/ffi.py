@@ -6,6 +6,11 @@ from pathlib import Path
 import pyhabitat 
 import os
 
+# This is always the directory containing ffi.py
+HERE = Path(__file__).resolve().parent
+
+PACKAGE_ROOT = Path(__file__).parents[2]
+
 
 def _should_attempt_rust():
     # Termux: never load Rust/pdfium
@@ -35,25 +40,20 @@ def _find_rust_lib():
     else:
         return None
 
-    here = Path(__file__).resolve().parent
-    data_dir = here / "data"
-
-    # Check data dir first (for distributed packages)
-    candidate = data_dir / target
+    # 1. Check the 'data' sibling directory (Installed/Production)
+    candidate = HERE / "data" / target
     if candidate.exists():
         return str(candidate)
         
-    candidate = here / target
+    # 2. Check the current directory (Local Dev copy)
+    candidate = HERE / target
     if candidate.exists():
         return str(candidate)
 
-    root_candidate = (
-        Path(__file__).resolve().parents[2]
-        / "rust_pdflinkcheck"
-        / "target"
-        / "release"
-        / target
-    )
+    # 3. Check the Rust target directory (Development/Cargo layout)
+    # This goes up 3 levels from src/pdflinkcheck/ffi.py to root, 
+    # then into the rust project folder
+    root_candidate = HERE.parents[2] / "rust_pdflinkcheck" / "target" / "release" / target
     if root_candidate.exists():
         return str(root_candidate)
 
@@ -136,12 +136,14 @@ def _run_rust_analysis(pdf_path: str):
     # Get the raw pointer address from the C-FFI call
     ptr = lib.pdflinkcheck_analyze_pdf(pdf_path.encode("utf-8"))
     if not ptr:
-        raise RuntimeError(f"Rust engine failed to analyze: {pdf_path}")
+        return {"links": [], "toc": []} # Return empty instead of crashing
+        #raise RuntimeError(f"Rust engine failed to analyze: {pdf_path}")
 
     try:
         # Manually extract the string from the pointer address
         json_str = ctypes.string_at(ptr).decode("utf-8")
         raw_data = json.loads(json_str)
+        return raw_data # this was missing
         
     finally:
         # Free the memory allocated by Rust

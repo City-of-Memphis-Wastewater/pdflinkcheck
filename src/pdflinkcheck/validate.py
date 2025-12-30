@@ -8,6 +8,7 @@ from typing import Dict, Any
 
 from pdflinkcheck.io import get_friendly_path
 from pdflinkcheck.environment import pymupdf_is_available
+from pdflinkcheck.helpers import PageRef  # Importing the established helper
 
 SEP_COUNT=28
 
@@ -75,64 +76,43 @@ def run_validation(
 
     # Validate active links
     #print("DEBUG validate: entering loop with", len(all_links), "links")
-    for i, link in enumerate(all_links):
+    for link in all_links:
         link_type = link.get("type")
         status = "valid"
         reason = None
+
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
             dest_page_raw = link.get("destination_page")
 
             if dest_page_raw is not None:
-        
-                """try: # OF
-                    target_page = int(dest_page_raw)
-                    #target_page = int(link.get("destination_page"))
 
-                    # not expected to hit after forcing int()
-                    if not isinstance(target_page, int):
-                        status = "broken-page"
-                        reason = f"Target page not a number: {target_page}"
-
-                    #
-                    elif (1 <= target_page) and total_pages is None:
-                        status = "unknown-reasonableness"
-                        reason = "Total page count unavailable, but the page number is reasonable"
-
-                    # 
-                    elif (1 <= target_page <= total_pages):
-                        status = "valid"
-                        reason = f"Page {target_page} within range (1–{total_pages})"
-                    elif target_page < 1:
-                        status = "broken-page"
-                        reason = f"TOC targets page negative {target_page}."
-                    elif not (1 <= target_page <= total_pages):
-                        status = "broken-page"
-                        reason = f"Page {target_page} out of range (1–{total_pages})" """
                 try:
-                    target_page = int(dest_page_raw)
+                    # Use PageRef to handle translation
+                    target_page_ref = PageRef.from_index(int(dest_page_raw))
+                    #target_page = int(dest_page_raw)
                     
                     # 1. Immediate Failure: Below 0
-                    if target_page < START_INDEX:
+                    if target_page_ref.machine < START_INDEX:
                         status = "broken-page"
                         # We use target_page + 1 to show the user what they "saw"
-                        reason = f"Target page {target_page + 1} is invalid (negative index)."
+                        reason = f"Target page {target_page_ref.human} is invalid (negative index)."
 
                     # 2. Case: We don't know the max page count
                     elif total_pages is None:
                         # If it's 0 or higher, we assume it might be okay but can't be sure
                         status = "unknown-reasonableness"
-                        reason = f"Page {target_page + 1} seems reasonable, but total page count is unavailable."
+                        reason = f"Page {target_page_ref.human} seems reasonable, but total page count is unavailable."
 
                     # 3. Case: Out of Upper Bounds
                     elif target_page >= total_pages:
                         status = "broken-page"
                         # User sees 1-based, e.g., "Page 101 out of range (1-100)"
-                        reason = f"Page {target_page + 1} out of range (1–{total_pages})"
+                        reason = f"Page {target_page_ref.human} out of range (1–{total_pages})"
 
                     # 4. Case: Perfect Match
                     else:
                         status = "valid"
-                        reason = f"Page {target_page + 1} within range (1–{total_pages})"
+                        reason = f"Page {target_page_ref.human} within range (1–{total_pages})"
 
                 except (ValueError, TypeError):
                     status = "broken-page"
@@ -196,65 +176,36 @@ def run_validation(
         elif status == "no-destinstion-page":
             no_destination_page_count += 1
             issues.append(link_with_val)
-    """# Validate TOC entries
-    for entry in toc:
-        target_page = int(entry.get("target_page"))
-        if isinstance(target_page, int):
-            if (1 <= target_page) and total_pages is None:
-                reason = "Page count unknown"
-                status = "unknown-reasonableness"
-                unknown_reasonableness_count += 1
-            elif target_page < 1:
-                status = "broken-page"
-                broken_page_count += 1
-                reason = f"TOC targets negative page: {target_page}."
-            elif 1 <= target_page <= total_pages:
-                valid_count += 1
-                continue
-            else:
-                status = "broken-page"
-                reason = f"TOC targets page {target_page} (out of 1–{total_pages})"
-                broken_page_count += 1
-        else:
-            status = "broken-page"
-            reason = f"Invalid page: {target_page}"
-            broken_page_count += 1
 
-        issues.append({
-            "type": "TOC Entry",
-            "title": entry["title"],
-            "level": entry["level"],
-            "target_page": target_page,
-            "validation": {"status": status, "reason": reason}
-        })"""
-    
     # Validate TOC entries
     for entry in toc:
         try:
             # Coerce to int; we expect 0-based index from the engine
-            target_page = int(entry.get("target_page", -1))
+            target_page_raw = int(entry.get("target_page", -1))
+            target_page_ref = PageRef.from_index(int(target_page_raw))
+
             status = "valid"
             reason = ""
 
             # 1. Check for negative indices (anything below our START_INDEX)
-            if target_page < START_INDEX:
+            if target_page_ref.machine < START_INDEX:
                 status = "broken-page"
                 broken_page_count += 1
                 # User sees Page 0 or lower as the problem
-                reason = f"TOC targets invalid page number: {target_page + 1}"
+                reason = f"TOC targets invalid page number: {target_page_ref.human}"
 
             # 2. Case: total_pages is unknown
             elif total_pages is None:
                 status = "unknown-reasonableness"
                 unknown_reasonableness_count += 1
-                reason = f"Page {target_page + 1} unknown (could not verify total pages)"
+                reason = f"Page {target_page_ref.human} unknown (could not verify total pages)"
 
             # 3. Case: Out of range (Upper Bound)
             # Index 100 in a 100-page doc (total_pages=100) is out of bounds
-            elif target_page >= total_pages:
+            elif target_page_ref.machine >= total_pages:
                 status = "broken-page"
                 broken_page_count += 1
-                reason = f"TOC targets page {target_page + 1} (out of 1–{total_pages})"
+                reason = f"TOC targets page {target_page_ref.human} (out of 1–{total_pages})"
 
             # 4. Valid Case
             else:

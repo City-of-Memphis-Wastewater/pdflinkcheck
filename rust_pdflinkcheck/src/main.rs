@@ -1,3 +1,4 @@
+// main.rs
 // Instead of 'use rust_pdflinkcheck...', 
 // we use the package name directly.
 use rust_pdflinkcheck::analyze_pdf;
