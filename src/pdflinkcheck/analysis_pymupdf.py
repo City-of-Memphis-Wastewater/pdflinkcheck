@@ -10,6 +10,8 @@ from typing import Dict, Any, Optional, List
 logging.getLogger("fitz").setLevel(logging.ERROR) 
 
 from pdflinkcheck.environment import pymupdf_is_available
+from pdflinkcheck.helpers import PageRef
+
 try:
     if pymupdf_is_available():
         import fitz  # PyMuPDF
@@ -154,10 +156,15 @@ def analyze_toc_fitz(doc):
     
     for level, title, page_num in toc:
         # fitz pages are 1-indexed for TOC!
+        # We know fitz gives us a human number. 
+        # We convert it to a physical index for our internal storage.
+        # page_num is 1 (Human). We normalize to 0 (Physical).
+        ref = PageRef.from_human(page_num)
         toc_data.append({
             'level': level,
             'title': title,
-            'target_page': page_num
+            #'target_page': ref.index
+            'target_page': ref.machine
         })
         
     return toc_data
@@ -212,6 +219,145 @@ def serialize_fitz_object(obj):
 
 
 def extract_links_pymupdf(pdf_path):
+    links_data = []
+    try:
+        doc = fitz.open(pdf_path)        
+        # This represents the maximum valid 0-index in the doc
+        last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count)
+        print(f"last_page_ref = {last_page_ref}")
+
+        for page_num in range(doc.page_count):
+            page = doc.load_page(page_num)
+            source_ref = PageRef.from_index(page_num)
+
+            for link in page.get_links():
+                link_rect = get_link_rect(link)
+                anchor_text = get_anchor_text(page, link_rect)
+                
+                link_dict = {
+                    'page': source_ref.machine,
+                    'rect': link_rect,
+                    'link_text': anchor_text,
+                    'xref': link.get("xref")
+                }
+                
+                kind = link.get('kind')
+                destination_view = serialize_fitz_object(link.get('to'))
+                p_index = link.get('page')
+                
+                # --- CASE 1: INTERNAL JUMPS (GoTo) ---
+                if p_index is not None:
+                    # Logic: Normalize to 0-index and store as int
+                    idx = min(int(p_index), int(last_page_ref))
+                    dest_ref = PageRef.from_index(idx) # does not impact the value
+
+                    link_dict.update({
+                        'destination_page': dest_ref.machine,
+                        'destination_view': destination_view,
+                        'target': dest_ref.machine,          # INT (MACHINE INDEX)
+                    })
+
+                    if kind == fitz.LINK_GOTO:
+                        link_dict['type'] = 'Internal (GoTo/Dest)'
+                    else:
+                        link_dict['type'] = 'Internal (Resolved Action)'
+                        link_dict['source_kind'] = kind
+                
+                # --- CASE 2: EXTERNAL URIs ---
+                elif kind == fitz.LINK_URI:
+                    uri = link.get('uri', 'URI (Unknown Target)')
+                    link_dict.update({
+                        'type': 'External (URI)',
+                        'url': uri,
+                        'target': uri # STRING (URL)
+                    })
+                
+                # --- CASE 3: REMOTE PDF REFERENCES ---
+                elif kind == fitz.LINK_GOTOR:
+                    remote_file = link.get('file', 'Remote File')
+                    link_dict.update({
+                        'type': 'Remote (GoToR)',
+                        'remote_file': link.get('file'),
+                        'target': remote_file  # STRING (File Path)
+                    })
+                
+                # --- CASE 4: OTHERS ---
+                else:
+                    link_dict.update({
+                        'type': 'Other Action',
+                        'action_kind': kind,
+                        'target': 'Unknown'  # STRING
+                    })
+
+                links_data.append(link_dict)
+        doc.close()
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+    return links_data
+
+def extract_links_pymupdf__(pdf_path):
+    links_data = []
+    try:
+        doc = fitz.open(pdf_path)        
+        last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count).index
+        for page_num in range(doc.page_count):
+            page = doc.load_page(page_num)
+            # source_ref handles the 'where the link is' conversion
+            source_ref = PageRef.from_index(page_num)
+
+            for link in page.get_links():
+                link_rect = get_link_rect(link)
+                anchor_text = get_anchor_text(page, link_rect)
+                
+                link_dict = {
+                    'page': source_ref.machine, # ALWAYS stored as 0-indexed machine int
+                    'rect': link_rect,
+                    'link_text': anchor_text,
+                    'xref': link.get("xref")
+                }
+                
+                kind = link.get('kind')
+                destination_view = serialize_fitz_object(link.get('to'))
+                p_index = link.get('page')
+                
+                if p_index is not None:
+                    # PyMuPDF link target index is already 0-indexed.
+                    # We clamp to doc.page_count - 1 to handle edge-case overflow.
+                    idx = min(int(p_index), last_page_ref)
+                    dest_ref = PageRef.from_index(idx)
+
+                    # Store machine 0-index for logic, but human label for reporting
+                    # the target key value pair is a human facing string
+                    link_dict.update({
+                        'destination_page': dest_ref.machine,
+                        'destination_view': destination_view,
+                        'target': f"Page {dest_ref.human}"
+                    })
+
+                # Categorize the link type
+                if kind == fitz.LINK_URI:
+                    link_dict.update({
+                        'type': 'External (URI)',
+                        'url': link.get('uri'),
+                        'target': link.get('uri', 'URI (Unknown Target)')
+                    })
+                elif kind == fitz.LINK_GOTO:
+                    link_dict['type'] = 'Internal (GoTo/Dest)'
+                elif kind == fitz.LINK_GOTOR:
+                    link_dict.update({
+                        'type': 'Remote (GoToR)',
+                        'remote_file': link.get('file')
+                    })
+                else:
+                    link_dict['type'] = 'Other/Internal'
+
+                links_data.append(link_dict)
+        doc.close()
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+    return links_data
+
+def extract_links_pymupdf_(pdf_path):
     """
     Opens a PDF, iterates through all pages and extracts all link annotations. 
     It categorizes the links into External, Internal, or Other actions, and extracts the anchor text.
@@ -257,7 +403,8 @@ def extract_links_pymupdf(pdf_path):
                 
                 
                 link_dict = {
-                    'page': int(page_num) + 1, # accurate for link location, add 1
+                    #'page': int(page_num) + 1, # accurate for link location, add 1
+                    'page': int(PageRef.from_index(page_num)),
                     'rect': link_rect,
                     'link_text': anchor_text,
                     'xref':xref
@@ -273,6 +420,9 @@ def extract_links_pymupdf(pdf_path):
                 p_index = link.get('page')
                 
                 if p_index is not None:
+                    # fitz gives us 0 in the case of , so we pass it straight to PageRef
+                    dest_ref = PageRef(int(p_index))
+
                     try:
                         # 1. Cast to int (handles the string/int confusion)
                         p_index_int = int(p_index)
@@ -283,7 +433,8 @@ def extract_links_pymupdf(pdf_path):
                         if p_index_int >= doc.page_count:
                             p_index_int = doc.page_count - 1
                         
-                        target_page_num_reported = p_index_int + 1
+                        #target_page_num_reported = p_index_int + 1
+                        target_page_num_reported = dest_ref.human
                     except (ValueError, TypeError):
                         target_page_num_reported = "Error"
 

@@ -11,7 +11,8 @@ from pdflinkcheck.io import error_logger, export_report_json, export_report_txt,
 from pdflinkcheck.environment import pymupdf_is_available
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import debug_head
+from pdflinkcheck.helpers import debug_head, PageRef
+
 
 SEP_COUNT=28
 # Define a safe "empty" validation state
@@ -181,13 +182,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         str_structural_toc = get_structural_toc(structural_toc)
         
         # check the structure, that it matches
-        print(f"pdf_library={pdf_library}")
-        #print(f"[DEBUG] extracted_links[0:4] = {extracted_links[0:4]}")
-        #print(f"[DEBUG] structural_toc[0:4] = {structural_toc[0:4]}")
-        #print(f"[DEBUG] list(extracted_links)[0:4] = {list(extracted_links)[0:4]}")
-        #print(f"[DEBUG] list(structural_toc)[0:4] = {list(structural_toc)[0:4]}")
-        debug_head("TOC", structural_toc, n=1)
-        debug_head("Links", list(extracted_links), n=1)
+        if False:
+            print(f"pdf_library={pdf_library}")
+            debug_head("TOC", structural_toc, n=1)
+            debug_head("Links", list(extracted_links), n=1)
         
         # THIS HITS
 
@@ -256,7 +254,17 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         if all_internal:
             for i, link in enumerate(all_internal, 1):
                 link_text = link.get('link_text', 'N/A')
-                log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], link['destination_page']))
+
+                # Convert source and destination indices to human strings
+                src_page = PageRef.from_index(link['page']).human
+                dest_page = PageRef.from_index(link['destination_page']).human
+
+                log("{:<5} | {:<5} | {:<40} | {}".format(
+                    i, 
+                    src_page, 
+                    link_text[:40], 
+                    dest_page
+                ))
 
 
         else:
@@ -455,8 +463,16 @@ def get_structural_toc(structural_toc: list) -> str:
         indent = " " * 4 * (item['level'] - 1)
         # Handle cases where page might be N/A or None
         target_page = item.get('target_page', "N/A")
-        page_str = str(target_page).rjust(page_width)
         
+        # Determine the human-facing string
+        if isinstance(target_page, int):
+            # Convert 0-index back to human (1-index) for the report
+            display_val = PageRef.from_index(target_page).human
+        else:
+            display_val = str(target_page)
+
+        page_str = str(display_val).rjust(page_width)
+
         lines.append(f"{indent}{item['title']} . . . page {page_str}")
 
     lines.append("-" * SEP_COUNT)

@@ -11,9 +11,7 @@ def _should_attempt_rust():
     # Termux: never load Rust/pdfium
     if pyhabitat.on_termux():
         return False
-
     return True
-
 
 def _find_rust_lib():
     if not _should_attempt_rust():
@@ -105,7 +103,7 @@ def extract_toc_rust(pdf_path: str):
 def analyze_pdf_rust(pdf_path: str):
     return _run_rust_analysis(pdf_path)
 
-def _run_rust_analysis(pdf_path: str):
+def _run_rust_analysis_(pdf_path: str):
     """Internal helper to call the shared library and handle JSON/Memory."""
     lib = _load_rust()
     if lib is None:
@@ -123,3 +121,29 @@ def _run_rust_analysis(pdf_path: str):
     finally:
         # Now we can safely free the pointer address
         lib.pdflinkcheck_free_string(ptr)
+
+def _run_rust_analysis(pdf_path: str):
+    """
+    Internal helper to call the shared library and handle JSON/Memory.
+    
+    This function acts as the bridge between Rust 0-based indexing and 
+    and user-facing PDF page numbers (1-based).
+    """
+    lib = _load_rust()
+    if lib is None:
+        raise RuntimeError("Rust engine not available")
+
+    # Get the raw pointer address from the C-FFI call
+    ptr = lib.pdflinkcheck_analyze_pdf(pdf_path.encode("utf-8"))
+    if not ptr:
+        raise RuntimeError(f"Rust engine failed to analyze: {pdf_path}")
+
+    try:
+        # Manually extract the string from the pointer address
+        json_str = ctypes.string_at(ptr).decode("utf-8")
+        raw_data = json.loads(json_str)
+        
+    finally:
+        # Free the memory allocated by Rust
+        lib.pdflinkcheck_free_string(ptr)
+

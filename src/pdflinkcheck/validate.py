@@ -11,6 +11,13 @@ from pdflinkcheck.environment import pymupdf_is_available
 
 SEP_COUNT=28
 
+START_INDEX = 0  
+# Internal 0-based start
+# Define the offset. 
+# The PDF engines are 0-based.
+# We will add +1 only for the HUMAN REASON strings.
+
+
 def run_validation(
     report_results: Dict[str, Any],
     pdf_path: str,
@@ -74,19 +81,24 @@ def run_validation(
         reason = None
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
             dest_page_raw = link.get("destination_page")
-            if dest_page_raw is None:
-                status = "no-destinstion-page"
-                reason = "No destination page resolved"
-            else:
-                try:
+
+            if dest_page_raw is not None:
+        
+                """try: # OF
                     target_page = int(dest_page_raw)
                     #target_page = int(link.get("destination_page"))
+
+                    # not expected to hit after forcing int()
                     if not isinstance(target_page, int):
                         status = "broken-page"
                         reason = f"Target page not a number: {target_page}"
+
+                    #
                     elif (1 <= target_page) and total_pages is None:
                         status = "unknown-reasonableness"
                         reason = "Total page count unavailable, but the page number is reasonable"
+
+                    # 
                     elif (1 <= target_page <= total_pages):
                         status = "valid"
                         reason = f"Page {target_page} within range (1–{total_pages})"
@@ -95,10 +107,45 @@ def run_validation(
                         reason = f"TOC targets page negative {target_page}."
                     elif not (1 <= target_page <= total_pages):
                         status = "broken-page"
-                        reason = f"Page {target_page} out of range (1–{total_pages})"
+                        reason = f"Page {target_page} out of range (1–{total_pages})" """
+                try:
+                    target_page = int(dest_page_raw)
+                    
+                    # 1. Immediate Failure: Below 0
+                    if target_page < START_INDEX:
+                        status = "broken-page"
+                        # We use target_page + 1 to show the user what they "saw"
+                        reason = f"Target page {target_page + 1} is invalid (negative index)."
+
+                    # 2. Case: We don't know the max page count
+                    elif total_pages is None:
+                        # If it's 0 or higher, we assume it might be okay but can't be sure
+                        status = "unknown-reasonableness"
+                        reason = f"Page {target_page + 1} seems reasonable, but total page count is unavailable."
+
+                    # 3. Case: Out of Upper Bounds
+                    elif target_page >= total_pages:
+                        status = "broken-page"
+                        # User sees 1-based, e.g., "Page 101 out of range (1-100)"
+                        reason = f"Page {target_page + 1} out of range (1–{total_pages})"
+
+                    # 4. Case: Perfect Match
+                    else:
+                        status = "valid"
+                        reason = f"Page {target_page + 1} within range (1–{total_pages})"
+
                 except (ValueError, TypeError):
                     status = "broken-page"
                     reason = f"Invalid page value: {dest_page_raw}"
+
+                except (ValueError, TypeError):
+                    status = "broken-page"
+                    reason = f"Invalid page value: {dest_page_raw}"
+
+            elif dest_page_raw is None:
+                status = "no-destinstion-page"
+                reason = "No destination page resolved"
+
         elif link_type == "Remote (GoToR)":
             remote_file = link.get("remote_file")
             if not remote_file:
@@ -149,7 +196,7 @@ def run_validation(
         elif status == "no-destinstion-page":
             no_destination_page_count += 1
             issues.append(link_with_val)
-    # Validate TOC entries
+    """# Validate TOC entries
     for entry in toc:
         target_page = int(entry.get("target_page"))
         if isinstance(target_page, int):
@@ -178,6 +225,55 @@ def run_validation(
             "title": entry["title"],
             "level": entry["level"],
             "target_page": target_page,
+            "validation": {"status": status, "reason": reason}
+        })"""
+    
+    # Validate TOC entries
+    for entry in toc:
+        try:
+            # Coerce to int; we expect 0-based index from the engine
+            target_page = int(entry.get("target_page", -1))
+            status = "valid"
+            reason = ""
+
+            # 1. Check for negative indices (anything below our START_INDEX)
+            if target_page < START_INDEX:
+                status = "broken-page"
+                broken_page_count += 1
+                # User sees Page 0 or lower as the problem
+                reason = f"TOC targets invalid page number: {target_page + 1}"
+
+            # 2. Case: total_pages is unknown
+            elif total_pages is None:
+                status = "unknown-reasonableness"
+                unknown_reasonableness_count += 1
+                reason = f"Page {target_page + 1} unknown (could not verify total pages)"
+
+            # 3. Case: Out of range (Upper Bound)
+            # Index 100 in a 100-page doc (total_pages=100) is out of bounds
+            elif target_page >= total_pages:
+                status = "broken-page"
+                broken_page_count += 1
+                reason = f"TOC targets page {target_page + 1} (out of 1–{total_pages})"
+
+            # 4. Valid Case
+            else:
+                status = "valid"
+                valid_count += 1
+                # We skip issues.append for valid TOC entries to keep the issues list clean
+                continue
+
+        except (ValueError, TypeError):
+            status = "broken-page"
+            broken_page_count += 1
+            reason = f"Invalid page reference: {entry.get('target_page')}"
+
+        # Only reaches here if status is not "valid" (because of 'continue' above)
+        issues.append({
+            "type": "TOC Entry",
+            "title": entry.get("title", "Untitled"),
+            "level": entry.get("level", 0),
+            "target_page": target_page, # Stored as 0-indexed for data consistency
             "validation": {"status": status, "reason": reason}
         })
     
