@@ -158,14 +158,14 @@ def analyze_pdf( # Renamed function for clarity
     ), 
     export_format: Optional[Literal["JSON", "TXT", "JSON,TXT", "NONE"]] = typer.Option(
         "JSON,TXT", 
-        "--export-format","-e",
+        "--format","-f",
         case_sensitive=False, 
         help="Export format. Use 'None' to suppress file export.",
     ),
 
     pdf_library: Literal["auto","rust","pypdf", "pymupdf"] = typer.Option(
         assess_default_pdf_library(),
-        "--library","-l",
+        "--engine","-e",
         envvar="PDF_ENGINE",
         help="PDF parsing library. pypdf (pure Python) or pymupdf (faster, if available).",
     ),

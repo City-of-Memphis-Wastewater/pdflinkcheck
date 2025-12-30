@@ -12,7 +12,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Renamed Rust analysis core to analysis_pdfium.rs to clarify the underlying technology and support future engine expansion.
 
 ### Breaking:
-- In the CLI, changed the PDF library selection flag on the analyze command from `--pdf-library/-p` to `--library/-l`. There are enough p's happening.
+- In the CLI, changed the PDF library selection flag on the analyze command from `--pdf-library/-p` to `--engine/-e`. There are enough p's happening.
+- In the CLI, changed the export filetime selection flag on the analyze command from `--export-format/-e` to `--format/-f`. This is to avoid the conflict with `-e/--engine`.
 
 ---
 
