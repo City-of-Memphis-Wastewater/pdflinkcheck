@@ -2,24 +2,12 @@ from functools import cache
 import ctypes
 import json
 from pathlib import Path
-
-try:
-    import pyhabitat as habitat
-except Exception:
-    habitat = None
+import pyhabitat 
 
 
 def _should_attempt_rust():
     # Termux: never load Rust/pdfium
-    if habitat and habitat.platform.is_termux():
-        return False
-
-    # Android: same story
-    if habitat and habitat.platform.is_android():
-        return False
-
-    # Headless CI: skip Rust/pdfium
-    if habitat and habitat.is_headless():
+    if pyhabitat.on_termux():
         return False
 
     return True
