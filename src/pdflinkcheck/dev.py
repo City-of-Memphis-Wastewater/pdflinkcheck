@@ -49,7 +49,7 @@ def add_typer_help_tree(app,
         for command_name in sorted(root_app_command.commands.keys()):
             command = root_app_command.commands[command_name]
             
-            if command.name == "tree-help":
+            if command.name == "help-tree":
                 continue
 
             help_text = command.help.splitlines()[0].strip() if command.help else "No help available."

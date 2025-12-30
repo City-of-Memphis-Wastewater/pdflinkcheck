@@ -51,6 +51,12 @@ if "--show-command" in sys.argv or "--debug" in sys.argv:
 def main(ctx: typer.Context,
     version: Optional[bool] = typer.Option(
     None, "--version", is_flag=True, help="Show the version."
+    ),
+    debug: bool = typer.Option(
+        False, "--debug", is_flag=True, help="Enable verbose debug logging and echo the full command string."
+    ),
+    show_command: bool = typer.Option(
+        False, "--show-command", is_flag=True, help="Echo the full command string to the console before execution."
     )
     ):
     """
