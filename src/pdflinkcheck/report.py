@@ -85,10 +85,15 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     """
 
     report_buffer = []
+    report_buffer_overview = []
 
     # Helper to handle conditional printing and mandatory buffering
-    def log(msg: str):
+    def log(msg: str, overview: bool = False):
         report_buffer.append(msg)
+        if overview:
+            report_buffer_overview.append(msg)
+    
+        
 
     # Expected: "pypdf" or "PyMuPDF" pr "rust"
     allowed_libraries = ("pypdf", "pymupdf", "rust", "auto")
@@ -229,11 +234,11 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         total_links_count = len(extracted_links)
 
         # --- ANALYSIS SUMMARY (Using your print logic) ---
-        log("\n" + "=" * SEP_COUNT)
-        log(f"--- Link Analysis Results for {Path(pdf_path).name} ---")
-        log(f"Total active links: {total_links_count} (External: {external_uri_links_count}, Internal Jumps: {total_internal_links_count}, Other: {other_links_count})")
-        log(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}")
-        log("=" * SEP_COUNT)
+        log("\n" + "=" * SEP_COUNT, overview = True)
+        log(f"--- Link Analysis Results for {Path(pdf_path).name} ---", overview = True)
+        log(f"Total active links: {total_links_count} (External: {external_uri_links_count}, Internal Jumps: {total_internal_links_count}, Other: {other_links_count})",overview = True)
+        log(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}",overview = True)
+        log("=" * SEP_COUNT,overview = True)
 
         # --- Section 1: TOC ---
         log(str_structural_toc)
@@ -331,7 +336,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         validation_results = run_validation(report_results=intermediate_report_results,
                                             pdf_path=pdf_path,
                                             pdf_library=pdf_library)
-        log(validation_results.get("summary-txt",""))
+        log(validation_results.get("summary-txt",""), overview = True)
 
         # CRITICAL: Re-assign to report_results so it's available for the final return
         report_results = copy.deepcopy(intermediate_report_results)
@@ -342,6 +347,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
         # Final aggregation of the buffer into one string, after the last call to log()
         report_buffer_str = "\n".join(report_buffer)
+        report_buffer_overview_str = "\n".join(report_buffer_overview)
 
         report_results["data"]["validation"].update(validation_results)
         #report_results["text"].update(report_buffer_str)      # The human-readable string
@@ -353,7 +359,8 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         #    export_report_data(report_data_dict, Path(pdf_path).name, export_format, pdf_library)
         
         if print_bool:
-            print(report_buffer_str)
+            #print(report_buffer_str)
+            print(report_buffer_overview_str)
             
         return report_results
         """except Exception as e:

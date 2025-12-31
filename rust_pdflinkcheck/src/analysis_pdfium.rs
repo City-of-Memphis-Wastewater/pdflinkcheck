@@ -1,39 +1,33 @@
+
 // analysis_pdfium.rs
 use pdfium_render::prelude::*;
+use std::collections::HashSet;
 use crate::types::{AnalysisResult, LinkRecord, TocEntry};
 
 pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
-    //let bindings = Pdfium::bind_to_system_library().map_err(|e| format!("{:?}", e))?;
-    //let pdfium = Pdfium::new(bindings);
-
     // This consolidated logic handles the binding in one go
     let pdfium = Pdfium::new(
         Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./"))
             .or_else(|_| Pdfium::bind_to_system_library())
             .map_err(|e| format!("Could not find libpdfium.so in ./ or system: {:?}", e))?
     );
-
     let doc = pdfium.load_pdf_from_file(path, None)
         .map_err(|e| format!("Failed to open PDF: {:?}", e))?;
-
     let mut links = Vec::new();
     let mut toc = Vec::new();
-
+    let mut seen = HashSet::new();
     // 1. TOC Extraction
     for b in doc.bookmarks().iter() {
-        walk_bookmarks(&b, 1, &mut toc); // Levels usually start at 1
+        walk_bookmarks(&b, 1, &mut toc, &mut seen); // Levels usually start at 1
     }
-
     for (page_index, page) in doc.pages().iter().enumerate() {
         let page_num = page_index as i32;
         let text_page = page.text().ok();
-
         for annot in page.annotations().iter() {
             let rect = match annot.bounds() {
                 Ok(r) => r,
                 Err(_) => continue,
             };
-
             // FIX: Added 'ref' to avoid moving out of the annotation iterator
             if let PdfPageAnnotation::Link(ref link_annot) = annot {
                 let mut record = LinkRecord {
@@ -49,7 +43,6 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
                     source_kind: Some("pdfium".to_string()),
                     xref: None,
                 };
-
                 if let Ok(link) = link_annot.link() {
                     if let Some(action) = link.action() {
                         match action {
@@ -71,43 +64,43 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
                         }
                     }
                 }
-
                 // 2. Text Extraction
                 if let Some(ref tp) = text_page {
                     if let Ok(extracted_text) = tp.for_annotation(&annot) {
                         record.link_text = extracted_text.trim().to_string();
                     }
                 }
-
                 links.push(record);
             }
         }
     }
-
     Ok(AnalysisResult { links, toc })
 }
 
-
 // Helper for recursive TOC extraction
-fn walk_bookmarks(bookmark: &PdfBookmark, level: i32, toc: &mut Vec<TocEntry>) {
+fn walk_bookmarks(bookmark: &PdfBookmark, level: i32, toc: &mut Vec<TocEntry>, seen: &mut HashSet<(String, i32)>) {
     let title = bookmark.title().unwrap_or_default();
     let target_page = bookmark.destination()
         .and_then(|d| d.page_index().ok())
         .unwrap_or(0) as i32;
 
-    toc.push(TocEntry {
-        level,
-        title,
-        target_page: serde_json::json!(target_page),
-    });
+    // Check if (title, target_page) is unique before pushing
+    let key = (title.clone(), target_page);
+    if seen.insert(key) {
+        toc.push(TocEntry {
+            level,
+            title,
+            target_page: serde_json::json!(target_page),
+        });
+    }
 
     // Handle children via first_child() and next_sibling()
     if let Some(mut current_child) = bookmark.first_child() {
-        walk_bookmarks(&current_child, level + 1, toc);
+        walk_bookmarks(&current_child, level + 1, toc, seen);
 
         // Traverse siblings
         while let Some(sibling) = current_child.next_sibling() {
-            walk_bookmarks(&sibling, level + 1, toc);
+            walk_bookmarks(&sibling, level + 1, toc, seen);
             current_child = sibling;
         }
     }
