@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.2.2] - 2025-12-31
+### Fixed:
+- Remove .so from /data/. It was fun, but not Pythonic. We will build a separate pdflinkcheck-rust PyPI library, for optional dep inclusion, packaged with PyO3
+
 ---
 
 ## [1.2.1] - 2025-12-29

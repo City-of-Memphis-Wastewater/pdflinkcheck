@@ -74,10 +74,10 @@ dev = [
 ]
 
 [build-system]
-requires = ["uv_build"]
-build-backend = "uv_build"
-#requires = ["setuptools"]
-#build-backend = "setuptools.build_meta"
+#requires = ["uv_build"]
+#build-backend = "uv_build"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
 
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }

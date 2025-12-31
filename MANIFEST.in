@@ -2,5 +2,10 @@
 include LICENSE
 include README.md
 
+
+# ---- Defunct ---
 # Include the native binaries
-recursive-include src/pdflinkcheck/data *.so *.dll *.dylib
+# recursive-include src/pdflinkcheck/data *.so *.dll *.dylib
+
+# Native binaries are no longer shipped in the core package.
+# Rust acceleration lives in pdflinkcheck-rust.
