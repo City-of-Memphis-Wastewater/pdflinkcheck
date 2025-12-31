@@ -117,13 +117,12 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             raise ImportError("Rust engine requested but Rust library not available.")
         
         # Rust returns a dict: {"links": [...], "toc": [...]}
+        # Already normalized
         rust_data = analyze_pdf_rust(pdf_path) or {"links": [], "toc": []}
         
         extracted_links = rust_data.get("links", [])
         structural_toc = rust_data.get("toc", [])
-        extracted_links = rust_normalize_extracted_links(extracted_links)
-        structural_toc = rust_normalize_structural_toc(structural_toc)
-        
+
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":

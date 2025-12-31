@@ -124,7 +124,7 @@ def analyze_pdf_rust(pdf_path: str):
         }
 
     Normalization includes:
-      - Page numbers converted from 0-based Rust indexing to 1-based.
+      - Page numbers start as 0-based Rust indexing and continue to be Pythonically 0-based.
       - Internal GoTo destinations resolved to PageRef.machine values.
       - External URI links classified and structured consistently.
       - TOC entries with numeric target pages and proper levels.
