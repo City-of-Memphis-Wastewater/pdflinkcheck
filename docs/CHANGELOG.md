@@ -10,6 +10,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.2.2] - 2025-12-31
 ### Fixed:
 - Remove .so from /data/. It was fun, but not Pythonic. We will build a separate pdflinkcheck-rust PyPI library, for optional dep inclusion, packaged with PyO3
+- Suprress rust stuff for now.
+
+### Changed:
+- Rust to Python nirmlaizatiojnis jow internal to ffi.oy and does not jeed to be called in report.py, such that exois3d runction in __init__ is also pre-normalized.
 
 ---
 
