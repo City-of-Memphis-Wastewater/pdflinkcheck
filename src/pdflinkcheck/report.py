@@ -179,7 +179,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         str_structural_toc = get_structural_toc(structural_toc)
         
         # check the structure, that it matches
-        if True:
+        if False:
             print(f"pdf_library={pdf_library}")
             debug_head("TOC", structural_toc, n=3)
             debug_head("Links", list(extracted_links), n=3)
