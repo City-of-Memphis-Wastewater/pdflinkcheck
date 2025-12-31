@@ -28,12 +28,30 @@ def extract_toc_pypdf(*args, **kwargs):
 
 # --- PyMuPDF ---
 def extract_links_pymupdf(*args, **kwargs):
-    from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf as _extract
+    try:
+        from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf as _extract
+    except ImportError:
+        raise ImportError(
+            "PyMuPDF engine is not installed. "
+            "Install pdflinkcheck with the `[full]` extra to enable PyMuPDF support:\n"
+            "    pip install pdflinkcheck[full]"
+        )
     return _extract(*args, **kwargs)
 
+
 def extract_toc_pymupdf(*args, **kwargs):
-    from pdflinkcheck.analysis_pymupdf import extract_toc_pymupdf as _extract
+    try:
+        from pdflinkcheck.analysis_pymupdf import extract_toc_pymupdf as _extract
+    except ImportError:
+        raise ImportError(
+            "PyMuPDF engine is not installed. "
+            "Install pdflinkcheck with the `[full]` extra to enable PyMuPDF support:\n"
+            "    pip install pdflinkcheck[full]"
+        )
     return _extract(*args, **kwargs)
+
+
+
 """ # block until we get psfkinkcheck-rust up
 # --- Rust ---
 def extract_links_rust(*args, **kwargs):
