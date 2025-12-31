@@ -104,8 +104,6 @@ __all__ = [
     "extract_toc_pymupdf", 
     "extract_links_pypdf", 
     "extract_toc_pypdf", 
-    #"extract_links_rust",   
-    #"extract_toc_rust",     
     #"analyze_pdf_rust",     
 ]
 
