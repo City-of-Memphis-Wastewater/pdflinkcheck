@@ -61,9 +61,13 @@ def _find_rust_lib():
 
     return None
 
+def _load_rust():
+    print("[!] Rust engine is disabled in pdflinkcheck v1.2.2. "
+          "Install `pdflinkcheck-rust` in v1.2.3+ to enable Rust support.")
+    return None
 
 @cache
-def _load_rust():
+def _load_rust_onhold():
     path = _find_rust_lib()
     if not path:
         return None
@@ -88,8 +92,14 @@ def _load_rust():
     except OSError:
         return None
 
-    
 def rust_available():
+    """
+    Temporarily disable Rust engine for v1.2.2.
+    Users will get a friendly message if they try to use it.
+    """
+    return False
+    
+def rust_available_onhold():
     return _load_rust() is not None
 
 def extract_links_rust(pdf_path: str):
