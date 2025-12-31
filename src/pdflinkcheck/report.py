@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Optional, Dict, Any
 import pyhabitat
+import copy
 
 from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
 from pdflinkcheck.environment import pymupdf_is_available
@@ -105,7 +106,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
     # RUST ENGINE
     if pdf_library == "rust":
-        from pdflinkcheck.ffi import rust_available, analyze_pdf_rust
+        from pdflinkcheck.ffi import rust_available, analyze_pdf_rust, rust_normalize_extracted_links, rust_normalize_structural_toc
 
         if not rust_available():
             raise ImportError("Rust engine requested but Rust library not available.")
@@ -115,26 +116,9 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
         extracted_links = rust_data.get("links", [])
         structural_toc = rust_data.get("toc", [])
-
-        # Normalize Rust types to match Python expectations
-        for link in extracted_links:
-            kind = link.get("action_kind")
-            # Rust usually provides 0-indexed 'source_page_index'
-            raw_src = link.get("source_page_index", 0)
-            src_ref = PageRef.from_index(raw_src)
-            link['page'] = src_ref.machine  # Keep as machine index for consistency with other engines
-            if kind == "GoTo":
-                link['type'] = 'Internal (GoTo/Dest)'
-                # Ensure the destination_page is a machine index
-                raw_target = link.get("page_index") 
-                ref = PageRef.from_index(raw_target)
-                link['destination_page'] = ref.machine
-                #link['target'] = f"Page {ref.human}"
-                link['target'] = ref.machine
-            elif kind == "URI":
-                link['type'] = 'External (URI)'
-            else:
-                link['type'] = 'Other'
+        extracted_links = rust_normalize_extracted_links(extracted_links)
+        structural_toc = rust_normalize_structural_toc(structural_toc)
+        
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
@@ -195,10 +179,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         str_structural_toc = get_structural_toc(structural_toc)
         
         # check the structure, that it matches
-        if False:
+        if True:
             print(f"pdf_library={pdf_library}")
-            debug_head("TOC", structural_toc, n=1)
-            debug_head("Links", list(extracted_links), n=1)
+            debug_head("TOC", structural_toc, n=3)
+            debug_head("Links", list(extracted_links), n=3)
         
         # THIS HITS
 
@@ -350,7 +334,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         log(validation_results.get("summary-txt",""))
 
         # CRITICAL: Re-assign to report_results so it's available for the final return
-        report_results = intermediate_report_results.copy()
+        report_results = copy.deepcopy(intermediate_report_results)
 
         # --- Offline Risk Analysis (Security Layer) ---
         risk_results = compute_risk(report_results)

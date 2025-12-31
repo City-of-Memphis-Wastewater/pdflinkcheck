@@ -87,6 +87,7 @@ pub fn analyze_pdf(path: &str) -> Result<AnalysisResult, String> {
     Ok(AnalysisResult { links, toc })
 }
 
+
 // Helper for recursive TOC extraction
 fn walk_bookmarks(bookmark: &PdfBookmark, level: i32, toc: &mut Vec<TocEntry>) {
     let title = bookmark.title().unwrap_or_default();
@@ -100,14 +101,14 @@ fn walk_bookmarks(bookmark: &PdfBookmark, level: i32, toc: &mut Vec<TocEntry>) {
         target_page: serde_json::json!(target_page),
     });
 
-    // Recursively handle children
-    for child in bookmark.children().iter() {
-        walk_bookmarks(&child, level + 1, toc);
-    }
-}
+    // Handle children via first_child() and next_sibling()
+    if let Some(mut current_child) = bookmark.first_child() {
+        walk_bookmarks(&current_child, level + 1, toc);
 
-// Update your main loop
-let mut toc = Vec::new();
-for b in doc.bookmarks().iter() {
-    walk_bookmarks(&b, 1, &mut toc); // Levels usually start at 1
+        // Traverse siblings
+        while let Some(sibling) = current_child.next_sibling() {
+            walk_bookmarks(&sibling, level + 1, toc);
+            current_child = sibling;
+        }
+    }
 }

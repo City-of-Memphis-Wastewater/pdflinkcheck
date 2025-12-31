@@ -6,6 +6,8 @@ from pathlib import Path
 import pyhabitat 
 import os
 
+from pdflinkcheck.helpers import PageRef
+
 # This is always the directory containing ffi.py
 HERE = Path(__file__).resolve().parent
 
@@ -149,3 +151,54 @@ def _run_rust_analysis(pdf_path: str):
         # Free the memory allocated by Rust
         lib.pdflinkcheck_free_string(ptr)
 
+def rust_normalize_structural_toc(structural_toc):
+
+    # TOC: Rust already provides flat list with correct level and 0-indexed target_page (as json value)
+    # Unwrap the json value to int
+    for entry in structural_toc:
+        if isinstance(entry['target_page'], dict) and '$serde_json::private::Number' in entry['target_page']:
+            # If it serialized as raw number object (rare), handle it
+            entry['target_page'] = int(list(entry['target_page'].values())[0])
+        elif isinstance(entry['target_page'], (int, float)):
+            entry['target_page'] = int(entry['target_page'])
+        # Ensure it's int for PageRef later
+
+    return structural_toc
+
+def rust_normalize_extracted_links(extracted_links):
+    # RUST ENGINE NORMALIZATION
+    external_uri_links = []
+    goto_links = []  # Unresolved or resolved GoTo
+
+    for link in extracted_links:
+        kind = link.get("action_kind")
+        # Source page: Rust uses 0-indexed 'page'
+        raw_src = link.get("page", 0)
+        src_ref = PageRef.from_index(raw_src)
+        link['page'] = src_ref.machine  # Keep machine (0-indexed) for internal use
+
+        if kind == "URI":
+            link['type'] = 'External (URI)'
+            link['target'] = link.get("url") or "Unknown URI"
+            external_uri_links.append(link)
+
+        elif kind == "GoTo" or kind == "Other":  # Treat Other as potential internal if dest exists
+            link['type'] = 'Internal (GoTo/Dest)'
+            raw_target = link.get("destination_page")
+            if raw_target is not None:
+                ref = PageRef.from_index(int(raw_target))
+                link['destination_page'] = ref.machine
+                link['target'] = ref.machine
+            else:
+                link['destination_page'] = None
+                link['target'] = "Unresolved"
+            goto_links.append(link)
+
+        else:
+            # Fallback for unexpected kinds
+            link['type'] = 'Other'
+            goto_links.append(link)  # Conservative
+
+    # Rebuild extracted_links for consistency (though not strictly needed)
+    extracted_links = external_uri_links + goto_links
+    return extracted_links
