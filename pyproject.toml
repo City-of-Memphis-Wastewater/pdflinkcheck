@@ -1,6 +1,6 @@
 [project]
 name = "pdflinkcheck"
-version = "1.2.2"
+version = "1.2.3"
 description = "A purpose-built PDF link analysis and reporting tool with GUI and CLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -74,10 +74,10 @@ dev = [
 ]
 
 [build-system]
-#requires = ["uv_build"]
-#build-backend = "uv_build"
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build"]
+build-backend = "uv_build"
+#requires = ["setuptools"]
+#build-backend = "setuptools.build_meta"
 
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }

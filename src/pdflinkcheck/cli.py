@@ -228,7 +228,7 @@ def analyze_pdf( # Renamed function for clarity
         typer.secho(
             "[!] Rust engine requested but is disabled in pdflinkcheck v1.2.2.\n"
             "    This version uses only Python engines (pypdf/PyMuPDF).\n"
-            "    Rust support will return in v1.2.3 via `pdflinkcheck-rust`.",
+            "    Rust support will return in v1.2.? via `pdflinkcheck-rust`.",
             fg=typer.colors.YELLOW
         )
         raise typer.Exit(code=1)
