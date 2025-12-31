@@ -113,26 +113,46 @@ def extract_toc_rust(pdf_path: str):
     return data.get("toc", [])
 
 def analyze_pdf_rust(pdf_path: str):
-    return _run_rust_analysis(pdf_path)
+    """
+    Analyze a PDF using the Rust engine (via FFI) and return a normalized
+    Python dictionary containing links and table-of-contents (TOC) data.
 
-def _run_rust_analysis_(pdf_path: str):
-    """Internal helper to call the shared library and handle JSON/Memory."""
-    lib = _load_rust()
-    if lib is None:
-        raise RuntimeError("Rust engine not available")
+    The returned dictionary has the structure:
+        {
+            "links": [...],  # List of link dicts, fully normalized
+            "toc": [...]     # List of TOC entries, fully normalized
+        }
 
-    # Get the raw pointer address
-    ptr = lib.pdflinkcheck_analyze_pdf(pdf_path.encode("utf-8"))
-    if not ptr:
-        raise RuntimeError(f"Rust engine failed to analyze: {pdf_path}")
+    Normalization includes:
+      - Page numbers converted from 0-based Rust indexing to 1-based.
+      - Internal GoTo destinations resolved to PageRef.machine values.
+      - External URI links classified and structured consistently.
+      - TOC entries with numeric target pages and proper levels.
 
-    try:
-        # Manually extract the string from the pointer address
-        json_str = ctypes.string_at(ptr).decode("utf-8")
-        return json.loads(json_str)
-    finally:
-        # Now we can safely free the pointer address
-        lib.pdflinkcheck_free_string(ptr)
+    This function abstracts away all raw Rust indexing and JSON quirks, 
+    providing a ready-to-use Python-friendly data structure.
+
+    Parameters:
+        pdf_path (str): Path to the PDF file to analyze.
+
+    Returns:
+        dict: Normalized analysis data containing 'links' and 'toc'.
+    
+    Raises:
+        RuntimeError: If the Rust engine is unavailable or fails to analyze.
+    """
+    rust_data = _run_rust_analysis(pdf_path) or {"links": [], "toc": []}
+
+    extracted_links = rust_data.get("links", [])
+    structural_toc = rust_data.get("toc", [])
+    extracted_links = rust_normalize_extracted_links(extracted_links)
+    structural_toc = rust_normalize_structural_toc(structural_toc)
+    
+    # Put humoty dumpty back together again
+    rust_data["links"] = extracted_links
+    rust_data["toc"] = structural_toc
+
+    return rust_data
 
 def _run_rust_analysis(pdf_path: str):
     """
