@@ -34,7 +34,7 @@ def extract_links_pymupdf(*args, **kwargs):
 def extract_toc_pymupdf(*args, **kwargs):
     from pdflinkcheck.analysis_pymupdf import extract_toc_pymupdf as _extract
     return _extract(*args, **kwargs)
-
+""" # block until we get psfkinkcheck-rust up
 # --- Rust ---
 def extract_links_rust(*args, **kwargs):
     # Named for consistency
@@ -51,7 +51,7 @@ def analyze_pdf_rust(*args, **kwargs):
     # Does both the toc analysis and the links, more smoothly than separate
     from pdflinkcheck.ffi import analyze_pdf_rust as _analyze
     return _analyze(*args, **kwargs)
-
+"""
 # -----------------------------
 # GUI easter egg
 # -----------------------------
@@ -90,9 +90,9 @@ __all__ = [
     "extract_toc_pymupdf", 
     "extract_links_pypdf", 
     "extract_toc_pypdf", 
-    "extract_links_rust",   
-    "extract_toc_rust",     
-    "analyze_pdf_rust",     
+    #"extract_links_rust",   
+    #"extract_toc_rust",     
+    #"analyze_pdf_rust",     
 ]
 
 # Handle the Easter Egg export
