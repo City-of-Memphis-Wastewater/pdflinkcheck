@@ -54,21 +54,17 @@ def extract_toc_pymupdf(*args, **kwargs):
 
 """ # block until we get psfkinkcheck-rust up
 # --- Rust ---
-def extract_links_rust(*args, **kwargs):
-    # Named for consistency
-    from pdflinkcheck.ffi import extract_links_rust as _extract
-    return _extract(*args, **kwargs)
-
-def extract_toc_rust(*args, **kwargs):
-    # Even if this just calls the same underlying Rust engine, 
-    # it keeps the API predictable for people switching backends.
-    from pdflinkcheck.ffi import extract_toc_rust as _extract
-    return _extract(*args, **kwargs)
 
 def analyze_pdf_rust(*args, **kwargs):
-    # Does both the toc analysis and the links, more smoothly than separate
-    from pdflinkcheck.ffi import analyze_pdf_rust as _analyze
+    try:
+        from pdflinkcheck_rust import analyze_pdf as _analyze
+    except ImportError:
+        raise ImportError(
+            "Rust engine is not installed. "
+            "Install pdflinkcheck-rust to enable Rust support."
+        )
     return _analyze(*args, **kwargs)
+
 """
 # -----------------------------
 # GUI easter egg
