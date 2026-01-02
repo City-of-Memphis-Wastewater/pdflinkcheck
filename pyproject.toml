@@ -1,6 +1,6 @@
 [project]
 name = "pdflinkcheck"
-version = "1.2.6"
+version = "1.2.7"
 description = "A purpose-built PDF link analysis and reporting tool with GUI and CLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -11,7 +11,7 @@ dependencies = [
     "typer>=0.20.0",
 ]
 
-#license = "MIT AND AGPL-3.0-or-later"
+license = "MIT AND AGPL-3.0-or-later"
 license-files = ["LICENSE", "LICENSE-MIT", "LICENSE-AGPL3"]
 
 classifiers=[
@@ -22,8 +22,6 @@ classifiers=[
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: Developers", # library and documentation
@@ -58,19 +56,13 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 # This allows users to do: pip install pdflinkcheck[full]
 # If you choose to include PyMuPDF, you must comply with the AGPL3
 
-mupdf = [
-    "pymupdf>=1.26.7"  # not termux compatible
-]
-
-pdfium = [
-    "pypdfium2>=5.2.0" # not termux compatible
-] 
-
+[project.optional-dependencies]
+mupdf = ["pymupdf>=1.24.0,<2.0.0"]
+pdfium = ["pypdfium2>=5.2.0,<6.0.0"]
 full = [
-    "pymupdf>=1.26.7",  # not termux compatible
-    "pypdfium2>=5.2.0" # not termux compatible
-] 
-
+    "pdflinkcheck[mupdf]",
+    "pdflinkcheck[pdfium]"
+]
 
 #rust = [
 #    "pdflinkcheck-rust>=0.1.13"

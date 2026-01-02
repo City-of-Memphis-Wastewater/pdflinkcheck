@@ -1,15 +1,27 @@
-**Copyright © 2025 George Clayton Bennett**  
-<https://github.com/City-of-Memphis-Wastewater/pdflinkcheck>
-
-Some distributed binaries of this project include the PyMuPDF library, which is licensed under **AGPL‑3.0‑or‑later**. 
-Any binary that incorporates PyMuPDF is therefore distributed under **AGPL‑3.0‑or‑later**. 
+Some distributed binaries of this project include the PyMuPDF library, which is licensed under **AGPL3.0orlater**. 
+Any binary that incorporates PyMuPDF is therefore distributed under **AGPL3.0orlater**. 
 Other binaries use only the `pypdf` library and do not include PyMuPDF; these binaries are distributed under the **MIT License**.
 
-For AGPL‑licensed binaries, the complete corresponding source code must be made available to anyone who possesses a copy, upon request. 
+For AGPLlicensed binaries, the complete corresponding source code must be made available to anyone who possesses a copy, upon request. 
 This obligation applies only to recipients of those binaries, and hosting the source code in GitHub Releases satisfies this requirement.
 
-A binary becomes AGPL‑licensed only when built with the optional `"mupdf"` dependency group (as defined in `pyproject.toml` under `[project.optional-dependencies]`) or when PyMuPDF is otherwise included in the build environment. 
-The **source code of pdflinkcheck itself** remains licensed under the **MIT License**; only the distributed binary becomes AGPL‑licensed when PyMuPDF is included.
+A binary becomes AGPLlicensed only when built with the optional `"full"` dependency group (as defined in `pyproject.toml` under `[project.optional-dependencies]`) or when PyMuPDF is otherwise included in the build environment. 
+The **source code of pdflinkcheck itself** remains licensed under the **MIT License**; only the distributed binary becomes AGPLlicensed when PyMuPDF is included.
 
-Source code for each released version is available in the `pdflinkcheck‑VERSION.tar.gz` files on the project’s GitHub Releases page.
+Source code for each released version is available in the `pdflinkcheckVERSION.tar.gz` files on the projects GitHub Releases page.
 
+Fulltext copies of **LICENSEMIT** and **LICENSEAGPL3** are included in the root of the repository.
+
+**Links:**
+- Project source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck 
+- PyMuPDF source code: https://github.com/pymupdf/PyMuPDF 
+- pypdfium2 source code: https://github.com/pypdfium2-team/pypdfium2
+- PDFium source code: https://pdfium.googlesource.com/pdfium/
+- pypdf source code: https://github.com/py-pdf/pypdf 
+- AGPLv3 text (FSF): https://www.gnu.org/licenses/agpl-3.0.html 
+- MIT License text: https://opensource.org/license/mit 
+- BSD-3 License text: https://opensource.org/license/bsd-3-clause
+- Apachev2 License text: https://opensource.org/license/apache-2-0
+
+
+Copyright 2025 George Clayton Bennett
