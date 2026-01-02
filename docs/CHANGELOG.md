@@ -11,6 +11,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Added:
 - PDFium engine support via src/pdflinkcheck/analysis_pdfium.py; this means that we no longer need and ffi bridge nor a pdflinkcheck-rust package. The hold up there was packaging the libpdfium.so/.dll/.dylib into the pdflinkcheck-rust .whl along with the pdflinkcheck-rust.so/.dll/.dylib. The pypdfium2  requires less maintenance on my part, though less rust as a portfolio piece. We learned though.
 
+### Changed: 
+- Available radio button for library selection will now only include the ones that are available to the current environment or the build.
+
 ### Removed:
 -  FFI stuff
 

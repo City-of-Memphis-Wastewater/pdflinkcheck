@@ -42,7 +42,7 @@ jobs:
 
           python -m venv .venv
           .\.venv\Scripts\python.exe -m pip install --upgrade pip 
-          .\.venv\Scripts\python.exe -m pip install -e ".[full]"
+          .\.venv\Scripts\python.exe -m pip install -e ".[pdfium,mupdf]"
           .\.venv\Scripts\python.exe -m pip install pyinstaller
 
       - name: Build EXE with PyInstaller
