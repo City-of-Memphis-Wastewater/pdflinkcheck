@@ -57,10 +57,7 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 # If you choose to include PyMuPDF, you must comply with the AGPL3
 mupdf = ["pymupdf>=1.24.0,<2.0.0"]
 pdfium = ["pypdfium2>=5.2.0,<6.0.0"]
-full = [
-    "pdflinkcheck[mupdf]",
-    "pdflinkcheck[pdfium]"
-]
+full = ["pymupdf>=1.24.0,<2.0.0", "pypdfium2>=5.2.0,<6.0.0"]
 
 #rust = [
 #    "pdflinkcheck-rust>=0.1.13"
