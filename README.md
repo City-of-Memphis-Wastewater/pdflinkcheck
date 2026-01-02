@@ -212,6 +212,17 @@ uv add "pdflinkcheck[full]"
 
 ---
 
+## Leverage the Rust core
+
+```
+uv sync --extra rust"
+wget https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-x64.tgz
+tar -xzf pdfium-linux-x64.tgz
+cp lib/libpdfium.so .
+```
+
+---
+
 ### Document Compatibility: 
 Not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
 

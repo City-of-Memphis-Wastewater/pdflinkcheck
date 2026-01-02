@@ -57,13 +57,17 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 [project.optional-dependencies]
 # This allows users to do: pip install pdflinkcheck[full]
 # If you choose to include PyMuPDF, you must comply with the AGPL3
-apgl3 = [
+# apgl3 = [ # good name, but let's stay consistent
+pymupdf = [
     #"pymupdf>=1.26.7 ; platform_system == 'Linux' and platform_machine != 'aarch64'" # to avoid on termux
     "pymupdf>=1.26.7"  # let them try
 ]
-rust = [
-    'pdflinkcheck-rust'
-]
+#rust = [
+#    "pdflinkcheck-rust>=0.1.13"
+#]
+pdfium = [
+    "pypdfium2>=5.2.0" # not termux compatible
+] 
 
 [dependency-groups]
 dev = [

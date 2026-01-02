@@ -1,87 +1,76 @@
 import pypdfium2 as pdfium
-from typing import Dict, Any
+import pypdfium2.raw as pdfium_c
+import ctypes
+from typing import List, Dict, Any
+from pdflinkcheck.helpers import PageRef
 
 def analyze_pdf(path: str) -> Dict[str, Any]:
+    """
+    Extracts TOC and Links from a PDF using pypdfium2.
+    Uses direct C-API calls to ensure compatibility with varied PDFium builds.
+    """
     doc = pdfium.PdfDocument(path)
-    
     links = []
     toc_list = []
     seen_toc = set()
 
-    # 1. TOC Extraction using get_title()
+    # 1. TOC Extraction
     for item in doc.get_toc():
-        # Based on your DEBUG: 'get_title' and 'get_dest' exist
         title = item.get_title() if hasattr(item, "get_title") else ""
-        level = getattr(item, "level", 0)
-        
-        # Get page index from destination
-        page_idx = 0
-        dest = item.get_dest() if hasattr(item, "get_dest") else None
-        if dest:
-            page_idx = dest.get_index()
+        page_idx = PageRef.from_index(item.get_dest().get_index()).machine if item.get_dest() else 0
+        if title or page_idx > 0:
+            key = (title, page_idx)
+            if key not in seen_toc:
+                toc_list.append({"level": item.level + 1, "title": title, "target_page": page_idx})
+                seen_toc.add(key)
 
-        key = (title, page_idx)
-        if key not in seen_toc:
-            toc_list.append({
-                "level": level + 1, 
-                "title": title or "",
-                "target_page": page_idx
-            })
-            seen_toc.add(key)
-
-    # 2. Page-by-Page Extraction using get_objects()
+    # 2. Link Enumeration
     for page_index in range(len(doc)):
         page = doc.get_page(page_index)
         text_page = page.get_textpage()
+        source_ref = PageRef.from_index(page_index)
+
+        # Access WebLinks interface (more robust than Annotations in some builds)
+        pagelink_raw = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
         
-        # Based on your DEBUG: Use get_objects() to find annotations/links
-        for obj in page.get_objects():
-            # In some versions, links are found via get_objects or get_annots
-            # If get_objects doesn't yield links, we check the 'raw' attribute
-            pass
-            
-        # Fallback to the most reliable way to get links in this specific version:
-        # pypdfium2 typically provides a helper even if it didn't show in dir() 
-        # because of how CFFI handles some dynamic attributes.
-        # However, let's use the explicit 'get_annots' logic if possible.
-        
-        # Try a different approach for this specific build: 
-        # Using the page.pdf.get_page_labels or direct link iteration
-        try:
-            for link in page.get_links():
-                rect = link.get_rect()
-                record = {
-                    "page": page_index,
-                    "rect": [rect[0], rect[1], rect[2], rect[3]],
-                    "link_text": "",
-                    "type": "link",
-                    "url": None,
-                    "destination_page": None,
-                    "action_kind": None,
-                    "source_kind": "pypdfium2"
+        if pagelink_raw:
+            count = pdfium_c.FPDFLink_CountWebLinks(pagelink_raw)
+            for i in range(count):
+                # Extract URL (UTF-16LE decoding)
+                buflen = pdfium_c.FPDFLink_GetURL(pagelink_raw, i, None, 0)
+                url = ""
+                if buflen > 0:
+                    buffer = (pdfium_c.c_uint16 * buflen)() 
+                    pdfium_c.FPDFLink_GetURL(pagelink_raw, i, buffer, buflen)
+                    url = ctypes.string_at(buffer, (buflen-1)*2).decode('utf-16le')
+
+                # Extract Bounding Box (7-argument signature for binary compatibility)
+                l, t, r, b = (ctypes.c_double() for _ in range(4))
+                pdfium_c.FPDFLink_GetRect(
+                    pagelink_raw, i, 0, 
+                    ctypes.byref(l), ctypes.byref(t), ctypes.byref(r), ctypes.byref(b)
+                )
+                
+                link_dict = {
+                    'page': source_ref.machine,
+                    'rect': [l.value, b.value, r.value, t.value],
+                    'link_text': url,
+                    'type': 'External (URI)',
+                    'url': url,
+                    'target': url,
+                    'source_kind': 'pypdfium2'
                 }
 
-                action = link.get_action()
-                if action:
-                    if action.get_type() == pdfium.ActionType.URI:
-                        record["url"] = action.get_uri()
-                        record["action_kind"] = "URI"
-                    else:
-                        record["action_kind"] = "GoTo"
+                # Extract Text from the defined coordinates
+                extracted_text = text_page.get_text_bounded(
+                    left=l.value, top=t.value, right=r.value, bottom=b.value
+                )
+                if extracted_text:
+                    link_dict['link_text'] = extracted_text.strip()
+                
+                links.append(link_dict)
 
-                dest = link.get_destination()
-                if dest:
-                    record["destination_page"] = dest.get_index()
-                    record["action_kind"] = record["action_kind"] or "GoTo"
-
-                # Text Extraction
-                l, b, r, t = rect
-                extracted_text = text_page.get_text_bounded(left=l, top=t, right=r, bottom=b)
-                record["link_text"] = extracted_text.strip() if extracted_text else ""
-                links.append(record)
-        except AttributeError:
-            # If get_links really doesn't exist, we iterate annots via get_objects
-            pass
+            pdfium_c.FPDFLink_CloseWebLinks(pagelink_raw)
 
         page.close()
         text_page.close()
@@ -92,12 +81,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 if __name__ == "__main__":
     import json
     import sys
-    
-    filename = "temOM.pdf"
-    try:
+    if len(sys.argv) > 1:
+        filename = sys.argv[1]
         results = analyze_pdf(filename)
         print(json.dumps(results, indent=2))
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        sys.exit(1)

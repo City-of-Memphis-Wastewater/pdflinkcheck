@@ -101,7 +101,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
     # AUTO MODE
     if pdf_library == "auto":
-        from pdflinkcheck.ffi import rust_available
+        from pdflinkcheck.ffi import rust_available # defunct
         if rust_available():
             pdf_library = "rust"
         elif pymupdf_is_available():

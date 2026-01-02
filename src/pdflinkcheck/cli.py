@@ -223,7 +223,7 @@ def analyze_pdf( # Renamed function for clarity
         if not valid and "NONE" not in requested_formats:
             typer.echo(f"Warning: No valid formats found in '{export_format}'. Supported: JSON, TXT.")
     
-    if pdf_library == "rust":
+    """if pdf_library == "rust":
         # Block Rust for v1.2.2
         typer.secho(
             "[!] Rust engine requested but is disabled in pdflinkcheck v1.2.2.\n"
@@ -231,7 +231,7 @@ def analyze_pdf( # Renamed function for clarity
             "    Rust support will return in v1.2.? via `pdflinkcheck-rust`.",
             fg=typer.colors.YELLOW
         )
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1)"""
 
     # The meat and potatoes
     report_results = run_report_and_call_exports(
