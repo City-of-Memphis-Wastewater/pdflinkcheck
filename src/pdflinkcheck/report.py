@@ -111,11 +111,16 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
     # RUST ENGINE
     if pdf_library == "rust":
-        from pdflinkcheck.ffi import rust_available, analyze_pdf_rust, rust_normalize_extracted_links, rust_normalize_structural_toc
-
-        if not rust_available():
-            raise ImportError("Rust engine requested but Rust library not available.")
-        
+        try:
+            from pdflinkcheck_rust import analyze_pdf as analyze_pdf_rust
+        except ImportError as e:
+            raise ImportError(
+                "Rust engine requested, but 'pdflinkcheck-rust' is not installed.\n"
+                "Install it with:\n"
+                "    pip install pdflinkcheck-rust\n"
+                "Or, for the full experience in pdflinkcheck:\n"
+                "    pip install pdflinkcheck[rust]"
+            ) from e
         # Rust returns a dict: {"links": [...], "toc": [...]}
         # Already normalized
         rust_data = analyze_pdf_rust(pdf_path) or {"links": [], "toc": []}

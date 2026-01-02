@@ -52,7 +52,6 @@ def extract_toc_pymupdf(*args, **kwargs):
 
 
 
-''' # block until we get psfkinkcheck-rust up
 # --- Rust ---
 
 def analyze_pdf_rust(*args, **kwargs):
@@ -68,7 +67,7 @@ analyze_pdf_rust.__doc__ = (
     "Analyze a PDF using the Rust engine and return a normalized dictionary.\n\n"
     "See pdflinkcheck.ffi.analyze_pdf_rust for full details."
 )
-'''
+
 # -----------------------------
 # GUI easter egg
 # -----------------------------
@@ -107,7 +106,7 @@ __all__ = [
     "extract_toc_pymupdf", 
     "extract_links_pypdf", 
     "extract_toc_pypdf", 
-    #"analyze_pdf_rust",     
+    "analyze_pdf_rust",     
 ]
 
 # Handle the Easter Egg export
