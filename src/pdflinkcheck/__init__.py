@@ -52,20 +52,20 @@ def extract_toc_pymupdf(*args, **kwargs):
 
 
 
-# --- Rust ---
+# --- PDFium ---
 
-def analyze_pdf_rust(*args, **kwargs):
+def analyze_pdf_pdfium(*args, **kwargs):
     try:
-        from pdflinkcheck_rust import analyze_pdf as _analyze
+        from pdflinkcheck.analysis_pdfium import analyze_pdf as _analyze
     except ImportError:
         raise ImportError(
             "Rust engine is not installed. "
             "Install pdflinkcheck-rust to enable Rust support."
         )
     return _analyze(*args, **kwargs)
-analyze_pdf_rust.__doc__ = (
-    "Analyze a PDF using the Rust engine and return a normalized dictionary.\n\n"
-    "See pdflinkcheck.ffi.analyze_pdf_rust for full details."
+analyze_pdf_pdfium.__doc__ = (
+    "Analyze a PDF using the PDFium engine and return a normalized dictionary.\n\n"
+    "See pdflinkcheck.analyze_pdfium for full details."
 )
 
 # -----------------------------
@@ -106,7 +106,7 @@ __all__ = [
     "extract_toc_pymupdf", 
     "extract_links_pypdf", 
     "extract_toc_pypdf", 
-    "analyze_pdf_rust",     
+    "analyze_pdf_pdfium",     
 ]
 
 # Handle the Easter Egg export

@@ -30,6 +30,18 @@ def pymupdf_is_available() -> bool:
         # Use: `pipx install pdflinkcheck[full]` or alternative.
         return False
 
+@cache
+def pdfium_is_available() -> bool:
+    """Check if pdfium2 is available in the current local version of pdflinkcheck."""
+    try:
+        import pdfium2
+        return True
+    except Exception:
+        # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
+        # Use: `pipx install pdflinkcheck[pdfium]` or alternative.
+        return False
+
+
 
 @cache
 def is_in_git_repo(path='.'):

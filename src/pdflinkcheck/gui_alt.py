@@ -15,7 +15,7 @@ import ctypes
 from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
-from pdflinkcheck.environment import pymupdf_is_available, clear_all_caches, is_in_git_repo
+from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_all_caches, is_in_git_repo
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -78,7 +78,8 @@ class PDFLinkCheckerApp(tk.Tk):
 
         # --- 1. Variable State Management ---
         self.pdf_path = tk.StringVar(value="")
-        self.pdf_library_var = tk.StringVar(value="PyMuPDF")
+        #self.pdf_library_var = tk.StringVar(value="PyMuPDF")
+        self.pdf_library_var = tk.StringVar(value="PDFium")
         self.do_export_report_json_var = tk.BooleanVar(value=True) 
         self.do_export_report_txt_var = tk.BooleanVar(value=True) 
         self.current_report_text = None
@@ -89,6 +90,8 @@ class PDFLinkCheckerApp(tk.Tk):
         self.last_txt_path: Optional[Path] = None
 
         if not pymupdf_is_available():
+            self.pdf_library_var.set("PDFium")
+        if not pdfium_is_available():
             self.pdf_library_var.set("pypdf")
 
         # --- 2. Widget Construction ---
@@ -137,6 +140,7 @@ class PDFLinkCheckerApp(tk.Tk):
         pdf_library_frame = ttk.LabelFrame(control_frame, text="Backend Engine:")
         pdf_library_frame.grid(row=1, column=0, padx=5, pady=5, sticky='nsew')
 
+        ttk.Radiobutton(pdf_library_frame, text="PDFium", variable=self.pdf_library_var, value="PDFium").pack(side='left', padx=5, pady=1) 
         ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value="PyMuPDF").pack(side='left', padx=5, pady=1) 
         ttk.Radiobutton(pdf_library_frame, text="pypdf", variable=self.pdf_library_var, value="pypdf").pack(side='left', padx=5, pady=1)
 
@@ -321,7 +325,7 @@ class PDFLinkCheckerApp(tk.Tk):
 
     def _clear_all_caches(self):
         clear_all_caches()
-        messagebox.showinfo("Caches Cleared", f"All caches have been cleared.\nPyMuPDF available: {pymupdf_is_available()}")
+        messagebox.showinfo("Caches Cleared", f"All caches have been cleared.\nPyMuPDF available: {pymupdf_is_available()}\nPDFium available: {pdfium_is_available()}")
 
     def _display_error(self, message):
         self.output_text.config(state=tk.NORMAL)

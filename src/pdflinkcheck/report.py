@@ -9,7 +9,7 @@ import pyhabitat
 import copy
 
 from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
-from pdflinkcheck.environment import pymupdf_is_available
+from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
 from pdflinkcheck.helpers import debug_head, PageRef
@@ -72,7 +72,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     using pdflinkcheck analysis, and 
     prints a comprehensive, user-friendly report to the console.
 
-    Args:
+    Args:   
         pdf_path: The file system path (str) to the target PDF document.
 
     Returns:
@@ -96,19 +96,22 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
 
     # Expected: "pypdf" or "PyMuPDF" pr "rust"
-    allowed_libraries = ("pypdf", "pymupdf", "rust", "auto")
+    allowed_libraries = ("pypdf", "pymupdf", "pdfium", "auto")
     pdf_library = pdf_library.lower()
 
     # AUTO MODE
     if pdf_library == "auto":
-        from pdflinkcheck.ffi import rust_available # defunct
-        if rust_available():
-            pdf_library = "rust"
+        #from pdflinkcheck.ffi import rust_available # defunct
+        #if rust_available():
+        #    pdf_library = "rust"
+        if pdfium_is_available():
+            pdf_library = "pdfium"
         elif pymupdf_is_available():
             pdf_library = "pymupdf"
         else:
             pdf_library = "pypdf"
 
+    """
     # RUST ENGINE
     if pdf_library == "rust":
         try:
@@ -127,11 +130,19 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
         extracted_links = rust_data.get("links", [])
         structural_toc = rust_data.get("toc", [])
-
+    """
+    # PDFium ENGINE
+    if pdf_library in allowed_libraries and pdf_library == "pdfium":
+        from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pdfium
+        data = analyze_pdf_pdfium(pdf_path) or {"links": [], "toc": []}
+        extracted_links = data.get("links", [])
+        structural_toc = data.get("toc", [])
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
         from pdflinkcheck.analysis_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
+        extracted_links = extract_links(pdf_path)
+        structural_toc = extract_toc(pdf_path) 
 
     # PyMuPDF Engine
     elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
@@ -146,6 +157,8 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             #return    
             raise ImportError("The 'fitz' module (PyMuPDF) is required but not installed.")
         from pdflinkcheck.analysis_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
+        extracted_links = extract_links(pdf_path)
+        structural_toc = extract_toc(pdf_path) 
     
     log("\n--- Starting Analysis ... ---\n")
     if pdf_path is None:
@@ -178,11 +191,6 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
-
-        # 1. Extract all active links and TOC
-        if pdf_library != "rust": 
-            extracted_links = extract_links(pdf_path)
-            structural_toc = extract_toc(pdf_path) 
 
         toc_entry_count = len(structural_toc)
         str_structural_toc = get_structural_toc(structural_toc)

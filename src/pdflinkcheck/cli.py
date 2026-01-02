@@ -144,7 +144,6 @@ def tools_command(
     if clear_cache:
         clear_all_caches()
 
-
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity
     pdf_path: Optional[Path] = typer.Argument(
@@ -163,11 +162,11 @@ def analyze_pdf( # Renamed function for clarity
         help="Export format. Use 'None' to suppress file export.",
     ),
 
-    pdf_library: Literal["auto","rust","pypdf", "pymupdf"] = typer.Option(
+    pdf_library: Literal["auto","pdfium","pypdf", "pymupdf"] = typer.Option(
         assess_default_pdf_library(),
         "--engine","-e",
         envvar="PDF_ENGINE",
-        help="PDF parsing library. pypdf (pure Python) or pymupdf (faster, if available).",
+        help="PDF parsing library. pypdf (pure Python), pymupdf (fast, AGPL3+ licensed), pdfium (fast, BSD-3 licensed).",
     ),
     print_bool: bool = typer.Option(
         True,
@@ -223,15 +222,6 @@ def analyze_pdf( # Renamed function for clarity
         if not valid and "NONE" not in requested_formats:
             typer.echo(f"Warning: No valid formats found in '{export_format}'. Supported: JSON, TXT.")
     
-    """if pdf_library == "rust":
-        # Block Rust for v1.2.2
-        typer.secho(
-            "[!] Rust engine requested but is disabled in pdflinkcheck v1.2.2.\n"
-            "    This version uses only Python engines (pypdf/PyMuPDF).\n"
-            "    Rust support will return in v1.2.? via `pdflinkcheck-rust`.",
-            fg=typer.colors.YELLOW
-        )
-        raise typer.Exit(code=1)"""
 
     # The meat and potatoes
     report_results = run_report_and_call_exports(
