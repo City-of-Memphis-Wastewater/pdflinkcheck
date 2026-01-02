@@ -1,10 +1,29 @@
-import pypdfium2 as pdfium
-import pypdfium2.raw as pdfium_c
 import ctypes
 from typing import List, Dict, Any
 from pdflinkcheck.helpers import PageRef
 
+from pdflinkcheck.environment import pdfium_is_available
+from pdflinkcheck.helpers import PageRef
+
+try:
+    if pdfium_is_available():
+        import pypdfium2 as pdfium
+        import pypdfium2.raw as pdfium_c
+
+    else:
+        pdfium = None
+        pdfium_c = None
+except ImportError:
+    pdfium = None
+    pdfium_c = None
+
 def analyze_pdf(path: str) -> Dict[str, Any]:
+    # 1. Guard the entry point
+    if not pdfium_is_available() or pdfium is None:
+        raise ImportError(
+            "pypdfium2 is not installed. "
+            "Install it with: pip install pdflinkcheck[pdfium]"
+        )
     doc = pdfium.PdfDocument(path)
     links = []
     toc_list = []

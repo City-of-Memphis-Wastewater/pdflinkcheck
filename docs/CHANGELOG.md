@@ -7,6 +7,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.10] - 2026-01-02
+### Fixed:
+- Guard against failed if pdfium is not included.
+
+---
+
 ## [1.2.4] - 2026-01-02
 ### Added:
 - PDFium engine support via src/pdflinkcheck/analysis_pdfium.py; this means that we no longer need and ffi bridge nor a pdflinkcheck-rust package. The hold up there was packaging the libpdfium.so/.dll/.dylib into the pdflinkcheck-rust .whl along with the pdflinkcheck-rust.so/.dll/.dylib. The pypdfium2  requires less maintenance on my part, though less rust as a portfolio piece. We learned though.
