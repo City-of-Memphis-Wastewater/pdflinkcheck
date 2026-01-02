@@ -98,9 +98,9 @@ class PDFLinkCheckerApp(tk.Tk):
         self.last_json_path: Optional[Path] = None
         self.last_txt_path: Optional[Path] = None
 
-        if not pymupdf_is_available():
-            self.pdf_library_var.set("PDFium")
         if not pdfium_is_available():
+            self.pdf_library_var.set("PyMuPDF")
+        if not pymupdf_is_available():
             self.pdf_library_var.set("pypdf")
 
         # --- 2. Widget Construction ---

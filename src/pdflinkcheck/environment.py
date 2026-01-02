@@ -34,7 +34,7 @@ def pymupdf_is_available() -> bool:
 def pdfium_is_available() -> bool:
     """Check if pdfium2 is available in the current local version of pdflinkcheck."""
     try:
-        import pdfium2
+        import pypdfium2
         return True
     except Exception:
         # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 

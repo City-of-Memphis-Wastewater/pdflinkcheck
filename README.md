@@ -117,6 +117,7 @@ For developers importing `pdflinkcheck` into other Python projects, the core ana
 |`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline).|
 |`extract_links_pynupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path, using the pypdf library.|
 |`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline), using the pypdf library.|
+|`analyze_pdf_pdfium()`|Function to extract the PDF's internal TOC and Links, using the pypdfium2 library.|
 
 Exanple:
 
@@ -124,6 +125,7 @@ Exanple:
 from pdflinkcheck.report import run_report
 from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf, extract_toc_pymupdf                                                                          130 from pdflinkcheck.analysis_pymupdf import extract_links_pynupdf, extract_toc_pymupdf
 from pdflinkcheck.analysis_pypdf import extract_links_pypdf, extract_toc_pypdf
+from pdflinkchec.analysis_pdfium impport analyze_pdf as analyze_pdf_pdfium
 
 file = "document1.pdf"
 report_data = run_report(file)
@@ -197,22 +199,22 @@ Benefits:
 
 
 ### PDF Library Selection
-At long last, `PyMuPDF` is an optional dependency. All testing comparing `pyp df` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benfit of `pypdf` is small size of packages and cross-platform compatibility.
+At long last, `PyMuPDF` is an optional dependency. All testing comparing `pypdf` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benfit of `pypdf` is small size of packages and cross-platform compatibility. We have recently added a PDFium option, which circumvents the AGPL3+.
 
 Expecte that all binaries and artifacts contain PyMuPDF, unlss they are built on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
 
 To install the complete version use one of these options:
 
 ```bash
-pip install "pdflinkcheck[full]"
-pipx install "pdflinkcheck[full]"
-uv tool install "pdflinkcheck[full]"
-uv add "pdflinkcheck[full]"
+pip install "pdflinkcheck[mupdf]"
+pipx install "pdflinkcheck[pdfium]"
+uv tool install "pdflinkcheck[pdfium]"
+uv add "pdflinkcheck[pdfium]"
 ```
 
 ---
 
-## Leverage the Rust core
+## Leverage the Rust core (Defunct)
 
 ```
 uv sync --extra rust"
@@ -278,6 +280,7 @@ The source code of pdflinkcheck itself remains licensed under the **MIT License*
 Links:
 - Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/  
 - PyMuPDF source code: https://github.com/pymupdf/PyMuPDF/
+- pypdfium2 source code: https://github.com/pypdfium2-team/pypdfium2
 - pypdf source code: https://github.com/py-pdf/pypdf/
 - AGPLv3 text (FSF): https://www.gnu.org/licenses/agpl-3.0.html  
 - MIT License text: https://opensource.org/license/mit  
