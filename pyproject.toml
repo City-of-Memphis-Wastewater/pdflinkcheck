@@ -1,6 +1,6 @@
 [project]
 name = "pdflinkcheck"
-version = "1.2.4"
+version = "1.2.5"
 description = "A purpose-built PDF link analysis and reporting tool with GUI and CLI."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -65,6 +65,12 @@ mupdf = [
 pdfium = [
     "pypdfium2>=5.2.0" # not termux compatible
 ] 
+
+full = [
+    "pymupdf>=1.26.7"  # not termux compatible
+    "pypdfium2>=5.2.0" # not termux compatible
+] 
+
 
 #rust = [
 #    "pdflinkcheck-rust>=0.1.13"
