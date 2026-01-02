@@ -148,8 +148,10 @@ class PDFLinkCheckerApp(tk.Tk):
         pdf_library_frame = ttk.LabelFrame(control_frame, text="Backend Engine:")
         pdf_library_frame.grid(row=1, column=0, padx=3, pady=3, sticky='nsew')
 
-        ttk.Radiobutton(pdf_library_frame, text="PDFium", variable=self.pdf_library_var, value="PDFium").pack(side='left', padx=5, pady=1) 
-        ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value="PyMuPDF").pack(side='left', padx=3, pady=1)
+        if pdfium_is_available():
+            ttk.Radiobutton(pdf_library_frame, text="PDFium", variable=self.pdf_library_var, value="PDFium").pack(side='left', padx=5, pady=1) 
+        if pymupdf_is_available():
+            ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value="PyMuPDF").pack(side='left', padx=3, pady=1)
         ttk.Radiobutton(pdf_library_frame, text="pypdf", variable=self.pdf_library_var, value="pypdf").pack(side='left', padx=3, pady=1)
 
         export_config_frame = ttk.LabelFrame(control_frame, text="Export Enabled:")

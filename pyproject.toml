@@ -59,13 +59,16 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 # If you choose to include PyMuPDF, you must comply with the AGPL3
 
 mupdf = [
-    #"pymupdf>=1.26.7 ; platform_system == 'Linux' and platform_machine != 'aarch64'" # to avoid on termux
-    "pymupdf>=1.26.7"  # let them try
+    "pymupdf>=1.26.7"  # not termux compatible
 ]
 
 pdfium = [
     "pypdfium2>=5.2.0" # not termux compatible
 ] 
+full = [
+    "pymupdf>=1.26.7",  # not termux compatible
+    "pypdfium2>=5.2.0" # not termux compatible
+]
 
 #rust = [
 #    "pdflinkcheck-rust>=0.1.13"
