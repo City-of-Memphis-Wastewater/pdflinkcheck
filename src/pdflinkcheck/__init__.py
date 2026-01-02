@@ -59,8 +59,8 @@ def analyze_pdf_pdfium(*args, **kwargs):
         from pdflinkcheck.analysis_pdfium import analyze_pdf as _analyze
     except ImportError:
         raise ImportError(
-            "Rust engine is not installed. "
-            "Install pdflinkcheck-rust to enable Rust support."
+            "PDFium engine is not installed. "
+            "Install pypdfium2 to enable pdfium support."
         )
     return _analyze(*args, **kwargs)
 analyze_pdf_pdfium.__doc__ = (
