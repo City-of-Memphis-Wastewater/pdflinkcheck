@@ -67,7 +67,7 @@ pdfium = [
 ] 
 
 full = [
-    "pymupdf>=1.26.7"  # not termux compatible
+    "pymupdf>=1.26.7",  # not termux compatible
     "pypdfium2>=5.2.0" # not termux compatible
 ] 
 
