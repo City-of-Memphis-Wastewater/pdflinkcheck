@@ -91,7 +91,7 @@ artifacts-dir = "dist"
 include = [
     "src/pdflinkcheck/data/**",
 ]
-packages = ["src/pdflinkcheck"]
+packages = ["pdflinkcheck"]
 
 [tool.hatch.build.targets.sdist]
 include = [
