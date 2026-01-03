@@ -56,7 +56,7 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 
 [project.optional-dependencies]
 # If you choose to include PyMuPDF, you must comply with the AGPL3
-mupdf = ["pymupdf>=1.24.0,<2.0.0"]
+mupdf = ["pymupdf>=1.24.0,<2.0.0"] # fails on termux
 pdfium = ["pypdfium2>=5.2.0,<6.0.0"]
 full = ["pymupdf>=1.24.0,<2.0.0", "pypdfium2>=5.2.0,<6.0.0"]
 
@@ -67,7 +67,7 @@ full = ["pymupdf>=1.24.0,<2.0.0", "pypdfium2>=5.2.0,<6.0.0"]
 [dependency-groups]
 dev = [
     "build>=1.3.0",
-    "pyinstaller>=6.17.0",
+    "pyinstaller>=6.17.0 ; platform_system == 'Linux' and platform_machine != 'aarch64'", # to avoid on termux
     "shiv>=1.0.8",
     "ruff>=0.7.0 ; platform_system == 'Linux' and platform_machine != 'aarch64'", # to avoid on termux
     "pytest>=8.0.0",
@@ -84,10 +84,14 @@ dev = [
 requires = ["hatchling>=1.28.0"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build]
+artifacts-dir = "dist"
+
 [tool.hatch.build.targets.wheel]
 include = [
     "src/pdflinkcheck/data/**",
 ]
+packages = ["src/pdflinkcheck"]
 
 [tool.hatch.build.targets.sdist]
 include = [

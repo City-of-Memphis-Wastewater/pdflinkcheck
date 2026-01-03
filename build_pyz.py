@@ -62,9 +62,11 @@ def build_wheel():
     """Builds the source distribution and wheel using the standard Python build module."""
     print("\n1. Building project wheel using 'python -m build'...")
     # PASS THE CURRENT ENVIRONMENT (os.environ.copy())
-    run_command(["hatchling", "build", 
-        "--wheel", 
-        "--out-dir", str(DIST_DIR)
+    #run_command(["uv", "build", 
+    #    "--wheel", 
+    #    "--out-dir", str(DIST_DIR)
+    #], env=os.environ.copy())
+    run_command(["hatchling", "build", "--target", "wheel"
     ], env=os.environ.copy())
     #run_command([
     #    sys.executable, "-m", "build", 
@@ -148,7 +150,7 @@ def build_shiv_pyz():
 
     # Clarify if PyMuPDF should be included or not
     if not pyhabitat.on_termux():
-        whl_call = f"{str(wheel_path)}[full]"  # include pymupdf
+        whl_call = f"{str(wheel_path)}[pdfium]"  # include pymupdf
     else:
         whl_call = str(wheel_path) # do not include pymupdf
     cmd.append(whl_call)    
