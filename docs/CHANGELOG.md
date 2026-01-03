@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.18] - 2026-01-03
+### Changed:
+- Move from hatchling back to uv-build. Fdroid Termux supports neither pyinstaller nor uv build.
+
+---
+
 ## [1.2.13] - 2026-01-02
 ### Changed:
 - Move from uv-build to hatchling

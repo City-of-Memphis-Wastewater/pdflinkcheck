@@ -1,6 +1,6 @@
 [project]
 name = "pdflinkcheck"
-version = "1.2.17"
+version = "1.2.18"
 description = "A purpose-built PDF link analysis and reporting tool with GUI and CLI."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -74,26 +74,10 @@ dev = [
     "pytest-cov>=4.1.0",
 ]
 
-#[build-system]
-#requires = ["uv_build"]
-#build-backend = "uv_build"
-#[tool.uv.sources]
-#pdflinkcheck = { path = "src/pdflinkcheck" }
-
 [build-system]
-requires = ["hatchling>=1.28.0"]
-build-backend = "hatchling.build"
+requires = ["uv_build"]
+build-backend = "uv_build"
 
-[tool.hatch.build]
-artifacts-dir = "dist"
+[tool.uv.sources]
+pdflinkcheck = { path = "src/pdflinkcheck" }
 
-[tool.hatch.build.targets.wheel]
-include = [
-    "src/pdflinkcheck/data/**",
-]
-packages = ["pdflinkcheck"]
-
-[tool.hatch.build.targets.sdist]
-include = [
-    "src/pdflinkcheck/data/**",
-]

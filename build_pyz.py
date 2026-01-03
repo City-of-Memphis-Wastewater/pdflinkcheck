@@ -62,12 +62,12 @@ def build_wheel():
     """Builds the source distribution and wheel using the standard Python build module."""
     print("\n1. Building project wheel using 'python -m build'...")
     # PASS THE CURRENT ENVIRONMENT (os.environ.copy())
-    #run_command(["uv", "build", 
-    #    "--wheel", 
-    #    "--out-dir", str(DIST_DIR)
-    #], env=os.environ.copy())
-    run_command(["hatchling", "build", "--target", "wheel"
+    run_command(["uv", "build", 
+        "--wheel", 
+        "--out-dir", str(DIST_DIR)
     ], env=os.environ.copy())
+    #run_command(["hatchling", "build", "--target", "wheel"
+    #], env=os.environ.copy())
     #run_command([
     #    sys.executable, "-m", "build", 
     #    "--wheel", 

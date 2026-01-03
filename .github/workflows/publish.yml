@@ -35,9 +35,9 @@ jobs:
       #- name: Install Hatch
       #  run: pip install hatch
       # --- UV-BASED INSTALLATION AND SETUP ---
-      - name: Install hatchling
-        # Install hatchling globally (or add it to the path)
-        run: pip install hatchling uv
+      - name: Install ub
+        # Install globally (or add it to the path)
+        run: pip install uv
 
       - name: Ensure updated copies of packaged data files
         run: python src/pdflinkcheck/datacopy.py
@@ -55,7 +55,7 @@ jobs:
       - name: Build S-Dist and Wheel
         # This command uses the `build` package installed in the VENV to create package files.
         #run: source .venv/bin/activate && python -m build
-        run: hatchling build
+        run: uv build
         
       - name: Run sanity check (using the installed package)
         # Use the global `uv run` if you don't want to activate, but since we activated above:
