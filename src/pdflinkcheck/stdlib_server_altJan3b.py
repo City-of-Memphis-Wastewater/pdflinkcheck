@@ -385,8 +385,8 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
         if self.path == "/openapi.json":
-	    self._send_json(OPENAPI_SPEC)
-	    return
+            self._send_json(OPENAPI_SPEC)
+            return
         if self.path == "/ready":
             if SHUTDOWN_EVENT.is_set():
                 self._send_error_json("Server shutting down", 503)
