@@ -9,8 +9,8 @@ on:
   #  workflows: ["Check and Publish Python Package to PyPI and Releases"]  # Must match the 'name' field of your first workflow 
   #  types:
   #    - completed
-  #push:
-  #  branches: [main, dev]
+  push:
+    branches: [main, dev]
   #  #branches: [nope] 
   
 
@@ -42,7 +42,7 @@ jobs:
 
           python -m venv .venv
           .\.venv\Scripts\python.exe -m pip install --upgrade pip 
-          .\.venv\Scripts\python.exe -m pip install -e ".[pdfium,mupdf]"
+          .\.venv\Scripts\python.exe -m pip install -e ".[pdfium]"
           .\.venv\Scripts\python.exe -m pip install pyinstaller
 
       - name: Build EXE with PyInstaller
