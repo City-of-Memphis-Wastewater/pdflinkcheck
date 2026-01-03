@@ -9,8 +9,8 @@ on:
   #  workflows: ["Check and Publish Python Package to PyPI and Releases"]  # Must match the 'name' field of your first workflow 
   #  types:
   #    - completed
-  push:
-    branches: [main, dev]
+  #push:
+  #  branches: [main, dev]
   #  #branches: [nope] 
   
 
