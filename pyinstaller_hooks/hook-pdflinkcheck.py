@@ -11,7 +11,7 @@ It checks all hook directories (including the one specified in build_executable.
 # This is required for runtime resource discovery via importlib.resources.
 # PyInstaller needs this explicit instruction for importlib.resources to work properly 
 # within the bundled executable.
-
+from __future__ import annotations
 from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs
 #datas = collect_data_files("pymupdf")
 datas = collect_data_files('pdflinkcheck')

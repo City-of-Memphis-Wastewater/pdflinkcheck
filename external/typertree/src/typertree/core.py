@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-
+from __future__ import annotations
 import click
 import typer
 from rich.tree import Tree
