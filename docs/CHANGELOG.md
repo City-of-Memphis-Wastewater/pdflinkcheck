@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.13] - 2026-01-02
+### Changed:
+- Move from uv-build to hatchling
+
+---
+
 ## [1.2.12] - 2026-01-02
 ### Fixed:
 - Liberal applicatiom of 'from __future__ import annotations' for.3.9.compatibility.
