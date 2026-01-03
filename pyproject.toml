@@ -84,10 +84,12 @@ dev = [
 requires = ["hatchling>=1.28.0"]
 build-backend = "hatchling.build"
 
-# Include data files in wheel
-[tool.hatch.build.targets.wheel.include]
-"src/pdflinkcheck/data/**" = "pdflinkcheck/data"
+[tool.hatch.build.targets.wheel]
+include = [
+    "src/pdflinkcheck/data/**",
+]
 
-# Optional: if you want sdist to also include data
-[tool.hatch.build.targets.sdist.include]
-"src/pdflinkcheck/data/**" = "pdflinkcheck/data"
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/pdflinkcheck/data/**",
+]
