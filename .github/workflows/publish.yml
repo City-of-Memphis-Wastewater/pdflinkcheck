@@ -37,7 +37,7 @@ jobs:
       # --- UV-BASED INSTALLATION AND SETUP ---
       - name: Install hatchling
         # Install hatchling globally (or add it to the path)
-        run: pip install hatchling
+        run: pip install hatchling uv
 
       - name: Ensure updated copies of packaged data files
         run: python src/pdflinkcheck/datacopy.py
