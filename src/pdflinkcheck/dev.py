@@ -19,7 +19,7 @@ import pdflinkcheck
 subprocess.run("pdflinkcheck", "help-tree")
 ```
 """
-
+from __future__ import annotations
 import typer
 from rich.tree import Tree 
 from rich.panel import Panel

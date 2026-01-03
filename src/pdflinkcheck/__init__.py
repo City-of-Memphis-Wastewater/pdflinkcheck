@@ -7,6 +7,7 @@ pdflinkcheck - A PDF Link Checker
 Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
 
 """
+from __future__ import annotations
 import os as _os
 
 # Library functions

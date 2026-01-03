@@ -1,6 +1,7 @@
 #!/usr/bin/env python3 
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/cli.py
+from __future__ import annotations
 import typer
 from typing import Literal
 from typer.models import OptionInfo

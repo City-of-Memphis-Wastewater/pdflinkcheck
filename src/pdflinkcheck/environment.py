@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 
 # SPDX-License-Identifier: MIT
 # pdflinkcheck/environment.py
-
+from __future__ import annotations
 from functools import cache
 import subprocess
 """

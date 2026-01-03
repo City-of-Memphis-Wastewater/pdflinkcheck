@@ -1,3 +1,5 @@
+# src/pdflinkcheck/analysis_pdfium.py
+from __future__ import annotations
 import ctypes
 from typing import List, Dict, Any
 from pdflinkcheck.helpers import PageRef

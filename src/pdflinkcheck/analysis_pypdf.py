@@ -1,6 +1,7 @@
 #!/usr/bin/env python3 
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/analysis_pypdf.py
+from __future__ import annotations
 import sys
 from pathlib import Path
 import logging
