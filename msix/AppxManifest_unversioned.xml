@@ -54,6 +54,9 @@
             Image="Assets\SplashScreen-620x300.png" />
 
       </uap:VisualElements>
+      <Extensions>
+	<uap:Extension Category="windows.appExecutionAlias" Executable="pdflinkcheck.exe" EntryPoint="Windows.FullTrustApplication"/>
+      </Extensions>
 
     </Application>
   </Applications>
