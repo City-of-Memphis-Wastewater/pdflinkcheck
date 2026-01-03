@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.2.12] - 2026-01-02
+### Fixed:
+- Liberal applicatiom of 'from __future__ import annotations' for.3.9.compatibility.
 
 ---
 
