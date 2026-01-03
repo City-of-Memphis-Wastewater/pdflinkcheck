@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 import unicodedata
+from unidecode import unidecode
 from importlib.resources import files
 import pyhabitat
 import ctypes
@@ -387,8 +388,26 @@ class PDFLinkCheckerApp(tk.Tk):
         win.grab_set()
 
 # --- Helper Functions ---
-
 def sanitize_glyphs_for_tkinter(text: str) -> str:
+    """
+    Convert text to ASCII-friendly form for Tkinter Text widget.
+    Keeps readability: e.g., “é” → "e", bullets → "*", fancy quotes → '"' 
+    Collapses multiple spaces and replaces non-breaking spaces.
+    """
+    if not text:
+        return ""
+    
+    # Transliterate Unicode characters to closest ASCII equivalents
+    sanitized = unidecode(text)
+    
+    # Replace non-breaking spaces with normal spaces
+    sanitized = sanitized.replace('\xa0', ' ')
+    
+    # Collapse multiple spaces
+    sanitized = ' '.join(sanitized.split())
+    
+    return sanitized
+def sanitize_glyphs_for_tkinter_(text: str) -> str:
     normalized = unicodedata.normalize('NFKD', text)
     sanitized = normalized.encode('ascii', 'ignore').decode('utf-8')
     return sanitized.replace('  ', ' ')
