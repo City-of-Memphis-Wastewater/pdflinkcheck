@@ -28,14 +28,11 @@ HTML_FORM = """
       <label>Engine:</label>
       <select name="pdf_library">
         <option value="pypdf" selected>pypdf (pure Python, Termux-friendly)</option>
-        <option value="pymupdf">pymupdf (faster, if installed)</option>
+        <option value="pymupdf">PyMyPPD (fast, AGPL3)</option>
+        <option value="pdfium">PDFium (fast, permissive)</option>
       </select>
     </p>
     <p><button type="submit">Analyze PDF</button></p>
-    <!--p>
-      <button type="submit" name="action" value="analyze">Analyze PDF</button>
-      <button type="submit" name="action" value="validate">Validate PDF</button>
-    </p-->
   </form>
   <hr>
   <p>Returns JSON.</p>
@@ -111,7 +108,7 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
 
             elif name == "pdf_library":
                 pdf_library = part.get_payload(decode=True).decode().lower()
-                if pdf_library not in {"pypdf", "pymupdf"}:
+                if pdf_library not in {"pypdf", "pymupdf", "pdfium"}:
                     self._send_json_error("Invalid pdf_library", 400)
                     return
 
