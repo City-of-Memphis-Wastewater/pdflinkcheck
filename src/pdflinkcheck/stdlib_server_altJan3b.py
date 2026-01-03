@@ -92,13 +92,46 @@ HTML_FORM = """<!doctype html>
 <head>
   <title>pdflinkcheck API</title>
   <meta charset="utf-8">
-  <style>
+  <!--style>
     body {
       font-family: system-ui, sans-serif;
       max-width: 800px;
       margin: 40px auto;
     }
     button { padding: 6px 12px; }
+  </style-->
+  <style>
+  body {
+    font-family: system-ui, sans-serif;
+    max-width: 800px;
+    margin: 40px auto;
+    line-height: 1.6;
+    background: #f8f9fa;
+    color: #212529;
+    }
+  h1 { text-align: center; }
+  form {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 0 12px rgba(0,0,0,0.1);
+  }
+  input, select, button {
+    padding: 8px 12px;
+    margin-top: 6px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  button {
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  button:hover { background-color: #0b5ed7; }
   </style>
 </head>
 <body>
