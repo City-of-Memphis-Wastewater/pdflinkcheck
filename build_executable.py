@@ -5,6 +5,7 @@
 build_executable.py for pdflinkcheck
 Builds the pdflinkcheck standalone binary (EXE/ELF) using PyInstaller.
 """
+from __future__ import annotations
 import shutil
 import subprocess
 import sys
