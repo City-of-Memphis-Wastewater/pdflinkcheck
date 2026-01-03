@@ -24,7 +24,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
     if not pdfium_is_available() or pdfium is None:
         raise ImportError(
             "pypdfium2 is not installed. "
-            "Install it with: pip install pdflinkcheck[pdfium]"
+            "\nInstall it with: \n\tpip install pdflinkcheck[pdfium] \n\t OR \n\t uv sync --extra pdfium"
         )
     doc = pdfium.PdfDocument(path)
     links = []
