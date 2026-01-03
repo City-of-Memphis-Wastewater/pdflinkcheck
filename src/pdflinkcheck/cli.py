@@ -265,7 +265,7 @@ def serve(
         console.print("   → [yellow]Reload mode enabled[/yellow]")
 
     # Import here to avoid slow imports on other commands
-    from pdflinkcheck.stdlib_server import ThreadedTCPServer, PDFLinkCheckHandler
+    from pdflinkcheck.stdlib_server_alt import ThreadedTCPServer, PDFLinkCheckHandler
     import socketserver
 
     try:
