@@ -5,6 +5,7 @@ from __future__ import annotations
 import shutil
 import sys
 from pathlib import Path
+import importlib.resources as resources
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -58,6 +59,19 @@ def ensure_data_files_for_build():
     ensure_package_license(PROJECT_ROOT, PROJECT_ROOT)
     ensure_package_readme(PROJECT_ROOT, PROJECT_ROOT)
     ensure_package_pyproject(PROJECT_ROOT, PROJECT_ROOT)
+
+
+def get_data_root() -> Path:
+    """
+    Returns the path to the 'data' directory bundled with pdflinkcheck.
+    Works for both source code and installed package.
+    """
+    try:
+        # Python ≥3.9: use importlib.resources.files
+        return resources.files("pdflinkcheck") / "data"
+    except Exception:
+        # Fallback: assume running from source
+        return Path(__file__).resolve().parent / "data"
 
 if __name__ == "__main__":
     ensure_data_files_for_build()

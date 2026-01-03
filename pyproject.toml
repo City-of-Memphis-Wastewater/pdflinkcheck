@@ -17,6 +17,7 @@ license-files = ["LICENSE", "LICENSE-MIT", "LICENSE-AGPL3"]
 classifiers=[
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -73,20 +74,20 @@ dev = [
     "pytest-cov>=4.1.0",
 ]
 
+#[build-system]
+#requires = ["uv_build"]
+#build-backend = "uv_build"
+#[tool.uv.sources]
+#pdflinkcheck = { path = "src/pdflinkcheck" }
+
 [build-system]
-requires = ["uv_build"]
-build-backend = "uv_build"
-#requires = ["setuptools"]
-#build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.28.0"]
+build-backend = "hatchling.build"
 
-[tool.uv.sources]
-pdflinkcheck = { path = "src/pdflinkcheck" }
+# Include data files in wheel
+[tool.hatch.build.targets.wheel.include]
+"src/pdflinkcheck/data/**" = "pdflinkcheck/data"
 
-# https://docs.astral.sh/uv/concepts/preview/#available-preview-features
-#[tool.uv]
-#preview = true
-
-# uv handles the data path automatically
-
-
-
+# Optional: if you want sdist to also include data
+[tool.hatch.build.targets.sdist.include]
+"src/pdflinkcheck/data/**" = "pdflinkcheck/data"
