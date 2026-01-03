@@ -350,11 +350,14 @@ class MultipartParser:
 
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     allow_reuse_address = True
-
+    daemon_threads = True	
 
 class APIHandler(http.server.BaseHTTPRequestHandler):
 
     server_version = "pdflinkcheck-stdlib/1.1"
+    
+    def log_message(self, format, *args):
+        return
 
     # -------- Utilities --------
 
@@ -417,7 +420,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             if content_length > MAX_UPLOAD_BYTES * 2:
                 raise ValidationError("Request too large")
 
-            body = self.rfile.read(content_length)
+            body = self.rfile.read(min(content_length, MAX_UPLOAD_BYTES * 2))
             fields = MultipartParser.parse(self.headers, body)
 
             file_field = fields.get("file")
