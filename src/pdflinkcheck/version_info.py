@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/version_info.py
-
+from __future__ import annotations
 import re
 from pathlib import Path
 import sys

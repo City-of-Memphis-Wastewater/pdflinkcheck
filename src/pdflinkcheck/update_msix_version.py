@@ -1,3 +1,5 @@
+# src/pdflinkcheck/update_msix_version.py
+from __future__ import annotations
 from pathlib import Path
 from pdflinkcheck.version_info import get_version_from_pyproject
 

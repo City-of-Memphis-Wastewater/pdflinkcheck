@@ -1,6 +1,7 @@
 #!/usr/bin/env python3 
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/stdlib_server.py
+from __future__ import annotations
 import http.server
 import socketserver
 import json

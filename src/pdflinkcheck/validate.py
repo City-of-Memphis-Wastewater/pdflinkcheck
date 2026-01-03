@@ -1,7 +1,7 @@
 #!/usr/bin/env python3 
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/validate.py
-
+from __future__ import annotations
 import sys
 from pathlib import Path
 from typing import Dict, Any
