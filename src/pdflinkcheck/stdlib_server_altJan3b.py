@@ -56,7 +56,10 @@ import threading
 from dataclasses import dataclass
 from typing import Optional
 
-from pdflinkcheck.report import run_report_and_call_exports
+try:
+    from pdflinkcheck.report import run_report_and_call_exports
+except:
+    pass
 
 # =========================
 # Configuration
@@ -485,6 +488,33 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 # =========================
 
 def main():
+    with ThreadedHTTPServer((HOST, PORT), APIHandler) as httpd:
+
+        def shutdown_server():
+            SHUTDOWN_EVENT.set()
+            httpd.shutdown()
+
+        def handle_signal(signum, frame):
+            print("\nShutdown signal received")
+            threading.Thread(
+                target=shutdown_server,
+                daemon=True
+            ).start()
+
+        signal.signal(signal.SIGINT, handle_signal)
+        signal.signal(signal.SIGTERM, handle_signal)
+
+        print(f"pdflinkcheck stdlib server running at http://{HOST}:{PORT}")
+        print("Pure stdlib • Explicit validation • Graceful shutdown • Termux-safe")
+
+        try:
+            httpd.serve_forever()
+        finally:
+            httpd.server_close()
+
+    print("Server shut down cleanly")
+
+def main_():
     with ThreadedHTTPServer((HOST, PORT), APIHandler) as httpd:
 
         def handle_shutdown(signum, frame):
