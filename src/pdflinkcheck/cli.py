@@ -7,7 +7,7 @@ from typing import Literal
 from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
-from pdflinkcheck.report import run_report_and_call_exports # Assuming core logic moves here
+from pdflinkcheck.report import run_report_and_call_exports # Assuming core logic moves here 
 from typing import Dict, Optional, Union, List
 import pyhabitat
 import sys

@@ -378,7 +378,7 @@ class PDFLinkCheckApp:
 
         content = sanitize_glyphs_for_tkinter(content)
 
-        win = tk.Toplevel(self)
+        win = tk.Toplevel(self.root)
         win.title(title)
         win.geometry("700x500")
 
@@ -392,7 +392,7 @@ class PDFLinkCheckApp:
         sb.pack(side=tk.RIGHT, fill=tk.Y)
         txt.pack(fill='both', expand=True)
 
-        win.transient(self)
+        win.transient(self.root)
         win.grab_set()
 
 # --- Helper Functions ---
@@ -418,10 +418,21 @@ def start_gui(time_auto_close: int = 0):
     # from slowing down the script execution start)
     print("pdflinkcheck: Initializing PDF Link Check Engine...")
 
-    app = PDFLinkCheckApp(root=root)
+    #app = PDFLinkCheckApp(root=root)
+    try:
+        app = PDFLinkCheckApp(root=root)
+    except Exception as e:
+        print(f"CRITICAL STARTUP ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        root.destroy()
+        return
 
     # Handover
     splash.destroy()
+
+    # Restore window borders/decorations
+    root.overrideredirect(False)
 
     root.lift()
     root.wm_attributes("-topmost", True)
