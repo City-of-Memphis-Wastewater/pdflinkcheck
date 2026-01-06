@@ -9,7 +9,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 import unicodedata
-#from unidecode import unidecode
 from importlib.resources import files
 import pyhabitat
 import ctypes
@@ -33,45 +32,21 @@ class RedirectText:
     def flush(self, *args):
         pass
 
-class PDFLinkCheckerApp(tk.Tk):
-
-    # --- Theme & Visual Initialization ---
-
-    def _initialize_forest_theme(self):
-        theme_dir = files("pdflinkcheck.data.themes.forest")
-        self.tk.call("source", str(theme_dir / "forest-light.tcl"))
-        self.tk.call("source", str(theme_dir / "forest-dark.tcl"))
-
-    def _toggle_theme(self):
-        if ttk.Style().theme_use() == "forest-light":
-            ttk.Style().theme_use("forest-dark")
-        elif ttk.Style().theme_use() == "forest-dark":
-            ttk.Style().theme_use("forest-light")
-
-    def _set_icon(self):
-        icon_dir = files("pdflinkcheck.data.icons")
-        try:
-            png_path = icon_dir.joinpath("Logo-150x150.png")
-            if png_path.exists():
-                self.icon_img = PhotoImage(file=str(png_path))
-                self.iconphoto(True, self.icon_img)
-        except Exception:
-            pass
-        try:
-            icon_path = icon_dir.joinpath("red_pdf_512px.ico")
-            if icon_path.exists():
-                self.iconbitmap(str(icon_path))
-        except Exception:
-            pass
+class PDFLinkCheckApp:
 
     # --- Lifecycle & Initialization ---
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, root: tk.Tk):
+        self.root = root
 
+        # Do NOT load theme yet. 
+        # Run the "heavy" initialization first
+        self._initialize_vars()
+
+        # NOW load the theme (this takes ~100-300ms)
         self._initialize_forest_theme()
 
-        # Tighten global padding and font consistency (font size unchanged)
+        # Apply the theme
         style = ttk.Style()
         style.configure(".", padding=2)                # global min padding
         style.configure("TFrame", padding=2)
@@ -79,14 +54,20 @@ class PDFLinkCheckerApp(tk.Tk):
         style.configure("TButton", padding=4)
         style.configure("TCheckbutton", padding=2)
         style.configure("TRadiobutton", padding=2)
+        style.theme_use("forest-dark")
 
-        ttk.Style().theme_use("forest-dark")
-
-        self.title(f"PDF Link Check v{get_version_from_pyproject()}")  # Short title
-        self.geometry("700x500")  # Smaller starting size
-        self.minsize(600, 400)    # Prevent too-small window
+        self.root.title(f"PDF Link Check v{get_version_from_pyproject()}")  # Short title
+        self.root.geometry("700x500")  # Smaller starting size
+        self.root.minsize(600, 400)    # Prevent too-small window
 
         self._set_icon()
+
+        # --- 2. Widget Construction ---
+        self._create_widgets()
+        self._initialize_menubar()
+
+    def _initialize_vars(self):
+        """Logic that takes time but doesn't need a UI yet."""
 
         # --- 1. Variable State Management ---
         self.pdf_path = tk.StringVar(value="")
@@ -100,19 +81,47 @@ class PDFLinkCheckerApp(tk.Tk):
         self.last_json_path: Optional[Path] = None
         self.last_txt_path: Optional[Path] = None
 
+        # Engine detection (This can take a few ms)
         if not pdfium_is_available():
             self.pdf_library_var.set("PyMuPDF")
         if not pymupdf_is_available():
             self.pdf_library_var.set("pypdf")
 
-        # --- 2. Widget Construction ---
-        self._create_widgets()
-        self._initialize_menubar()
+    
+    # --- Theme & Visual Initialization ---
+    def _initialize_forest_theme(self):
+        theme_dir = files("pdflinkcheck.data.themes.forest")
+        self.root.tk.call("source", str(theme_dir / "forest-light.tcl"))
+        self.root.tk.call("source", str(theme_dir / "forest-dark.tcl"))
+
+    def _toggle_theme(self):
+        style = ttk.Style(self.root) # Explicitly link style to our root
+        if style.theme_use() == "forest-light":
+            style.theme_use("forest-dark")
+        elif style.theme_use() == "forest-dark":
+            style.theme_use("forest-light")
+
+    def _set_icon(self):
+        icon_dir = files("pdflinkcheck.data.icons")
+        try:
+            png_path = icon_dir.joinpath("Logo-150x150.png")
+            if png_path.exists():
+                self.icon_img = PhotoImage(file=str(png_path))
+                self.root.iconphoto(True, self.icon_img)
+        except Exception:
+            pass
+        try:
+            icon_path = icon_dir.joinpath("red_pdf_512px.ico")
+            if icon_path.exists():
+                self.root.iconbitmap(str(icon_path))
+        except Exception:
+            pass
+
 
     def _initialize_menubar(self):
         """Builds the application menu bar."""
-        menubar = tk.Menu(self)
-        self.config(menu=menubar)
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
 
         tools_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Tools", menu=tools_menu)
@@ -133,7 +142,7 @@ class PDFLinkCheckerApp(tk.Tk):
         """Compact layout with reduced padding."""
 
         # --- Control Frame (Top) ---
-        control_frame = ttk.Frame(self, padding=(4, 2, 4, 2))
+        control_frame = ttk.Frame(self.root, padding=(4, 2, 4, 2))
         control_frame.pack(fill='x', pady=(2, 2))
 
         # === Row 0: File Selection ===
@@ -184,7 +193,7 @@ class PDFLinkCheckerApp(tk.Tk):
         control_frame.grid_columnconfigure(2, weight=1)
 
         # --- Output Frame (Bottom) ---
-        output_frame = ttk.Frame(self, padding=(4, 2, 4, 4))
+        output_frame = ttk.Frame(self.root, padding=(4, 2, 4, 4))
         output_frame.pack(fill='both', expand=True)
 
         output_header_frame = ttk.Frame(output_frame)
@@ -388,47 +397,49 @@ class PDFLinkCheckerApp(tk.Tk):
         win.grab_set()
 
 # --- Helper Functions ---
-def sanitize_glyphs_for_tkinter_(text: str) -> str:
-    """
-    Convert text to ASCII-friendly form for Tkinter Text widget.
-    Keeps readability: e.g., “é” → "e", bullets → "*", fancy quotes → '"' 
-    Collapses multiple spaces and replaces non-breaking spaces.
-    """
-    if not text:
-        return ""
-    
-    # Transliterate Unicode characters to closest ASCII equivalents
-    sanitized = unidecode(text)
-    
-    # Replace non-breaking spaces with normal spaces
-    sanitized = sanitized.replace('\xa0', ' ')
-    
-    # Collapse multiple spaces
-    sanitized = ' '.join(sanitized.split())
-    
-    return sanitized
+
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     normalized = unicodedata.normalize('NFKD', text)
     sanitized = normalized.encode('ascii', 'ignore').decode('utf-8')
     return sanitized.replace('  ', ' ')
 
 def start_gui(time_auto_close: int = 0):
-    print("pdflinkcheck: start_gui ...")
-    app = PDFLinkCheckerApp()
+    # 1. Initialize Root and Splash instantly
+    root = tk.Tk()
+    root.withdraw() # Hide the ugly default window for a split second
 
-    app.lift()
-    app.wm_attributes("-topmost", True)
-    app.after(200, lambda: app.wm_attributes("-topmost", False))
-    app.focus_force()
+    from pdflinkcheck.splash import SplashFrame
+    splash = SplashFrame(root)
+    root.deiconify()
+    root.update() # Force drawing the splash screen
+    
+
+    # 2. Delayed Import of the Main App Class
+    # (Moving this inside the function prevents the top-level imports 
+    # from slowing down the script execution start)
+    print("pdflinkcheck: Initializing PDF Link Check Engine...")
+
+    app = PDFLinkCheckApp(root=root)
+
+    # Handover
+    splash.destroy()
+
+    root.lift()
+    root.wm_attributes("-topmost", True)
+    root.after(200, lambda: root.wm_attributes("-topmost", False))
+    root.focus_force()
 
     if pyhabitat.on_windows():
-        hwnd = app.winfo_id()
-        ctypes.windll.user32.SetForegroundWindow(hwnd)
+        try:
+            hwnd = root.winfo_id()
+            ctypes.windll.user32.SetForegroundWindow(hwnd)
+        except:
+            pass
 
     if time_auto_close > 0:
-        app.after(time_auto_close, app.destroy)
+        root.after(time_auto_close, root.destroy)
 
-    app.mainloop()
+    root.mainloop()
     print("pdflinkcheck: gui closed.")
 
 if __name__ == "__main__":
