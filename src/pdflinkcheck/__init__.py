@@ -17,9 +17,12 @@ import os as _os
 def run_report(*args, **kwargs):
     from pdflinkcheck.report import run_report_and_call_exports as _run
     return _run(*args, **kwargs)
+run_report.__doc__ = (
+    "See pdflinkcheck.report for full details."
+)
 
 # --- pypdf ---
-def analyze_pdf_pypdf(*args, **kwargs):
+def analyze_pdf_pypdf(path):
     try:
         from pdflinkcheck.analysis_pypdf import analyze_pdf as _analyze
     except ImportError:
@@ -27,24 +30,22 @@ def analyze_pdf_pypdf(*args, **kwargs):
             "pypdf engine is not installed. "
             "Install pypdf to enable pypdf support."
         )
-    return _analyze(*args, **kwargs)
-
+    return _analyze(path)
 analyze_pdf_pypdf.__doc__ = (
     "Analyze a PDF using the lightweight pypdf engine and return a normalized dictionary.\n\n"
     "See pdflinkcheck.analyze_pypdf for full details."
 )
 
 # --- PyMuPDF ---
-def analyze_pdf_pymupdf(*args, **kwargs):
+def analyze_pdf_pymupdf(path):
     try:
         from pdflinkcheck.analysis_pymupdf import analyze_pdf as _analyze
     except ImportError:
         raise ImportError(
             "PyMuPDF engine is not installed. "
-            "Install with the [mupdf] extra to enable pypdf support."
+            "Install with the [mupdf] extra to enable PyMuPDF support."
         )
-    return _analyze(*args, **kwargs)
-
+    return _analyze(path)
 analyze_pdf_pymupdf.__doc__ = (
     "Analyze a PDF using the AGPL3-licensed PyMuPDF engine and return a normalized dictionary.\n\n"
     "See pdflinkcheck.analyze_pymupdf for full details."
@@ -53,7 +54,7 @@ analyze_pdf_pymupdf.__doc__ = (
 
 # --- PDFium ---
 
-def analyze_pdf_pdfium(*args, **kwargs):
+def analyze_pdf_pdfium(path):
     try:
         from pdflinkcheck.analysis_pdfium import analyze_pdf as _analyze
     except ImportError:
@@ -61,7 +62,7 @@ def analyze_pdf_pdfium(*args, **kwargs):
             "PDFium engine is not installed. "
             "Install with the [pdfium] extra to enable pdfium support."
         )
-    return _analyze(*args, **kwargs)
+    return _analyze(path)
 analyze_pdf_pdfium.__doc__ = (
     "Analyze a PDF using the PDFium engine and return a normalized dictionary.\n\n"
     "See pdflinkcheck.analyze_pdfium for full details."
