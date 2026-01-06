@@ -12,7 +12,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ### Changed:
 - guit_tight.py -> gui.py
+- analysis: For each engine, the link and toc and metadata information now only requires the file to be opened once, rather than an opening processes for each distinct purpose. 
+- total_pages: matadata has been resturctured so that page number is assessed in each engine, during the calls from report.py, and stored for use, rather than being assessed on the tail end in validate.py.
 
+### Fixed:
+- gui.pi: ensure that the loading screen and the gui are popiing up in the middle of the main window, even in multiscreen setups and cross-platform.
+- Updated README and __init__ to expose fewweer functions, now that the link and toc extractions have been combined into single analysis functions for each engine. 
 
 ---
 
