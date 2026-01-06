@@ -18,6 +18,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ### Fixed:
 - gui.py: unidecode fails on mac os. Revert to former glyph sanitization function
+
 ---
 
 ## [1.2.20] - 2026-01-03
