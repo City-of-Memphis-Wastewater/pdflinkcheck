@@ -8,8 +8,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.2.20] - 2026-01-03
 ### Added:
-- Srt env vars at the top of cli.py to ensure PYZ distributed CLI's can have rich colors. Using the in-file env vars is termux compatobke for shiv 1.0.8.
+- Insert env vars at the top of cli.py to ensure PYZ distributed CLI's can have rich colors. Using the in-file env vars is termux compatobke for shiv 1.0.8.
 
+### Fixed:unidecode fails on mac os. Revert to former glyph sanitization function
+- gui.py: unidecode fails on mac os. Revert to former glyph sanitization function
 ---
 
 ## [1.2.20] - 2026-01-03
