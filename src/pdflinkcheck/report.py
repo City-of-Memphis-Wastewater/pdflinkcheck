@@ -35,7 +35,7 @@ EMPTY_VALIDATION = {
     }
 
 
-def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON", pdf_library: str = "auto", print_bool:bool=True) -> Dict[str, Any]:
     # The meat and potatoes
     report_results = run_report_extraction_and_assessment_and_recording(
         pdf_path=str(pdf_path), 
