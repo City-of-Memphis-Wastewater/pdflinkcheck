@@ -164,9 +164,14 @@ def run_report_extraction_and_assessment_and_recording(
         report_results["data"]["validation"].update(validation_results)
         report_results["data"]["risk"] = compute_risk(report_results)
 
-        # 6. Finalizing Text Buffer (Parity: append validation summary)
+        # --- Inside run_report_extraction_and_assessment_and_recording ---
+        # 6. Finalizing Text Buffer
         val_summary = validation_results.get("summary-txt", "")
-        report_results["text"] += f"\n{val_summary}\n--- Analysis Complete ---"
+        raw_text = report_text_base + f"\n{val_summary}\n--- Analysis Complete ---"
+        cleaned_text = sanitize_glyphs_for_compatibility(raw_text)
+        # Apply sanitization before returning
+        report_results["text"] = cleaned_text
+        #report_results["text"] = raw_text
 
         if print_bool:
             # Matches your original logic: print the overview/validation summary to console
@@ -797,6 +802,26 @@ def get_structural_toc(structural_toc: list) -> str:
     str_structural_toc = "\n".join(lines)
         
     return str_structural_toc
+
+import unicodedata
+
+def sanitize_glyphs_for_compatibility(text: str) -> str:
+    """Replaces emojis with ASCII tags to prevent rendering bugs in gedit/WSL2."""
+    glyph_mapping = {
+        '✅': '[PASS]',
+        '🌐': '[WEB]',
+        '⚠️': '[WARN]',
+        '❌': '[FAIL]',
+        'ℹ️': '[INFO]'
+    }
+    for glyph, replacement in glyph_mapping.items():
+        text = text.replace(glyph, replacement)
+    
+    # Standard library only - no unidecode dependency
+    normalized = unicodedata.normalize('NFKD', text)
+    return normalized.encode('ascii', 'ignore').decode('utf-8').replace('  ', ' ')
+
+
 
 if __name__ == "__main__":
 
