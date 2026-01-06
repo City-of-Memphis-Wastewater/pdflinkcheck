@@ -20,6 +20,7 @@ SITE_PACKAGES_PATH = site.getsitepackages()[0]
 # --- Configuration for pdflinkcheck ---
 PROJECT_NAME = "pdflinkcheck"
 ENTRY_POINT = "pdflinkcheck.cli:app"
+#ENTRY_POINT = "pdflinkcheck.helpers.color_bootstrap:app"  # instead of "pdflinkcheck.cli:app"
 DIST_DIR = Path("dist")
 PROJECT_ROOT = Path(__file__).resolve().parent
 
@@ -106,7 +107,7 @@ def ensure_dependencies_and_shiv():
         print("Installing 'shiv' ...")
         #run_command(["uv", "pip", "install", "shiv"])
         run_command([sys.executable, "-m", "pip", "install", "shiv"])
-    
+        #run_command([sys.executable, "-m", "pip", "install", "--upgrade", "shiv>=2.0.0"]) # pin shiv 1.0.8 in pyproject.toml for Termux
     print("Dependencies and shiv ready.")
 
 def build_shiv_pyz():
@@ -143,7 +144,9 @@ def build_shiv_pyz():
         "-p", "/usr/bin/env python3", 
         "-e", ENTRY_POINT,
         "--compressed",
-        "--no-cache", 
+        "--no-cache",
+        #"--env", "FORCE_COLOR=1",
+        #"--env", "TERM=xterm-256color",  # helps with detection 
         #"--python", sys.executable, # removed for cross-platform robustness
         #"--site-packages", SITE_PACKAGES_PATH, # removed to prevent editable install conflicts # this makes the windows pyz huge ~100 MB
     ]

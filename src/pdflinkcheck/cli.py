@@ -21,6 +21,11 @@ from pdflinkcheck.io import get_first_pdf_in_cwd
 
 console = Console() # to be above the tkinter check, in case of console.print
 
+# Force Rich to always enable colors, even when running from a .pyz bundle
+os.environ["FORCE_COLOR"] = "1"
+# Optional but helpful for full terminal feature detection
+os.environ["TERM"] = "xterm-256color"
+
 app = typer.Typer(
     name="pdflinkcheck",
     help=f"A command-line tool for comprehensive PDF link analysis and reporting. (v{get_version_from_pyproject()})",
