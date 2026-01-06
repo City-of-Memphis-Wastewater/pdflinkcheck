@@ -380,6 +380,7 @@ class PDFLinkCheckApp:
             return
 
         content = sanitize_glyphs_for_tkinter(content)
+        #content = sanitize_glyphs_for_compatibility(content)
 
         win = tk.Toplevel(self.root)
         win.title(title)
@@ -403,6 +404,31 @@ class PDFLinkCheckApp:
 def sanitize_glyphs_for_tkinter(text: str) -> str:
     normalized = unicodedata.normalize('NFKD', text)
     sanitized = normalized.encode('ascii', 'ignore').decode('utf-8')
+    return sanitized.replace('  ', ' ')
+
+def sanitize_glyphs_for_compatibility(text: str) -> str:
+    """
+    Replaces problematic glyphs with ASCII equivalents for WSL2/gedit compatibility.
+    Does not require external libraries like unidecode.
+    """
+    # Define a explicit mapping for your validation glyphs
+    glyph_mapping = {
+        '✅': '[PASS]',
+        '🌐': '[WEB]',
+        '⚠️': '[WARN]',
+        '❌': '[FAIL]',
+        'ℹ️': '[INFO]'
+    }
+    
+    # 1. Manual replacement for known report glyphs
+    for glyph, replacement in glyph_mapping.items():
+        text = text.replace(glyph, replacement)
+    
+    # 2. Normalize and strip remaining non-ASCII (NFKD decomposes characters)
+    normalized = unicodedata.normalize('NFKD', text)
+    sanitized = normalized.encode('ascii', 'ignore').decode('utf-8')
+    
+    # 3. Clean up double spaces created by the stripping
     return sanitized.replace('  ', ' ')
 
 def start_gui(time_auto_close: int = 0):

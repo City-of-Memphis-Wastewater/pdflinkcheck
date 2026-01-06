@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.27] - 2026-01-06
+### Changed:
+- Struggle through a refactor of report.py. Keep legacy function in file for now.
+
+---
+
 ## [1.2.26] - 2026-01-06
 ### Added:
 - Use splash scren with loading bar for better UX while app launchs. Add splash.py.
