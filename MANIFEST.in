@@ -1,0 +1,2 @@
+include src/pdflinkcheck/data/*
+recursive-include src/pdflinkcheck/data/themes *
