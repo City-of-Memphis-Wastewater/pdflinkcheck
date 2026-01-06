@@ -327,8 +327,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         log("\n--- Analysis Complete ---")
 
         validation_results = run_validation(report_results=intermediate_report_results,
-                                            pdf_path=pdf_path,
-                                            pdf_library=pdf_library)
+                                            pdf_path=pdf_path)
         log(validation_results.get("summary-txt",""), overview = True)
 
         # CRITICAL: Re-assign to report_results so it's available for the final return

@@ -21,7 +21,6 @@ START_INDEX = 0
 def run_validation(
     report_results: Dict[str, Any],
     pdf_path: str,
-    pdf_library: str = "pypdf",
     check_external: bool = False
 ) -> Dict[str, Any]:
     """
@@ -30,7 +29,6 @@ def run_validation(
     Args:
         report_results: The dict returned by run_report_and_call_exports()
         pdf_path: Path to the original PDF (needed for relative file checks and page count)
-        pdf_library: Engine used ("pypdf" or "pymupdf")
         check_external: Whether to validate HTTP URLs (requires network + requests)
 
     Returns:
@@ -46,9 +44,7 @@ def run_validation(
     if not all_links and not toc:
         print("No links or TOC to validate.")
         return {"summary-stats": {"valid": 0, "broken": 0}, "issues": []}
-    
-    print(f"metadata = {metadata}")
-    print(f"list(metadata) = {list(metadata)}")
+
 
     pdf_dir = Path(pdf_path).parent
 
@@ -213,7 +209,7 @@ def run_validation(
             "type": "TOC Entry",
             "title": entry.get("title", "Untitled"),
             "level": entry.get("level", 0),
-            "target_page": target_page, # Stored as 0-indexed for data consistency
+            "target_page": target_page_ref.machine, # Stored as 0-indexed for data consistency
             "validation": {"status": status, "reason": reason}
         })
     
