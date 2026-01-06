@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.24] - 2026-01-06
+### Fixed:
+- data inclusion: add MANIFEST.in file to ensure data is included with setuptools backend.
+
+---
+
 ## [1.2.23] - 2026-01-06
 ### Added:
 - MSIX failure to build with CLI exposure: update appxmanifest extension section.
