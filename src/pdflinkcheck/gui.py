@@ -17,6 +17,7 @@ from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_all_caches, is_in_git_repo
+from pdflinkcheck.tk_utils import center_window_on_primary
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -409,49 +410,58 @@ def start_gui(time_auto_close: int = 0):
 
     from pdflinkcheck.splash import SplashFrame
     splash = SplashFrame(root)
-    root.deiconify()
     root.update() # Force drawing the splash screen
     
-
-    # 2. Delayed Import of the Main App Class
-    # (Moving this inside the function prevents the top-level imports 
-    # from slowing down the script execution start)
+    # app = PDFLinkCheckApp(root=root)
+    # App Initialization
     print("pdflinkcheck: Initializing PDF Link Check Engine...")
-
-    #app = PDFLinkCheckApp(root=root)
     try:
         app = PDFLinkCheckApp(root=root)
     except Exception as e:
-        print(f"CRITICAL STARTUP ERROR: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"Startup Error: {e}")
         root.destroy()
         return
-
+    
+    # === Artificial Loading Delay ===
+    import time
+    for _ in range(40):
+        if not root.winfo_exists(): return
+        time.sleep(0.05)
+        root.update()
+    # ====================================
+    
     # Handover
-    # Restore window borders/decorations
-    root.overrideredirect(False)
-    splash.destroy()
+    if root.winfo_exists():
+        splash.teardown() # The Splash cleans itself up
 
-    # Force a title update to kick the window manager
-    root.title(f"PDF Link Check v{get_version_from_pyproject()}")
+        # Re-center the MAIN app window before showing it
+        app_w, app_h = 700, 500
+        # Center and then reveal
+        center_window_on_primary(root, app_w, app_h)
+        
+        root.deiconify()
+        # Restore window borders/decorations
+        #root.overrideredirect(False)
 
-    root.lift()
-    root.wm_attributes("-topmost", True)
-    root.after(200, lambda: root.wm_attributes("-topmost", False))
+        # Force a title update to kick the window manager
+        root.title(f"PDF Link Check v{get_version_from_pyproject()}")
 
-    if pyhabitat.on_windows():
-        try:
-            hwnd = root.winfo_id()
-            ctypes.windll.user32.SetForegroundWindow(hwnd)
-        except:
-            pass
+        root.lift()
+        root.wm_attributes("-topmost", True)
+        root.after(200, lambda: root.wm_attributes("-topmost", False))
 
-    if time_auto_close > 0:
-        root.after(time_auto_close, root.destroy)
+        if pyhabitat.on_windows():
+            try:
+                hwnd = root.winfo_id()
+                ctypes.windll.user32.SetForegroundWindow(hwnd)
+            except:
+                pass
 
-    root.focus_force()
-    root.mainloop()
+        if time_auto_close > 0:
+            root.after(time_auto_close, root.destroy)
+
+        root.focus_force()
+        root.mainloop()
     print("pdflinkcheck: gui closed.")
 
 if __name__ == "__main__":
