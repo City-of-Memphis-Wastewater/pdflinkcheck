@@ -35,8 +35,16 @@ EMPTY_VALIDATION = {
     }
 
 
-def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON", pdf_library: str = "auto", print_bool:bool=True) -> Dict[str, Any]:
-    # The meat and potatoes
+def run_report_and_call_exports(
+    pdf_path: str = None, 
+    export_format: str = "JSON", 
+    pdf_library: str = "auto", 
+    print_bool:bool=True
+) -> Dict[str, Any]:
+    """
+    Public entry point. Orchestrates extraction, validation, and file exports.
+    """
+    #  The meat and potatoes
     report_results = run_report_extraction_and_assessment_and_recording(
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
@@ -49,10 +57,8 @@ def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON
     if export_format:
         report_data_dict = report_results["data"]
         report_buffer_str = report_results["text"]
-        
         if "JSON" in export_format.upper():
             output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library)
-        
         if "TXT" in export_format.upper():
             output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library)
 
@@ -62,9 +68,121 @@ def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON
         "export_path_txt": output_path_txt
     }
     return report_results
-    
 
-def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+def _get_engine_data(pdf_path: str, pdf_library: str) -> tuple[Dict, str]:
+    """Handles the dirty work of switching engines and importing them."""
+    # Resolve 'auto' mode
+    if pdf_library == "auto":
+        if pdfium_is_available(): pdf_library = "pdfium"
+        elif pymupdf_is_available(): pdf_library = "pymupdf"
+        else: pdf_library = "pypdf"
+
+    # Map engine names to their respective modules
+    engines = {
+        "pdfium": "pdflinkcheck.analysis_pdfium",
+        "pypdf": "pdflinkcheck.analysis_pypdf", # Assuming this exists
+        "pymupdf": "pdflinkcheck.analysis_pymupdf"
+    }
+
+    if pdf_library not in engines:
+        raise ValueError(f"Unsupported library: {pdf_library}")
+
+    # Dynamic import to keep __init__ lean
+    import importlib
+    module = importlib.import_module(engines[pdf_library])
+    data = module.analyze_pdf(pdf_path) or {"links": [], "toc": [], "file_ov": {}}
+    
+    return data, pdf_library
+
+
+def run_report_extraction_and_assessment_and_recording(
+    pdf_path: str = None, 
+    pdf_library: str = "auto", 
+    print_bool: bool = True
+) -> Dict[str, Any]:
+    """
+    Orchestrates extraction, categorization, and validation.
+    FULLY RECONCILED with legacy logic to ensure no features are lost.
+    """
+    if pdf_path is None:
+        return _return_empty_report(["pdf_path is None"], pdf_library)
+
+    try:
+        # 1. Extraction
+        raw_data, resolved_library = _get_engine_data(pdf_path, pdf_library)
+        
+        extracted_links = raw_data.get("links", [])
+        structural_toc = raw_data.get("toc", [])
+        file_ov = raw_data.get("file_ov", {})
+        total_pages = file_ov.get("total_pages", 0)
+        pdf_name = Path(pdf_path).name
+
+        # 2. Categorization (Restored exactly from original logic)
+        external_uri_links = [link for link in extracted_links if link['type'] == 'External (URI)']
+        goto_links = [link for link in extracted_links if link['type'] == 'Internal (GoTo/Dest)']
+        resolved_action_links = [link for link in extracted_links if link['type'] == 'Internal (Resolved Action)']
+        other_links = [link for link in extracted_links if link['type'] not in 
+                       ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
+
+        all_internal = goto_links + resolved_action_links
+
+        # 3. Generate the Text Report (Using get_friendly_path as required)
+        # We pass the separate lists to maintain Section 2, 3, and 4 formatting
+        report_text_base = _generate_text_report(
+            pdf_path=pdf_path,
+            library=resolved_library, 
+            ext_links=external_uri_links, 
+            goto_links=goto_links,
+            resolve_links=resolved_action_links,
+            other_links=other_links, 
+            toc=structural_toc
+        )
+
+        # 4. Initial Result Assembly
+        report_results = {
+            "data": {
+                "external_links": external_uri_links,
+                "internal_links": goto_links + resolved_action_links,
+                "toc": structural_toc,
+                "validation": EMPTY_VALIDATION.copy()
+            },
+            "text": report_text_base,
+            "metadata": _build_metadata(
+                pdf_name=pdf_name, 
+                total_pages=total_pages, 
+                library_used=resolved_library, 
+                toc_entry_count=len(structural_toc), 
+                internal_goto_links_count=len(goto_links), 
+                interal_resolve_action_links_count=len(resolved_action_links),
+                external_uri_links_count=len(external_uri_links), 
+                other_links_count=len(other_links)
+            )
+        }
+
+        # 5. Validation & Risk Analysis
+        validation_results = run_validation(report_results=report_results, pdf_path=pdf_path)
+        report_results["data"]["validation"].update(validation_results)
+        report_results["data"]["risk"] = compute_risk(report_results)
+
+        # 6. Finalizing Text Buffer (Parity: append validation summary)
+        val_summary = validation_results.get("summary-txt", "")
+        report_results["text"] += f"\n{val_summary}\n--- Analysis Complete ---"
+
+        if print_bool:
+            # Matches your original logic: print the overview/validation summary to console
+            print(val_summary)
+
+        return report_results
+
+    except Exception as e:
+        error_logger.error(f"Critical failure: {e}", exc_info=True)
+        return _return_empty_report([f"FATAL: {str(e)}"], pdf_library)
+    
+def run_report_extraction_and_assessment_and_recording_(
+        pdf_path: str = None, 
+        pdf_library: str = "auto", 
+        print_bool:bool=True
+        ) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
     
@@ -193,7 +311,7 @@ def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf
                     "library_used": pdf_library,
                     "link_counts": {
                         "toc_entry_count": 0,
-                        "interal_goto_links_count": 0,
+                        "internal_goto_links_count": 0,
                         "interal_resolve_action_links_count": 0,
                         "total_internal_links_count": 0,
                         "external_uri_links_count": 0,
@@ -211,8 +329,8 @@ def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf
         other_links = [link for link in extracted_links if link['type'] not in ['External (URI)', 'Internal (GoTo/Dest)', 'Internal (Resolved Action)']]
 
         interal_resolve_action_links_count = len(resolved_action_links)
-        interal_goto_links_count = len(goto_links) 
-        total_internal_links_count = interal_goto_links_count + interal_resolve_action_links_count
+        internal_goto_links_count = len(goto_links) 
+        total_internal_links_count = internal_goto_links_count + interal_resolve_action_links_count
 
         external_uri_links_count = len(external_uri_links)
         other_links_count = len(other_links)
@@ -310,7 +428,7 @@ def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf
                 "library_used": pdf_library,
                 "link_counts": {
                     "toc_entry_count": toc_entry_count,
-                    "interal_goto_links_count": interal_goto_links_count,
+                    "internal_goto_links_count": internal_goto_links_count,
                     "interal_resolve_action_links_count": interal_resolve_action_links_count,
                     "total_internal_links_count": total_internal_links_count,
                     "external_uri_links_count": external_uri_links_count,
@@ -372,7 +490,7 @@ def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf
                     "library_used": pdf_library,
                     "link_counts": {
                         "toc_entry_count": 0,
-                        "interal_goto_links_count": 0,
+                        "internal_goto_links_count": 0,
                         "interal_resolve_action_links_count": 0,
                         "total_internal_links_count": 0,
                         "external_uri_links_count": 0,
@@ -412,7 +530,7 @@ def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf
                 "library_used": pdf_library,
                 "link_counts": {
                         "toc_entry_count": 0,
-                        "interal_goto_links_count": 0,
+                        "internal_goto_links_count": 0,
                         "interal_resolve_action_links_count": 0,
                         "total_internal_links_count": 0,
                         "external_uri_links_count": 0,
@@ -422,13 +540,14 @@ def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf
             }
         }
     
-def _return_empty_report(report_buffer: str)-> dict:
+def _return_empty_report(report_buffer: str, pdf_library: str)-> dict:
     
     empty_report = {
             "data": {
                 "external_links": [],
                 "internal_links": [],
-                "toc": []
+                "toc": [],
+                "validation": EMPTY_VALIDATION.copy()
             },
             "text": "\n".join(report_buffer),
             "metadata": {
@@ -439,7 +558,7 @@ def _return_empty_report(report_buffer: str)-> dict:
                 "library_used": pdf_library,
                 "link_counts": {
                     "toc_entry_count": 0,
-                    "interal_goto_links_count": 0,
+                    "internal_goto_links_count": 0,
                     "interal_resolve_action_links_count": 0,
                     "total_internal_links_count": 0,
                     "external_uri_links_count": 0,
@@ -451,6 +570,182 @@ def _return_empty_report(report_buffer: str)-> dict:
 
     return empty_report
 
+def _generate_text_report(
+    pdf_path: str, 
+    library: str, 
+    ext_links: list, 
+    goto_links: list, 
+    resolve_links: list, 
+    other_links: list, 
+    toc: list
+) -> str:
+    """Pure helper to build the human-readable string for console/TXT export."""
+    lines = []
+    lines.append("\n--- Starting Analysis ... ---\n")
+    lines.append(f"Target file: {get_friendly_path(pdf_path)}")
+    lines.append(f"PDF Engine: {library}")
+    
+    total_int = len(goto_links) + len(resolve_links)
+    total_links = len(ext_links) + total_int + len(other_links)
+
+    # 1. Summary Header
+    lines.append("\n" + "=" * SEP_COUNT)
+    lines.append(f"--- Link Analysis Results for {get_friendly_path(pdf_path)} ---")
+    lines.append(f"Total active links: {total_links} (External: {len(ext_links)}, Internal Jumps: {total_int}, Other: {len(other_links)})")
+    lines.append(f"Total **structural TOC entries (bookmarks)** found: {len(toc)}")
+    lines.append("=" * SEP_COUNT)
+
+    # 2. Table of Contents
+    lines.append(get_structural_toc(toc))
+
+    # 3. Internal Jumps
+    lines.append("\n" + "=" * SEP_COUNT)
+    lines.append(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_int} found")
+    lines.append("=" * SEP_COUNT)
+    lines.append("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
+    lines.append("-" * SEP_COUNT)
+    
+    all_internal = goto_links + resolve_links
+    if all_internal:
+        for i, link in enumerate(all_internal, 1):
+            src = PageRef.from_index(link.get('page', 0)).human
+            dest = PageRef.from_index(link.get('destination_page', 0)).human
+            lines.append("{:<5} | {:<5} | {:<40} | {}".format(
+                i, src, link.get('link_text', 'N/A')[:40], dest
+            ))
+    else:
+        lines.append(" No internal GoTo or Resolved Action links found.")
+    lines.append("-" * SEP_COUNT)
+
+    # 4. External URI Links
+    lines.append("\n" + "=" * SEP_COUNT)
+    lines.append(f"## Active URI Links (External) - {len(ext_links)} found")
+    lines.append("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
+    lines.append("=" * SEP_COUNT)
+    
+    if ext_links:
+        for i, link in enumerate(ext_links, 1):
+            target = link.get('url') or link.get('remote_file') or link.get('target', 'N/A')
+            lines.append("{:<5} | {:<5} | {:<40} | {}".format(
+                i, link.get('page', 0), link.get('link_text', 'N/A')[:40], target
+            ))
+    else:
+        lines.append(" No external links found.")
+    lines.append("-" * SEP_COUNT)
+
+    # 5. Other Links
+    lines.append("\n" + "=" * SEP_COUNT)
+    lines.append(f"## Other Links - {len(other_links)} found")
+    lines.append("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target Action"))
+    lines.append("=" * SEP_COUNT)
+    
+    if other_links:
+        for i, link in enumerate(other_links, 1):
+            target = link.get('url') or link.get('remote_file') or link.get('target', 'N/A')
+            lines.append("{:<5} | {:<5} | {:<40} | {}".format(
+                i, link.get('page', 0), link.get('link_text', 'N/A')[:40], target
+            ))
+    else:
+        lines.append(" No 'Other' links found.")
+    lines.append("-" * SEP_COUNT)
+
+    return "\n".join(lines)
+
+def _generate_text_report__(pdf_path, library, ext_links, int_links, other_links, toc) -> str:
+    lines = []
+    lines.append("\n--- Starting Analysis ... ---\n")
+    lines.append(f"Target file: {get_friendly_path(pdf_path)}")
+    lines.append(f"PDF Engine: {library}")
+    
+    # 1. Summary Header
+    lines.append("\n" + "=" * SEP_COUNT)
+    lines.append(f"--- Link Analysis Results for {get_friendly_path(pdf_path)} ---")
+    lines.append(f"Total active links: {len(ext_links) + len(int_links) + len(other_links)}")
+    lines.append(f"Total bookmarks: {len(toc)}")
+    lines.append("=" * SEP_COUNT)
+
+    # 2. Table of Contents
+    lines.append(get_structural_toc(toc))
+
+    # 3. Internal Jumps (GoTo & Resolved)
+    lines.append("\n" + "=" * SEP_COUNT)
+    lines.append(f"## Active Internal Jumps - {len(int_links)} found")
+    lines.append("=" * SEP_COUNT)
+    lines.append("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To"))
+    
+    for i, link in enumerate(int_links, 1):
+        src = PageRef.from_index(link.get('page', 0)).human
+        dest = PageRef.from_index(link.get('destination_page', 0)).human
+        lines.append("{:<5} | {:<5} | {:<40} | {}".format(i, src, link.get('link_text', 'N/A')[:40], dest))
+
+    # 4. External URI Links
+    lines.append("\n" + "=" * SEP_COUNT)
+    lines.append(f"## External URI Links - {len(ext_links)} found")
+    lines.append("=" * SEP_COUNT)
+    for i, link in enumerate(ext_links, 1):
+        target = link.get('url') or link.get('target', 'N/A')
+        lines.append("{:<5} | {:<5} | {:<40} | {}".format(i, link.get('page', 0), link.get('link_text', 'N/A')[:40], target))
+
+    return "\n".join(lines)
+
+def _build_metadata(
+    pdf_name: str, 
+    total_pages: int, 
+    library_used: str, 
+    toc_entry_count: int, 
+    internal_goto_links_count: int, 
+    interal_resolve_action_links_count: int,
+    external_uri_links_count: int, 
+    other_links_count: int
+) -> Dict[str, Any]:
+    """
+    Standardizes the metadata dictionary using the EXACT legacy variable names.
+    """
+    total_internal_links_count = internal_goto_links_count + interal_resolve_action_links_count
+    total_links_count = total_internal_links_count + external_uri_links_count + other_links_count
+
+    return {
+        "file_overview": {
+            "pdf_name": pdf_name,
+            "total_pages": total_pages,
+        },
+        "library_used": library_used,
+        "link_counts": {
+            "toc_entry_count": toc_entry_count,
+            "internal_goto_links_count": internal_goto_links_count,
+            "interal_resolve_action_links_count": interal_resolve_action_links_count,
+            "total_internal_links_count": total_internal_links_count,
+            "external_uri_links_count": external_uri_links_count,
+            "other_links_count": other_links_count,
+            "total_links_count": total_links_count
+        }
+    }
+
+def _build_metadata_(
+    pdf_name: str, 
+    total_pages: int, 
+    library_used: str, 
+    toc_count: int, 
+    goto_count: int, 
+    resolve_count: int,
+    ext_count: int, 
+    other_count: int
+) -> Dict[str, Any]:
+    """Standardizes the metadata dictionary for all report types."""
+    return {
+        "file_overview": {
+            "pdf_name": pdf_name,
+            "total_pages": total_pages,
+        },
+        "library_used": library_used,
+        "link_counts": {
+            "toc_entry_count": toc_count,
+            "internal_links_count": goto_count,
+            "external_uri_links_count": ext_count,
+            "other_links_count": other_count,
+            "total_links_count": goto_count + ext_count + other_count
+        }
+    }
         
 def get_structural_toc(structural_toc: list) -> str:
     """

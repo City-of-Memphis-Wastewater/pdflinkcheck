@@ -13,13 +13,19 @@ import os as _os
 # Library functions
 #from pdflinkcheck import dev
 
-# lazy loaded  library functions
-def run_report(*args, **kwargs):
+# Lazy-loaded orchestrator
+def run_report(pdf_path: str, export_format: str = "JSON", pdf_library: str = "auto", print_bool: bool = True):
+    """
+    Run a full link check report on a PDF file.
+    
+    Args:
+        pdf_path: Path to the PDF file.
+        export_format: "JSON", "TXT", or both (e.g., "JSON,TXT").
+        pdf_library: "auto", "pdfium", "pymupdf", or "pypdf".
+        print_bool: If True, prints the overview to stdout.
+    """
     from pdflinkcheck.report import run_report_and_call_exports as _run
-    return _run(*args, **kwargs)
-run_report.__doc__ = (
-    "See pdflinkcheck.report for full details."
-)
+    return _run(pdf_path=pdf_path, export_format=export_format, pdf_library=pdf_library, print_bool=print_bool)
 
 # --- pypdf ---
 def analyze_pdf_pypdf(path):

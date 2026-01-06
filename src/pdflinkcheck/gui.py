@@ -11,6 +11,7 @@ import unicodedata
 from importlib.resources import files
 import pyhabitat
 import ctypes
+import threading
 
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_and_call_exports
@@ -291,7 +292,8 @@ class PDFLinkCheckApp:
 
         if target_path and Path(target_path).exists():
             try:
-                pyhabitat.edit_textfile(target_path)
+                #pyhabitat.edit_textfile(target_path)
+                threading.Thread(target=lambda: pyhabitat.edit_textfile(target_path), daemon=True).start()
             except Exception as e:
                 messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
         else:
