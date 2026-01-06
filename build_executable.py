@@ -110,6 +110,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # Crucial for Typer/Click based apps
         "--hidden-import", "pkg_resources.py2_warn", 
         "--hidden-import", "typer.models", 
+        "--hidden-import", "typer",  
         
         #'--log-level=DEBUG',
 
