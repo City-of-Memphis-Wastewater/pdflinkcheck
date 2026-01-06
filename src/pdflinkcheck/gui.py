@@ -422,12 +422,14 @@ def start_gui(time_auto_close: int = 0):
         root.destroy()
         return
     
-    # === Artificial Loading Delay ===
-    import time
-    for _ in range(40):
-        if not root.winfo_exists(): return
-        time.sleep(0.05)
-        root.update()
+    # === Artificial Loading Delay ===4
+    DEV_DELAY = False
+    if DEV_DELAY:
+        import time
+        for _ in range(40):
+            if not root.winfo_exists(): return
+            time.sleep(0.05)
+            root.update()
     # ====================================
     
     # Handover
