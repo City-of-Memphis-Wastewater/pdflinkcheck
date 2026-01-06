@@ -14,7 +14,7 @@ import os as _os
 #from pdflinkcheck import dev
 
 # lazy loaded  library functions
-def run_report_and_call_exports(*args, **kwargs):
+def run_report(*args, **kwargs):
     from pdflinkcheck.report import run_report_and_call_exports as _run
     return _run(*args, **kwargs)
 
@@ -100,7 +100,7 @@ else:
 # -----------------------------
 # Define __all__ such that the library functions are self documenting.
 __all__ = [
-    "run_report_and_call_exports",
+    "run_report",
     "analyze_pdf_pymupdf",
     "analyze_pdf_pypdf", 
     "analyze_pdf_pdfium",     

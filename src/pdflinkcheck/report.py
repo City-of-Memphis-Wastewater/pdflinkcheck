@@ -37,7 +37,7 @@ EMPTY_VALIDATION = {
 
 def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON", pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     # The meat and potatoes
-    report_results = run_report(
+    report_results = run_report_extraction_and_assessment_and_recording(
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
         print_bool=print_bool,
@@ -64,7 +64,7 @@ def run_report_and_call_exports(pdf_path: str = None, export_format: str = "JSON
     return report_results
     
 
-def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
+def run_report_extraction_and_assessment_and_recording(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool=True) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
     
@@ -128,7 +128,6 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
-        #from pdflinkcheck.analysis_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
         from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pypdf
         #extracted_links = extract_links(pdf_path)
         #structural_toc = extract_toc(pdf_path) 
@@ -149,9 +148,6 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             print("\n")
             #return    
             raise ImportError("The 'fitz' module (PyMuPDF) is required but not installed.")
-        #from pdflinkcheck.analysis_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
-        #extracted_links = extract_links(pdf_path)
-        #structural_toc = extract_toc(pdf_path) 
 
         from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pymupdf
         data = analyze_pdf_pymupdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}

@@ -108,24 +108,23 @@ pdflinkcheck docs --license --readme
 
 ## 📦 Library Access (Advanced)
 
-For developers importing `pdflinkcheck` into other Python projects, the core analysis functions are exposed directly in the root namespace:
+For developers importing `pdflinkcheck` into other Python projects, the core analysis functions are exposed directly in the root namespace. The various `analysis_pdf_*` functions each use a different library to extract the target PDF's internal TOC, external links, and metadata.
 
-|**Function**|**Description**|
-|---|---|
-|`run_report()`|**(Primary function)** Performs the full analysis, prints to console, and handles file export.|
-|`extract_links_pymupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path.|
-|`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline).|
-|`extract_links_pymupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path, using the pypdf library.|
-|`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline), using the pypdf library.|
-|`analyze_pdf_pdfium()`|Function to extract the PDF's internal TOC and Links, using the pypdfium2 library.|
+|**Function**|**Library**|**Description**|
+|---|---|---|
+|`run_report()`|pdflinkcheck | **(Primary function)** Performs the full analysis, prints to console, and handles file export.|
+|`analyze_pdf_pdfium()`| pypdfium2 | Fast, ~10 mb, Permissively licensed |
+|`analyze_pdf_pymupdf()`| PyMuPDF | Fast, ~30 mb, AGPL3+ licensed |
+|`analyze_pdf_pypdf()`| pypdf library | Slow, ~2 mb, Permissively licensed |
 
 Exanple:
 
 ```python
-from pdflinkcheck.report import run_report
-from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf, extract_toc_pymupdf                                                                          130 from pdflinkcheck.analysis_pymupdf import extract_links_pynupdf, extract_toc_pymupdf
-from pdflinkcheck.analysis_pypdf import extract_links_pypdf, extract_toc_pypdf
-from pdflinkchec.analysis_pdfium impport analyze_pdf as analyze_pdf_pdfium
+from pdflinkcheck import ( run_report,
+                          analyze_pdf_pymupdf, 
+                          analyze_pdf_pypdf, 
+                          analyze_pdf_pdfium, 
+                          )
 
 file = "document1.pdf"
 report_data = run_report(file)

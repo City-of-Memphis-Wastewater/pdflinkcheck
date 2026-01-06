@@ -24,7 +24,7 @@ def run_validation(
     check_external: bool = False
 ) -> Dict[str, Any]:
     """
-    Validates links during run_report() using a partial completion of the data dict.
+    Validates links during run_report_*() using a partial completion of the data dict.
 
     Args:
         report_results: The dict returned by run_report_and_call_exports()
