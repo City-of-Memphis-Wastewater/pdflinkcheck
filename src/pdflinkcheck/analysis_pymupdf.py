@@ -24,8 +24,18 @@ except ImportError:
 Inspect target PDF for both URI links and for GoTo links.
 """
 
+def analyze_pdf(pdf_path: str):
+    data = {}
+    data["links"] = []
+    data["toc"] = []
+    extracted_links = extract_links_pymupdf(pdf_path)
+    structural_toc = extract_toc_pymupdf(pdf_path)
+    data["links"] = extracted_links
+    data["toc"] = structural_toc
+    return data
+
 # Helper function: Prioritize 'from'
-def get_link_rect(link_dict):
+def _get_link_rect(link_dict):
     """
     Retrieves the bounding box for the link using the reliable 'from' key
     provided by PyMuPDF's link dictionary.
@@ -51,6 +61,19 @@ def get_link_rect(link_dict):
     return None
 
 def get_anchor_text(page, link_rect):
+    """
+    Extracts text content using the link's bounding box coordinates.
+    The bounding box is slightly expanded to ensure full characters are captured.
+
+    Args:
+        page: The fitz.Page object where the link is located.
+        link_rect: A tuple of four floats (x0, y0, x1, y1) representing the 
+                   link's bounding box.
+
+    Returns:
+        The cleaned, extracted text string, or a placeholder message 
+        if no text is found or if an error occurs.
+    """
     if not link_rect:
         return "N/A: Missing Rect"
 
@@ -88,57 +111,6 @@ def get_anchor_text(page, link_rect):
     except Exception:
         return "N/A: Rect Error"
     
-def get_anchor_text_stable(page, link_rect):
-    """
-    Extracts text content using the link's bounding box coordinates.
-    The bounding box is slightly expanded to ensure full characters are captured.
-
-    Args:
-        page: The fitz.Page object where the link is located.
-        link_rect: A tuple of four floats (x0, y0, x1, y1) representing the 
-                   link's bounding box.
-
-    Returns:
-        The cleaned, extracted text string, or a placeholder message 
-        if no text is found or if an error occurs.
-    """
-    if not link_rect:
-        return "N/A: Missing Rect"
-
-    try:
-        # 1. Convert the coordinate tuple back to a fitz.Rect object
-        rect = fitz.Rect(link_rect)
-        
-        # --- CRITICAL STEP: Check for invalid/empty rect AFTER conversion ---
-        # If the rect is invalid (e.g., width or height is <= 0), skip it
-        # Note: fitz.Rect will often auto-normalize, but this explicit check is safer.
-        if rect.is_empty or rect.width <= 0 or rect.height <= 0:
-            return "N/A: Rect Error (Zero/Negative Dimension)"
-
-        # 2. Expand the rect slightly to capture full characters (1 unit in each direction)
-        #    This method avoids the proprietary/unstable 'from_expanded' or 'from_rect' methods.
-        expanded_rect = fitz.Rect(
-            rect.x0 - 1, 
-            rect.y0 - 1, 
-            rect.x1 + 1, 
-            rect.y1 + 1
-        )
-        
-        # 3. Get the text within the expanded bounding box
-        anchor_text = page.get_textbox(expanded_rect)
-        
-        # 4. Clean up whitespace and non-printing characters
-        cleaned_text = " ".join(anchor_text.split())
-        
-        if cleaned_text:
-            return cleaned_text
-        else:
-            return "N/A: No Visible Text"
-            
-    except Exception:
-        # Fallback for unexpected errors in rect conversion or retrieval
-        return "N/A: Rect Error"
-
 def analyze_toc_fitz(doc):
     """
     Extracts the structural Table of Contents (PDF Bookmarks/Outline) 
@@ -151,6 +123,7 @@ def analyze_toc_fitz(doc):
         A list of dictionaries, where each dictionary represents a TOC entry 
         with 'level', 'title', and 'target_page' (1-indexed).
     """
+    
     toc = doc.get_toc()
     toc_data = []
     
@@ -168,7 +141,6 @@ def analyze_toc_fitz(doc):
         })
         
     return toc_data
-
 
 # 2. Updated Main Inspection Function to Include Text Extraction
 #def inspect_pdf_hyperlinks_fitz(pdf_path):
@@ -223,6 +195,7 @@ def extract_links_pymupdf(pdf_path):
     try:
         doc = fitz.open(pdf_path)        
         # This represents the maximum valid 0-index in the doc
+        total_pages = doc.page_count
         last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count)
 
         #print(last_page_ref)       # Output: "358" (Because of __str__)
@@ -233,7 +206,7 @@ def extract_links_pymupdf(pdf_path):
             source_ref = PageRef.from_index(page_num)
 
             for link in page.get_links():
-                link_rect = get_link_rect(link)
+                link_rect = _get_link_rect(link)
                 anchor_text = get_anchor_text(page, link_rect)
                 
                 link_dict = {

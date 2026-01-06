@@ -27,6 +27,9 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
             "\nInstall it with: \n\tpip install pdflinkcheck[pdfium] \n\t OR \n\t uv sync --extra pdfium"
         )
     doc = pdfium.PdfDocument(path)
+
+    total_pages = len(doc) # or doc.page_count
+    
     links = []
     toc_list = []
     seen_toc = set()

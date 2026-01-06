@@ -12,7 +12,7 @@ from pdflinkcheck.io import error_logger, export_report_json, export_report_txt,
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import debug_head, PageRef
+from pdflinkcheck.helpers import debug_head, PageRef, get_total_page_count
 
 
 SEP_COUNT=28
@@ -111,26 +111,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         else:
             pdf_library = "pypdf"
 
-    """
-    # RUST ENGINE
-    if pdf_library == "rust":
-        try:
-            from pdflinkcheck_rust import analyze_pdf as analyze_pdf_rust
-        except ImportError as e:
-            raise ImportError(
-                "Rust engine requested, but 'pdflinkcheck-rust' is not installed.\n"
-                "Install it with:\n"
-                "    pip install pdflinkcheck-rust\n"
-                "Or, for the full experience in pdflinkcheck:\n"
-                "    pip install pdflinkcheck[rust]"
-            ) from e
-        # Rust returns a dict: {"links": [...], "toc": [...]}
-        # Already normalized
-        rust_data = analyze_pdf_rust(pdf_path) or {"links": [], "toc": []}
-        
-        extracted_links = rust_data.get("links", [])
-        structural_toc = rust_data.get("toc", [])
-    """
+
     # PDFium ENGINE
     if pdf_library in allowed_libraries and pdf_library == "pdfium":
         from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pdfium
@@ -140,9 +121,13 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
-        from pdflinkcheck.analysis_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
-        extracted_links = extract_links(pdf_path)
-        structural_toc = extract_toc(pdf_path) 
+        #from pdflinkcheck.analysis_pypdf import (extract_links_pypdf as extract_links, extract_toc_pypdf as extract_toc)
+        from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pypdf
+        #extracted_links = extract_links(pdf_path)
+        #structural_toc = extract_toc(pdf_path) 
+        data = analyze_pdf_pypdf(pdf_path) or {"links": [], "toc": []}
+        extracted_links = data.get("links", [])
+        structural_toc = data.get("toc", [])
 
     # PyMuPDF Engine
     elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
@@ -156,9 +141,14 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             print("\n")
             #return    
             raise ImportError("The 'fitz' module (PyMuPDF) is required but not installed.")
-        from pdflinkcheck.analysis_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
-        extracted_links = extract_links(pdf_path)
-        structural_toc = extract_toc(pdf_path) 
+        #from pdflinkcheck.analysis_pymupdf import (extract_links_pymupdf as extract_links, extract_toc_pymupdf as extract_toc)
+        #extracted_links = extract_links(pdf_path)
+        #structural_toc = extract_toc(pdf_path) 
+
+        from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pymupdf
+        data = analyze_pdf_pymupdf(pdf_path) or {"links": [], "toc": []}
+        extracted_links = data.get("links", [])
+        structural_toc = data.get("toc", [])
     
     log("\n--- Starting Analysis ... ---\n")
     if pdf_path is None:
@@ -172,7 +162,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 },
                 "text": "\n".join(report_buffer),
                 "metadata": {
-                    "pdf_name": Path(pdf_path).name,
+                    "file_overview": {
+                        "pdf_name": Path(pdf_path).name,
+                        "total pages": 0,
+                    },
                     "library_used": pdf_library,
                     "link_counts": {
                         "toc_entry_count": 0,
@@ -191,6 +184,8 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
+
+        total_pages = get_total_page_count(pdf_library=pdf_library, pdf_path = pdf_path)
 
         toc_entry_count = len(structural_toc)
         str_structural_toc = get_structural_toc(structural_toc)
@@ -215,7 +210,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 },
                 "text": "\n".join(report_buffer),
                 "metadata": {
-                    "pdf_name": Path(pdf_path).name,
+                    "file_overview": {
+                        "pdf_name": Path(pdf_path).name,
+                        "total pages": total_pages,
+                    },
                     "library_used": pdf_library,
                     "link_counts": {
                         "toc_entry_count": 0,
@@ -329,7 +327,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "data": report_data_dict, # The structured JSON-ready dict
             "text": "",
             "metadata": {                  # Helpful for the GUI/Logs
-                "pdf_name": Path(pdf_path).name,
+                "file_overview": {
+                        "pdf_name": Path(pdf_path).name,
+                        "total pages": total_pages,
+                    },
                 "library_used": pdf_library,
                 "link_counts": {
                     "toc_entry_count": toc_entry_count,
@@ -375,14 +376,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             print(report_buffer_overview_str)
             
         return report_results
-        """except Exception as e:
-        error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
-        # Ensure we always return a valid structure even in total failure
-        return {
-            "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION.copy()},
-            "text": f"FATAL Error: {str(e)}",
-            "metadata": {"pdf_name": Path(pdf_path).name, "library_used": pdf_library}
-        }"""
+
     except Exception as e:
         # Specific handling for common read failures
         if True:#"invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
@@ -396,7 +390,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                     "No hyperlinks or structural TOC found."
                 ]),
                 "metadata": {
-                    "pdf_name": Path(pdf_path).name,
+                    "file_overview": {
+                        "pdf_name": Path(pdf_path).name,
+                        "total pages": total_pages,
+                    },
                     "library_used": pdf_library,
                     "link_counts": {
                         "toc_entry_count": 0,
@@ -433,7 +430,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "No links or TOC extracted."
             ]),
             "metadata": {
-                "pdf_name": Path(pdf_path).name,
+                "file_overview": {
+                        "pdf_name": Path(pdf_path).name,
+                        "total pages": total_pages,
+                    },
                 "library_used": pdf_library,
                 "link_counts": {
                         "toc_entry_count": 0,

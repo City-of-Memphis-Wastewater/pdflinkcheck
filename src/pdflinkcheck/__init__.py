@@ -27,6 +27,21 @@ def extract_toc_pypdf(*args, **kwargs):
     from pdflinkcheck.analysis_pypdf import extract_toc_pypdf as _extract
     return _extract(*args, **kwargs)
 
+def analyze_pdf_pypdf(*args, **kwargs):
+    try:
+        from pdflinkcheck.analysis_pypdf import analyze_pdf as _analyze
+    except ImportError:
+        raise ImportError(
+            "pypdf engine is not installed. "
+            "Install pypdf to enable pypdf support."
+        )
+    return _analyze(*args, **kwargs)
+
+analyze_pdf_pypdf.__doc__ = (
+    "Analyze a PDF using the lightweight pypdf engine and return a normalized dictionary.\n\n"
+    "See pdflinkcheck.analyze_pypdf for full details."
+)
+
 # --- PyMuPDF ---
 def extract_links_pymupdf(*args, **kwargs):
     try:

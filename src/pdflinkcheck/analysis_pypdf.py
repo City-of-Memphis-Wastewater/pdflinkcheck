@@ -18,7 +18,18 @@ from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_c
 Inspect target PDF for both URI links and for GoTo links, using only pypdf, not Fitz
 """
 
-def get_anchor_text_pypdf(page, rect) -> str:
+def analyze_pdf(pdf_path: str):
+    data = {}
+    data["links"] = []
+    data["toc"] = []
+    extracted_links = extract_links_pypdf(pdf_path)
+    structural_toc = extract_toc_pypdf(pdf_path)
+    data["links"] = extracted_links
+    data["toc"] = structural_toc
+    return data
+
+
+def _get_anchor_text_pypdf(page, rect) -> str:
     """
     Extracts text within the link's bounding box using a visitor function.
     Reliable for finding text associated with a link without PyMuPDF.
@@ -35,7 +46,7 @@ def get_anchor_text_pypdf(page, rect) -> str:
     
     parts: List[str] = []
 
-    def visitor_body(text, cm, tm, font_dict, font_size):
+    def _visitor_body(text, cm, tm, font_dict, font_size):
         # tm[4], tm[5] are the current text insertion point coordinates (x, y)
         x, y = tm[4], tm[5]
 
@@ -46,14 +57,14 @@ def get_anchor_text_pypdf(page, rect) -> str:
             if text.strip():
                 parts.append(text)
 
-    page.extract_text(visitor_text=visitor_body)
+    page.extract_text(visitor_text=_visitor_body)
     
     raw_extracted = "".join(parts)
     cleaned = " ".join(raw_extracted.split()).strip()
     
     return cleaned if cleaned else "Graphic/Empty Link"
 
-def resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) -> Optional[int]:
+def _resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) -> Optional[int]:
     try:
         if isinstance(dest, Destination):
             # .page_number in pypdf is already 0-indexed
@@ -70,24 +81,6 @@ def resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) -> 
     except Exception:
         return None
         
-def resolve_pypdf_destination_(reader: PdfReader, dest, obj_id_to_page: dict) -> str:
-    """
-    Resolves a Destination object or IndirectObject to a 1-based page number string.
-    """
-    try:
-        if isinstance(dest, Destination):
-            return str(dest.page_number + 1)
-        
-        if isinstance(dest, IndirectObject):
-            return str(obj_id_to_page.get(dest.idnum, "Unknown"))
-        
-        if isinstance(dest, ArrayObject) and len(dest) > 0:
-            if isinstance(dest[0], IndirectObject):
-                return str(obj_id_to_page.get(dest[0].idnum, "Unknown"))
-            
-        return "Unknown"
-    except Exception:
-        return "Error Resolving"
 
 def extract_links_pypdf(pdf_path):
     """
@@ -117,7 +110,7 @@ def extract_links_pypdf(pdf_path):
                 continue
 
             rect = obj.get("/Rect")
-            anchor_text = get_anchor_text_pypdf(page, rect)
+            anchor_text = _get_anchor_text_pypdf(page, rect)
             
             link_dict = {
                 'page': page_source.machine,
@@ -139,7 +132,7 @@ def extract_links_pypdf(pdf_path):
             # Handle GoTo (Internal)
             elif "/Dest" in obj or ("/A" in obj and "/D" in obj["/A"]):
                 dest = obj.get("/Dest") or obj["/A"].get("/D")
-                target_page = resolve_pypdf_destination(reader, dest, obj_id_to_page)
+                target_page = _resolve_pypdf_destination(reader, dest, obj_id_to_page)
                 # print(f"DEBUG: resolved target_page = {target_page} (type: {type(target_page)})")
                 if target_page is not None:
                     dest_page = PageRef.from_index(target_page)

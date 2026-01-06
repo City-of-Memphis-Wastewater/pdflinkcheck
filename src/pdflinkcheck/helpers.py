@@ -86,3 +86,36 @@ class PageRef:
 | `__init__.py`         | API Surface      | **0-indexing only** | If exposing a library, users expect 0-indexed lists of pages/links.                                    |
 
 """
+
+
+def get_total_page_count(pdf_library,pdf_path):
+    from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
+    # Get total page count (critical for internal validation)
+    try:
+        if pdfium_is_available() and pdf_library == "pdfium":
+            total_pages = get_total_page_count_pdfium(pdf_path)
+            def get_total_page_count_pdfium(pdf_path):
+                import pypdfium2
+                doc = pypdfium2.open(pdf_path)
+                total_pages = doc.page_count
+                doc.close()
+                return total_pages
+        elif pymupdf_is_available() and pdf_library == "pymupdf":
+            total_pages = get_total_page_count_pymupdf()
+            def get_total_page_count_pymupdf(pdf_path):
+                import fitz
+                doc = fitz.open(pdf_path)
+                total_pages = doc.page_count
+                doc.close()
+                return total_pages
+        else:
+            total_pages = get_total_page_count_pypdf()
+            def get_total_page_count_pypdf(pdf_path):
+                from pypdf import PdfReader
+                reader = PdfReader(pdf_path)
+                total_pages = len(reader.pages)
+                return total_pages
+    except Exception as e:
+        print(f"Could not determine page count: {e}")
+        total_pages = None
+    return total_pages
