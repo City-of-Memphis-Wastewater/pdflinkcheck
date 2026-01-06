@@ -96,7 +96,6 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         'pyinstaller',
         '--noconfirm',
         '--clean',
-        '--onefile',
         f'--name={dynamic_exe_name}',
         
         # Output paths
@@ -111,6 +110,8 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         "--hidden-import", "pkg_resources.py2_warn", 
         "--hidden-import", "typer.models", 
         "--hidden-import", "typer",  
+        "--hidden-import", "click",  
+        "--hidden-import", "rich",  
         
         #'--log-level=DEBUG',
 
@@ -119,6 +120,12 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
+    if pyhabitat.on_termux():
+        flag = '--onedir'
+        base_command.append(flag)
+    else:
+        flag = '--onefile'
+        base_command.append(flag)
     if pyhabitat.tkinter_is_available(): # allows termux, etc build to be primarily CLI, becuase the gui wont work anyways
         flag = '--windowed'
         # flag = '--noconsole'
