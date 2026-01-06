@@ -6,11 +6,17 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.2.20] - 2026-01-03
+## [1.2.23] - 2026-01-06
+### Added:
+- MSIX failure to build with CLI exposure: update appxmanifest extension section.
+
+---
+
+## [1.2.21] - 2026-01-05
 ### Added:
 - Insert env vars at the top of cli.py to ensure PYZ distributed CLI's can have rich colors. Using the in-file env vars is termux compatobke for shiv 1.0.8.
 
-### Fixed:unidecode fails on mac os. Revert to former glyph sanitization function
+### Fixed:
 - gui.py: unidecode fails on mac os. Revert to former glyph sanitization function
 ---
 
