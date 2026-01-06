@@ -32,7 +32,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
     links = []
     toc_list = []
-    file_ov = []
+    file_ov = {}
     seen_toc = set()
 
     file_ov["total_pages"] = total_pages

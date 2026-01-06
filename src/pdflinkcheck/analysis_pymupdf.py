@@ -28,7 +28,7 @@ def analyze_pdf(pdf_path: str):
     data = {}
     data["links"] = []
     data["toc"] = []
-    data["file_ov"] = []
+    data["file_ov"] = {}
 
     try:
         doc = fitz.open(pdf_path)
