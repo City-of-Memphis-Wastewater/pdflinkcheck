@@ -1,7 +1,6 @@
-# gui_tight.py
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
-# src/pdflinkcheck/gui_tight.py
+# src/pdflinkcheck/gui.py
 from __future__ import annotations
 import tkinter as tk
 from tkinter import filedialog, ttk, messagebox, PhotoImage

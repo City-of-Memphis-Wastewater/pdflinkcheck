@@ -6,6 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.26] - 2026-01-06
+### Added:
+- Use splash scren with loading bar for better UX while app launchs. Add splash.py.
+
+### Changed:
+- guit_tight.py -> gui.py
+
+
+---
+
 ## [1.2.24] - 2026-01-06
 ### Fixed:
 - data inclusion: add MANIFEST.in file to ensure data is included with setuptools backend.

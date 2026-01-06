@@ -316,7 +316,7 @@ def gui_command(
         return
     #from pdflinkcheck.gui import start_gui
     #from pdflinkcheck.gui_alt import start_gui
-    from pdflinkcheck.gui_tight import start_gui
+    from pdflinkcheck.gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
 # --- Helper, consistent gui failure message. --- 
