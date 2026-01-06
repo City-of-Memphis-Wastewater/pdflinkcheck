@@ -113,9 +113,9 @@ For developers importing `pdflinkcheck` into other Python projects, the core ana
 |**Function**|**Description**|
 |---|---|
 |`run_report()`|**(Primary function)** Performs the full analysis, prints to console, and handles file export.|
-|`extract_links_pynupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path.|
+|`extract_links_pymupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path.|
 |`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline).|
-|`extract_links_pynupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path, using the pypdf library.|
+|`extract_links_pymupdf()`|Function to retrieve all explicit links (URIs, GoTo, etc.) from a PDF path, using the pypdf library.|
 |`extract_toc_pymupdf()`|Function to extract the PDF's internal Table of Contents (bookmarks/outline), using the pypdf library.|
 |`analyze_pdf_pdfium()`|Function to extract the PDF's internal TOC and Links, using the pypdfium2 library.|
 
@@ -192,7 +192,7 @@ Termux compatibility is important in the modern age, because Android devices are
 Android is the most common operating system in the Global South. 
 We aim to produce stable software that can do the most possible good. 
 
-Now `pdflinkcheck` can run on Termux by using the `pypdf` engine. 
+Now `pdflinkcheck` can run on Termux by using the `pypdf` engine and the `pdfium` engine. 
 Benefits:
 - `pypdf`-only artifacts, to reduce size to about 6% compared to artifacts that include `PyMuPDF`.
 - Web-stack GUI as an alternative to the Tkinter GUI, which can be run locally on Termux or as a web app.
@@ -210,17 +210,6 @@ pip install "pdflinkcheck[mupdf]"
 pipx install "pdflinkcheck[pdfium]"
 uv tool install "pdflinkcheck[pdfium]"
 uv add "pdflinkcheck[pdfium]"
-```
-
----
-
-## Leverage the Rust core (Defunct)
-
-```
-uv sync --extra rust"
-wget https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-linux-x64.tgz
-tar -xzf pdfium-linux-x64.tgz
-cp lib/libpdfium.so .
 ```
 
 ---
