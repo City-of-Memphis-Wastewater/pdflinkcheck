@@ -95,7 +95,7 @@ def _get_engine_data(pdf_path: str, pdf_library: str) -> tuple[Dict, str]:
     return data, pdf_library
 
 
-def run_report_extraction_and_assessment_and_recording(
+def run_report_extraction_and_assessment_and_recording_(
     pdf_path: str = None, 
     pdf_library: str = "auto", 
     print_bool: bool = True
@@ -183,7 +183,7 @@ def run_report_extraction_and_assessment_and_recording(
         error_logger.error(f"Critical failure: {e}", exc_info=True)
         return _return_empty_report([f"FATAL: {str(e)}"], pdf_library)
     
-def run_report_extraction_and_assessment_and_recording_(
+def run_report_extraction_and_assessment_and_recording(
         pdf_path: str = None, 
         pdf_library: str = "auto", 
         print_bool:bool=True
