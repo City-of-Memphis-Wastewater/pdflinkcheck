@@ -30,7 +30,6 @@ def analyze_pdf(pdf_path: str):
         print(f"pypdf.PdfReader() failed: {e}")
         return data
     
-
     extracted_links = _extract_links_pypdf(reader)
     structural_toc = _extract_toc_pypdf(reader)
     page_count = len(reader.pages)

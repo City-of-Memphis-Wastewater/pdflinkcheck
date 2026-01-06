@@ -19,14 +19,6 @@ def run_report_and_call_exports(*args, **kwargs):
     return _run(*args, **kwargs)
 
 # --- pypdf ---
-def extract_links_pypdf(*args, **kwargs):
-    from pdflinkcheck.analysis_pypdf import extract_links_pypdf as _extract
-    return _extract(*args, **kwargs)
-
-def extract_toc_pypdf(*args, **kwargs):
-    from pdflinkcheck.analysis_pypdf import extract_toc_pypdf as _extract
-    return _extract(*args, **kwargs)
-
 def analyze_pdf_pypdf(*args, **kwargs):
     try:
         from pdflinkcheck.analysis_pypdf import analyze_pdf as _analyze
@@ -43,29 +35,20 @@ analyze_pdf_pypdf.__doc__ = (
 )
 
 # --- PyMuPDF ---
-def extract_links_pymupdf(*args, **kwargs):
+def analyze_pdf_pymupdf(*args, **kwargs):
     try:
-        from pdflinkcheck.analysis_pymupdf import extract_links_pymupdf as _extract
+        from pdflinkcheck.analysis_pymupdf import analyze_pdf as _analyze
     except ImportError:
         raise ImportError(
             "PyMuPDF engine is not installed. "
-            "Install pdflinkcheck with the `[full]` extra to enable PyMuPDF support:\n"
-            "    pip install pdflinkcheck[full]"
+            "Install with the [mupdf] extra to enable pypdf support."
         )
-    return _extract(*args, **kwargs)
+    return _analyze(*args, **kwargs)
 
-
-def extract_toc_pymupdf(*args, **kwargs):
-    try:
-        from pdflinkcheck.analysis_pymupdf import extract_toc_pymupdf as _extract
-    except ImportError:
-        raise ImportError(
-            "PyMuPDF engine is not installed. "
-            "Install pdflinkcheck with the `[full]` extra to enable PyMuPDF support:\n"
-            "    pip install pdflinkcheck[full]"
-        )
-    return _extract(*args, **kwargs)
-
+analyze_pdf_pymupdf.__doc__ = (
+    "Analyze a PDF using the AGPL3-licensed PyMuPDF engine and return a normalized dictionary.\n\n"
+    "See pdflinkcheck.analyze_pymupdf for full details."
+)
 
 
 # --- PDFium ---
@@ -76,7 +59,7 @@ def analyze_pdf_pdfium(*args, **kwargs):
     except ImportError:
         raise ImportError(
             "PDFium engine is not installed. "
-            "Install pypdfium2 to enable pdfium support."
+            "Install with the [pdfium] extra to enable pdfium support."
         )
     return _analyze(*args, **kwargs)
 analyze_pdf_pdfium.__doc__ = (
@@ -118,10 +101,8 @@ else:
 # Define __all__ such that the library functions are self documenting.
 __all__ = [
     "run_report_and_call_exports",
-    "extract_links_pymupdf", 
-    "extract_toc_pymupdf", 
-    "extract_links_pypdf", 
-    "extract_toc_pypdf", 
+    "analyze_pdf_pymupdf",
+    "analyze_pdf_pypdf", 
     "analyze_pdf_pdfium",     
 ]
 
