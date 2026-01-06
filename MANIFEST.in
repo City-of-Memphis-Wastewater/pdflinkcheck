@@ -1,2 +1,4 @@
 include src/pdflinkcheck/data/*
 recursive-include src/pdflinkcheck/data/themes *
+recursive-include src/pdflinkcheck/data/icons *
+
