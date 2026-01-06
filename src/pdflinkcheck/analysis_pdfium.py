@@ -29,10 +29,13 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
     doc = pdfium.PdfDocument(path)
 
     total_pages = len(doc) # or doc.page_count
-    
+
     links = []
     toc_list = []
+    file_ov = []
     seen_toc = set()
+
+    file_ov["total_pages"] = total_pages
 
     # 1. TOC Extraction (Matches PyMuPDF logic)
     for item in doc.get_toc():
@@ -118,7 +121,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
         text_page.close()
 
     doc.close()
-    return {"links": links, "toc": toc_list}
+    return {"links": links, "toc": toc_list, "file_ov": file_ov}
 
 if __name__ == "__main__":
     import json

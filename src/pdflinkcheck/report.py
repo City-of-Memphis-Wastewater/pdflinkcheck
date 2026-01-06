@@ -12,7 +12,7 @@ from pdflinkcheck.io import error_logger, export_report_json, export_report_txt,
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import debug_head, PageRef, get_total_page_count
+from pdflinkcheck.helpers import debug_head, PageRef
 
 
 SEP_COUNT=28
@@ -115,9 +115,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     # PDFium ENGINE
     if pdf_library in allowed_libraries and pdf_library == "pdfium":
         from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pdfium
-        data = analyze_pdf_pdfium(pdf_path) or {"links": [], "toc": []}
+        data = analyze_pdf_pdfium(pdf_path) or {"links": [], "toc": [], "file_ov": []}
         extracted_links = data.get("links", [])
         structural_toc = data.get("toc", [])
+        file_ov = data.get("file_ov", [])
         
     # pypdf ENGINE
     elif pdf_library in allowed_libraries and pdf_library == "pypdf":
@@ -125,9 +126,10 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pypdf
         #extracted_links = extract_links(pdf_path)
         #structural_toc = extract_toc(pdf_path) 
-        data = analyze_pdf_pypdf(pdf_path) or {"links": [], "toc": []}
+        data = analyze_pdf_pypdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
         extracted_links = data.get("links", [])
         structural_toc = data.get("toc", [])
+        file_ov = data.get("file_ov", [])
 
     # PyMuPDF Engine
     elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
@@ -146,9 +148,12 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         #structural_toc = extract_toc(pdf_path) 
 
         from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pymupdf
-        data = analyze_pdf_pymupdf(pdf_path) or {"links": [], "toc": []}
+        data = analyze_pdf_pymupdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
         extracted_links = data.get("links", [])
         structural_toc = data.get("toc", [])
+        file_ov = data.get("file_ov", [])
+    
+    total_pages = file_ov.get("total_pages",0)
     
     log("\n--- Starting Analysis ... ---\n")
     if pdf_path is None:
@@ -164,7 +169,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "metadata": {
                     "file_overview": {
                         "pdf_name": Path(pdf_path).name,
-                        "total pages": 0,
+                        "total pages": total_pages,
                     },
                     "library_used": pdf_library,
                     "link_counts": {
@@ -184,8 +189,6 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
         log(f"PDF Engine: {pdf_library}")
-
-        total_pages = get_total_page_count(pdf_library=pdf_library, pdf_path = pdf_path)
 
         toc_entry_count = len(structural_toc)
         str_structural_toc = get_structural_toc(structural_toc)

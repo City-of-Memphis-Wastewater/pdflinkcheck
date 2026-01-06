@@ -28,11 +28,23 @@ def analyze_pdf(pdf_path: str):
     data = {}
     data["links"] = []
     data["toc"] = []
-    extracted_links = extract_links_pymupdf(pdf_path)
-    structural_toc = extract_toc_pymupdf(pdf_path)
+    data["file_ov"] = []
+
+    try:
+        doc = fitz.open(pdf_path)
+    except Exception as e:
+        print(f"fitz.open() failed: {e}")
+        return data
+    
+    extracted_links = extract_links_pymupdf(doc)
+    structural_toc = extract_toc_pymupdf(doc)
+    page_count = doc.page_count
+    
     data["links"] = extracted_links
     data["toc"] = structural_toc
+    data["file_ov"]["total_pages"] = page_count
     return data
+
 
 # Helper function: Prioritize 'from'
 def _get_link_rect(link_dict):
@@ -144,7 +156,7 @@ def analyze_toc_fitz(doc):
 
 # 2. Updated Main Inspection Function to Include Text Extraction
 #def inspect_pdf_hyperlinks_fitz(pdf_path):
-def extract_toc_pymupdf(pdf_path):
+def extract_toc_pymupdf(doc):
     """
     Opens a PDF, iterates through all pages and extracts the structural table of contents (TOC/bookmarks).
 
@@ -155,7 +167,7 @@ def extract_toc_pymupdf(pdf_path):
         A list of dictionaries representing the structural TOC/bookmarks.
     """
     try:
-        doc = fitz.open(pdf_path)
+        
         structural_toc = analyze_toc_fitz(doc)
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)
@@ -190,12 +202,10 @@ def serialize_fitz_object(obj):
     return obj
 
 
-def extract_links_pymupdf(pdf_path):
+def extract_links_pymupdf(doc):
     links_data = []
-    try:
-        doc = fitz.open(pdf_path)        
+    try:        
         # This represents the maximum valid 0-index in the doc
-        total_pages = doc.page_count
         last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count)
 
         #print(last_page_ref)       # Output: "358" (Because of __str__)

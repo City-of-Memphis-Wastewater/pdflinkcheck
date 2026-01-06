@@ -22,10 +22,21 @@ def analyze_pdf(pdf_path: str):
     data = {}
     data["links"] = []
     data["toc"] = []
-    extracted_links = extract_links_pypdf(pdf_path)
-    structural_toc = extract_toc_pypdf(pdf_path)
+    data["file_ov"] = []
+
+    try:
+        reader = PdfReader(pdf_path)
+    except Exception as e:
+        print(f"pypdf.PdfReader() failed: {e}")
+        return data
+    
+
+    extracted_links = _extract_links_pypdf(reader)
+    structural_toc = _extract_toc_pypdf(reader)
+    page_count = len(reader.pages)
     data["links"] = extracted_links
     data["toc"] = structural_toc
+    data["file_ov"]["total_pages"] = page_count
     return data
 
 
@@ -82,12 +93,11 @@ def _resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) ->
         return None
         
 
-def extract_links_pypdf(pdf_path):
+def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
     """
     Termux-compatible link extraction using pure-Python pypdf.
     Matches the reporting schema of the PyMuPDF version.
     """
-    reader = PdfReader(pdf_path)
     
     # Pre-map Object IDs to Page Numbers for fast internal link resolution
     obj_id_to_page = {
@@ -157,9 +167,8 @@ def extract_links_pypdf(pdf_path):
     return all_links
 
 
-def extract_toc_pypdf(pdf_path: str) -> List[Dict[str, Any]]:
+def _extract_toc_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
     try:
-        reader = PdfReader(pdf_path)
         # Note: outline is a property, not a method.
         toc_tree = reader.outline 
         toc_data = []
