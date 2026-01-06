@@ -93,23 +93,29 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         if overview:
             report_buffer_overview.append(msg)
     
-        
+
 
     # Expected: "pypdf" or "PyMuPDF" pr "rust"
     allowed_libraries = ("pypdf", "pymupdf", "pdfium", "auto")
     pdf_library = pdf_library.lower()
 
+    log("\n--- Starting Analysis ... ---\n")
+    if pdf_path is None:
+        log("pdf_path is None")
+        log("Tip: Drop a PDF in the current folder or pass in a path arg.")
+        _return_empty_report(report_buffer)
+    else:
+        pdf_name = Path(pdf_path).name
+
     # AUTO MODE
     if pdf_library == "auto":
-        #from pdflinkcheck.ffi import rust_available # defunct
-        #if rust_available():
-        #    pdf_library = "rust"
         if pdfium_is_available():
             pdf_library = "pdfium"
         elif pymupdf_is_available():
             pdf_library = "pymupdf"
         else:
             pdf_library = "pypdf"
+
 
 
     # PDFium ENGINE
@@ -155,36 +161,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
     
     total_pages = file_ov.get("total_pages",0)
     
-    log("\n--- Starting Analysis ... ---\n")
-    if pdf_path is None:
-        log("pdf_path is None")
-        log("Tip: Drop a PDF in the current folder or pass in a path arg.")
-        empty_report = {
-                "data": {
-                    "external_links": [],
-                    "internal_links": [],
-                    "toc": []
-                },
-                "text": "\n".join(report_buffer),
-                "metadata": {
-                    "file_overview": {
-                        "pdf_name": Path(pdf_path).name,
-                        "total pages": total_pages,
-                    },
-                    "library_used": pdf_library,
-                    "link_counts": {
-                        "toc_entry_count": 0,
-                        "interal_goto_links_count": 0,
-                        "interal_resolve_action_links_count": 0,
-                        "total_internal_links_count": 0,
-                        "external_uri_links_count": 0,
-                        "other_links_count": 0,
-                        "total_links_count": 0
-                    }
-                }
-            }
 
-        return empty_report
         
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}")
@@ -202,7 +179,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         # THIS HITS
 
         if not extracted_links and not structural_toc:
-            log(f"\nNo hyperlinks or structural TOC found in {Path(pdf_path).name}.")
+            log(f"\nNo hyperlinks or structural TOC found in {pdf_name}.")
             log("(This is common for scanned/image-only PDFs.)")
 
             empty_result = {
@@ -214,7 +191,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "text": "\n".join(report_buffer),
                 "metadata": {
                     "file_overview": {
-                        "pdf_name": Path(pdf_path).name,
+                        "pdf_name": pdf_name,
                         "total pages": total_pages,
                     },
                     "library_used": pdf_library,
@@ -248,7 +225,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
 
         # --- ANALYSIS SUMMARY (Using your print logic) ---
         log("\n" + "=" * SEP_COUNT, overview = True)
-        log(f"--- Link Analysis Results for {Path(pdf_path).name} ---", overview = True)
+        log(f"--- Link Analysis Results for {pdf_name} ---", overview = True)
         log(f"Total active links: {total_links_count} (External: {external_uri_links_count}, Internal Jumps: {total_internal_links_count}, Other: {other_links_count})",overview = True)
         log(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}",overview = True)
         log("=" * SEP_COUNT,overview = True)
@@ -331,7 +308,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "text": "",
             "metadata": {                  # Helpful for the GUI/Logs
                 "file_overview": {
-                        "pdf_name": Path(pdf_path).name,
+                        "pdf_name": pdf_name,
                         "total pages": total_pages,
                     },
                 "library_used": pdf_library,
@@ -372,7 +349,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
         # 5. Export Report 
         #if export_format:
         #    # Assuming export_to will hold the output format string (e.g., "JSON")
-        #    export_report_data(report_data_dict, Path(pdf_path).name, export_format, pdf_library)
+        #    export_report_data(report_data_dict, pdf_name, export_format, pdf_library)
         
         if print_bool:
             #print(report_buffer_str)
@@ -394,7 +371,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 ]),
                 "metadata": {
                     "file_overview": {
-                        "pdf_name": Path(pdf_path).name,
+                        "pdf_name": pdf_name,
                         "total pages": total_pages,
                     },
                     "library_used": pdf_library,
@@ -434,7 +411,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             ]),
             "metadata": {
                 "file_overview": {
-                        "pdf_name": Path(pdf_path).name,
+                        "pdf_name": pdf_name,
                         "total pages": total_pages,
                     },
                 "library_used": pdf_library,
@@ -449,6 +426,36 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                     }
             }
         }
+    
+def _return_empty_report(report_buffer: str)-> dict:
+    
+    empty_report = {
+            "data": {
+                "external_links": [],
+                "internal_links": [],
+                "toc": []
+            },
+            "text": "\n".join(report_buffer),
+            "metadata": {
+                "file_overview": {
+                    "pdf_name": "null",
+                    "total pages": 0,
+                },
+                "library_used": pdf_library,
+                "link_counts": {
+                    "toc_entry_count": 0,
+                    "interal_goto_links_count": 0,
+                    "interal_resolve_action_links_count": 0,
+                    "total_internal_links_count": 0,
+                    "external_uri_links_count": 0,
+                    "other_links_count": 0,
+                    "total_links_count": 0
+                }
+            }
+        }
+
+    return empty_report
+
         
 def get_structural_toc(structural_toc: list) -> str:
     """

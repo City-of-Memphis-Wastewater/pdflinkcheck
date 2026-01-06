@@ -43,6 +43,7 @@ def analyze_pdf(pdf_path: str):
     data["links"] = extracted_links
     data["toc"] = structural_toc
     data["file_ov"]["total_pages"] = page_count
+    data["file_ov"]["pdf_name"] = Path(pdf_path).name
     return data
 
 
