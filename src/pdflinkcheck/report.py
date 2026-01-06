@@ -192,7 +192,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "metadata": {
                     "file_overview": {
                         "pdf_name": pdf_name,
-                        "total pages": total_pages,
+                        "total_pages": total_pages,
                     },
                     "library_used": pdf_library,
                     "link_counts": {
@@ -309,7 +309,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "metadata": {                  # Helpful for the GUI/Logs
                 "file_overview": {
                         "pdf_name": pdf_name,
-                        "total pages": total_pages,
+                        "total_pages": total_pages,
                     },
                 "library_used": pdf_library,
                 "link_counts": {
@@ -371,7 +371,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
                 "metadata": {
                     "file_overview": {
                         "pdf_name": pdf_name,
-                        "total pages": total_pages,
+                        "total_pages": total_pages,
                     },
                     "library_used": pdf_library,
                     "link_counts": {
@@ -411,7 +411,7 @@ def run_report(pdf_path: str = None, pdf_library: str = "pypdf", print_bool:bool
             "metadata": {
                 "file_overview": {
                         "pdf_name": pdf_name,
-                        "total pages": total_pages,
+                        "total_pages": total_pages,
                     },
                 "library_used": pdf_library,
                 "link_counts": {
@@ -438,7 +438,7 @@ def _return_empty_report(report_buffer: str)-> dict:
             "metadata": {
                 "file_overview": {
                     "pdf_name": "null",
-                    "total pages": 0,
+                    "total_pages": 0,
                 },
                 "library_used": pdf_library,
                 "link_counts": {
