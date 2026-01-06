@@ -6,9 +6,6 @@ class SplashFrame(tk.Frame): # Use tk.Frame, not ttk.Frame
         super().__init__(parent, bg="#2b2b2b") # Manual color to match forest-dark
         self.parent = parent
         
-        self.parent.overrideredirect(True)
-        # ... (geometry logic) ...
-
         # Use tk.Label so it doesn't wait for ttk themes
         tk.Label(self, text="PDF LINK CHECK", fg="white", bg="#2b2b2b", 
                  font=("Arial", 14, "bold")).pack(pady=(20, 5))

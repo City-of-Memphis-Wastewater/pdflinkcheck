@@ -236,8 +236,8 @@ class PDFLinkCheckApp:
         path_to_copy = self.pdf_path.get()
         if path_to_copy:
             try:
-                self.clipboard_clear()
-                self.clipboard_append(path_to_copy)
+                self.root.clipboard_clear()
+                self.root.clipboard_append(path_to_copy)
                 messagebox.showinfo("Copied", "PDF Path copied to clipboard.")
             except tk.TclError as e:
                 messagebox.showerror("Copy Error", f"Clipboard access blocked: {e}")
@@ -320,8 +320,8 @@ class PDFLinkCheckApp:
 
     def _copy_output_to_clipboard(self):
         content = self.output_text.get('1.0', tk.END)
-        self.clipboard_clear()
-        self.clipboard_append(content)
+        self.root.clipboard_clear()
+        self.root.clipboard_append(content)
         messagebox.showinfo("Clipboard", "Output buffer copied to clipboard.")
 
     def _scroll_to_top(self):
@@ -429,15 +429,16 @@ def start_gui(time_auto_close: int = 0):
         return
 
     # Handover
-    splash.destroy()
-
     # Restore window borders/decorations
     root.overrideredirect(False)
+    splash.destroy()
+
+    # Force a title update to kick the window manager
+    root.title(f"PDF Link Check v{get_version_from_pyproject()}")
 
     root.lift()
     root.wm_attributes("-topmost", True)
     root.after(200, lambda: root.wm_attributes("-topmost", False))
-    root.focus_force()
 
     if pyhabitat.on_windows():
         try:
@@ -449,6 +450,7 @@ def start_gui(time_auto_close: int = 0):
     if time_auto_close > 0:
         root.after(time_auto_close, root.destroy)
 
+    root.focus_force()
     root.mainloop()
     print("pdflinkcheck: gui closed.")
 
