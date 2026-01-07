@@ -85,10 +85,12 @@ _gui_easteregg_env_flag = _os.environ.get('PDFLINKCHECK_GUI_EASTEREGG', '')
 _load_gui_func = str(_gui_easteregg_env_flag).strip().lower() in ('true', '1', 'yes', 'on')
 if _load_gui_func:
     try:
+        print("Easter egg, attemping.")
         import pyhabitat as _pyhabitat # pyhabitat is a dependency of this package already
+        print(f"pyhabitat.tkinter_is_available() = {_pyhabitat.tkinter_is_available()}")
         if _pyhabitat.tkinter_is_available():
-            #from pdflinkcheck.gui import start_gui
-            from pdflinkcheck.gui_alt import start_gui
+            from pdflinkcheck.gui import start_gui
+            print("from pdflinkcheck.gui import start_gui")
     except ImportError:
         # Optional: log or ignore silently
         print("start_gui() not imported")
