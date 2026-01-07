@@ -90,7 +90,7 @@ if _load_gui_func:
         print(f"pyhabitat.tkinter_is_available() = {_pyhabitat.tkinter_is_available()}")
         if _pyhabitat.tkinter_is_available():
             from pdflinkcheck.gui import start_gui
-            print("from pdflinkcheck.gui import start_gui")
+            print("Success: pdflinkcheck.start_gui() function loaded as top-level pmlibrary function.")
     except ImportError:
         # Optional: log or ignore silently
         print("start_gui() not imported")
