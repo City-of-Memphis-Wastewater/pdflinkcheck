@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.2.27] - 2026-01-06
 ### Changed:
 - Struggle through a refactor of report.py. Keep legacy function in file for now.
+- Revert to stable function while carrying fetal refactor code in the report.py file.
 
 ### Fixed:
 - Correct import to gui.py in start_gui easter egg import in __init__.py
