@@ -72,7 +72,7 @@ class PDFLinkCheckApp:
 
         # --- 1. Variable State Management ---
         self.pdf_path = tk.StringVar(value="")
-        self.pdf_library_var = tk.StringVar(value="PDFium")
+        self.pdf_library_var = tk.StringVar(value="pymupdf")
         self.do_export_report_json_var = tk.BooleanVar(value=True)
         self.do_export_report_txt_var = tk.BooleanVar(value=True)
         self.current_report_text = None
@@ -83,6 +83,7 @@ class PDFLinkCheckApp:
         self.last_txt_path: Optional[Path] = None
 
         # Engine detection (This can take a few ms)
+        self.pdf_library_var = tk.StringVar(value="PDFium")
         if not pdfium_is_available():
             self.pdf_library_var.set("PyMuPDF")
         if not pymupdf_is_available():
