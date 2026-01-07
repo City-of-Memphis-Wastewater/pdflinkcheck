@@ -7,6 +7,8 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict, Any, Union, List, Optional
+from datetime import datetime
+import time
 
 # --- Configuration ---
 
@@ -117,7 +119,7 @@ def export_report_json(
     """Exports structured dictionary results to a .json file."""
     
     base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_report.json"
+    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.json"
 
     print("For more details, explore the exported file(s).")
     try:
@@ -137,7 +139,7 @@ def export_report_txt(
     """Exports the formatted string buffer to a .txt file."""
     #pdf_filename = implement_non_redundant_naming(pdf_filename)
     base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_report.txt"
+    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.txt"
 
     try:
         output_path.write_text(report_text, encoding='utf-8')
@@ -155,6 +157,20 @@ def get_friendly_path(full_path: str) -> str:
         return str(p).replace(str(Path.home()), "~")
     except ValueError:
         return str(p)
+    
+def get_unique_unix_time():
+        """
+        Get the unix time for right now.
+        Purpose: When added to a filename, this ensures a unique filename, to avoid overwrites for otherwise identical filenames. 
+        Pros:
+        - cheap, easy, no reason to check for collision
+
+        Cons:
+        - Longer than YYYYMMDDalpha
+        - not human readable
+        """
+        return int(time.mktime(datetime.now().timetuple())) 
+
     
 def get_first_pdf_in_cwd() -> Optional[str]:
     """
