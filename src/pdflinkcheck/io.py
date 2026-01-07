@@ -139,7 +139,7 @@ def export_report_txt(
     """Exports the formatted string buffer to a .txt file."""
     #pdf_filename = implement_non_redundant_naming(pdf_filename) 
     base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.txt"
+    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.txt" 
 
     try:
         output_path.write_text(report_text, encoding='utf-8')
