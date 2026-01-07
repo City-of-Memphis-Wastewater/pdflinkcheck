@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.2.28] - 2026-01-07
+### Added:
+- io.get_unique_unix_time(): ensure unique filenames to avoid overwrites of redundant analysis with same PDF engine with same target PDF file - do this quick and dirty by adding the unix time value to the filename.
+
 ---
 
 ## [1.2.27] - 2026-01-06
