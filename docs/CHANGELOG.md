@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.30] - 2026-01-12
+### Changed:
+- Supress `--onedir` usage in build_executible.py for ph.on_termux().
+
+---
+
 ## [1.2.29] - 2026-01-12
 ### Changed:
 - Remove outdated print_bool arg from report.get_structural_toc()
