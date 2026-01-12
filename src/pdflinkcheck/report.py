@@ -758,7 +758,6 @@ def get_structural_toc(structural_toc: list) -> str:
 
     Args:
         structural_toc: A list of TOC dictionaries.
-        print_bool: Whether to print the output to the console.
 
     Returns:
         A formatted string of the structural TOC.
