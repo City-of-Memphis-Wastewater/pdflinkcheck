@@ -10,6 +10,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - Remove outdated print_bool arg from report.get_structural_toc()
 
+### Added:
+- Add concise_print arg to report.run_report_extraction_and_assessment_and_recording() but do not expose it; this is just for documentation and keeping the option to toggle verbosity or just overview print, rather than commenting. Beware maintenance. concise_print=False is a safe default.
+
 ---
 
 ## [1.2.28] - 2026-01-07
