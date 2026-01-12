@@ -39,7 +39,7 @@ def run_report_and_call_exports(
     pdf_path: str = None, 
     export_format: str = "JSON", 
     pdf_library: str = "auto", 
-    print_bool:bool=True
+    print_bool:bool=True,
 ) -> Dict[str, Any]:
     """
     Public entry point. Orchestrates extraction, validation, and file exports.
@@ -94,7 +94,7 @@ def _get_engine_data(pdf_path: str, pdf_library: str) -> tuple[Dict, str]:
     
     return data, pdf_library
 
-
+# ----- Refactored version, failing ----
 def run_report_extraction_and_assessment_and_recording_(
     pdf_path: str = None, 
     pdf_library: str = "auto", 
@@ -182,11 +182,13 @@ def run_report_extraction_and_assessment_and_recording_(
     except Exception as e:
         error_logger.error(f"Critical failure: {e}", exc_info=True)
         return _return_empty_report([f"FATAL: {str(e)}"], pdf_library)
-    
+
+# ----- Revert to stable version ----
 def run_report_extraction_and_assessment_and_recording(
         pdf_path: str = None, 
         pdf_library: str = "auto", 
-        print_bool:bool=True
+        print_bool:bool=True,
+        concise_print: bool=False,
         ) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
@@ -224,7 +226,7 @@ def run_report_extraction_and_assessment_and_recording(
 
     log("\n--- Starting Analysis ... ---\n")
     if pdf_path is None:
-        log("pdf_path is None")
+        log("pdf_path is None", overview=True)
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
         _return_empty_report(report_buffer)
     else:
@@ -283,8 +285,8 @@ def run_report_extraction_and_assessment_and_recording(
 
         
     try:
-        log(f"Target file: {get_friendly_path(pdf_path)}")
-        log(f"PDF Engine: {pdf_library}")
+        log(f"Target file: {get_friendly_path(pdf_path)}", overview=True)
+        log(f"PDF Engine: {pdf_library}", overview=True)
 
         toc_entry_count = len(structural_toc)
         str_structural_toc = get_structural_toc(structural_toc)
@@ -298,8 +300,8 @@ def run_report_extraction_and_assessment_and_recording(
         # THIS HITS
 
         if not extracted_links and not structural_toc:
-            log(f"\nNo hyperlinks or structural TOC found in {pdf_name}.")
-            log("(This is common for scanned/image-only PDFs.)")
+            log(f"\nNo hyperlinks or structural TOC found in {pdf_name}.", overview=True)
+            log("(This is common for scanned/image-only PDFs.)", overview=True)
 
             empty_result = {
                 "data": {
@@ -470,8 +472,10 @@ def run_report_extraction_and_assessment_and_recording(
         #    export_report_data(report_data_dict, pdf_name, export_format, pdf_library)
         
         if print_bool:
-            #print(report_buffer_str)
-            print(report_buffer_overview_str)
+            if concise_print:
+                print(report_buffer_overview_str)
+            else:
+                print(report_buffer_str)
             
         return report_results
 
