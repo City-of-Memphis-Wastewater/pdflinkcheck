@@ -295,6 +295,7 @@ class PDFLinkCheckApp:
             try:
                 #pyhabitat.edit_textfile(target_path)
                 threading.Thread(target=lambda: pyhabitat.edit_textfile(target_path), daemon=True).start()
+                
             except Exception as e:
                 messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
         else:
