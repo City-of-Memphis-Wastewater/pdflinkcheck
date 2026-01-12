@@ -10,6 +10,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Testing:
 - Ensure _open_export_file() buttons work fine on Windows. Analyze failure modes.
 
+### Changed:
+- Update pyhabitat version to 1.1.6, which has better windows path resolution in case of VFS in MSIX distribution.
+- To ensure the MSIX can launch Notepad, etc and interact with files, update AppxManifest XML file to enable:
+    - uap10
+    - Capabilities, Name="unrestrictedAppContainer"
+    - Properties, uap10:AllowExternalContent 
+
 ---
 
 ## [1.2.30] - 2026-01-12

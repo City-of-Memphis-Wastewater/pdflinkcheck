@@ -20,7 +20,7 @@
     <Description>A PDF analysis tool, to validate GoTo links and URI File links.</Description>
     <Logo>Assets\StoreLogo-50x50.png</Logo>
 
-    <!-- Ensure exported files are accessible even if files are given VFS paths-->
+    <!-- Allows external applications (like Notepad) to access files generated within the MSIX container -->
     <uap10:AllowExternalContent>true</uap10:AllowExternalContent>
   </Properties>
 
@@ -38,7 +38,7 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
 
-    <!-- Ensure exported files are accessible-->
+    <!-- Grants the app standard Win32 permissions to interact with the desktop environment -->
     <rescap:Capability Name="unrestrictedAppContainer" />
   </Capabilities>
   
