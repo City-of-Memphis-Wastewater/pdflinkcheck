@@ -6,9 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.31] - 2026-01-12
+### Testing:
+- Ensure _open_export_file() buttons work fine on Windows. Analyze failure modes.
+
+---
+
 ## [1.2.30] - 2026-01-12
 ### Changed:
-- Supress `--onedir` usage in build_executible.py for ph.on_termux().
+- Supress `--onedir` usage in build_executible.py for ph.on_termux(); these termux builds are currently failing on both systems. We likely need to pin a version of pyinstaller. Check for handling.
 - Ensure MSIX includes both PyMuPDF and PDFium, in msix.yml: `pip install -e ".[pdfium]"` -> `pip install -e ".[pdfium,mupdf]"`
 
 ---
