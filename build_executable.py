@@ -121,7 +121,8 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
-    if pyhabitat.on_termux():
+    # Failing to finish onefile on termux - try both systems
+    if False: #pyhabitat.on_termux():
         flag = '--onedir'
         base_command.append(flag)
     else:
