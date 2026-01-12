@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.2.30] - 2026-01-12
 ### Changed:
 - Supress `--onedir` usage in build_executible.py for ph.on_termux().
+- Ensure MSIX includes both PyMuPDF and PDFium, in msix.yml: `pip install -e ".[pdfium]"` -> `pip install -e ".[pdfium,mupdf]"`
 
 ---
 
