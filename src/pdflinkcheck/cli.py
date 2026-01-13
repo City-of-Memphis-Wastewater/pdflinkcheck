@@ -272,14 +272,14 @@ def serve(
 
     # Import here to avoid slow imports on other commands
     #from pdflinkcheck.stdlib_server import ThreadedTCPServer, PDFLinkCheckHandler
-    from pdflinkcheck.stdlib_server_alt import ThreadedHTTPServer, PDFLinkCheckHandler
+    from pdflinkcheck.stdlib_server_alt import main as stdlib_server_main# ThreadedHTTPServer, PDFLinkCheckHandler
     import socketserver
 
     try:
+        stdlib_server_main()
         #with ThreadedTCPServer((host, port), PDFLinkCheckHandler) as httpd:
-         with ThreadedHTTPServer((host, port), PDFLinkCheckHandler) as httpd:
-            console.print(f"[green]Server running — press Ctrl+C to stop[/green]\n")
-            httpd.serve_forever()
+        #    console.print(f"[green]Server running — press Ctrl+C to stop[/green]\n")
+        #    httpd.serve_forever()
     except OSError as e:
         if "Address already in use" in str(e):
             console.print(f"[red]Error: Port {port} is already in use.[/red]")
