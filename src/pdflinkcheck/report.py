@@ -30,7 +30,8 @@ EMPTY_VALIDATION = {
             "unknown-link": 0 
         },
         "issues": [],
-        "summary-txt": "Analysis failed: No validation performed.",
+        #"summary-txt": "Analysis failed: No validation performed.",
+        "summary-lines": ["Analysis failed: No validation performed."],
         "total_pages": 0
     }
 
@@ -169,7 +170,8 @@ def run_report_extraction_and_assessment_and_recording_(
 
         # --- Inside run_report_extraction_and_assessment_and_recording ---
         # 6. Finalizing Text Buffer
-        val_summary = validation_results.get("summary-txt", "")
+        #val_summary = validation_results.get("summary-txt", "")
+        val_summary = validation_results.get("summary-lines", "")
         raw_text = report_text_base + f"\n{val_summary}\n--- Analysis Complete ---"
         cleaned_text = sanitize_glyphs_for_compatibility(raw_text)
         # Apply sanitization before returning
@@ -452,7 +454,11 @@ def run_report_extraction_and_assessment_and_recording(
 
         validation_results = run_validation(report_results=intermediate_report_results,
                                             pdf_path=pdf_path)
-        log(validation_results.get("summary-txt",""), overview = True)
+        #log(validation_results.get("summary-txt",""), overview = True)
+
+        summary_lines = validation_results.get("summary-lines", [])
+        for line in summary_lines:
+            log(line, overview=True)
 
         # CRITICAL: Re-assign to report_results so it's available for the final return
         report_results = copy.deepcopy(intermediate_report_results)
@@ -466,6 +472,8 @@ def run_report_extraction_and_assessment_and_recording(
         report_buffer_overview_str = "\n".join(report_buffer_overview)
 
         report_results["data"]["validation"].update(validation_results)
+
+        
         #report_results["text"].update(report_buffer_str)      # The human-readable string
         report_results["text"] = report_buffer_str
 

@@ -278,15 +278,19 @@ def run_validation(
         # Final aggregation of the buffer into one string
         validation_buffer_str = "\n".join(validation_buffer)
         
-        return validation_buffer_str
+        results = dict()
+        results["validation_summary_str"] = validation_buffer_str
+        results["validation_summary_lines"] = validation_buffer
+        return results
     
-    summary_txt = generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path)
+    results_validation = generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path)
 
     validation_results = {
         "pdf_path" : pdf_path,
         "summary-stats": summary_stats,
         "issues": issues,
-        "summary-txt": summary_txt,
+        #"summary-txt": results_validation["validation_summary_str"],
+        "summary-lines": results_validation["validation_summary_lines"],
         "total_pages": total_pages
     }
 
