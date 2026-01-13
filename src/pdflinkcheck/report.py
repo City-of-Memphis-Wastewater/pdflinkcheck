@@ -40,6 +40,7 @@ def run_report_and_call_exports(
     export_format: str = "JSON", 
     pdf_library: str = "auto", 
     print_bool:bool=True,
+    concise_print: bool = False,
 ) -> Dict[str, Any]:
     """
     Public entry point. Orchestrates extraction, validation, and file exports.
@@ -98,7 +99,8 @@ def _get_engine_data(pdf_path: str, pdf_library: str) -> tuple[Dict, str]:
 def run_report_extraction_and_assessment_and_recording_(
     pdf_path: str = None, 
     pdf_library: str = "auto", 
-    print_bool: bool = True
+    print_bool: bool = True.
+    concise_print: bool = False,
 ) -> Dict[str, Any]:
     """
     Orchestrates extraction, categorization, and validation.
@@ -840,7 +842,8 @@ if __name__ == "__main__":
         pdf_path=pdf_path,
         export_format="",
         pdf_library=pdf_library,
-        print_bool=True  # We handle printing in validation
+        print_bool=True,  # We handle printing in validation
+        concise_print=False
     )
 
     if not report or not report.get("data"):
