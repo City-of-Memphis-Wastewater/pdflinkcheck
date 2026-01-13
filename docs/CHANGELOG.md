@@ -10,6 +10,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - Ensure docker build only occurs with a release, not a tag push, in docker.yml
 
+### Fixed:
+- Use "validation": EMPTY_VALIDATION.copy() in the one place it is missing, if there are no links at all.
+- Implement report._print_report_algorithm() before all early returns in report.run_report_extraction_and_assessment_and_recording()
+
 ---
 
 ## [1.2.39] - 2026-01-13

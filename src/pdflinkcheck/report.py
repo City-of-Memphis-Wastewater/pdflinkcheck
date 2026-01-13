@@ -192,13 +192,13 @@ def run_report_extraction_and_assessment_and_recording(
             log("\n")
             log(f"No hyperlinks or structural TOC found in {pdf_name}.", overview=True)
             log("(This is common for scanned/image-only PDFs.)", overview=True)
-
+            
             empty_result = {
                 "data": {
                     "external_links": [],
                     "internal_links": [],
                     "toc": [],
-                    "validation": []
+                    "validation": EMPTY_VALIDATION.copy()
                 },
                 "text-lines": report_buffer,
                 "metadata": {
@@ -373,6 +373,7 @@ def run_report_extraction_and_assessment_and_recording(
             log(f"Warning: Could not parse PDF structure — likely an image-only or malformed PDF.")
             log("No hyperlinks or TOC can exist in this file.")
             log("Result: No links found.")
+            _print_report_algorithm(report_buffer,report_buffer_overview, print_bool, concise_print)
             return {
                 "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION.copy()},
                 "text-lines": report_buffer + [
@@ -402,6 +403,7 @@ def run_report_extraction_and_assessment_and_recording(
         log(f"FATAL: Analysis failed: {str(e)}. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
 
         # Always return a safe empty result on error
+        _print_report_algorithm(report_buffer,report_buffer_overview, print_bool, concise_print)
         return {
             "data": {
                 "external_links": [],
