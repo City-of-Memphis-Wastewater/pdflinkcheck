@@ -12,6 +12,8 @@ from importlib.resources import files
 import pyhabitat
 import ctypes
 import threading
+import subprocess
+import os
 
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_and_call_exports
@@ -288,7 +290,7 @@ class PDFLinkCheckApp:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
 
-    def _open_export_file(self, file_type: str):
+    def _open_export_file_with_pyhabitat(self, file_type: str):
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
 
         if target_path and Path(target_path).exists():
@@ -297,10 +299,81 @@ class PDFLinkCheckApp:
                 threading.Thread(target=lambda: pyhabitat.edit_textfile(target_path), daemon=True).start()
                 
             except Exception as e:
+                with open(r"C:\Users\user\Desktop\edit_log.txt", "a") as f:
+                    f.write(f"edit_textfile failed: {e}\n")
                 messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
         else:
             messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.\n\nPlease click 'Run Analysis' to generate one.")
 
+    def _open_export_file_close(self, file_type: str):
+        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
+
+        if target_path and Path(target_path).exists():
+            try:
+                if not pyhabitat.on_windows():
+                    threading.Thread(target=lambda: pyhabitat.edit_textfile(target_path), daemon=True).start()
+                else:
+                    threading.Thread(
+                        target=lambda: subprocess.Popen(["notepad.exe", str(target_path)]),
+                        daemon=True
+                    ).start()
+            except Exception as e:
+                with open(r"C:\Users\user\Desktop\edit_log.txt", "a") as f:
+                    f.write(f"edit_textfile failed: {e}\n")
+                messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
+        else:
+            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.\n\nPlease click 'Run Analysis' to generate one.")
+
+    def _open_export_file(self, file_type: str):
+        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
+
+        if not target_path or not Path(target_path).exists():
+            messagebox.showwarning(
+                "File Not Found",
+                f"The {file_type.upper()} report file does not exist.\n\n"
+                "Please click 'Run Analysis' to generate one."
+            )
+            return
+
+        try:
+            if pyhabitat.on_windows():
+                # Windows: use the most reliable method
+                threading.Thread(
+                    target=lambda: subprocess.Popen(["notepad.exe", str(target_path)]),
+                    daemon=True
+                ).start()
+            else:
+                # Non-Windows: use pyhabitat's robust cross-platform logic
+                threading.Thread(
+                    target=lambda: pyhabitat.edit_textfile(target_path),
+                    daemon=True
+                ).start()
+
+        except Exception as e:
+            # Log for debugging
+            with open(r"C:\Users\user\Desktop\edit_log.txt", "a") as f:
+                f.write(f"Open {file_type} failed: {e}\n")
+
+            messagebox.showerror(
+                "Open Error",
+                f"Failed to open {file_type.upper()} report:\n{e}"
+            )
+            
+    def _open_export_file_sus(self, file_type: str):
+        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
+
+        if target_path and Path(target_path).exists():
+            try:
+                # Direct Windows launch avoids MSIX quirks
+                if pyhabitat.on_windows():
+                    subprocess.Popen(["notepad.exe", str(target_path)])
+                else:
+                    pyhabitat.edit_textfile(target_path)
+            except Exception as e:
+                messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
+        else:
+            messagebox.showwarning("File Not Found", ...)
+        
     def _assess_pdf_path_str(self):
         pdf_path_str = self.pdf_path.get().strip()
         if not pdf_path_str:
