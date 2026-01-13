@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.40] - 2026-01-13
+### Changed:
+- Ensure docker build only occurs with a release, not a tag push, in docker.yml
+
+---
+
 ## [1.2.39] - 2026-01-13
 ### Changed:
 - Suppress AllowExternalContent in AppxManifest file, to see if it allows sideloading

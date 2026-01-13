@@ -229,7 +229,9 @@ def run_report_extraction_and_assessment_and_recording(
     allowed_libraries = ("pypdf", "pymupdf", "pdfium", "auto")
     pdf_library = pdf_library.lower()
 
-    log("\n--- Starting Analysis ... ---\n")
+    log("\n")
+    log("--- Starting Analysis ... ---")
+    log("\n")
     if pdf_path is None:
         log("pdf_path is None", overview=True)
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
@@ -305,7 +307,8 @@ def run_report_extraction_and_assessment_and_recording(
         # THIS HITS
 
         if not extracted_links and not structural_toc:
-            log(f"\nNo hyperlinks or structural TOC found in {pdf_name}.", overview=True)
+            log("\n")
+            log(f"No hyperlinks or structural TOC found in {pdf_name}.", overview=True)
             log("(This is common for scanned/image-only PDFs.)", overview=True)
 
             empty_result = {
@@ -350,7 +353,8 @@ def run_report_extraction_and_assessment_and_recording(
         total_links_count = len(extracted_links)
 
         # --- ANALYSIS SUMMARY (Using your print logic) ---
-        log("\n" + "=" * SEP_COUNT, overview = True)
+        log("\n")
+        log("=" * SEP_COUNT, overview = True)
         log(f"--- Link Analysis Results for {pdf_name} ---", overview = True)
         log(f"Total active links: {total_links_count} (External: {external_uri_links_count}, Internal Jumps: {total_internal_links_count}, Other: {other_links_count})",overview = True)
         log(f"Total **structural TOC entries (bookmarks)** found: {toc_entry_count}",overview = True)
@@ -360,7 +364,8 @@ def run_report_extraction_and_assessment_and_recording(
         log(str_structural_toc)
 
         # --- Section 2: ACTIVE INTERNAL JUMPS ---
-        log("\n" + "=" * SEP_COUNT)
+        log("\n")
+        log("=" * SEP_COUNT)
         log(f"## Active Internal Jumps (GoTo & Resolved Actions) - {total_internal_links_count} found")
         log("=" * SEP_COUNT)
         log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Jumps To Page"))
@@ -390,7 +395,8 @@ def run_report_extraction_and_assessment_and_recording(
         log("-" * SEP_COUNT)
         
         # --- Section 3: ACTIVE URI LINKS ---
-        log("\n" + "=" * SEP_COUNT)
+        log("\n")
+        log("=" * SEP_COUNT)
         log(f"## Active URI Links (External) - {len(external_uri_links)} found") 
         log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target URI/Action"))
         log("=" * SEP_COUNT)
@@ -406,7 +412,8 @@ def run_report_extraction_and_assessment_and_recording(
         log("-" * SEP_COUNT)
 
         # --- Section 4: OTHER LINKS ---
-        log("\n" + "=" * SEP_COUNT)
+        log("\n")
+        log("=" * SEP_COUNT)
         log(f"## Other Links  - {len(other_links)} found") 
         log("{:<5} | {:<5} | {:<40} | {}".format("Idx", "Page", "Anchor Text", "Target Action"))
         log("=" * SEP_COUNT)
@@ -450,7 +457,8 @@ def run_report_extraction_and_assessment_and_recording(
             }
         }
 
-        log("\n--- Analysis Complete ---")
+        log("\n")
+        log("--- Analysis Complete ---")
 
         validation_results = run_validation(report_results=intermediate_report_results,
                                             pdf_path=pdf_path)
@@ -495,13 +503,15 @@ def run_report_extraction_and_assessment_and_recording(
     except Exception as e:
         # Specific handling for common read failures
         if True:#"invalid pdf header" in str(e).lower() or "EOF marker not found" in str(e) or "stream has ended unexpectedly" in str(e):
-            log(f"\nWarning: Could not parse PDF structure — likely an image-only or malformed PDF.")
+            log("\n")
+            log(f"Warning: Could not parse PDF structure — likely an image-only or malformed PDF.")
             log("No hyperlinks or TOC can exist in this file.")
             log("Result: No links found.")
             return {
                 "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION.copy()},
                 "text-lines": report_buffer + [
-                    "\nWarning: PDF appears to be image-only or malformed.",
+                    "\n",
+                    "Warning: PDF appears to be image-only or malformed.",
                     "No hyperlinks or structural TOC found."
                 ],
                 "metadata": {
@@ -540,7 +550,8 @@ def run_report_extraction_and_assessment_and_recording(
                 "validation": EMPTY_VALIDATION.copy()
             },
             "text-lines": report_buffer + [
-                "\n--- Analysis failed ---",
+                "\n",
+                "--- Analysis failed ---",
                 f"Error: {str(e)}",
                 "No links or TOC extracted."
             ],
