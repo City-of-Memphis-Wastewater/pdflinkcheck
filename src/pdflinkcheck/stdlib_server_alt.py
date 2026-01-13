@@ -56,6 +56,8 @@ import threading
 from dataclasses import dataclass
 from typing import Optional
 
+from pdflinkcheck import environment as enviro
+
 try:
     from pdflinkcheck.report import run_report_and_call_exports
 except:
@@ -69,7 +71,12 @@ HOST = "127.0.0.1"
 PORT = 8000
 
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
-ALLOWED_LIBRARIES = {"pypdf", "pymupdf", "pdfium"}
+#ALLOWED_LIBRARIES = {"pypdf", "pymupdf", "pdfium"}
+ALLOWED_LIBRARIES = {"pypdf"}
+if enviro.pymupdf_is_available()
+    ALLOWED_LIBRARIES.add("pymupdf")
+if enviro.pdfium_is_available()
+    ALLOWED_LIBRARIES.add("pdfium")
 
 # Concurrency control
 MAX_CONCURRENT_JOBS = 2
