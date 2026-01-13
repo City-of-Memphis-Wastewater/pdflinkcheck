@@ -50,7 +50,7 @@ def debug_callback(value: bool):
         typer.echo(f"command:\n{command_string}\n")
     return value
 
-if "--show-command" in sys.argv or "--debug" in sys.argv:
+if "--show-command" in sys.argv or "--debug" in sys.argv: # requires that --show-command flag be used before the sub command
     debug_callback(True)
     
 @app.callback()
