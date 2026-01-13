@@ -272,7 +272,7 @@ class PDFLinkCheckApp:
                 export_format=export_format,
                 pdf_library=pdf_library,
             )
-            self.current_report_text = report_results.get("text", "")
+            self.current_report_text = report_results.get("text-lines", "")
             self.current_report_data = report_results.get("data", {})
 
             self.last_json_path = report_results.get("files", {}).get("export_path_json")

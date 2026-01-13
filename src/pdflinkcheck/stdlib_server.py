@@ -137,7 +137,7 @@ class PDFLinkCheckHandler(http.server.SimpleHTTPRequestHandler):
                 "pdf_library_used": pdf_library,
                 "total_links_count": total_links_count,
                 "data": result["data"],
-                "text_report": result["text"]
+                "text_report": result["text-lines"]
             }
 
             self._send_json(response)

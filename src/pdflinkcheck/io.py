@@ -140,9 +140,11 @@ def export_report_txt(
     #pdf_filename = implement_non_redundant_naming(pdf_filename) 
     base_name = Path(pdf_filename).stem
     output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.txt" 
-
+ 
+    report_text_str = "\n".join(report_text)
+    
     try:
-        output_path.write_text(report_text, encoding='utf-8')
+        output_path.write_text(report_text_str, encoding='utf-8')
         print(f"TXT report exported: {get_friendly_path(output_path)}")
         return output_path
     except Exception as e:

@@ -516,7 +516,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 "pdf_library_used": upload.pdf_library,
                 "total_links_count": link_count,
                 "data": result["data"],
-                "text_report": result["text"],
+                "text_report": result["text-lines"],
             }
 
         finally:

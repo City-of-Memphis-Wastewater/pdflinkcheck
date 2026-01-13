@@ -59,7 +59,7 @@ def run_report_and_call_exports(
     
     if export_format:
         report_data_dict = report_results["data"]
-        report_buffer_str = report_results["text"]
+        report_buffer_str = report_results["text-lines"]
         if "JSON" in export_format.upper():
             output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library)
         if "TXT" in export_format.upper():
@@ -150,7 +150,7 @@ def run_report_extraction_and_assessment_and_recording_(
                 "toc": structural_toc,
                 "validation": EMPTY_VALIDATION.copy()
             },
-            "text": report_text_base,
+            "text-lines": report_text_base,
             "metadata": _build_metadata(
                 pdf_name=pdf_name, 
                 total_pages=total_pages, 
@@ -175,8 +175,8 @@ def run_report_extraction_and_assessment_and_recording_(
         raw_text = report_text_base + f"\n{val_summary}\n--- Analysis Complete ---"
         cleaned_text = sanitize_glyphs_for_compatibility(raw_text)
         # Apply sanitization before returning
-        report_results["text"] = cleaned_text
-        #report_results["text"] = raw_text
+        report_results["text-lines"] = cleaned_text
+        #report_results["text-lines"] = raw_text
 
         if print_bool:
             # Matches your original logic: print the overview/validation summary to console
@@ -314,7 +314,7 @@ def run_report_extraction_and_assessment_and_recording(
                     "internal_links": [],
                     "toc": []
                 },
-                "text": "\n".join(report_buffer),
+                "text-lines": report_buffer,
                 "metadata": {
                     "file_overview": {
                         "pdf_name": pdf_name,
@@ -431,7 +431,7 @@ def run_report_extraction_and_assessment_and_recording(
 
         intermediate_report_results = {
             "data": report_data_dict, # The structured JSON-ready dict
-            "text": "",
+            "text-lines": "",
             "metadata": {                  # Helpful for the GUI/Logs
                 "file_overview": {
                         "pdf_name": pdf_name,
@@ -469,13 +469,15 @@ def run_report_extraction_and_assessment_and_recording(
         
         # Final aggregation of the buffer into one string, after the last call to log()
         report_buffer_str = "\n".join(report_buffer)
+        
         report_buffer_overview_str = "\n".join(report_buffer_overview)
 
         report_results["data"]["validation"].update(validation_results)
 
         
-        #report_results["text"].update(report_buffer_str)      # The human-readable string
-        report_results["text"] = report_buffer_str
+        #report_results["text-lines"].update(report_buffer_str)      # The human-readable string
+        #report_results["text-lines"] = report_buffer_str
+        report_results["text-lines"] = report_buffer
 
         # 5. Export Report 
         #if export_format:
@@ -498,10 +500,10 @@ def run_report_extraction_and_assessment_and_recording(
             log("Result: No links found.")
             return {
                 "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION.copy()},
-                "text": "\n".join(report_buffer + [
+                "text-lines": report_buffer + [
                     "\nWarning: PDF appears to be image-only or malformed.",
                     "No hyperlinks or structural TOC found."
-                ]),
+                ],
                 "metadata": {
                     "file_overview": {
                         "pdf_name": pdf_name,
@@ -537,11 +539,11 @@ def run_report_extraction_and_assessment_and_recording(
                 "toc": [],
                 "validation": EMPTY_VALIDATION.copy()
             },
-            "text": "\n".join(report_buffer + [
+            "text-lines": report_buffer + [
                 "\n--- Analysis failed ---",
                 f"Error: {str(e)}",
                 "No links or TOC extracted."
-            ]),
+            ],
             "metadata": {
                 "file_overview": {
                         "pdf_name": pdf_name,
@@ -569,7 +571,7 @@ def _return_empty_report(report_buffer: str, pdf_library: str)-> dict:
                 "toc": [],
                 "validation": EMPTY_VALIDATION.copy()
             },
-            "text": "\n".join(report_buffer),
+            "text-lines": report_buffer,
             "metadata": {
                 "file_overview": {
                     "pdf_name": "null",
