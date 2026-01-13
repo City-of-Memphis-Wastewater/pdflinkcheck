@@ -196,7 +196,8 @@ def run_report_extraction_and_assessment_and_recording(
                 "data": {
                     "external_links": [],
                     "internal_links": [],
-                    "toc": []
+                    "toc": [],
+                    "validation": []
                 },
                 "text-lines": report_buffer,
                 "metadata": {

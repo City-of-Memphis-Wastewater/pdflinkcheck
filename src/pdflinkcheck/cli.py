@@ -242,16 +242,16 @@ def analyze_pdf( # Renamed function for clarity
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
         raise typer.Exit(code=0)
 
-    validation_results = report_results["data"]["validation"]
+    #validation_results = report_results["data"]["validation"]
     # Optional: fail on broken links
-    broken_page_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
+    #broken_page_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
     
-    if broken_page_count > 0:
+    #if broken_page_count > 0:
         console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_page_count} broken link(s) found.")
     #else:
     #    console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!\n")
 
-    raise typer.Exit(code=0 if broken_page_count == 0 else 1)
+    #raise typer.Exit(code=0 if broken_page_count == 0 else 1)
 
 @app.command(name="serve")
 def serve(
