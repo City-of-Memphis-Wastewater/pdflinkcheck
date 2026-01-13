@@ -71,8 +71,8 @@ HOST = "127.0.0.1"
 PORT = 8000
 
 MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
-#ALLOWED_LIBRARIES = {"pypdf", "pymupdf", "pdfium"}
-ALLOWED_LIBRARIES = {"pypdf"}
+#ALLOWED_LIBRARIES = {"auto", "pypdf", "pymupdf", "pdfium"}
+ALLOWED_LIBRARIES = {"auto", "pypdf"}
 if enviro.pymupdf_is_available():
     ALLOWED_LIBRARIES.add("pymupdf")
 if enviro.pdfium_is_available():
