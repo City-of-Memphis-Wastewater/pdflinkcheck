@@ -39,8 +39,8 @@ def run_report_and_call_exports(
     pdf_path: str = None, 
     export_format: str = "JSON", 
     pdf_library: str = "auto", 
-    print_bool:bool=True,
-    concise_print: bool = False,
+    print_bool: bool=True,
+    concise_print: bool = False
 ) -> Dict[str, Any]:
     """
     Public entry point. Orchestrates extraction, validation, and file exports.
@@ -100,8 +100,8 @@ def _get_engine_data(pdf_path: str, pdf_library: str) -> tuple[Dict, str]:
 def run_report_extraction_and_assessment_and_recording_(
     pdf_path: str = None, 
     pdf_library: str = "auto", 
-    print_bool: bool = True.
-    concise_print: bool = False,
+    print_bool: bool = True,
+    concise_print: bool = False
 ) -> Dict[str, Any]:
     """
     Orchestrates extraction, categorization, and validation.
@@ -190,8 +190,8 @@ def run_report_extraction_and_assessment_and_recording_(
 def run_report_extraction_and_assessment_and_recording(
         pdf_path: str = None, 
         pdf_library: str = "auto", 
-        print_bool:bool=True,
-        concise_print: bool=False,
+        print_bool: bool=True,
+        concise_print: bool=False
         ) -> Dict[str, Any]:
     """
     Core high-level PDF link analysis logic. 
