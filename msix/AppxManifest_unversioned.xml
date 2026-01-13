@@ -38,8 +38,8 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
 
-    <!-- Grants the app standard Win32 permissions to interact with the desktop environment -->
-    <rescap:Capability Name="unrestrictedAppContainer" />
+    <!-- Grants the app standard Win32 permissions to interact with the desktop environment, but blocks sideloading the MSIX, and might not be necessary -->
+    <!--rescap:Capability Name="unrestrictedAppContainer" /-->
   </Capabilities>
   
   <Applications>

@@ -4,9 +4,17 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.2.37] - 2026-01-13
+### Fixed:
+- Remove unrestrictedAppContainer capability from AppxManifest.xml, to allow for sideloading of the MSIX file.
+
+---
+
 ## [1.2.36] - 2026-01-13
 ### Fixed:
-- io.get_friendly_path() no longer forces a tilder into Windows paths.
+- io.get_friendly_path() no longer forces a tilde into Windows paths.
 
 ---
 
