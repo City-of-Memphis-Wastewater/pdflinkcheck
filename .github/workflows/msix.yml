@@ -114,8 +114,11 @@ jobs:
         run: |
           $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX_PC }}")
           [IO.File]::WriteAllBytes("cert.pfx", $bytes)
-      
 
+      - name: Remove unversioned manifest file
+        shell: pwsh
+        run: Remove-Item msix\AppxManifest_unversioned.xml -ErrorAction Ignore
+      
       - name: Find makeappx
         id: find_makeappx
         shell: pwsh

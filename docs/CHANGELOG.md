@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.38] - 2026-01-13
+### Fixed:
+- Remove unversioned manifest file in msix.yml; hypothetically this will resolve the sideloading issue.
+
+---
+
 ## [1.2.37] - 2026-01-13
 ### Fixed:
 - Remove unrestrictedAppContainer capability from AppxManifest.xml, to allow for sideloading of the MSIX file.

@@ -11,7 +11,7 @@
   <Identity
       Name="GeorgeClaytonBennett.PDFLinkCheck"
       Publisher="CN=806FDEBD-B014-4625-85AE-058C714FC7F2"
-      Version="1.2.37.0"
+      Version="1.2.38.0"
       ProcessorArchitecture="x64" />
 
   <Properties>
