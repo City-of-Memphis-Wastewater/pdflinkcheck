@@ -6,6 +6,21 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.32] - 2026-01-12
+### Fixed:
+- Stability for the server command by troubleshooting the usage of stdlib_serve_alt.py
+    - Current issue, no print feedback while using the web app
+- MSIX adjsutment in AppxManifest XML file: Application: `uap4:SupportedUsers="allUsers"` 
+
+### Added:
+- CLI now has a short concise report, whereas the GUI and the weber server generate a long report.
+
+### Internal:
+- Add PDF library used to JSON structure; right now the web server only shows "auto", which is useless.
+
+
+---
+
 ## [1.2.31] - 2026-01-12
 ### Testing:
 - Ensure _open_export_file() buttons work fine on Windows. Analyze failure modes.
