@@ -153,7 +153,7 @@ HTML_FORM = """<!doctype html>
       <label>Engine:</label>
       <select name="pdf_library">
         <option value="auto" selected>Automatically choose PDF engine</option>
-        <option value="pypdf" selected>pypdf (pure Python)</option>
+        <option value="pypdf">pypdf (pure Python)</option>
         <option value="pymupdf">PyMuPDF (fast, AGPL)</option>
         <option value="pdfium">PDFium (fast, permissive)</option>
       </select>
