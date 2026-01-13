@@ -48,7 +48,6 @@
         Id="pdflinkcheck"
         Executable="pdflinkcheck.exe"
         EntryPoint="Windows.FullTrustApplication"
-        uap10:SupportedUsers="allUsers">
         
 
       <uap:VisualElements
