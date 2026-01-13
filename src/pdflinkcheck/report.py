@@ -70,6 +70,7 @@ def run_report_and_call_exports(
         "export_path_json": output_path_json, 
         "export_path_txt": output_path_txt
     }
+    
     return report_results
 
 # -----  Stable version: See "report copy.py" for refactor (failing) ----
@@ -217,6 +218,7 @@ def run_report_extraction_and_assessment_and_recording(
                     }
                 }
             }
+            _print_report_algorithm(report_buffer,report_buffer_overview, print_bool, concise_print)
             return empty_result
             
         # 3. Separate the lists based on the 'type' key
@@ -356,30 +358,12 @@ def run_report_extraction_and_assessment_and_recording(
         # --- Offline Risk Analysis (Security Layer) ---
         risk_results = compute_risk(report_results)
         report_results["data"]["risk"] = risk_results
-        
-        # Final aggregation of the buffer into one string, after the last call to log()
-        report_buffer_str = "\n".join(report_buffer)
-        
-        report_buffer_overview_str = "\n".join(report_buffer_overview)
-
         report_results["data"]["validation"].update(validation_results)
-
-        
-        #report_results["text-lines"].update(report_buffer_str)      # The human-readable string
-        #report_results["text-lines"] = report_buffer_str
         report_results["text-lines"] = report_buffer
 
-        # 5. Export Report 
-        #if export_format:
-        #    # Assuming export_to will hold the output format string (e.g., "JSON")
-        #    export_report_data(report_data_dict, pdf_name, export_format, pdf_library)
-        
-        if print_bool:
-            if concise_print:
-                print(report_buffer_overview_str)
-            else:
-                print(report_buffer_str)
-            
+
+        # Final aggregation and printing of the buffer into one string, after the last call to log()
+        _print_report_algorithm(report_buffer,report_buffer_overview, print_bool, concise_print)
         return report_results
 
     except Exception as e:
@@ -448,6 +432,17 @@ def run_report_extraction_and_assessment_and_recording(
                     }
             }
         }
+    
+# Final aggregation and printing of the buffer into one string, after the last call to log()
+def _print_report_algorithm(report_buffer,report_buffer_overview, print_bool, concise_print):
+    report_buffer_str = "\n".join(report_buffer)
+    report_buffer_overview_str = "\n".join(report_buffer_overview)
+    
+    if print_bool:
+        if concise_print:
+            print(report_buffer_overview_str)
+        else:
+            print(report_buffer_str)
     
 def _return_empty_report(report_buffer: str, pdf_library: str)-> dict:
     

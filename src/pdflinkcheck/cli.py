@@ -213,9 +213,7 @@ def analyze_pdf( # Renamed function for clarity
             raise typer.Exit(code=1)
         console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
-    pdf_path_str = str(pdf_path)
-
-    VALID_FORMATS = ("JSON","TXT") # extend later
+    #VALID_FORMATS = ("JSON","TXT") # extend later
     requested_formats = [fmt.strip().upper() for fmt in export_format.split(",")]
     if "NONE" in requested_formats or not export_format.strip() or export_format == "0":
         export_formats = ""
