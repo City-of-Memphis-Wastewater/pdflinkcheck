@@ -547,24 +547,6 @@ def main():
 
     print("Server shut down cleanly")
 
-def main_():
-    with ThreadedHTTPServer((HOST, PORT), APIHandler) as httpd:
-
-        def handle_shutdown(signum, frame):
-            print("\nShutdown signal received")
-            SHUTDOWN_EVENT.set()
-            httpd.shutdown()
-
-        signal.signal(signal.SIGINT, handle_shutdown)
-        signal.signal(signal.SIGTERM, handle_shutdown)
-
-        print(f"pdflinkcheck stdlib server running at http://{HOST}:{PORT}")
-        print("Pure stdlib • Explicit validation • Graceful shutdown • Termux-safe")
-
-        httpd.serve_forever()
-
-    print("Server shut down cleanly")
-
 
 if __name__ == "__main__":
     main()
