@@ -3,15 +3,14 @@
     xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
     xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
     xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
-    xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
     xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-    IgnorableNamespaces="uap uap5 uap10 rescap">
+    IgnorableNamespaces="uap uap5 rescap">
 
   <!-- Package created by MSIX Packaging Tool version: 1.2024.405.0 -->
   <Identity
       Name="GeorgeClaytonBennett.PDFLinkCheck"
       Publisher="CN=806FDEBD-B014-4625-85AE-058C714FC7F2"
-      Version="1.2.38.0"
+      Version="1.2.39.0"
       ProcessorArchitecture="x64" />
 
   <Properties>
@@ -20,8 +19,8 @@
     <Description>A PDF analysis tool, to validate GoTo links and URI File links.</Description>
     <Logo>Assets\StoreLogo-50x50.png</Logo>
 
-    <!-- Allows external applications (like Notepad) to access files generated within the MSIX container -->
-    <uap10:AllowExternalContent>true</uap10:AllowExternalContent>
+    <!-- (Maybe) allows external applications (like Notepad) to access files generated within the MSIX container, but (maybe) blocks sideloading -->
+    <!--uap10:AllowExternalContent>true</uap10:AllowExternalContent-->
   </Properties>
 
   <Resources>
@@ -38,7 +37,7 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
 
-    <!-- Grants the app standard Win32 permissions to interact with the desktop environment, but blocks sideloading the MSIX, and might not be necessary -->
+    <!-- (maybe) grants the app standard Win32 permissions to interact with the desktop environment, but (maybe) blocks sideloading the MSIX, and might not be necessary -->
     <!--rescap:Capability Name="unrestrictedAppContainer" /-->
   </Capabilities>
   
