@@ -11,7 +11,7 @@
   <Identity
       Name="GeorgeClaytonBennett.PDFLinkCheck"
       Publisher="CN=806FDEBD-B014-4625-85AE-058C714FC7F2"
-      Version="1.2.31.0"
+      Version="1.2.37.0"
       ProcessorArchitecture="x64" />
 
   <Properties>
@@ -38,8 +38,8 @@
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
 
-    <!-- Grants the app standard Win32 permissions to interact with the desktop environment -->
-    <rescap:Capability Name="unrestrictedAppContainer" />
+    <!-- Grants the app standard Win32 permissions to interact with the desktop environment, but blocks sideloading the MSIX, and might not be necessary -->
+    <!--rescap:Capability Name="unrestrictedAppContainer" /-->
   </Capabilities>
   
   <Applications>
@@ -47,6 +47,7 @@
         Id="pdflinkcheck"
         Executable="pdflinkcheck.exe"
         EntryPoint="Windows.FullTrustApplication">
+        
 
       <uap:VisualElements
           DisplayName="PDF Link Check"
@@ -60,8 +61,6 @@
 
         <uap:SplashScreen
             Image="Assets\SplashScreen-620x300.png" />
-        
-        <uap:SupportedUsers>allUsers</uap:SupportedUsers>
 
       </uap:VisualElements>
       <Extensions>
