@@ -8,7 +8,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.2.38] - 2026-01-13
 ### Fixed:
-- Remove unversioned manifest file in msix.yml; hypothetically this will resolve the sideloading issue.
+- In the msix.yml runner, remove AppxManifest_unversioned.xml before packing; the theory is that if it is present, it will be merged with the versioned one, and that this will result in sideloading being made unavailable
 
 ---
 
