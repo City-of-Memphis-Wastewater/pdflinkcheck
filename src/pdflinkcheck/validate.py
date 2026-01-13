@@ -245,7 +245,7 @@ def run_validation(
         log(f"✅ Valid: {summary_stats['valid']}")
         #log(f"✅ Valid: {summary_stats['valid']}")
         #log(f"✅ Valid: {summary_stats['valid']}")
-        log(f"🌐 Web Addresses (Ping Each: OFF): {summary_stats['unknown-web']}")
+        log(f"🌐 Web Addresses (Ping: OFF): {summary_stats['unknown-web']}")
         log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
         log(f"❌ Broken Page Reference (Page number beyond scope of availability): {summary_stats['broken-page']}")
