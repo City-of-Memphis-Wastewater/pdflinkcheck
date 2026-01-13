@@ -8,7 +8,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.2.39] - 2026-01-13
 ### Changed:
-- Supress AllowExternalContent in AppxManifest file, to see if it allows sideloading
+- Suppress AllowExternalContent in AppxManifest file, to see if it allows sideloading
 
 ---
 
