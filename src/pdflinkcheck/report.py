@@ -49,7 +49,8 @@ def run_report_and_call_exports(
     report_results = run_report_extraction_and_assessment_and_recording(
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
-        print_bool=print_bool,
+        print_bool = print_bool,
+        concise_print = concise_print,
     )
     # 2. Initialize file path tracking
     output_path_json = None
