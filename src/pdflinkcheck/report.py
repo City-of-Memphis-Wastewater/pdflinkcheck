@@ -487,15 +487,19 @@ def get_structural_toc(structural_toc: list) -> str:
     Returns:
         A formatted string of the structural TOC.
     """
-    lines = []
-    lines.append("\n" + "=" * SEP_COUNT)
-    lines.append("## Structural Table of Contents (PDF Bookmarks/Outline)")
-    lines.append("=" * SEP_COUNT)
+    toc_buffer = []
+    def log_toc(msg: str):
+        toc_buffer.append(msg)
+        
+    log_toc("\n")
+    log_toc("=" * SEP_COUNT)
+    log_toc("## Structural Table of Contents (PDF Bookmarks/Outline)")
+    log_toc("=" * SEP_COUNT)
 
     if not structural_toc:
         msg = "No structural TOC (bookmarks/outline) found."
-        lines.append(msg)
-        output = "\n".join(lines)
+        log_toc(msg)
+        output = "\n".join(toc_buffer)
         return output
 
     # Determine max page width for consistent alignment
@@ -518,12 +522,12 @@ def get_structural_toc(structural_toc: list) -> str:
 
         page_str = str(display_val).rjust(page_width)
 
-        lines.append(f"{indent}{item['title']} . . . page {page_str}")
+        log_toc(f"{indent}{item['title']} . . . page {page_str}")
 
-    lines.append("-" * SEP_COUNT)
+    log_toc("-" * SEP_COUNT)
     
     # Final aggregation
-    str_structural_toc = "\n".join(lines)
+    str_structural_toc = "\n".join(toc_buffer)
         
     return str_structural_toc
 
