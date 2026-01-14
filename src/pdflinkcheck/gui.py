@@ -77,13 +77,15 @@ class PDFLinkCheckApp:
         self.pdf_library_var = tk.StringVar(value="pymupdf")
         self.do_export_report_json_var = tk.BooleanVar(value=True)
         self.do_export_report_txt_var = tk.BooleanVar(value=True)
+        self.do_export_report_xlsx_var = tk.BooleanVar(value=True)
         self.current_report_text = None
         self.current_report_data = None
 
         # Track exported file paths
         self.last_json_path: Optional[Path] = None
         self.last_txt_path: Optional[Path] = None
-
+        self.last_xlsx_path: Optional[Path] = None
+        
         # Engine detection (This can take a few ms)
         self.pdf_library_var = tk.StringVar(value="PDFium")
         if not pdfium_is_available():
@@ -174,16 +176,20 @@ class PDFLinkCheckApp:
 
         ttk.Checkbutton(export_config_frame, text="JSON", variable=self.do_export_report_json_var).pack(side=tk.LEFT, padx=4)
         ttk.Checkbutton(export_config_frame, text="TXT", variable=self.do_export_report_txt_var).pack(side=tk.LEFT, padx=4)
-
+        ttk.Checkbutton(export_config_frame, text="XLSX", variable=self.do_export_report_xlsx_var).pack(side=tk.LEFT, padx=4)
+        
         self.export_actions_frame = ttk.LabelFrame(control_frame, text="Open Report Files:")
         self.export_actions_frame.grid(row=1, column=2, padx=3, pady=3, sticky='nsew')
-
+        
         self.btn_open_json = ttk.Button(self.export_actions_frame, text="Open JSON", command=lambda: self._open_export_file("json"), width=10)
         self.btn_open_json.pack(side=tk.LEFT, padx=3, pady=1)
 
         self.btn_open_txt = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_export_file("txt"), width=10)
         self.btn_open_txt.pack(side=tk.LEFT, padx=3, pady=1)
 
+        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_browser_to_exports(), width=10)
+        self.btn_open_browser_to_files.pack(side=tk.LEFT, padx=3, pady=1)
+        
         # === Row 3: Action Buttons ===
         run_analysis_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton', width=16)
         run_analysis_btn.grid(row=3, column=0, columnspan=2, pady=6, sticky='ew', padx=(0, 3))
@@ -259,6 +265,8 @@ class PDFLinkCheckApp:
             export_format += "JSON"
         if self.do_export_report_txt_var.get():
             export_format += "TXT"
+        if self.do_export_report_xlsx_var.get():
+            export_format += "XLSX"
 
         pdf_library = self.pdf_library_var.get().lower()
 
@@ -279,7 +287,8 @@ class PDFLinkCheckApp:
 
             self.last_json_path = report_results.get("files", {}).get("export_path_json")
             self.last_txt_path = report_results.get("files", {}).get("export_path_txt")
-
+            self.last_xlsx_path = report_results.get("files", {}).get("export_path_xlsx")
+            
         except Exception as e:
             messagebox.showinfo(
                 "Engine Fallback",
@@ -289,40 +298,6 @@ class PDFLinkCheckApp:
         finally:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
-
-    def _open_export_file_with_pyhabitat(self, file_type: str):
-        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
-
-        if target_path and Path(target_path).exists():
-            try:
-                #pyhabitat.edit_textfile(target_path)
-                threading.Thread(target=lambda: pyhabitat.edit_textfile(target_path), daemon=True).start()
-                
-            except Exception as e:
-                with open(r"C:\Users\user\Desktop\edit_log.txt", "a") as f:
-                    f.write(f"edit_textfile failed: {e}\n")
-                messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
-        else:
-            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.\n\nPlease click 'Run Analysis' to generate one.")
-
-    def _open_export_file_close(self, file_type: str):
-        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
-
-        if target_path and Path(target_path).exists():
-            try:
-                if not pyhabitat.on_windows():
-                    threading.Thread(target=lambda: pyhabitat.edit_textfile(target_path), daemon=True).start()
-                else:
-                    threading.Thread(
-                        target=lambda: subprocess.Popen(["notepad.exe", str(target_path)]),
-                        daemon=True
-                    ).start()
-            except Exception as e:
-                with open(r"C:\Users\user\Desktop\edit_log.txt", "a") as f:
-                    f.write(f"edit_textfile failed: {e}\n")
-                messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
-        else:
-            messagebox.showwarning("File Not Found", f"The {file_type.upper()} report file does not exist.\n\nPlease click 'Run Analysis' to generate one.")
 
     def _open_export_file(self, file_type: str):
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
@@ -360,21 +335,6 @@ class PDFLinkCheckApp:
                 f"Failed to open {file_type.upper()} report:\n{e}"
             )
             
-    def _open_export_file_sus(self, file_type: str):
-        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
-
-        if target_path and Path(target_path).exists():
-            try:
-                # Direct Windows launch avoids MSIX quirks
-                if pyhabitat.on_windows():
-                    subprocess.Popen(["notepad.exe", str(target_path)])
-                else:
-                    pyhabitat.edit_textfile(target_path)
-            except Exception as e:
-                messagebox.showerror("Open Error", f"Failed to open {file_type.upper()} report: {e}")
-        else:
-            messagebox.showwarning("File Not Found", ...)
-        
     def _assess_pdf_path_str(self):
         pdf_path_str = self.pdf_path.get().strip()
         if not pdf_path_str:
