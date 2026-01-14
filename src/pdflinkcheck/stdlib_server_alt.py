@@ -401,8 +401,8 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         # simple per-request logging
-        print(f"{self.client_address[0]} - - [{self.log_date_time_string()}] {format % args}")
-	return
+        print(f"[{self.log_date_time_string()}] {self.client_address[0]} - {self.command} {self.path} - {format % args}")
+        return
     # -------- Utilities --------
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
@@ -481,6 +481,8 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 response = self._process_pdf(upload)
 
             self._send_json(response)
+            print(f"Content-Length: {content_length} bytes")
+            print(f"Semaphore acquired: {REQUEST_SEMAPHORE._value} remaining slots")
 
         except ValidationError as e:
             self._send_error_json(str(e), 400)
@@ -510,7 +512,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 .get("link_counts", {})
                 .get("total_links_count", 0)
             )
-
+            print(f"Upload processed: {upload.filename} — {response['total_links_count']} links found")
             return {
                 "filename": upload.filename,
                 "pdf_library_used": upload.pdf_library,
@@ -519,8 +521,10 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 "text_report": result["text-lines"],
             }
 
+        print(f"Temporary PDF path: {tmp_path}")
         finally:
             if tmp_path and os.path.exists(tmp_path):
+                print(f"Deleting temporary file: {tmp_path}")
                 os.unlink(tmp_path)
 
 
@@ -547,13 +551,15 @@ def main():
 
         print(f"pdflinkcheck stdlib server running at http://{HOST}:{PORT}")
         print("Pure stdlib • Explicit validation • Graceful shutdown • Termux-safe")
-
+        print(f"Public mode: {PUBLIC_MODE}")
+        print(f"Max concurrent jobs: {MAX_CONCURRENT_JOBS}")
         try:
             httpd.serve_forever()
         finally:
             httpd.server_close()
+            print("Server closed socket and cleaned up")
 
-    print("Server shut down cleanly")
+    print("Server shut down.")
 
 
 if __name__ == "__main__":
