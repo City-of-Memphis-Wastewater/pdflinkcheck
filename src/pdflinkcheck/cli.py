@@ -161,8 +161,8 @@ def analyze_pdf( # Renamed function for clarity
         resolve_path=True,
         help="Path to the PDF file to analyze. If omitted, searches current directory."
     ), 
-    export_format: Optional[Literal["JSON", "TXT", "JSON,TXT", "NONE"]] = typer.Option(
-        "JSON,TXT", 
+    export_format: Optional[Literal["JSON", "TXT", "XLSX", "JSON,TXT,XLSX", "NONE"]] = typer.Option(
+        "JSON,TXT,XLSX", 
         "--format","-f",
         case_sensitive=False, 
         help="Export format. Use 'None' to suppress file export.",
@@ -220,7 +220,7 @@ def analyze_pdf( # Renamed function for clarity
     else:
         # Filter for valid ones: ("JSON", "TXT")
         # This allows "JSON,TXT" to become "JSONTXT" which run_report logic can handle
-        valid = [f for f in requested_formats if f in ("JSON", "TXT")]
+        valid = [f for f in requested_formats if f in ("JSON", "TXT", "XLSX")]
         export_formats = "".join(valid)
 
         if not valid and "NONE" not in requested_formats:
