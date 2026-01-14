@@ -13,6 +13,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - Use "validation": EMPTY_VALIDATION.copy() in the one place it is missing, if there are no links at all.
 - Implement report._print_report_algorithm() before all early returns in report.run_report_extraction_and_assessment_and_recording()
+- Try different version of gui._open_export_file(); assume pyhabitat.edit_textfile() won't run on Windows.
 
 ---
 
