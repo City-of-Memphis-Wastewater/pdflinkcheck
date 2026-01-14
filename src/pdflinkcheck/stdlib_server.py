@@ -541,11 +541,9 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 print_bool=False,
             )
 
+            result["metadata"]["file_overview"]["source_path"] = upload.filename
+                result["metadata"]["file_overview"]["processing_path"] = tmp_path
             
-            file_overview = result["metadata"]["file_overview"]
-            file_overview["source_path"] = str(Path(upload.filename).name)
-            file_overview["processing_path"] = str(Path(tmp_path).resolve())
-
             return {
                 "filename": upload.filename,
                 "pdf_library_used": result.get("metadata", {}).get("library_used",upload.pdf_library),
