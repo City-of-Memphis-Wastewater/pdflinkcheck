@@ -336,6 +336,7 @@ class PDFLinkCheckApp:
             return
 
         try:
+            #if pyhabitat.is_msix():
             if pyhabitat.on_windows():
                 # Windows: use the most reliable method
                 threading.Thread(
