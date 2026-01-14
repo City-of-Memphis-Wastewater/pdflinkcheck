@@ -4,19 +4,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links wit
 
 -----
 
-<a href="https://apps.microsoft.com/store/detail/9n11hxvls1wg">
-  <img src="https://get.microsoft.com/badge/assets/en-us-dark.svg" width="180" alt="PDF Link Check on Microsoft Store" />
-</a>
-<!--script type="module" src="https://get.microsoft.com/badge/ms-store-badge.bundled.js"></script>
-<ms-store-badge
-	productid="9n11hxvls1wg"
-	productname="PDF Link Check"
-	window-mode="direct"
-	theme="auto"
-	size="large"
-	language="en-us"
-	animation="off">
-</ms-store-badge-->
+[![Get it from the Microsoft Store](assets/ms_store_badge_en-us-light.svg)](https://apps.microsoft.com/store/detail/9n11hxvls1wg)
 
 ![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.2.32.png)
 
@@ -142,8 +130,8 @@ from pdflinkcheck import ( run_report,
 
 file = "document1.pdf"
 report_data = run_report(file)
-links_pymupdf = extract_links_pymupdf(file)
-links_pypdf = extract_links_pypdf(file)
+links_pdfium = analyze_pdf_pdfium(file)
+links_pypdf = analyze_pdf_pypdf(file)
 ```
 
 -----
