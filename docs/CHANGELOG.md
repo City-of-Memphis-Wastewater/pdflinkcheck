@@ -6,6 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.3] - 2026-01-14  
+### Changed:
+- GUI: Take away Open TXT and Open JSON buttons and add Show System Explorer button
+- Width increased to 800 pixels to allow for XLSX button addition width impact
+
+### Fixed:
+- GUI: _show_system_explorer() function triggered by button is stable, prints and passes.
+
+---
+
 
 ## [1.3.1] - 2026-01-14  
 ### Added:
