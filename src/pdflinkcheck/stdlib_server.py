@@ -165,7 +165,6 @@ HTML_FORM = """<!doctype html>
 </body>
 </html>
 """
-
 # =========================
 # Documentation
 # =========================
@@ -206,7 +205,7 @@ OPENAPI_SPEC = {
                                     },
                                     "pdf_library": {
                                         "type": "string",
-                                        "enum": ["auto","pypdf", "pymupdf", "pdfium"],
+                                        "enum": ["auto", "pypdf", "pymupdf", "pdfium"],
                                         "default": "auto"
                                     }
                                 }
@@ -239,12 +238,8 @@ OPENAPI_SPEC = {
                 "summary": "Readiness probe",
                 "description": "Indicates whether the server is ready to accept new work.",
                 "responses": {
-                    "200": {
-                        "description": "Server ready"
-                    },
-                    "503": {
-                        "description": "Server shutting down"
-                    }
+                    "200": {"description": "Server ready"},
+                    "503": {"description": "Server shutting down"}
                 }
             }
         },
@@ -253,9 +248,7 @@ OPENAPI_SPEC = {
                 "summary": "OpenAPI specification",
                 "description": "Returns the OpenAPI 3.0 specification for this service.",
                 "responses": {
-                    "200": {
-                        "description": "OpenAPI JSON document"
-                    }
+                    "200": {"description": "OpenAPI JSON document"}
                 }
             }
         }
@@ -265,31 +258,51 @@ OPENAPI_SPEC = {
             "AnalysisResponse": {
                 "type": "object",
                 "properties": {
-                    "filename": {
-                        "type": "string"
-                    },
+                    "filename": {"type": "string"},
                     "pdf_library_used": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "PDF engine actually used (may differ from user selection if 'auto')"
                     },
-                    "total_links_count": {
-                        "type": "integer"
-                    },
+                    "total_links_count": {"type": "integer"},
                     "data": {
                         "type": "object",
                         "description": "Structured analysis data"
                     },
+                    "metadata": {
+                        "type": "object",
+                        "description": "Report metadata including library used and link counts",
+                        "properties": {
+                            "file_overview": {
+                                "type": "object",
+                                "properties": {
+                                    "pdf_name": {"type": "string"},
+                                    "total_pages": {"type": "integer"}
+                                }
+                            },
+                            "library_used": {"type": "string"},
+                            "link_counts": {
+                                "type": "object",
+                                "properties": {
+                                    "toc_entry_count": {"type": "integer"},
+                                    "internal_goto_links_count": {"type": "integer"},
+                                    "interal_resolve_action_links_count": {"type": "integer"},
+                                    "total_internal_links_count": {"type": "integer"},
+                                    "external_uri_links_count": {"type": "integer"},
+                                    "other_links_count": {"type": "integer"},
+                                    "total_links_count": {"type": "integer"}
+                                }
+                            }
+                        }
+                    },
                     "text_report": {
-                        "type": "string",
-                        "description": "Human-readable text report"
+                        "oneOf": [
+                            {"type": "string"},
+                            {"type": "array", "items": {"type": "string"}}
+                        ],
+                        "description": "Human-readable text report (string or array of lines)"
                     }
                 },
-                "required": [
-                    "filename",
-                    "pdf_library_used",
-                    "total_links_count",
-                    "data",
-                    "text_report"
-                ]
+                "required": ["filename", "pdf_library_used", "total_links_count", "data", "text_report", "metadata"]
             }
         }
     }
