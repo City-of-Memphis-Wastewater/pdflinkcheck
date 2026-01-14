@@ -187,7 +187,7 @@ class PDFLinkCheckApp:
         self.btn_open_txt = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_export_file("txt"), width=10)
         self.btn_open_txt.pack(side=tk.LEFT, padx=3, pady=1)
 
-        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_browser_to_exports(), width=10)
+        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._show_system_explorer(), width=10)
         self.btn_open_browser_to_files.pack(side=tk.LEFT, padx=3, pady=1)
         
         # === Row 3: Action Buttons ===
@@ -302,7 +302,7 @@ class PDFLinkCheckApp:
     def _get_export_path():
         pass
 
-    def _open_browser_to_exports(self, path: str = None)-> None:
+    def _show_system_explorer(self)-> None:
         print("System Explorer not Launched")
         path = self._get_export_path()
         pass
