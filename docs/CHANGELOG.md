@@ -10,7 +10,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - GUI: Take away Open TXT and Open JSON buttons and add Show System Explorer button
 - Width increased to 800 pixels to allow for XLSX button addition width impact
-- Change pymupdf extra dep group name for consistency: `pip install -e ".[pdfium,mupdf]"` -> `pip install -e ".[pdfium,pymupdf]"`
+
+### Breaking:
+- Extra indetifier. Change pymupdf extra dep group name for consistency. Intances of --extra mupdf -> --extra pymupdf, to reduce confusion. Example: `pip install -e ".[pdfium,mupdf]"` -> `pip install -e ".[pdfium,pymupdf]"`
 
 ### Fixed:
 - GUI: _show_system_explorer() function triggered by button is stable, prints and passes.
