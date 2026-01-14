@@ -2,11 +2,11 @@ Some distributed binaries of this project include the PyMuPDF library, which is 
 Any binary that incorporates PyMuPDF is therefore distributed under **AGPL3.0orlater**. 
 Other binaries use only the `pypdf` library and do not include PyMuPDF; these binaries are distributed under the **MIT License**.
 
-For AGPLlicensed binaries, the complete corresponding source code must be made available to anyone who possesses a copy, upon request. 
+For AGPL-licensed binaries, the complete corresponding source code must be made available to anyone who possesses a copy, upon request. 
 This obligation applies only to recipients of those binaries, and hosting the source code in GitHub Releases satisfies this requirement.
 
-A binary becomes AGPLlicensed only when built with the optional `"full"` dependency group (as defined in `pyproject.toml` under `[project.optional-dependencies]`) or when PyMuPDF is otherwise included in the build environment. 
-The **source code of pdflinkcheck itself** remains licensed under the **MIT License**; only the distributed binary becomes AGPLlicensed when PyMuPDF is included.
+A binary becomes AGPL-licensed only when built with the optional `"full"` dependency group (as defined in `pyproject.toml` under `[project.optional-dependencies]`) or when PyMuPDF is otherwise included in the build environment. 
+The **source code of pdflinkcheck itself** remains licensed under the **MIT License**. Only a distributed binary (or a publicly served web app) becomes AGPL-licensed when PyMuPDF is included.
 
 Source code for each released version is available in the `pdflinkcheckVERSION.tar.gz` files on the projects GitHub Releases page.
 
