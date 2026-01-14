@@ -404,6 +404,10 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
         print(f"[{self.log_date_time_string()}] {self.client_address[0]} - {self.command} {self.path} - {format % args}")
         return
 
+    def log_message(self, format, *args):
+        # simple per-request logging
+        print(f"{self.client_address[0]} - - [{self.log_date_time_string()}] {format % args}")
+	return
     # -------- Utilities --------
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
