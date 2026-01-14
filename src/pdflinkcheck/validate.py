@@ -236,8 +236,9 @@ def run_validation(
         # Helper to handle conditional printing and mandatory buffering
         def log(msg: str):
             validation_buffer.append(msg)
-    
-        log("\n" + "=" * SEP_COUNT)
+
+        log("\n")
+        log("=" * SEP_COUNT)
         log("## Validation Results")
         log("=" * SEP_COUNT)
         log(f"PDF Path = {get_friendly_path(pdf_path)}")

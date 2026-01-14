@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.41] - 2026-01-13
+### Changed:
+- Minor improvements to report styling.
+
+---
+
 ## [1.2.40] - 2026-01-13
 ### Changed:
 - Ensure docker build only occurs with a release, not a tag push, in docker.yml
