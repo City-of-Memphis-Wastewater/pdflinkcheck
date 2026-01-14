@@ -277,6 +277,8 @@ OPENAPI_SPEC = {
                                 "properties": {
                                     "pdf_name": {"type": "string"},
                                     "total_pages": {"type": "integer"}
+                                    "source_path": {"type": "string"},
+                                    "processing_path": {"type": "string"}
                                 }
                             },
                             "library_used": {"type": "string"},
@@ -536,6 +538,12 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 pdf_library=upload.pdf_library,
                 print_bool=False,
             )
+
+            
+            file_overview = report["metadata"]["file_overview"]
+            file_overview["source_path"] = str(Path(original_upload_path).resolve())
+            file_overview["processing_path"] = str(Path(temp_pdf_path).resolve())
+
 
             return {
                 "filename": upload.filename,
