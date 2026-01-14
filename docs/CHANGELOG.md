@@ -11,6 +11,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Printing and error handling in stdlib_server_alt.py
 - Delete unused stdlib_server.py
 - File name change: stdlib_server_alt.py -> stdlib_server.py
+- Update OPEN API docs in server code.
+- Modularize the do_GET() function in the server code.
 - Use log buffer pattern for toc structure in report.py.
 
 ---
