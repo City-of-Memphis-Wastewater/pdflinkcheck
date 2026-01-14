@@ -403,6 +403,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
         # simple per-request logging
         print(f"[{self.log_date_time_string()}] {self.client_address[0]} - {self.command} {self.path} - {format % args}")
         return
+
     # -------- Utilities --------
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
