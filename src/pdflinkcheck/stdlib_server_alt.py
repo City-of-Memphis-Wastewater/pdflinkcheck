@@ -514,6 +514,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 .get("total_links_count", 0)
             )
             print(f"Upload processed: {upload.filename} — {response['total_links_count']} links found")
+            
             return {
                 "filename": upload.filename,
                 "pdf_library_used": upload.pdf_library,
@@ -522,7 +523,6 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 "text_report": result["text-lines"],
             }
 
-        print(f"Temporary PDF path: {tmp_path}")
         finally:
             if tmp_path and os.path.exists(tmp_path):
                 print(f"Deleting temporary file: {tmp_path}")
