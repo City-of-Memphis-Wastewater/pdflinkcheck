@@ -269,8 +269,7 @@ def serve(
         console.print("   → [yellow]Reload mode enabled[/yellow]")
 
     # Import here to avoid slow imports on other commands
-    #from pdflinkcheck.stdlib_server import ThreadedTCPServer, PDFLinkCheckHandler
-    from pdflinkcheck.stdlib_server_alt import main as stdlib_server_main# ThreadedHTTPServer, PDFLinkCheckHandler
+    from pdflinkcheck.stdlib_server import main as stdlib_server_main# ThreadedHTTPServer, PDFLinkCheckHandler
     import socketserver
 
     try:
@@ -315,8 +314,7 @@ def gui_command(
     if not pyhabitat.tkinter_is_available():
         _gui_failure_msg()
         return
-    #from pdflinkcheck.gui import start_gui
-    #from pdflinkcheck.gui_alt import start_gui
+    
     from pdflinkcheck.gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
