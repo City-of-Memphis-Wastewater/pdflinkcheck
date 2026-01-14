@@ -1,34 +1,45 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
 
+from __future__ import annotations
 import sys
-from pathlib import Path
-from typing import List, Dict
 import re
+from pathlib import Path
+from typing import Dict, List
 
 from openpyxl import Workbook
-from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font
 
 from pdflinkcheck.report import run_report_and_call_exports, get_first_pdf_in_cwd
+from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path
 
-# ----- Helper Functions -----
+# ----------------- Helper Functions -----------------
 
 def is_temp_pdf(pdf_name: str) -> bool:
     """Detect likely temp or unstable PDF filenames."""
     temp_patterns = [r'^tmp', r'^~', r'^[0-9a-fA-F]{8,}-', r'^temp']
-    return any(re.match(pat, pdf_name) for pat in temp_patterns)
+    return any(re.match(pat, pdf_name, re.IGNORECASE) for pat in temp_patterns)
 
+def sanitize_excel_text(text: str) -> str:
+    """Remove characters illegal for Excel cells."""
+    if not isinstance(text, str):
+        text = str(text)
+    return ''.join(c for c in text if c.isprintable() or c in '\t')
 
-def convert_goto_link(link: Dict, pdf_name: str) -> str:
-    """Convert internal GoTo link into a hyperlink usable in Excel."""
+def convert_goto_link(link: Dict, pdf_path: str) -> str:
+    """
+    Convert internal GoTo link into a clickable file:// URL.
+    Excel will recognize this as a hyperlink.
+    """
     page_index = link.get('destination_page')
     if page_index is None:
-        return pdf_name
-    # Convert 0-index page to 1-index human page
+        return f'file://{Path(pdf_path).resolve()}'
+
     human_page = page_index + 1
-    return f'{pdf_name}#page={human_page}'
+    full_path = Path(pdf_path).resolve()
+    return f'file://{full_path}#page={human_page}'
 
-
-def prepare_links_by_type(report: Dict) -> Dict[str, List[Dict]]:
+def prepare_links_by_type(report: Dict, pdf_path: str) -> Dict[str, List[Dict]]:
     """Prepare links grouped by type for separate Excel sheets."""
     pdf_name = report['metadata']['file_overview']['pdf_name']
 
@@ -37,14 +48,19 @@ def prepare_links_by_type(report: Dict) -> Dict[str, List[Dict]]:
 
     grouped_links = {'Internal GoTo': [], 'External URI': [], 'Other': []}
 
-    all_links = report['data'].get('internal_links', []) + report['data'].get('external_links', []) + report['data'].get('other_links', [])
+    all_links = (
+        report['data'].get('internal_links', []) +
+        report['data'].get('external_links', []) +
+        report['data'].get('other_links', [])
+    )
 
     for link in all_links:
         link_type = link.get('type', 'Unknown')
         anchor_text = link.get('link_text', 'N/A')
+        anchor_text = sanitize_excel_text(anchor_text)
 
         if link_type in ('Internal (GoTo/Dest)', 'Internal (Resolved Action)'):
-            url = convert_goto_link(link, pdf_name)
+            url = convert_goto_link(link, pdf_path)
             grouped_links['Internal GoTo'].append({
                 'page': link.get('page', 'N/A'),
                 'anchor_text': anchor_text,
@@ -67,62 +83,61 @@ def prepare_links_by_type(report: Dict) -> Dict[str, List[Dict]]:
 
     return grouped_links
 
+def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], pdf_path: str):
+    """Export grouped links into separate sheets in an XLSX workbook using openpyxl."""
+    from openpyxl import Workbook
 
-def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: str):
-    """Export grouped links into separate sheets in an XLSX workbook."""
+    pdf_stem = Path(pdf_path).stem
+    output_file = PDFLINKCHECK_HOME / f"{pdf_stem}_links.xlsx"
     wb = Workbook()
 
-    # Remove default sheet if empty
-    if 'Sheet' in wb.sheetnames and not grouped_links.get('Internal GoTo') and not grouped_links.get('External URI') and not grouped_links.get('Other'):
-        default_sheet = wb['Sheet']
-        wb.remove(default_sheet)
-
     for sheet_name, links in grouped_links.items():
-        ws = wb.create_sheet(title=sheet_name)
-
+        ws = wb.create_sheet(sheet_name)
+        # Heading row
         headers = ['Page', 'Anchor Text', 'Hyperlink']
         ws.append(headers)
-        for col_num, header in enumerate(headers, 1):
-            ws.cell(row=1, column=col_num).font = Font(bold=True)
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
 
         for link in links:
-            row = [link['page'], link['anchor_text'], link['hyperlink']]
-            ws.append(row)
+            page = sanitize_excel_text(link['page'])
+            anchor = sanitize_excel_text(link['anchor_text'])
+            hyperlink = link['hyperlink']
 
-            # Make hyperlink clickable
-            cell = ws.cell(row=ws.max_row, column=3)
-            if link['hyperlink']:
-                cell.hyperlink = link['hyperlink']
-                cell.style = 'Hyperlink'
+            ws.append([page, anchor, hyperlink])
+            ws.cell(row=ws.max_row, column=3).hyperlink = hyperlink
+            ws.cell(row=ws.max_row, column=3).style = 'Hyperlink'
 
         # Auto-size columns
         for col in ws.columns:
             max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
-            ws.column_dimensions[get_column_letter(col[0].column)].width = max_length + 2
+            ws.column_dimensions[col[0].column_letter].width = max_length + 2
+
+    # Remove default sheet if it exists
+    if 'Sheet' in wb.sheetnames:
+        wb.remove(wb['Sheet'])
 
     wb.save(output_file)
-    print(f"✅ XLSX exported successfully to {output_file}")
+    print(f"✅ XLSX exported successfully to {get_friendly_path(output_file)}")
 
+# ----------------- Main / Proof-of-Concept -----------------
 
-# ----- Main / Proof-of-Concept -----
-
-def main():
-    pdf_path = get_first_pdf_in_cwd()
-    if not pdf_path:
-        print("No PDF found in current directory.")
-        sys.exit(1)
+def main(pdf_path: str = None):
+    if pdf_path is None:
+        pdf_path = get_first_pdf_in_cwd()
+        if not pdf_path:
+            print("No PDF found in current directory.")
+            sys.exit(1)
 
     report = run_report_and_call_exports(pdf_path=pdf_path, export_format='', print_bool=False)
 
     try:
-        grouped_links = prepare_links_by_type(report)
+        grouped_links = prepare_links_by_type(report, pdf_path)
     except ValueError as e:
         print(f"⚠️  {e}")
         sys.exit(1)
 
-    output_file = Path(pdf_path).with_suffix('.links.xlsx')
-    export_links_to_xlsx(grouped_links, str(output_file))
-
+    export_links_to_xlsx(grouped_links, pdf_path)
 
 if __name__ == "__main__":
     main()
