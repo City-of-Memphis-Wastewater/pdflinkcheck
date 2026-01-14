@@ -6,9 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.5] - 2026-01-14  
+### Fixed:
+- File naming of spreadsheet exports made consistent with JSON and TXT exports.
+
+---
+
 ## [1.3.4] - 2026-01-14  
 ### Changed:
-- Update screenshots to verion 1.3.3
+- Update README and asset screenshots to version 1.3.3
 
 ---
 

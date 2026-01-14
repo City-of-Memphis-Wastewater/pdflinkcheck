@@ -86,14 +86,12 @@ def prepare_links_by_type(report: Dict, pdf_path: str = None) -> Dict[str, List[
 
     return grouped_links
 
-def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], pdf_path: str):
-    """Export grouped links into separate sheets in an XLSX workbook using openpyxl."""
+def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Path):
+    """
+    Export grouped links into separate sheets in an XLSX workbook.
+    Accepts a pre-constructed Path object for the output file.
+    """
     from openpyxl import Workbook
-
-    
-    pdf_stem = Path(pdf_path).stem
-    timestamp = get_unique_unix_time()
-    output_file = PDFLINKCHECK_HOME / f"{pdf_stem}_links_{timestamp}.xlsx"
 
     wb = Workbook()
 
@@ -119,7 +117,7 @@ def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], pdf_path: str):
             max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
             ws.column_dimensions[col[0].column_letter].width = max_length + 2
 
-    # Remove default sheet if it exists
+    # Remove default sheet
     if 'Sheet' in wb.sheetnames:
         wb.remove(wb['Sheet'])
 
@@ -131,7 +129,6 @@ def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
     Takes a report dictionary (from run_report_meat) and exports
     grouped clickable links to XLSX. Returns the XLSX path.
     """
-    from pdflinkcheck.io import PDFLINKCHECK_HOME, get_unique_unix_time
     output_dir = output_dir or PDFLINKCHECK_HOME
 
     # 1. Group and process links
@@ -139,11 +136,12 @@ def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
 
     # 2. Construct unique output file name with Unix timestamp
     pdf_name = report['metadata']['file_overview']['pdf_name']
+    pdf_stem = Path(pdf_name).stem
     timestamp = get_unique_unix_time()
-    output_file = output_dir / f"{Path(pdf_name).stem}_links_{timestamp}.xlsx"
+    output_file = output_dir / f"{pdf_stem}_{timestamp}_report.xlsx"
 
     # 3. Write XLSX
-    export_links_to_xlsx(grouped_links, str(output_file))
+    _export_links_to_xlsx(grouped_links, output_file)
 
     return output_file
 
