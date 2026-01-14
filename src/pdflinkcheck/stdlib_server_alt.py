@@ -496,42 +496,50 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             self._send_error_json("Internal server error", 500)
 
     # -------- Business Logic --------
-
     def _process_pdf(self, upload: UploadRequest) -> dict:
-        tmp_path: Optional[str] = None
-        print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
-        try:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-                tmp.write(upload.pdf_bytes)
-                tmp_path = tmp.name
+    tmp_path: Optional[str] = None
+    print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+            tmp.write(upload.pdf_bytes)
+            tmp_path = tmp.name
 
-            result = run_report_and_call_exports(
-                pdf_path=tmp_path,
-                export_format="",
-                pdf_library=upload.pdf_library,
-                print_bool=False,
-            )
+        result = run_report_and_call_exports(
+            pdf_path=tmp_path,
+            export_format="",
+            pdf_library=upload.pdf_library,
+            print_bool=False,
+        )
 
-            link_count = (
-                result.get("metadata", {})
-                .get("link_counts", {})
-                .get("total_links_count", 0)
-            )
-            print(f"Upload processed: {upload.filename} — {response['total_links_count']} links found")
-            return {
-                "filename": upload.filename,
-                "pdf_library_used": upload.pdf_library,
-                "total_links_count": link_count,
-                "data": result["data"],
-                "text_report": result["text-lines"],
-            }
+        link_count = (
+            result.get("metadata", {})
+            .get("link_counts", {})
+            .get("total_links_count", 0)
+        )
+        print(f"Upload processed: {upload.filename} — {link_count} links found")
 
-        print(f"Temporary PDF path: {tmp_path}")
-        finally:
-            if tmp_path and os.path.exists(tmp_path):
-                print(f"Deleting temporary file: {tmp_path}")
-                os.unlink(tmp_path)
+        return {
+            "filename": upload.filename,
+            "pdf_library_used": upload.pdf_library,
+            "total_links_count": link_count,
+            "data": result.get("data", {}),
+            "text_report": result.get("text-lines", ""),
+        }
 
+    except Exception as e:
+        print(f"Error running report: {e}")
+        return {
+            "filename": upload.filename,
+            "pdf_library_used": upload.pdf_library,
+            "total_links_count": 0,
+            "data": {},
+            "text_report": f"Error: {e}",
+        }
+
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            print(f"Deleting temporary file: {tmp_path}")
+            os.unlink(tmp_path)
 
 # =========================
 # Entrypoint
