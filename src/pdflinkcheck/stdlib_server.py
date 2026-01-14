@@ -44,7 +44,7 @@ In public mode, the server:
 """
 
 from __future__ import annotations
-
+from pathlib import Path
 import http.server
 import socketserver
 import json
