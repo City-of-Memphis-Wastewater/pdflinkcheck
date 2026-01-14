@@ -26,4 +26,4 @@ src/pdflinkcheck/data/README.md
 # Other
 uv.lock
 /msix-build/
-:Zone.Identifier
+*:Zone.Identifier
