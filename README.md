@@ -2,9 +2,9 @@
 
 A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links within PDF documents. Users may leverage either the PyMuPDF or the pypdf library. Use the CLI or the GUI.
 
------
-
 [![Get it from the Microsoft Store](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/ms_store_badge_en-us-light.svg)](https://apps.microsoft.com/store/detail/9n11hxvls1wg)
+
+-----
 
 ![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.2.32.png)
 
