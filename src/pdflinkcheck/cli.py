@@ -16,8 +16,7 @@ from importlib.resources import files
 from enum import Enum
 
 from pdflinkcheck.version_info import get_version_from_pyproject
-from pdflinkcheck.validate import run_validation 
-from pdflinkcheck.environment import is_in_git_repo, assess_default_pdf_library
+from pdflinkcheck.environment import is_in_git_repo, assess_default_pdf_library, pymupdf_is_available, pdfium_is_available
 from pdflinkcheck.io import get_first_pdf_in_cwd
 
 console = Console() # to be above the tkinter check, in case of console.print
@@ -196,6 +195,9 @@ def tools_clear_cache():
     from pdflinkcheck.environment import clear_all_caches
     clear_all_caches()
     console.print("[green]Discovery caches cleared.[/green]")
+    console.print(f"pymupdf_is_available: {pymupdf_is_available()}")
+    console.print(f"pymupdf_is_available: {pdfium_is_available()}")
+    
 
 @tools_app.command(name="browse-exports")
 def tools_browse_exports():
