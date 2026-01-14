@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.6] - 2026-01-14  
+### Fixed
+- Ensure pdf library used is included in xlsx export name
+
+### Internal:
+- To do: Combine export file naming logic for all file types, to avoid maintance issues.
+
+---
+
 ## [1.3.5] - 2026-01-14  
 ### Fixed:
 - File naming of spreadsheet exports made consistent with JSON and TXT exports.
