@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.43] - 2026-01-13
+### Fixed:
+- For store badge, correct assets path to: https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/
+
+---
+
 ## [1.2.42] - 2026-01-13
 ### Added:
 - Microsoft Sotre badge added to assets and shown on README (which will show on PyPI as well).
