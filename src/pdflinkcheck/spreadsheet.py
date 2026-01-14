@@ -11,7 +11,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 from pdflinkcheck.report import run_report_and_call_exports, get_first_pdf_in_cwd
-from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path
+from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_unix_time
 
 # ----------------- Helper Functions -----------------
 
@@ -87,7 +87,11 @@ def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], pdf_path: str):
     """Export grouped links into separate sheets in an XLSX workbook using openpyxl."""
     from openpyxl import Workbook
 
+    
     pdf_stem = Path(pdf_path).stem
+    timestamp = get_unique_unix_time()
+    output_file = PDFLINKCHECK_HOME / f"{pdf_stem}_links_{timestamp}.xlsx"
+
     output_file = PDFLINKCHECK_HOME / f"{pdf_stem}_links.xlsx"
     wb = Workbook()
 
