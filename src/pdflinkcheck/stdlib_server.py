@@ -516,7 +516,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
             return {
                 "filename": upload.filename,
-                "pdf_library_used": upload.pdf_library,
+                "pdf_library_used": result.get("metadata", {}).get("library_used",upload.pdf_library),
                 "total_links_count": (
                     result.get("metadata", {}).get("link_counts", {}).get("total_links_count", 0)
                 ),
