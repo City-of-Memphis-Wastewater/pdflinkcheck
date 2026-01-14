@@ -23,16 +23,7 @@ src/pdflinkcheck/data/pyproject.toml
 src/pdflinkcheck/data/LICENSE
 src/pdflinkcheck/data/README.md
 
+# Other
 uv.lock
-
 /msix-build/
-
-# Rust build artifacts
-rust_pdflinkcheck/target/
-rust_pdflinkcheck/Cargo.lock
-rust_pdflinkcheck/defunct/
-rust_pdflinkcheck/pdfium-linux-x64.tgz
-rust_pdflinkcheck/libpdfium.so
-rust_pdflinkcheck/include/
-rust_pdflinkcheck/lib/
-rust_pdflinkcheck/licenses/
+:Zone.Identifier
