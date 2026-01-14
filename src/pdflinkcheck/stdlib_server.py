@@ -543,7 +543,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             )
 
             result["metadata"]["file_overview"]["source_path"] = upload.filename
-                result["metadata"]["file_overview"]["processing_path"] = tmp_path
+            result["metadata"]["file_overview"]["processing_path"] = tmp_path
             
             return {
                 "filename": upload.filename,
