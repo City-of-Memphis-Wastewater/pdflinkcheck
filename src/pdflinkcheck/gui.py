@@ -182,12 +182,12 @@ class PDFLinkCheckApp:
         self.export_actions_frame.grid(row=1, column=2, padx=3, pady=3, sticky='nsew')
         
         self.btn_open_json = ttk.Button(self.export_actions_frame, text="Open JSON", command=lambda: self._open_export_file("json"), width=10)
-        self.btn_open_json.pack(side=tk.LEFT, padx=3, pady=1)
+        #self.btn_open_json.pack(side=tk.LEFT, padx=3, pady=1)
 
         self.btn_open_txt = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_export_file("txt"), width=10)
-        self.btn_open_txt.pack(side=tk.LEFT, padx=3, pady=1)
+        #self.btn_open_txt.pack(side=tk.LEFT, padx=3, pady=1)
 
-        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._show_system_explorer(), width=10)
+        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Show System Explorer", command=lambda: self._show_system_explorer(), width=20)
         self.btn_open_browser_to_files.pack(side=tk.LEFT, padx=3, pady=1)
         
         # === Row 3: Action Buttons ===
@@ -209,7 +209,8 @@ class PDFLinkCheckApp:
         output_header_frame = ttk.Frame(output_frame)
         output_header_frame.pack(fill='x', pady=(0, 1))
 
-        ttk.Label(output_header_frame, text="Analysis Report Logs:").pack(side=tk.LEFT, fill='x', expand=True)
+        #ttk.Label(output_header_frame, text="Analysis Report Logs:").pack(side=tk.LEFT, fill='x', expand=True)
+        ttk.Label(output_header_frame, text="Output Window:").pack(side=tk.LEFT, fill='x', expand=True)
 
         ttk.Button(output_header_frame, text="▼ Bottom", command=self._scroll_to_bottom, width=10).pack(side=tk.RIGHT, padx=(0, 2))
         ttk.Button(output_header_frame, text="▲ Top", command=self._scroll_to_top, width=6).pack(side=tk.RIGHT, padx=2)
@@ -509,7 +510,8 @@ def start_gui(time_auto_close: int = 0):
         splash.teardown() # The Splash cleans itself up
 
         # Re-center the MAIN app window before showing it
-        app_w, app_h = 700, 500
+        app_w, app_h = 700, 500 # known distrubuted size
+        app_w, app_h = 800, 500 # stop gap until buttons are reorganized
         # Center and then reveal
         center_window_on_primary(root, app_w, app_h)
         
