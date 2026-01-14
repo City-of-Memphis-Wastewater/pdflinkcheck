@@ -125,7 +125,7 @@ def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], pdf_path: str):
         wb.remove(wb['Sheet'])
 
     wb.save(output_file)
-    print(f"✅ XLSX exported successfully to {get_friendly_path(output_file)}")
+    print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
 
 def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
     """
