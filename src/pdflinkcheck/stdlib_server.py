@@ -430,35 +430,45 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
     def _send_error_json(self, message: str, status: int) -> None:
         self._send_json({"error": message}, status)
+    
+    # -------------------------
+    # GET Helpers
+    # -------------------------
+
+    def _serve_html_form(self):
+        """Serve the main HTML upload form."""
+        body = HTML_FORM.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _serve_openapi(self):
+        """Serve the OpenAPI JSON specification."""
+        self._send_json(OPENAPI_SPEC)
+
+    def _serve_ready(self):
+        """Serve the readiness probe."""
+        if SHUTDOWN_EVENT.is_set():
+            self._send_error_json("Server shutting down", 503)
+        else:
+            self._send_json({"status": "ready"})
 
     # -------- Handlers --------
-
     def do_GET(self):
         if self.path == "/":
-            body = HTML_FORM.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        if self.path == "/openapi.json":
-            self._send_json(OPENAPI_SPEC)
-            return
-        if self.path == "/ready":
-            if SHUTDOWN_EVENT.is_set():
-                self._send_error_json("Server shutting down", 503)
-            else:
-                self._send_json({"status": "ready"})
-            return
-
-        if self.path == "/favicon.ico":
+            self._serve_html_form()
+        elif self.path == "/openapi.json":
+            self._serve_openapi()
+        elif self.path == "/ready":
+            self._serve_ready()
+        elif self.path == "/favicon.ico":
             self.send_response(204)
             self.end_headers()
-            return
-
-        self.send_error(404)
-
+        else:
+            self.send_error(404)    
+    
     def do_POST(self):
         if self.path != "/":
             self.send_error(404)
