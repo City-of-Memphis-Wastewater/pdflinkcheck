@@ -18,9 +18,10 @@ import os
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck.version_info import get_version_from_pyproject
-from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path, PDFLINKCHECK_HOME
+from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_all_caches, is_in_git_repo
 from pdflinkcheck.tk_utils import center_window_on_primary
+from pdflinkcheck.helpers import show_system_explorer
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -187,7 +188,7 @@ class PDFLinkCheckApp:
         self.btn_open_txt = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_export_file("txt"), width=10)
         #self.btn_open_txt.pack(side=tk.LEFT, padx=3, pady=1)
 
-        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Show System Explorer", command=lambda: self._show_system_explorer(), width=20)
+        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Show System Explorer", command=lambda: show_system_explorer(), width=20)
         self.btn_open_browser_to_files.pack(side=tk.LEFT, padx=3, pady=1)
         
         # === Row 3: Action Buttons ===
@@ -299,50 +300,6 @@ class PDFLinkCheckApp:
         finally:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
-
-    def _get_export_path(self) -> Path:
-        """
-        Determines the directory where reports are stored.
-        Uses the centralized PDFLINKCHECK_HOME defined in io.py.
-        """
-        # Ensure the directory exists before returning/using it
-        if not PDFLINKCHECK_HOME.exists():
-            PDFLINKCHECK_HOME.mkdir(parents=True, exist_ok=True)
-        return PDFLINKCHECK_HOME
-
-    def _show_system_explorer(self) -> None:
-        """
-        Opens the system file explorer (File Explorer, Finder, or Nautilus/etc.)
-        to the directory containing the exported reports.
-        """
-        target_dir = self._get_export_path()
-        
-        try:
-            if pyhabitat.on_windows():
-                # use os.startfile for the most native Windows experience
-                os.startfile(target_dir)
-            elif sys.platform == "darwin":
-                # macOS
-                subprocess.Popen(["open", str(target_dir)])
-            else:
-                # Linux/Other: pyhabitat or xdg-open fallback
-                try:
-                    subprocess.Popen(["xdg-open", str(target_dir)])
-                except FileNotFoundError:
-                    # If xdg-open is missing, we try to at least log it
-                    print(f"Could not open explorer. Manual path: {target_dir}")
-                    messagebox.showinfo("Export Location", f"Reports are saved in:\n{target_dir}")
-        except Exception as e:
-            messagebox.showerror("Error", f"Could not open system explorer: {e}")
-
-
-    def _get_export_path_(self):
-        pass
-
-    def _show_system_explorer_(self)-> None:
-        print("System Explorer not Launched")
-        path = self._get_export_path()
-        pass
 
     def _open_export_file(self, file_type: str):
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path

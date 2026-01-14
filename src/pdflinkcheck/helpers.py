@@ -1,7 +1,10 @@
 # src/pdflinkcheck/helpers.py
 from __future__ import annotations
 from pprint import pprint
-from typing import Any
+from typing import Any, Dict
+from pathlib import Path
+
+from pdflinkcheck.io import PDFLINKCHECK_HOME
 
 """
 Helper functions
@@ -89,3 +92,38 @@ class PageRef:
 | `__init__.py`         | API Surface      | **0-indexing only** | If exposing a library, users expect 0-indexed lists of pages/links.                                    |
 
 """
+
+def get_export_path() -> Path:
+    """
+    Determines the directory where reports are stored.
+    Uses the centralized PDFLINKCHECK_HOME defined in io.py.
+    """
+    # Ensure the directory exists before returning/using it
+    if not PDFLINKCHECK_HOME.exists():
+        PDFLINKCHECK_HOME.mkdir(parents=True, exist_ok=True)
+    return PDFLINKCHECK_HOME
+
+def show_system_explorer() -> None:
+    """
+    Opens the system file explorer (File Explorer, Finder, or Nautilus/etc.)
+    to the directory containing the exported reports.
+    """
+    target_dir = get_export_path()
+    
+    try:
+        if pyhabitat.on_windows():
+            # use os.startfile for the most native Windows experience
+            os.startfile(target_dir)
+        elif sys.platform == "darwin":
+            # macOS
+            subprocess.Popen(["open", str(target_dir)])
+        else:
+            # Linux/Other: pyhabitat or xdg-open fallback
+            try:
+                subprocess.Popen(["xdg-open", str(target_dir)])
+            except FileNotFoundError:
+                # If xdg-open is missing, we try to at least log it
+                print(f"Could not open explorer. Manual path: {target_dir}")
+                messagebox.showinfo("Export Location", f"Reports are saved in:\n{target_dir}")
+    except Exception as e:
+        messagebox.showerror("Error", f"Could not open system explorer: {e}")
