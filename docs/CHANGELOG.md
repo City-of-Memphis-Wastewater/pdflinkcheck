@@ -6,6 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.2.44] - 2026-01-13                                
+### Changed:
+- Printing and error handling in stdlib_server_alt.py
+- Delete unused stdlib_server.py
+- File name change: stdlib_server_alt.py -> stdlib_server.py
+
+---
+
 ## [1.2.43] - 2026-01-13
 ### Fixed:
 - For store badge, correct assets path to: https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/
