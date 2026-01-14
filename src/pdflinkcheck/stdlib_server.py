@@ -276,7 +276,7 @@ OPENAPI_SPEC = {
                                 "type": "object",
                                 "properties": {
                                     "pdf_name": {"type": "string"},
-                                    "total_pages": {"type": "integer"}
+                                    "total_pages": {"type": "integer"},
                                     "source_path": {"type": "string"},
                                     "processing_path": {"type": "string"}
                                 }
