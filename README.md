@@ -237,7 +237,7 @@ uv sync --extras pdfium --extra mupdf
 # On Termux, to not include PyMuPDF:
 uv sync --extra pdfium
 
-# To include developer depedecies:
+# To include developer dependencies:
 uv sync --all-extras --group dev
 
 # Run the CLI
