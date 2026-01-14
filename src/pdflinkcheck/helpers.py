@@ -7,6 +7,9 @@ from typing import Any
 Helper functions
 """
 
+def get_source_pdf_path(report: Dict) -> Path:
+    return Path(report["metadata"]["file_overview"]["source_path"])
+
 def debug_head(label: str, data: Any, n: int = 3):
     """Helper to cleanly print the first N items of a list or dict."""
     print(f"\n--- [DEBUG: {label}] ---")

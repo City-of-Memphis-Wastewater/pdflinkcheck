@@ -184,14 +184,6 @@ def run_report_meat(
         toc_entry_count = len(structural_toc)
         str_structural_toc = get_structural_toc(structural_toc)
         
-        # check the structure, that it matches
-        if False:
-            print(f"pdf_library={pdf_library}")
-            debug_head("TOC", structural_toc, n=3)
-            debug_head("Links", list(extracted_links), n=3)
-        
-        # THIS HITS
-
         if not extracted_links and not structural_toc:
             log("\n")
             log(f"No hyperlinks or structural TOC found in {pdf_name}.", overview=True)
@@ -209,6 +201,8 @@ def run_report_meat(
                     "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
+                        "source_path": None,        # user-facing, stable
+                        "processing_path": None,    # internal only
                     },
                     "library_used": pdf_library,
                     "link_counts": {
@@ -331,6 +325,8 @@ def run_report_meat(
                 "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
+                        "source_path": None,        # user-facing, stable
+                        "processing_path": None,    # internal only
                     },
                 "library_used": pdf_library,
                 "link_counts": {
@@ -389,6 +385,8 @@ def run_report_meat(
                     "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
+                        "source_path": None,        # user-facing, stable
+                        "processing_path": None,    # internal only
                     },
                     "library_used": pdf_library,
                     "link_counts": {
@@ -425,6 +423,8 @@ def run_report_meat(
                 "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
+                        "source_path": None,        # user-facing, stable
+                        "processing_path": None,    # internal only
                     },
                 "library_used": pdf_library,
                 "link_counts": {
@@ -464,6 +464,8 @@ def _return_empty_report(report_buffer: str, pdf_library: str)-> dict:
                 "file_overview": {
                     "pdf_name": "null",
                     "total_pages": 0,
+                    "source_path": None,        # user-facing, stable
+                    "processing_path": None,    # internal only
                 },
                 "library_used": pdf_library,
                 "link_counts": {
