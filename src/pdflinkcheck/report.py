@@ -124,7 +124,8 @@ def run_report_meat(
         _return_empty_report(report_buffer)
     else:
         pdf_name = Path(pdf_path).name
-
+    resolved_path = str(Path(pdf_path).resolve())
+        
     # AUTO MODE
     if pdf_library == "auto":
         if pdfium_is_available():
@@ -201,8 +202,8 @@ def run_report_meat(
                     "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
-                        "source_path": None,        # user-facing, stable
-                        "processing_path": None,    # internal only
+                        "source_path": resolved_path,        # user-facing, stable
+                        "processing_path": resolved_path,    # internal only
                     },
                     "library_used": pdf_library,
                     "link_counts": {
@@ -318,6 +319,7 @@ def run_report_meat(
             "validation": EMPTY_VALIDATION.copy()
         }
 
+        
         intermediate_report_results = {
             "data": report_data_dict, # The structured JSON-ready dict
             "text-lines": "",
@@ -325,8 +327,8 @@ def run_report_meat(
                 "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
-                        "source_path": None,        # user-facing, stable
-                        "processing_path": None,    # internal only
+                        "source_path": resolved_path,
+                        "processing_path": resolved_path,    # internal only
                     },
                 "library_used": pdf_library,
                 "link_counts": {
@@ -385,8 +387,8 @@ def run_report_meat(
                     "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
-                        "source_path": None,        # user-facing, stable
-                        "processing_path": None,    # internal only
+                        "source_path": resolved_path,        # user-facing, stable
+                        "processing_path": resolved_path,    # internal only
                     },
                     "library_used": pdf_library,
                     "link_counts": {
@@ -423,8 +425,8 @@ def run_report_meat(
                 "file_overview": {
                         "pdf_name": pdf_name,
                         "total_pages": total_pages,
-                        "source_path": None,        # user-facing, stable
-                        "processing_path": None,    # internal only
+                        "source_path": resolved_path,        # user-facing, stable
+                        "processing_path": resolved_path,    # internal only
                     },
                 "library_used": pdf_library,
                 "link_counts": {
@@ -464,8 +466,8 @@ def _return_empty_report(report_buffer: str, pdf_library: str)-> dict:
                 "file_overview": {
                     "pdf_name": "null",
                     "total_pages": 0,
-                    "source_path": None,        # user-facing, stable
-                    "processing_path": None,    # internal only
+                    "source_path": "null",        # user-facing, stable
+                    "processing_path": "null",    # internal only
                 },
                 "library_used": pdf_library,
                 "link_counts": {
