@@ -13,7 +13,7 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
 from pdflinkcheck.helpers import debug_head, PageRef
-
+from pdflinkcheck.spreadsheet import export_report_links_to_xlsx
 
 SEP_COUNT=28
 # Define a safe "empty" validation state
@@ -56,6 +56,7 @@ def run_report_and_call_exports(
     # 2. Initialize file path tracking
     output_path_json = None
     output_path_txt = None
+    output_path_xlsx = None
     
     if export_format:
         report_data_dict = report_results["data"]
@@ -64,11 +65,14 @@ def run_report_and_call_exports(
             output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library)
         if "TXT" in export_format.upper():
             output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library)
+        if "XLSX" in export_format.upper():
+            output_path_xlsx = export_report_links_to_xlsx(report_results)
 
     # 4. Inject the file info into the results dictionary
     report_results["files"] = {
         "export_path_json": output_path_json, 
-        "export_path_txt": output_path_txt
+        "export_path_txt": output_path_txt,
+        "export_path_xlsx": output_path_xlsx
     }
     
     return report_results
