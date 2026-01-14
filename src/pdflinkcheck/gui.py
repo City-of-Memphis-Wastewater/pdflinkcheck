@@ -299,6 +299,14 @@ class PDFLinkCheckApp:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
 
+    def _get_export_path():
+        pass
+
+    def _open_browser_to_exports(self, path: str = None)-> None:
+        print("System Explorer not Launched")
+        path = self._get_export_path()
+        pass
+
     def _open_export_file(self, file_type: str):
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
 
