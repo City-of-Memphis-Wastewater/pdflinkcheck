@@ -38,9 +38,13 @@ def convert_goto_link(link: Dict, pdf_path: str) -> str:
     full_path = Path(pdf_path).resolve()
     return f'file://{full_path}#page={human_page}'
 
-def prepare_links_by_type(report: Dict, pdf_path: str) -> Dict[str, List[Dict]]:
-    """Prepare links grouped by type for separate Excel sheets."""
+def prepare_links_by_type(report: Dict, pdf_path: str = None) -> Dict[str, List[Dict]]:
+    """Prepare links grouped by type for separate Excel shee6ts."""
     pdf_name = report['metadata']['file_overview']['pdf_name']
+    if pdf_path is None:
+        pdf_path = report["metadata"]["file_overview"]["source_path"]
+    if not pdf_path:
+        raise RuntimeError("source_path missing from report metadata")
 
     if is_temp_pdf(pdf_name):
         raise ValueError(f"PDF filename '{pdf_name}' looks like a temporary or unstable file. Provide a stable filename.")
