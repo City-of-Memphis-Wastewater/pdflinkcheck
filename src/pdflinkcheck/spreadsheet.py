@@ -95,7 +95,6 @@ def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], pdf_path: str):
     timestamp = get_unique_unix_time()
     output_file = PDFLINKCHECK_HOME / f"{pdf_stem}_links_{timestamp}.xlsx"
 
-    output_file = PDFLINKCHECK_HOME / f"{pdf_stem}_links.xlsx"
     wb = Workbook()
 
     for sheet_name, links in grouped_links.items():
