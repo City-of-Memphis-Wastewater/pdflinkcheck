@@ -49,7 +49,7 @@ def analyze_pdf_pymupdf(path):
     except ImportError:
         raise ImportError(
             "PyMuPDF engine is not installed. "
-            "Install with the [mupdf] extra to enable PyMuPDF support."
+            "Install with the [pymupdf] extra to enable PyMuPDF support."
         )
     return _analyze(path)
 analyze_pdf_pymupdf.__doc__ = (

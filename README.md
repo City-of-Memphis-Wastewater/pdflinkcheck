@@ -207,7 +207,7 @@ Expecte that all binaries and artifacts contain PyMuPDF, unlss they are built on
 To install the complete version use one of these options:
 
 ```bash
-pip install "pdflinkcheck[mupdf]"
+pip install "pdflinkcheck[pymupdf]"
 pipx install "pdflinkcheck[pdfium]"
 uv tool install "pdflinkcheck[pdfium]"
 uv add "pdflinkcheck[pdfium]"
@@ -232,7 +232,7 @@ git clone http://github.com/city-of-memphis-wastewater/pdflinkcheck.git
 cd pdflinkcheck
 
 # To include the PyMuPDF dependency in the installation:
-uv sync --extras pdfium --extra mupdf
+uv sync --extras pdfium --extra pymupdf
 
 # On Termux, to not include PyMuPDF:
 uv sync --extra pdfium
