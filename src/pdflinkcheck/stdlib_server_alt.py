@@ -493,52 +493,52 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
     # -------- Business Logic --------
     def _process_pdf(self, upload: UploadRequest) -> dict:
-    """
-    Process an uploaded PDF and return analysis results.
-    If the report fails, returns zero counts and the error message.
-    """
-    print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
-    tmp_path: Optional[str] = None
+        """
+        Process an uploaded PDF and return analysis results.
+        If the report fails, returns zero counts and the error message.
+        """
+        print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
+        tmp_path: Optional[str] = None
 
-    try:
-        # Save PDF to temp file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
-            tmp.write(upload.pdf_bytes)
-            tmp_path = tmp.name
+        try:
+            # Save PDF to temp file
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+                tmp.write(upload.pdf_bytes)
+                tmp_path = tmp.name
 
-        # Run report analysis
-        result = run_report_and_call_exports(
-            pdf_path=tmp_path,
-            export_format="",
-            pdf_library=upload.pdf_library,
-            print_bool=False,
-        )
+            # Run report analysis
+            result = run_report_and_call_exports(
+                pdf_path=tmp_path,
+                export_format="",
+                pdf_library=upload.pdf_library,
+                print_bool=False,
+            )
 
-        return {
-            "filename": upload.filename,
-            "pdf_library_used": upload.pdf_library,
-            "total_links_count": (
-                result.get("metadata", {}).get("link_counts", {}).get("total_links_count", 0)
-            ),
-            "data": result.get("data", {}),
-            "text_report": result.get("text-lines", ""),
-        }
+            return {
+                "filename": upload.filename,
+                "pdf_library_used": upload.pdf_library,
+                "total_links_count": (
+                    result.get("metadata", {}).get("link_counts", {}).get("total_links_count", 0)
+                ),
+                "data": result.get("data", {}),
+                "text_report": result.get("text-lines", ""),
+            }
 
-    except Exception as e:
-        # Simple fallback on error
-        print(f"Error running report: {e}")
-        return {
-            "filename": upload.filename,
-            "pdf_library_used": upload.pdf_library,
-            "total_links_count": 0,
-            "data": {},
-            "text_report": f"Error: {e}",
-        }
+        except Exception as e:
+            # Simple fallback on error
+            print(f"Error running report: {e}")
+            return {
+                "filename": upload.filename,
+                "pdf_library_used": upload.pdf_library,
+                "total_links_count": 0,
+                "data": {},
+                "text_report": f"Error: {e}",
+            }
 
-    finally:
-        if tmp_path and os.path.exists(tmp_path):
-            print(f"Deleting temporary file: {tmp_path}")
-            os.unlink(tmp_path)
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                print(f"Deleting temporary file: {tmp_path}")
+                os.unlink(tmp_path)
 
 # =========================
 # Entrypoint
