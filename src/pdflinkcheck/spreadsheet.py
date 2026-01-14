@@ -10,7 +10,7 @@ from typing import Dict, List
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
-from pdflinkcheck.report import run_report_and_call_exports, get_first_pdf_in_cwd
+from pdflinkcheck.report import run_report_meat, get_first_pdf_in_cwd
 from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_unix_time
 
 # ----------------- Helper Functions -----------------
@@ -124,6 +124,27 @@ def export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], pdf_path: str):
     wb.save(output_file)
     print(f"✅ XLSX exported successfully to {get_friendly_path(output_file)}")
 
+def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
+    """
+    Takes a report dictionary (from run_report_meat) and exports
+    grouped clickable links to XLSX. Returns the XLSX path.
+    """
+    from pdflinkcheck.io import PDFLINKCHECK_HOME, get_unique_unix_time
+    output_dir = output_dir or PDFLINKCHECK_HOME
+
+    # 1. Group and process links
+    grouped_links = prepare_links_by_type(report)
+
+    # 2. Construct unique output file name with Unix timestamp
+    pdf_name = report['metadata']['file_overview']['pdf_name']
+    timestamp = get_unique_unix_time()
+    output_file = output_dir / f"{Path(pdf_name).stem}_links_{timestamp}.xlsx"
+
+    # 3. Write XLSX
+    export_links_to_xlsx(grouped_links, str(output_file))
+
+    return output_file
+
 # ----------------- Main / Proof-of-Concept -----------------
 
 def main(pdf_path: str = None):
@@ -133,15 +154,9 @@ def main(pdf_path: str = None):
             print("No PDF found in current directory.")
             sys.exit(1)
 
-    report = run_report_and_call_exports(pdf_path=pdf_path, export_format='', print_bool=False)
+    report = run_report_meat(pdf_path=pdf_path, pdf_library: str = "auto", print_bool=True, concise_print=True)
 
-    try:
-        grouped_links = prepare_links_by_type(report, pdf_path)
-    except ValueError as e:
-        print(f"⚠️  {e}")
-        sys.exit(1)
-
-    export_links_to_xlsx(grouped_links, pdf_path)
+    export_report_links_to_xlsx(report)
 
 if __name__ == "__main__":
     main()

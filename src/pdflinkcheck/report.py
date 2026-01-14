@@ -47,7 +47,7 @@ def run_report_and_call_exports(
     Public entry point. Orchestrates extraction, validation, and file exports.
     """
     #  The meat and potatoes
-    report_results = run_report_extraction_and_assessment_and_recording(
+    report_results = run_report_meat(
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
         print_bool = print_bool,
@@ -74,7 +74,7 @@ def run_report_and_call_exports(
     return report_results
 
 # -----  Stable version: See "report copy.py" for refactor (failing) ----
-def run_report_extraction_and_assessment_and_recording(
+def run_report_meat(
         pdf_path: str = None, 
         pdf_library: str = "auto", 
         print_bool: bool=True,
