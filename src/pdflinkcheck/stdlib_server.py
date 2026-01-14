@@ -537,7 +537,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             result = run_report_and_call_exports(
                 pdf_path=tmp_path,
                 #export_format="",
-                export_format="xlsx,json,txt",
+                export_format="json,txt",
                 pdf_library=upload.pdf_library,
                 print_bool=False,
             )
