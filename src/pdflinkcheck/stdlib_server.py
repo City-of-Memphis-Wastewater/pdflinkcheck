@@ -513,9 +513,11 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
         except ValidationError as e:
             self._send_error_json(str(e), 400)
 
-        except Exception:
-            self._send_error_json("Internal server error", 500)
-
+        except Exception as e:
+            import traceback
+            tb = traceback.format_exc()
+            print(tb)
+            self._send_error_json(f"Internal server error: {e}", 500)
     # -------- Business Logic --------
     def _process_pdf(self, upload: UploadRequest) -> dict:
         """
@@ -541,9 +543,8 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
             
             file_overview = result["metadata"]["file_overview"]
-            file_overview["source_path"] = str(Path(original_upload_path).resolve())
-            file_overview["processing_path"] = str(Path(temp_pdf_path).resolve())
-
+            file_overview["source_path"] = str(Path(upload.filename).name)
+            file_overview["processing_path"] = str(Path(tmp_path).resolve())
 
             return {
                 "filename": upload.filename,
