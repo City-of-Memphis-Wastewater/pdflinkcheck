@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.4] - 2026-01-14  
+### Changed:
+- Update screenshots to verion 1.3.3
+
+---
+
 ## [1.3.3] - 2026-01-14  
 ### Changed:
 - GUI: Take away Open TXT and Open JSON buttons and add Show System Explorer button

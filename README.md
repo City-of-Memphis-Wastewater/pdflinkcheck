@@ -6,7 +6,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links wit
 
 -----
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.2.32.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.3.3.png)
 
 -----
 
@@ -55,7 +55,7 @@ Ways to launch the GUI interface:
 The core functionality is accessed via the `analyze` command. 
 
 `pdflinkcheck --help`:
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.2.32.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3.png)
 
 
 See the Help Tree by unlocking the help-tree CLI command, using the DEV_TYPER_HELP_TREE env var.
@@ -65,7 +65,7 @@ DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree` # bash
 $env:DEV_TYPER_HELP_TREE = "1"; pdflinkcheck help-tree` # PowerShell
 ```
 
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.2.32_tree_help.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3_tree_help.png)
 
 
 
