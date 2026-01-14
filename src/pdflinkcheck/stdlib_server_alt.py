@@ -501,12 +501,25 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 tmp.write(upload.pdf_bytes)
                 tmp_path = tmp.name
 
-            result = run_report_and_call_exports(
-                pdf_path=tmp_path,
-                export_format="",
-                pdf_library=upload.pdf_library,
-                print_bool=False,
-            )
+
+            try:
+                result = run_report_and_call_exports(
+                    pdf_path=tmp_path,
+                    export_format="",
+                    pdf_library=upload.pdf_library,
+                    print_bool=False,
+                )
+            except Exception as e:
+                print(f"Error running report: {e}")
+
+            return {
+                "filename": upload.filename,
+                "pdf_library_used": upload.pdf_library,
+                "total_links_count": 0,
+                "data": {},
+                "text_report": {},
+            }
+            
 
             link_count = (
                 result.get("metadata", {})
