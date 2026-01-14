@@ -397,12 +397,12 @@ class ThreadedHTTPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     daemon_threads = True	
 
 class APIHandler(http.server.BaseHTTPRequestHandler):
-
     server_version = "pdflinkcheck-stdlib/1.1"
-    
-    def log_message(self, format, *args):
-        return
 
+    def log_message(self, format, *args):
+        # simple per-request logging
+        print(f"{self.client_address[0]} - - [{self.log_date_time_string()}] {format % args}")
+	return
     # -------- Utilities --------
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
@@ -492,7 +492,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
     def _process_pdf(self, upload: UploadRequest) -> dict:
         tmp_path: Optional[str] = None
-
+        print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
         try:
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 tmp.write(upload.pdf_bytes)
