@@ -13,6 +13,7 @@ import pyhabitat
 import sys
 import os
 from importlib.resources import files
+from enum import Enum
 
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.validate import run_validation 
@@ -37,6 +38,12 @@ app = typer.Typer(
                       "help_option_names": ["-h", "--help"]},
 )
 
+class ExportFormat(str, Enum):
+    json = "json"
+    txt = "txt"
+    xlsx = "xlsx"
+    none = "none"
+                
 ALLOWED_EXPORTS = {"json", "txt", "xlsx", "none"}
 
 def debug_callback(value: bool):
@@ -197,12 +204,18 @@ def analyze_pdf( # Renamed function for clarity
     #    case_sensitive=False, 
     #    help="Export format. Use 'None' to suppress file export.",
     #),
-    export_format: List[str] = typer.Option(
-        ["json", "txt", "xlsx"],
+    #export_format: List[str] = typer.Option(
+    #    ["json", "txt", "xlsx"],
+    #    "--format", "-f",
+    #    case_sensitive=False,
+    #    callback=_parse_export_formats,
+    #    help="Comma-separated list of export formats. Allowed: json, txt, xlsx, none."
+    #),
+    export_format: List[ExportFormat] = typer.Option(
+        [ExportFormat.json, ExportFormat.txt, ExportFormat.xlsx],
         "--format", "-f",
         case_sensitive=False,
-        callback=_parse_export_formats,
-        help="Comma-separated list of export formats. Allowed: json, txt, xlsx, none."
+        help="Export formats (repeatable). Use --format none to suppress all exports."
     ),
 
     pdf_library: Literal["auto","pdfium","pypdf", "pymupdf"] = typer.Option(
@@ -250,7 +263,13 @@ def analyze_pdf( # Renamed function for clarity
             raise typer.Exit(code=1)
         console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
-    #VALID_FORMATS = ("JSON","TXT") # extend later
+    
+    if ExportFormat.none in export_format:
+        export_formats = []
+    else:
+        export_formats = [f.name.upper() for f in export_format]
+    export_format="".join(export_formats)
+    """#VALID_FORMATS = ("JSON","TXT") # extend later
     requested_formats = [fmt.strip().upper() for fmt in export_format.split(",")]
     if "NONE" in requested_formats or not export_format.strip() or export_format == "0":
         export_formats = ""
@@ -262,12 +281,12 @@ def analyze_pdf( # Renamed function for clarity
 
         if not valid and "NONE" not in requested_formats:
             typer.echo(f"Warning: No valid formats found in '{export_format}'. Supported: JSON, TXT.")
-    
+    """
 
     # The meat and potatoes
     report_results = run_report_and_call_exports(
         pdf_path=str(pdf_path), 
-        export_format = export_formats,
+        export_format = export_format,
         pdf_library = pdf_library,
         print_bool = print_bool,
         concise_print = True, # ideal for CLI, to not overwhelm the terminal.
