@@ -3,7 +3,7 @@
 # src/pdflinkcheck/cli.py
 from __future__ import annotations
 import typer
-from typing import Literal
+from typing import Literal, List
 from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
@@ -37,6 +37,7 @@ app = typer.Typer(
                       "help_option_names": ["-h", "--help"]},
 )
 
+ALLOWED_EXPORTS = {"json", "txt", "xlsx", "none"}
 
 def debug_callback(value: bool):
 #def debug_callback(ctx: typer.Context, value: bool):
@@ -162,11 +163,18 @@ def analyze_pdf( # Renamed function for clarity
         help="Path to the PDF file to analyze. If omitted, searches current directory."
     ), 
     #export_format: Optional[Literal["JSON", "TXT", "XLSX", "JSON,TXT,XLSX", "NONE"]] = typer.Option(
-    export_format: str = typer.Option(
+    """export_format: str = typer.Option(
         "json,txt,xlsx", 
         "--format","-f",
         case_sensitive=False, 
         help="Export format. Use 'None' to suppress file export.",
+    ),"""
+    export_format: List[str] = typer.Option(
+        ["json", "txt", "xlsx"],
+        "--format", "-f",
+        case_sensitive=False,
+        callback=_parse_export_formats,
+        help="Comma-separated list of export formats. Allowed: json, txt, xlsx, none."
     ),
 
     pdf_library: Literal["auto","pdfium","pypdf", "pymupdf"] = typer.Option(
@@ -328,6 +336,33 @@ def _gui_failure_msg():
     console.print("On Termux/Android, GUI is not supported. Use 'pdflinkcheck analyze <file.pdf>' instead.")
     console.print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
     pass
+
+def _parse_export_formats(value: str) -> List[str]:
+    """
+    Parse a comma-separated string of export formats, validate allowed values.
+    Converts everything to lowercase.
+    """
+    if not value:
+        return []
+
+    # Split by comma and normalize
+    parts = [v.strip().lower() for v in value.split(",")]
+
+    # Validate
+    invalid = [v for v in parts if v not in ALLOWED_EXPORTS]
+    if invalid:
+        raise typer.BadParameter(
+            f"Invalid export format(s): {', '.join(invalid)}. "
+            f"Allowed values: {', '.join(sorted(ALLOWED_EXPORTS))}"
+        )
+
+    # If 'none' is included, return empty list to suppress exports
+    if "none" in parts:
+        return []
+
+    return parts
+
+
 
 if __name__ == "__main__":
     app()
