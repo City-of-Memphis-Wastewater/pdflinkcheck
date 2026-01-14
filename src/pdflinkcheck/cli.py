@@ -163,12 +163,12 @@ def analyze_pdf( # Renamed function for clarity
         help="Path to the PDF file to analyze. If omitted, searches current directory."
     ), 
     #export_format: Optional[Literal["JSON", "TXT", "XLSX", "JSON,TXT,XLSX", "NONE"]] = typer.Option(
-    """export_format: str = typer.Option(
-        "json,txt,xlsx", 
-        "--format","-f",
-        case_sensitive=False, 
-        help="Export format. Use 'None' to suppress file export.",
-    ),"""
+    #export_format: str = typer.Option(
+    #    "json,txt,xlsx", 
+    #    "--format","-f",
+    #    case_sensitive=False, 
+    #    help="Export format. Use 'None' to suppress file export.",
+    #),
     export_format: List[str] = typer.Option(
         ["json", "txt", "xlsx"],
         "--format", "-f",
