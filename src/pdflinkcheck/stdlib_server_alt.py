@@ -493,13 +493,20 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
     # -------- Business Logic --------
     def _process_pdf(self, upload: UploadRequest) -> dict:
-    tmp_path: Optional[str] = None
+    """
+    Process an uploaded PDF and return analysis results.
+    If the report fails, returns zero counts and the error message.
+    """
     print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
+    tmp_path: Optional[str] = None
+
     try:
+        # Save PDF to temp file
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             tmp.write(upload.pdf_bytes)
             tmp_path = tmp.name
 
+        # Run report analysis
         result = run_report_and_call_exports(
             pdf_path=tmp_path,
             export_format="",
@@ -507,22 +514,18 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             print_bool=False,
         )
 
-        link_count = (
-            result.get("metadata", {})
-            .get("link_counts", {})
-            .get("total_links_count", 0)
-        )
-        print(f"Upload processed: {upload.filename} — {link_count} links found")
-
         return {
             "filename": upload.filename,
             "pdf_library_used": upload.pdf_library,
-            "total_links_count": link_count,
+            "total_links_count": (
+                result.get("metadata", {}).get("link_counts", {}).get("total_links_count", 0)
+            ),
             "data": result.get("data", {}),
             "text_report": result.get("text-lines", ""),
         }
 
     except Exception as e:
+        # Simple fallback on error
         print(f"Error running report: {e}")
         return {
             "filename": upload.filename,
