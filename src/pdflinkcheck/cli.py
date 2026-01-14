@@ -53,6 +53,34 @@ def debug_callback(value: bool):
 
 if "--show-command" in sys.argv or "--debug" in sys.argv: # requires that --show-command flag be used before the sub command
     debug_callback(True)
+
+
+        
+def _parse_export_formats(value: str) -> List[str]:
+    """
+    Parse a comma-separated string of export formats, validate allowed values.
+    Converts everything to lowercase.
+    """
+    if not value:
+        return []
+
+    # Split by comma and normalize
+    parts = [v.strip().lower() for v in value.split(",")]
+
+    # Validate
+    invalid = [v for v in parts if v not in ALLOWED_EXPORTS]
+    if invalid:
+        raise typer.BadParameter(
+            f"Invalid export format(s): {', '.join(invalid)}. "
+            f"Allowed values: {', '.join(sorted(ALLOWED_EXPORTS))}"
+        )
+
+    # If 'none' is included, return empty list to suppress exports
+    if "none" in parts:
+        return []
+
+    return parts
+
     
 @app.callback()
 def main(ctx: typer.Context,
@@ -336,31 +364,6 @@ def _gui_failure_msg():
     console.print("On Termux/Android, GUI is not supported. Use 'pdflinkcheck analyze <file.pdf>' instead.")
     console.print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
     pass
-
-def _parse_export_formats(value: str) -> List[str]:
-    """
-    Parse a comma-separated string of export formats, validate allowed values.
-    Converts everything to lowercase.
-    """
-    if not value:
-        return []
-
-    # Split by comma and normalize
-    parts = [v.strip().lower() for v in value.split(",")]
-
-    # Validate
-    invalid = [v for v in parts if v not in ALLOWED_EXPORTS]
-    if invalid:
-        raise typer.BadParameter(
-            f"Invalid export format(s): {', '.join(invalid)}. "
-            f"Allowed values: {', '.join(sorted(ALLOWED_EXPORTS))}"
-        )
-
-    # If 'none' is included, return empty list to suppress exports
-    if "none" in parts:
-        return []
-
-    return parts
 
 
 
