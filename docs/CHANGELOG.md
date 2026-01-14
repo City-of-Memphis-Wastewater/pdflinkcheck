@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+
+## [1.3.1] - 2026-01-14  
+### Added:
+- Spreadsheet report export
+
+---
+
 ## [1.2.44] - 2026-01-13                                
 ### Changed:
 - Printing and error handling in stdlib_server_alt.py
