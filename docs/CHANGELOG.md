@@ -14,6 +14,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - GUI: _show_system_explorer() function triggered by button is stable, prints and passes.
 
+### Added:
+- Implement _get_export_path() to dynamically resolve the report directory by leveraging the PDFLINKCHECK_HOME constant from io.py.
+- Add _show_system_explorer() to provide cross-platform access to the export folder using native shell commands and io.py path logic.
+
 ---
 
 
