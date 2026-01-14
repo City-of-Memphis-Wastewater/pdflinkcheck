@@ -540,7 +540,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             )
 
             
-            file_overview = report["metadata"]["file_overview"]
+            file_overview = result["metadata"]["file_overview"]
             file_overview["source_path"] = str(Path(original_upload_path).resolve())
             file_overview["processing_path"] = str(Path(temp_pdf_path).resolve())
 
