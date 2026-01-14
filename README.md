@@ -4,7 +4,10 @@ A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links wit
 
 -----
 
-<script type="module" src="https://get.microsoft.com/badge/ms-store-badge.bundled.js"></script>
+<a href="https://apps.microsoft.com/store/detail/9n11hxvls1wg">
+  <img src="https://get.microsoft.com/badge/assets/en-us-dark.svg" width="180" alt="PDF Link Check on Microsoft Store" />
+</a>
+<!--script type="module" src="https://get.microsoft.com/badge/ms-store-badge.bundled.js"></script>
 <ms-store-badge
 	productid="9n11hxvls1wg"
 	productname="PDF Link Check"
@@ -13,7 +16,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links wit
 	size="large"
 	language="en-us"
 	animation="off">
-</ms-store-badge>
+</ms-store-badge-->
 
 ![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.2.32.png)
 
