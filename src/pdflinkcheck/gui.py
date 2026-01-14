@@ -299,7 +299,7 @@ class PDFLinkCheckApp:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
 
-    def _get_export_path():
+    def _get_export_path(self):
         pass
 
     def _show_system_explorer(self)-> None:
