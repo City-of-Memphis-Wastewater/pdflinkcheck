@@ -172,8 +172,8 @@ def docs_command(
     
     # Exit successfully if any flag was processed
     raise typer.Exit(code=0)
-
-@app.command(name="tools", help= "Additional features, hamburger menu.")
+"""
+@app.command(name="tools_defunct", help= "Additional features, hamburger menu.")
 def tools_command(
     clear_cache: bool = typer.Option(
         False,
@@ -185,6 +185,31 @@ def tools_command(
     from pdflinkcheck.environment import clear_all_caches
     if clear_cache:
         clear_all_caches()
+"""
+# Create the sub-group
+tools_app = typer.Typer(help="Additional utility features and maintenance tools.")
+app.add_typer(tools_app, name="tools")
+
+@tools_app.command(name="clear-cache")
+def tools_clear_cache():
+    """Clear the environment and engine discovery caches."""
+    from pdflinkcheck.environment import clear_all_caches
+    clear_all_caches()
+    console.print("[green]Discovery caches cleared.[/green]")
+
+@tools_app.command(name="browse-exports")
+def tools_browse_exports():
+    """Open the system file explorer at the report output directory."""
+    from pdflinkcheck.helpers import show_system_explorer, get_export_path
+    
+    target_dir = get_export_path()
+    console.print(f"Opening: [bold cyan]{target_dir}[/bold cyan]")
+    
+    try:
+        show_system_explorer()
+    except Exception as e:
+        console.print(f"[bold red]Error:[/bold red] {e}")
+        raise typer.Exit(code=1)
 
 @app.command(name="analyze") # Added a command name 'analyze' for clarity
 def analyze_pdf( # Renamed function for clarity

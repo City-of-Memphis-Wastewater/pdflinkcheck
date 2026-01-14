@@ -3,6 +3,10 @@ from __future__ import annotations
 from pprint import pprint
 from typing import Any, Dict
 from pathlib import Path
+import pyhabitat
+import subprocess
+import os
+import sys
 
 from pdflinkcheck.io import PDFLINKCHECK_HOME
 
@@ -124,6 +128,7 @@ def show_system_explorer() -> None:
             except FileNotFoundError:
                 # If xdg-open is missing, we try to at least log it
                 print(f"Could not open explorer. Manual path: {target_dir}")
-                messagebox.showinfo("Export Location", f"Reports are saved in:\n{target_dir}")
+                #messagebox.showinfo("Export Location", f"Reports are saved in:\n{target_dir}")
     except Exception as e:
-        messagebox.showerror("Error", f"Could not open system explorer: {e}")
+        print(f"Could not open system explorer. Manual path: {target_dir}. Error: {e}")
+

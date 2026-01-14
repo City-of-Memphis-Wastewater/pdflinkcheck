@@ -188,7 +188,7 @@ class PDFLinkCheckApp:
         self.btn_open_txt = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_export_file("txt"), width=10)
         #self.btn_open_txt.pack(side=tk.LEFT, padx=3, pady=1)
 
-        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Show System Explorer", command=lambda: show_system_explorer(), width=20)
+        self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Show System Explorer", command=lambda: self._show_system_explorer_gui(), width=20)
         self.btn_open_browser_to_files.pack(side=tk.LEFT, padx=3, pady=1)
         
         # === Row 3: Action Buttons ===
@@ -300,6 +300,18 @@ class PDFLinkCheckApp:
         finally:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)
+
+    def _show_system_explorer_gui(self) -> None:
+        """
+        Opens the system file explorer to the directory containing 
+        the exported reports, with GUI error handling.
+        """
+        try:
+            show_system_explorer()
+        except Exception as e:
+            # The GUI catches the error to show a user-friendly popup
+            messagebox.showerror("Error", f"Could not open system explorer: {e}")
+
 
     def _open_export_file(self, file_type: str):
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
