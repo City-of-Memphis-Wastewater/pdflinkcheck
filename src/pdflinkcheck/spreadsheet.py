@@ -10,7 +10,6 @@ from typing import Dict, List
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
-from pdflinkcheck.report import run_report_meat, get_first_pdf_in_cwd
 from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_unix_time
 
 # ----------------- Helper Functions -----------------
@@ -148,13 +147,14 @@ def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
 # ----------------- Main / Proof-of-Concept -----------------
 
 def main(pdf_path: str = None):
+    from pdflinkcheck.report import run_report_meat, get_first_pdf_in_cwd
     if pdf_path is None:
         pdf_path = get_first_pdf_in_cwd()
         if not pdf_path:
             print("No PDF found in current directory.")
             sys.exit(1)
 
-    report = run_report_meat(pdf_path=pdf_path, pdf_library: str = "auto", print_bool=True, concise_print=True)
+    report = run_report_meat(pdf_path=pdf_path, pdf_library = "auto", print_bool=True, concise_print=True)
 
     export_report_links_to_xlsx(report)
 
