@@ -134,12 +134,20 @@ def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
     # 1. Group and process links
     grouped_links = prepare_links_by_type(report)
 
-    # 2. Construct unique output file name with Unix timestamp
-    pdf_name = report['metadata']['file_overview']['pdf_name']
-    pdf_stem = Path(pdf_name).stem
-    timestamp = get_unique_unix_time()
-    output_file = output_dir / f"{pdf_stem}_{timestamp}_report.xlsx"
+    # 2. Extract metadata safely
+    metadata = report.get("metadata", {})
+    file_overview = metadata.get("file_overview", {})
 
+    # Fallback to "report" if pdf_name is missing
+    pdf_name = file_overview.get("pdf_name", "file")
+    pdf_stem = Path(pdf_name).stem
+
+    # Only add the underscore if the library name exists
+    lib = metadata.get("library_used")
+    lib_suffix = f"_{lib}" if lib else ""
+
+    timestamp = get_unique_unix_time()
+    output_file = output_dir / f"{pdf_stem}{lib_suffix}_{timestamp}_report.xlsx"
     # 3. Write XLSX
     _export_links_to_xlsx(grouped_links, output_file)
 
