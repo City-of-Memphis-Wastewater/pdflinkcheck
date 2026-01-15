@@ -60,8 +60,19 @@ jobs:
         shell: pwsh
         working-directory: ${{ github.workspace }}
         run: |
-          Write-Host "=== Listing  dist/ contents ==="
-          Get-ChildItem dist -Recurse -File | Select-Object FullName
+          #Write-Host "=== Listing  dist/ contents ==="
+          #Get-ChildItem dist -Recurse -File | Select-Object FullName
+          Write-Host "=== Listing dist/ contents (Paths relative to dist root) ==="
+          # We calculate a 'ShortPath' by stripping the long runner path
+          Get-ChildItem dist -Recurse | Select-Object @{
+              Name="RelativePath"; 
+              Expression={ $_.FullName.Replace("D:\a\pdflinkcheck\pdflinkcheck\dist\", "dist\") }
+          }, PSIsContainer | Format-Table -AutoSize
+
+          Write-Host "(Note: Above paths are inferred by stripping the workspace root for readability)"
+          if (!(Test-Path "msix/pdflinkcheck.exe")) {
+            Write-Error "CRITICAL: pdflinkcheck.exe not found in MSIX root! Manifest will fail."
+          }
 
 
       - name: Detect built EXE
@@ -97,38 +108,7 @@ jobs:
           $dst = Join-Path "dist" "pdflinkcheck.exe"
           Move-Item -Force $src $dst
       
-      - name: Prepare MSIX folder structure
-        shell: pwsh
-        run: |
-          # 1. Setup clean directory
-          if (Test-Path "msix") { Remove-Item -Recurse -Force "msix/*" }
-          else { New-Item -ItemType Directory -Path "msix" -Force }
 
-          # 2. Find the build output (the folder containing the app)
-          $buildFolder = Get-ChildItem "dist/pdflinkcheck-*" | Where-Object { $_.PSIsContainer } | Select-Object -First 1
-          
-          if ($null -eq $buildFolder) {
-              Write-Error "Could not find the PyInstaller output folder in dist/"
-              exit 1
-          }
-
-          Write-Host "Flattening build from: $($buildFolder.FullName)"
-
-          # 3. Copy everything INSIDE the build folder to the root of msix/
-          # This includes the .exe and the _internal folder
-          Copy-Item -Path "$($buildFolder.FullName)\*" -Destination "msix/" -Recurse -Force
-
-          # 4. Verification & Stabilization
-          # Find the actual exe (which might have a long dynamic name) 
-          $actualExe = Get-ChildItem "msix/*.exe" | Select-Object -First 1
-          
-          if ($actualExe) {
-              Write-Host "Found EXE: $($actualExe.Name). Renaming to stable 'pdflinkcheck.exe' for MSIX Manifest."
-              Rename-Item -Path $actualExe.FullName -NewName "pdflinkcheck.exe"
-          } else {
-              Write-Error "Final check failed: No EXE found in msix/ after copy."
-              exit 1
-          }
       - name: Prepare MSIX folder structure
         run: |
           # 1. Start Fresh
@@ -172,18 +152,8 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "--- MSIX STAGING DIRECTORY CONTENTS ---"
-          #Get-ChildItem msix -Recurse | Select-Object @{Name="Path"; Expression={$_.FullName.Replace($env:GITHUB_WORKSPACE, "")}}, Length | Format-Table -AutoSize
-          Write-Host "=== Listing dist/ contents (Paths relative to dist root) ==="
-          # We calculate a 'ShortPath' by stripping the long runner path
-          Get-ChildItem dist -Recurse | Select-Object @{
-              Name="RelativePath"; 
-              Expression={ $_.FullName.Replace("D:\a\pdflinkcheck\pdflinkcheck\dist\", "dist\") }
-          }, PSIsContainer | Format-Table -AutoSize
-
-          Write-Host "(Note: Above paths are inferred by stripping the workspace root for readability)"
-          if (!(Test-Path "msix/pdflinkcheck.exe")) {
-            Write-Error "CRITICAL: pdflinkcheck.exe not found in MSIX root! Manifest will fail."
-          }
+          Get-ChildItem msix -Recurse | Select-Object @{Name="Path"; Expression={$_.FullName.Replace($env:GITHUB_WORKSPACE, "")}}, Length | Format-Table -AutoSize
+          
 
       - name: Update AppxManifest version from pyproject.toml
         shell: pwsh
