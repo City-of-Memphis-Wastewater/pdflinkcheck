@@ -129,13 +129,58 @@ jobs:
               Write-Error "Final check failed: No EXE found in msix/ after copy."
               exit 1
           }
+      - name: Prepare MSIX folder structure
+        run: |
+          # 1. Start Fresh
+          if (Test-Path "msix") { Remove-Item -Recurse -Force "msix" }
+          New-Item -ItemType Directory -Path "msix" -Force
+
+          # 2. Get the Source Folder (The one containing the EXE and _internal)
+          $sourceDir = Get-ChildItem "dist/pdflinkcheck-*" | Where-Object { $_.PSIsContainer } | Select-Object -First 1
+
+          if ($null -eq $sourceDir) {
+              Write-Error "Source build directory not found!"
+              exit 1
+          }
+
+          Write-Host "Copying build from: $($sourceDir.FullName)"
+
+          # 3. Copy the ENTIRE folder into msix
+          # This avoids wildcard expansion issues entirely
+          Copy-Item -Path $sourceDir.FullName -Destination "msix/temp_build" -Recurse -Force
+
+          # 4. Move everything UP one level so they are in the root of msix/
+          Get-ChildItem "msix/temp_build/*" | Move-Item -Destination "msix/" -Force
+
+          # 5. Clean up the temp folder
+          Remove-Item -Recurse -Force "msix/temp_build"
+
+          # 6. Find and rename the EXE to the stable name 'pdflinkcheck.exe'
+          $actualExe = Get-ChildItem "msix/*.exe" | Select-Object -First 1
+
+          if ($actualExe) {
+              Write-Host "Successfully located: $($actualExe.Name)"
+              Rename-Item -Path $actualExe.FullName -NewName "pdflinkcheck.exe" -Force
+              Write-Host "Result: msix/pdflinkcheck.exe is ready."
+          } else {
+              Write-Error "CRITICAL: Still no EXE found in msix/ root!"
+              Get-ChildItem "msix/" | Select-Object Name # Final debug list
+              exit 1
+          }
 
       - name: Diagnostic, List MSIX Staging Root
         shell: pwsh
         run: |
           Write-Host "--- MSIX STAGING DIRECTORY CONTENTS ---"
-          Get-ChildItem msix -Recurse | Select-Object @{Name="Path"; Expression={$_.FullName.Replace($env:GITHUB_WORKSPACE, "")}}, Length | Format-Table -AutoSize
-          
+          #Get-ChildItem msix -Recurse | Select-Object @{Name="Path"; Expression={$_.FullName.Replace($env:GITHUB_WORKSPACE, "")}}, Length | Format-Table -AutoSize
+          Write-Host "=== Listing dist/ contents (Paths relative to dist root) ==="
+          # We calculate a 'ShortPath' by stripping the long runner path
+          Get-ChildItem dist -Recurse | Select-Object @{
+              Name="RelativePath"; 
+              Expression={ $_.FullName.Replace("D:\a\pdflinkcheck\pdflinkcheck\dist\", "dist\") }
+          }, PSIsContainer | Format-Table -AutoSize
+
+          Write-Host "(Note: Above paths are inferred by stripping the workspace root for readability)"
           if (!(Test-Path "msix/pdflinkcheck.exe")) {
             Write-Error "CRITICAL: pdflinkcheck.exe not found in MSIX root! Manifest will fail."
           }
