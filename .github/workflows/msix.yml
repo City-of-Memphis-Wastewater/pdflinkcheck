@@ -75,22 +75,31 @@ jobs:
           if ($null -eq $exe) { Write-Error "No EXE found in dist/"; exit 1 }
           
           # 2. Setup clean staging directory
-          if (Test-Path "msix") { Remove-Item -Recurse -Force "msix" }
-          New-Item -ItemType Directory -Path "msix" -Force
+          if (Test-Path "staging") { Remove-Item -Recurse -Force "staging" }
+          New-Item -ItemType Directory -Path "staging" -Force
 
-          # 3. Flatten build: Copy contents of the parent folder to msix/
+          # 3. Copy PyInstaller output (EXE + _internal) to staging
           $sourceDir = $exe.Directory
           Write-Host "Staging build from: $($sourceDir.FullName)"
-          Copy-Item -Path "$($sourceDir.FullName)\*" -Destination "msix/" -Recurse -Force
+          Copy-Item -Path "$($sourceDir.FullName)\*" -Destination "staging/" -Recurse -Force
 
-          # 4. Rename to stable name for the Manifest
-          $targetExe = Get-ChildItem "msix/*.exe" -File | Select-Object -First 1
+          # 4. Copy MSIX Metadata (Manifest + Assets) from REPO to staging
+          # This pulls in Assets/, AppxManifest.xml, and AppxManifest_unversioned.xml
+          Write-Host "Adding MSIX Metadata from repo..."
+          Copy-Item -Path "msix\*" -Destination "staging\" -Recurse -Force
+
+          # 5. Rename EXE to stable name
+          $targetExe = Get-ChildItem "staging/*.exe" -File | Select-Object -First 1
           Rename-Item -Path $targetExe.FullName -NewName "pdflinkcheck.exe" -Force
           
-          if (Test-Path "msix/pdflinkcheck.exe") {
-              Write-Host "SUCCESS: msix/pdflinkcheck.exe is ready."
+          # 6. Cleanup and Move to final 'msix' folder name for the rest of the workflow
+          if (Test-Path "msix") { Remove-Item -Recurse -Force "msix" }
+          Move-Item -Path "staging" -Destination "msix"
+
+          if (Test-Path "msix/pdflinkcheck.exe" -and Test-Path "msix/Assets") {
+              Write-Host "SUCCESS: Root staging is complete with Assets and EXE."
           } else {
-              Write-Error "CRITICAL: Staging failed!"
+              Write-Error "CRITICAL: Staging failed! Assets or EXE missing."
               exit 1
           }
 
