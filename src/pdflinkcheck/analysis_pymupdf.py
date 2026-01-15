@@ -23,30 +23,24 @@ except ImportError:
 """
 Inspect target PDF for both URI links and for GoTo links.
 """
-
 def analyze_pdf(pdf_path: str):
-    data = {}
-    data["links"] = []
-    data["toc"] = []
-    data["file_ov"] = {}
+    data = {"links": [], "toc": [], "file_ov": {}}
 
     try:
-        doc = fitz.open(pdf_path)
+        # The 'with' statement handles doc.close() automatically
+        with fitz.open(pdf_path) as doc:
+            data["links"] = extract_links_pymupdf(doc)
+            data["toc"] = extract_toc_pymupdf(doc)
+            
+            data["file_ov"]["total_pages"] = doc.page_count
+            data["file_ov"]["pdf_name"] = Path(pdf_path).name
+            
     except Exception as e:
-        print(f"fitz.open() failed: {e}")
-        return data
+        # Re-raising allows your GUI to catch the error and trigger the fallback
+        print(f"PyMuPDF analysis failed: {e}")
+        raise 
     
-    extracted_links = extract_links_pymupdf(doc)
-    structural_toc = extract_toc_pymupdf(doc)
-    page_count = doc.page_count
-    
-    data["links"] = extracted_links
-    data["toc"] = structural_toc
-    data["file_ov"]["total_pages"] = page_count
-    data["file_ov"]["pdf_name"] = Path(pdf_path).name
     return data
-
-
 # Helper function: Prioritize 'from'
 def _get_link_rect(link_dict):
     """
@@ -284,7 +278,6 @@ def extract_links_pymupdf(doc):
                     })
 
                 links_data.append(link_dict)
-        doc.close()
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)
     return links_data
