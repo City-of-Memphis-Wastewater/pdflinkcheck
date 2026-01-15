@@ -70,7 +70,7 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "--- DIST FOLDER OVERVIEW ---"
-          Get-ChildItem dist -MaxDepth 2 | Select-Object Name, PSIsContainer, Length | Format-Table -AutoSize
+          Get-ChildItem dist -Depth 1 | Select-Object Name, PSIsContainer, Length | Format-Table -AutoSize
           
           Write-Host "--- SEARCHING FOR ARTIFACT ---"
           $item = Get-ChildItem "dist/pdflinkcheck-*" | Select-Object -First 1

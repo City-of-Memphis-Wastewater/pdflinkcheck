@@ -63,17 +63,24 @@ jobs:
           Write-Host "=== Listing  dist/ contents ==="
           Get-ChildItem dist -Recurse -File | Select-Object FullName
 
+
       - name: Detect built EXE
         id: detect_exe
         shell: pwsh
         run: |
-          # Add -Recurse to find the EXE inside the onedir folder
-          $exe = Get-ChildItem dist -Filter pdflinkcheck.exe -Recurse | Select-Object -First 1
-          if (-not $exe) {
+          # Look for the EXE. We filter for 'pdflinkcheck*.exe' to be safe.
+          # We use -File to ensure we don't pick up the directory if it has the same name.
+          $exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | Select-Object -First 1
+          
+          if ($null -eq $exe) {
+              Write-Host "Full dist tree for debugging:"
+              Get-ChildItem "dist" -Recurse
               Write-Error "No EXE found in dist/ (even recursively)"
               exit 1
           }
+          
           Write-Host "Detected EXE at: $($exe.FullName)"
+          # Set the output for subsequent steps
           "EXE_PATH=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
           
       - name: Debug EXE_PATH output
