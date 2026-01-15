@@ -59,6 +59,60 @@ def prepare_links_by_type(report: Dict, pdf_path: str = None) -> Dict[str, List[
 
     for link in all_links:
         link_type = link.get('type', 'Unknown')
+        anchor_text = sanitize_excel_text(link.get('link_text', 'N/A'))
+        # Source page is where the link physically lives
+        src_page = link.get('page', 'N/A')
+
+        if link_type in ('Internal (GoTo/Dest)', 'Internal (Resolved Action)'):
+            url = convert_goto_link(link, pdf_path)
+            # Dest page is where the link takes you (human-readable +1)
+            dest_raw = link.get('destination_page')
+            dest_page = (dest_raw + 1) if dest_raw is not None else "N/A"
+
+            grouped_links['Internal GoTo'].append({
+                'source': src_page,
+                'dest': dest_page,
+                'anchor_text': anchor_text,
+                'hyperlink': url
+            })
+        elif link_type == 'External (URI)':
+            url = link.get('url') or link.get('remote_file') or link.get('target') or ''
+            grouped_links['External URI'].append({
+                'page': src_page,
+                'anchor_text': anchor_text,
+                'hyperlink': url
+            })
+        else:
+            url = link.get('url') or link.get('remote_file') or link.get('target') or ''
+            grouped_links['Other'].append({
+                'page': src_page,
+                'anchor_text': anchor_text,
+                'hyperlink': url
+            })
+
+    return grouped_links
+
+def prepare_links_by_type_(report: Dict, pdf_path: str = None) -> Dict[str, List[Dict]]:
+    """Prepare links grouped by type for separate Excel shee6ts."""
+    pdf_name = report['metadata']['file_overview']['pdf_name']
+    if pdf_path is None:
+        pdf_path = report["metadata"]["file_overview"]["source_path"]
+    if not pdf_path:
+        raise RuntimeError("source_path missing from report metadata")
+
+    if is_temp_pdf(pdf_name):
+        raise ValueError(f"PDF filename '{pdf_name}' looks like a temporary or unstable file. Provide a stable filename.")
+
+    grouped_links = {'Internal GoTo': [], 'External URI': [], 'Other': []}
+
+    all_links = (
+        report['data'].get('internal_links', []) +
+        report['data'].get('external_links', []) +
+        report['data'].get('other_links', [])
+    )
+
+    for link in all_links:
+        link_type = link.get('type', 'Unknown')
         anchor_text = link.get('link_text', 'N/A')
         anchor_text = sanitize_excel_text(anchor_text)
 
@@ -87,6 +141,52 @@ def prepare_links_by_type(report: Dict, pdf_path: str = None) -> Dict[str, List[
     return grouped_links
 
 def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Path):
+    from openpyxl import Workbook
+    wb = Workbook()
+
+    for sheet_name, links in grouped_links.items():
+        if not links:
+            continue
+            
+        ws = wb.create_sheet(sheet_name)
+        is_internal = (sheet_name == 'Internal GoTo')
+
+        # --- Dynamic Headers ---
+        if is_internal:
+            headers = ['Source Page', 'Dest Page', 'Anchor Text', 'Hyperlink (File)']
+        else:
+            headers = ['Page', 'Anchor Text', 'Hyperlink URL']
+        
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.font = Font(bold=True)
+
+        # --- Dynamic Rows ---
+        for link in links:
+            if is_internal:
+                row_data = [link['source'], link['dest'], link['anchor_text'], link['hyperlink']]
+            else:
+                row_data = [link['page'], link['anchor_text'], link['hyperlink']]
+
+            ws.append(row_data)
+            
+            # Set the hyperlink on the very last cell of the row
+            last_cell = ws.cell(row=ws.max_row, column=len(row_data))
+            last_cell.hyperlink = link['hyperlink']
+            last_cell.style = 'Hyperlink'
+
+        # Auto-size columns
+        for col in ws.columns:
+            max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
+            ws.column_dimensions[col[0].column_letter].width = min(max_length + 2, 100)
+
+    if 'Sheet' in wb.sheetnames:
+        wb.remove(wb['Sheet'])
+
+    wb.save(output_file)
+    print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
+    
+def _export_links_to_xlsx_(grouped_links: Dict[str, List[Dict]], output_file: Path):
     """
     Export grouped links into separate sheets in an XLSX workbook.
     Accepts a pre-constructed Path object for the output file.

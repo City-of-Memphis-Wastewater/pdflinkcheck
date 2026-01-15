@@ -122,7 +122,7 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
     # Failing to finish onefile on termux - try both systems
-    if False: #pyhabitat.on_termux():
+    if True: # msix.yml and build.yml have been adjusted to expect this
         flag = '--onedir'
         base_command.append(flag)
     else:

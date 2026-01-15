@@ -312,7 +312,7 @@ class PDFLinkCheckApp:
             # The GUI catches the error to show a user-friendly popup
             messagebox.showerror("Error", f"Could not open system explorer: {e}")
 
-
+    # fallow
     def _open_export_file(self, file_type: str):
         target_path = self.last_json_path if file_type == "json" else self.last_txt_path
 
@@ -325,6 +325,7 @@ class PDFLinkCheckApp:
             return
 
         try:
+            """
             #if pyhabitat.is_msix():
             if pyhabitat.on_windows():
                 # Windows: use the most reliable method
@@ -338,7 +339,12 @@ class PDFLinkCheckApp:
                     target=lambda: pyhabitat.edit_textfile(target_path),
                     daemon=True
                 ).start()
-
+            """
+            # Non-Windows: use pyhabitat's robust cross-platform logic
+            threading.Thread(
+                target=lambda: pyhabitat.edit_textfile(target_path),
+                daemon=True
+            ).start()
         except Exception as e:
             # Log for debugging
             with open(r"C:\Users\user\Desktop\edit_log.txt", "a") as f:

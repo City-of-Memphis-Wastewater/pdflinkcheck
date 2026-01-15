@@ -18,6 +18,9 @@ Examples:
 
 def clear_all_caches()->None:
     """Clear every @cache used in pdflinkcheck. Future work: Call from CLI using --clear-cache"""
+    pymupdf_is_available.cache_clear()
+    pdfium_is_available.cache_clear()
+
     
 @cache
 def pymupdf_is_available() -> bool:
@@ -25,9 +28,10 @@ def pymupdf_is_available() -> bool:
     try:
         import fitz
         return True
-    except Exception:
+    except Exception as e:
         # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
         # Use: `pipx install pdflinkcheck[full]` or alternative.
+        print(f"DEBUG: pymupdf check failed with error: {e}")
         return False
 
 @cache
@@ -36,14 +40,13 @@ def pdfium_is_available() -> bool:
     try:
         import pypdfium2
         return True
-    except Exception:
+    except Exception as e:
         # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
         # Use: `pipx install pdflinkcheck[pdfium]` or alternative.
+        print(f"DEBUG: pdfium check failed with error: {e}")
         return False
 
 
-
-@cache
 def is_in_git_repo(path='.'):
     """
     Check if the given path is inside a Git repository.
@@ -70,7 +73,11 @@ def is_in_git_repo(path='.'):
         return False
 
 def assess_default_pdf_library():
-    if pymupdf_is_available():
-        return "pymupdf"
+
+    if pdfium_is_available():
+        pdf_library = "pdfium"
+    elif pymupdf_is_available():
+        pdf_library = "pymupdf"
     else:
-        return "pypdf"
+        pdf_library = "pypdf"
+    return pdf_library 

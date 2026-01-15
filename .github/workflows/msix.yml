@@ -1,4 +1,4 @@
-# .github/workflows/microsoftstore.yml
+# .github/workflows/msix.yml
 
 name: Build MSIX for Microsoft Store
 
@@ -66,16 +66,16 @@ jobs:
       - name: Detect built EXE
         id: detect_exe
         shell: pwsh
-        working-directory: ${{ github.workspace }}
         run: |
-          $exe = Get-ChildItem dist -Filter *.exe | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+          # Add -Recurse to find the EXE inside the onedir folder
+          $exe = Get-ChildItem dist -Filter pdflinkcheck.exe -Recurse | Select-Object -First 1
           if (-not $exe) {
-              Write-Error "No EXE found in dist/"
+              Write-Error "No EXE found in dist/ (even recursively)"
               exit 1
           }
-          Write-Host "Detected EXE: $($exe.FullName)"
+          Write-Host "Detected EXE at: $($exe.FullName)"
           "EXE_PATH=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
-
+          
       - name: Debug EXE_PATH output
         shell: pwsh
         run: |
@@ -92,7 +92,33 @@ jobs:
               
       - name: Prepare MSIX folder structure
         run: |
-          copy dist\pdflinkcheck.exe msix\
+          # 1. Clean the target
+          if (Test-Path msix) { Remove-Item -Recurse -Force msix\* }
+          else { New-Item -ItemType Directory -Path msix -Force }
+
+          # 2. Identify the build output (handles both onefile and onedir)
+          # This finds the first item starting with 'pdflinkcheck-' in the dist folder
+          $source = Get-ChildItem "dist/pdflinkcheck-*" | Select-Object -First 1
+
+          if ($source.PSIsContainer) {
+              # It's a directory (--onedir)
+              Write-Host "Detected onedir output. Copying folder contents..."
+              Copy-Item -Recurse -Force "$($source.FullName)\*" msix/
+          } else {
+              # It's a single file (--onefile)
+              Write-Host "Detected onefile output. Copying executable..."
+              Copy-Item -Force $source.FullName msix/
+          }
+
+      - name: Diagnostic, List MSIX Staging Root
+        shell: pwsh
+        run: |
+          Write-Host "--- MSIX STAGING DIRECTORY CONTENTS ---"
+          Get-ChildItem msix -Recurse | Select-Object @{Name="Path"; Expression={$_.FullName.Replace($env:GITHUB_WORKSPACE, "")}}, Length | Format-Table -AutoSize
+          
+          if (!(Test-Path "msix/pdflinkcheck.exe")) {
+            Write-Error "CRITICAL: pdflinkcheck.exe not found in MSIX root! Manifest will fail."
+          }
 
       - name: Update AppxManifest version from pyproject.toml
         shell: pwsh
@@ -129,11 +155,6 @@ jobs:
           Write-Host "Found makeappx at: $path"
           echo "MAKEAPPX=$path" >> $env:GITHUB_OUTPUT
 
-      - name: Create MSIX package
-        shell: pwsh
-        run: |
-          & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
-      
       - name: Find working signtool (primary)
         id: find_signtool_primary
         continue-on-error: true
@@ -154,7 +175,6 @@ jobs:
 
           Write-Error "No working SignTool found"
           exit 1
-
 
       - name: Find working signtool (backup)
         id: find_signtool_backup 
@@ -208,6 +228,36 @@ jobs:
         run: | 
           echo "Using signtool: ${{ steps.select_signtool.outputs.SIGNTOOL }}"
           
+
+      # Aign nested DLL and EXE for maximum ThreatLocker compatibility
+      - name: Sign inner binaries
+        shell: pwsh
+        run: |
+          $signtool = "${{ steps.select_signtool.outputs.SIGNTOOL }}"
+          if (-not $signtool -or $signtool -eq "null") {
+              Write-Error "SignTool path is empty. Cannot sign inner binaries."
+              exit 1
+          }
+
+          # Using DigiCert's timestamp server (industry standard)
+          # Including .pyd files for full coverage of Python dependencies
+          Get-ChildItem "msix/*.exe", "msix/*.dll", "msix/*.pyd" -Recurse | ForEach-Object {
+            Write-Host "Signing and Timestamping: $($_.FullName.Replace($env:GITHUB_WORKSPACE, ''))"
+            & $signtool sign /a `
+              /fd SHA256 `
+              /td SHA256 `
+              /tr http://timestamp.digicert.com `
+              /f cert.pfx `
+              /p "${{ secrets.CERT_PASSWORD_PC }}" `
+              $_.FullName
+          }
+
+      - name: Create MSIX package
+        shell: pwsh
+        run: |
+          & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
+
+
       - name: Sign MSIX package
         shell: pwsh
         run: |

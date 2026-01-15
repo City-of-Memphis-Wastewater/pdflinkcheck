@@ -58,10 +58,8 @@ from typing import Optional
 
 from pdflinkcheck import environment as enviro
 
-try:
-    from pdflinkcheck.report import run_report_and_call_exports
-except:
-    pass
+from pdflinkcheck.report import run_report_and_call_exports
+
 
 # =========================
 # Configuration
@@ -84,6 +82,7 @@ REQUEST_SEMAPHORE = threading.Semaphore(MAX_CONCURRENT_JOBS)
 
 # Shutdown coordination
 SHUTDOWN_EVENT = threading.Event()
+
 
 # Set via CLI in real usage
 PUBLIC_MODE = False
@@ -503,12 +502,14 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 pdf_library=fields.get("pdf_library", "auto"),
             )
 
+            print(f"[*] Request received: {upload.filename}. Waiting for slot...")
             with REQUEST_SEMAPHORE:
+                print(f"[!] Slot acquired. Jobs in flight: {MAX_CONCURRENT_JOBS - REQUEST_SEMAPHORE._value}")
                 response = self._process_pdf(upload)
 
             self._send_json(response)
+            print(f"[+] Request finished: {upload.filename}")
             print(f"Content-Length: {content_length} bytes")
-            print(f"Semaphore acquired: {REQUEST_SEMAPHORE._value} remaining slots")
 
         except ValidationError as e:
             self._send_error_json(str(e), 400)
@@ -536,14 +537,14 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             # Run report analysis
             result = run_report_and_call_exports(
                 pdf_path=tmp_path,
-                #export_format="",
-                export_format="json,txt",
+                export_format="json,txt", # xlsx will break with tmp paths in hyperlinks
                 pdf_library=upload.pdf_library,
                 print_bool=False,
             )
-
-            result["metadata"]["file_overview"]["source_path"] = upload.filename
-            result["metadata"]["file_overview"]["processing_path"] = tmp_path
+            result_metadata = result.get("metadata", {})
+            if "file_overview" in result_metadata:
+                result["metadata"]["file_overview"]["source_path"] = upload.filename
+                result["metadata"]["file_overview"]["processing_path"] = tmp_path
             
             return {
                 "filename": upload.filename,
@@ -552,6 +553,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                     result.get("metadata", {}).get("link_counts", {}).get("total_links_count", 0)
                 ),
                 "data": result.get("data", {}),
+                "metadata": result_metadata, 
                 "text_report": result.get("text-lines", ""),
             }
 
@@ -563,6 +565,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 "pdf_library_used": upload.pdf_library,
                 "total_links_count": 0,
                 "data": {},
+                "metadata": {}, 
                 "text_report": f"Error: {e}",
             }
 
@@ -576,34 +579,33 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 # =========================
 
 def main():
+    # Use 'with' for socket cleanup, but we need an explicit shutdown for the loop
     with ThreadedHTTPServer((HOST, PORT), APIHandler) as httpd:
+        
+        def handle_exit():
+            if not SHUTDOWN_EVENT.is_set():
+                SHUTDOWN_EVENT.set()
+                print("\n[Shutdown] Stopping server...")
+                # This breaks the .serve_forever() loop
+                threading.Thread(target=httpd.shutdown, daemon=True).start()
 
-        def shutdown_server():
-            SHUTDOWN_EVENT.set()
-            httpd.shutdown()
+        # Signal handlers (SIGINT for Ctrl+C, SIGTERM for process kill)
+        signal.signal(signal.SIGINT, lambda s, f: handle_exit())
+        signal.signal(signal.SIGTERM, lambda s, f: handle_exit())
 
-        def handle_signal(signum, frame):
-            print("\nShutdown signal received")
-            threading.Thread(
-                target=shutdown_server,
-                daemon=True
-            ).start()
-
-        signal.signal(signal.SIGINT, handle_signal)
-        signal.signal(signal.SIGTERM, handle_signal)
-
-        print(f"pdflinkcheck stdlib server running at http://{HOST}:{PORT}")
-        print("Pure stdlib • Explicit validation • Graceful shutdown • Termux-safe")
+        print(f"PDF Link Check Server running at http://{HOST}:{PORT}")
         print(f"Public mode: {PUBLIC_MODE}")
         print(f"Max concurrent jobs: {MAX_CONCURRENT_JOBS}")
+        
         try:
+            # This is the line that hangs on Windows without an explicit .shutdown()
             httpd.serve_forever()
+        except KeyboardInterrupt:
+            # Windows often triggers this instead of SIGINT
+            handle_exit()
         finally:
             httpd.server_close()
-            print("Server closed socket and cleaned up")
-
-    print("Server shut down.")
-
+            print("Socket closed. Goodbye.")
 
 if __name__ == "__main__":
     main()

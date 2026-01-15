@@ -9,7 +9,7 @@ import pyhabitat
 import copy
 
 from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
-from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
+from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, assess_default_pdf_library
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
 from pdflinkcheck.helpers import debug_head, PageRef
@@ -112,7 +112,6 @@ def run_report_meat(
         if overview:
             report_buffer_overview.append(msg)
     
-    allowed_libraries = ("pypdf", "pymupdf", "pdfium", "auto")
     pdf_library = pdf_library.lower()
 
     log("\n")
@@ -128,52 +127,27 @@ def run_report_meat(
         
     # AUTO MODE
     if pdf_library == "auto":
-        if pdfium_is_available():
-            pdf_library = "pdfium"
-        elif pymupdf_is_available():
-            pdf_library = "pymupdf"
-        else:
-            pdf_library = "pypdf"
-
+        pdf_library = assess_default_pdf_library()
 
 
     # PDFium ENGINE
-    if pdf_library in allowed_libraries and pdf_library == "pdfium":
-        from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pdfium
-        data = analyze_pdf_pdfium(pdf_path) or {"links": [], "toc": [], "file_ov": []}
-        extracted_links = data.get("links", [])
-        structural_toc = data.get("toc", [])
-        file_ov = data.get("file_ov", [])
-        
-    # pypdf ENGINE
-    elif pdf_library in allowed_libraries and pdf_library == "pypdf":
-        from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pypdf
-        #extracted_links = extract_links(pdf_path)
-        #structural_toc = extract_toc(pdf_path) 
-        data = analyze_pdf_pypdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
-        extracted_links = data.get("links", [])
-        structural_toc = data.get("toc", [])
-        file_ov = data.get("file_ov", [])
+    if pdf_library == "pdfium" and pdfium_is_available():
+        from pdflinkcheck.analysis_pdfium import analyze_pdf
+
 
     # PyMuPDF Engine
-    elif pdf_library in allowed_libraries and pdf_library == "pymupdf":
-        if not pymupdf_is_available():
-            print("PyMuPDF was explicitly requested as the PDF Engine")
-            print("Switch the PDF library to 'pypdf' instead, or install PyMuPDF. ")
-            print("To install PyMuPDF locally, try: `uv sync --extra full` OR `pip install .[full]`")
-            if pyhabitat.on_termux():
-                print(f"pyhabitat.on_termux() = {pyhabitat.on_termux()}")
-                print("PyMuPDF is not expected to work on Termux. Use pypdf.")
-            print("\n")
-            #return    
-            raise ImportError("The 'fitz' module (PyMuPDF) is required but not installed.")
-
-        from pdflinkcheck.analysis_pdfium import analyze_pdf as analyze_pdf_pymupdf
-        data = analyze_pdf_pymupdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
-        extracted_links = data.get("links", [])
-        structural_toc = data.get("toc", [])
-        file_ov = data.get("file_ov", [])
+    elif pdf_library == "pymupdf" and pymupdf_is_available():
+        from pdflinkcheck.analysis_pymupdf import analyze_pdf
+        
     
+    # pypdf ENGINE
+    elif pdf_library == "pypdf":
+        from pdflinkcheck.analysis_pypdf import analyze_pdf
+
+    data = analyze_pdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
+    extracted_links = data.get("links", [])
+    structural_toc = data.get("toc", [])
+    file_ov = data.get("file_ov", [])
     total_pages = file_ov.get("total_pages",0)
     
 

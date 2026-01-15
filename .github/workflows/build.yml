@@ -65,22 +65,42 @@ jobs:
       - name: Build executable (PyInstaller)
         run: |
           python build_executable.py
+      
+      - name: Diagnostic, List PyInstaller Output
+        shell: pwsh
+        run: |
+          Write-Host "--- DIST FOLDER OVERVIEW ---"
+          Get-ChildItem dist -MaxDepth 2 | Select-Object Name, PSIsContainer, Length | Format-Table -AutoSize
+          
+          Write-Host "--- SEARCHING FOR ARTIFACT ---"
+          $item = Get-ChildItem "dist/pdflinkcheck-*" | Select-Object -First 1
+          if ($item) {
+              Write-Host "Found target: $($item.FullName) (Type: $(if($item.PSIsContainer){"Folder"}else{"File"}))"
+              
+              if ($item.PSIsContainer) {
+                  Write-Host "--- DETAILED ONEDIR CONTENTS ---"
+                  Get-ChildItem $item.FullName -Recurse | Select-Object Name, Length | Format-Table -AutoSize
+              }
+          } else {
+              Write-Error "No pdflinkcheck-* artifacts found in dist/"
+          }
 
       - name: Collect Windows artifacts
         if: runner.os == 'Windows'
         run: |
-          New-Item -Path dist/upload -ItemType Directory -ErrorAction Stop
-          #Copy-Item dist/*.exe dist/upload/ -ErrorAction SilentlyContinue
-          # Find the single exe file
-          $exe = Get-ChildItem dist/*.exe | Select-Object -First 1
-          if (-not $exe) {
-            Write-Error "No .exe found in dist/"
-            exit 1
-          }
+          New-Item -Path dist/upload -ItemType Directory -Force
+    
+          # Find the output again
+          $item = Get-ChildItem "dist/pdflinkcheck-*" | Select-Object -First 1
+          $zipPath = "dist/upload/$($item.Name).zip"
 
-          # Create zip with the same base name + .zip extension
-          $zipPath = Join-Path dist/upload ($exe.BaseName + ".exe.zip")
-          Compress-Archive -Path $exe.FullName -DestinationPath $zipPath -Force
+          if ($item.PSIsContainer) {
+              # Zip the contents of the onedir folder
+              Compress-Archive -Path "$($item.FullName)\*" -DestinationPath $zipPath -Force
+          } else {
+              # Zip the single onefile executable
+              Compress-Archive -Path $item.FullName -DestinationPath $zipPath -Force
+          }
 
       - name: Collect Unix artifacts
         if: runner.os != 'Windows'

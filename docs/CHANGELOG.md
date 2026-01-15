@@ -6,6 +6,20 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.7] - 2026-01-15  
+### Fixed:
+- Pdfium was being used in report.py regardless of selection from the server, the cli, and the gui.
+- pypdfium2/pdfium.dll known to be blocked by threatlocker. For the MSIX installation, it appears in C:/Users/user/appdata/local/temp/_mei173922/pypdfium2_raw/pdfium.dll. The mei number will change with each launch.
+- Clear cache functons had no body - now it clears pdfium_is_available() and pymupdf_is_available(). 
+- Ensure metadata is returned in stdlib_server._process_pdf()
+
+### Changed:
+- is_in_git_repo() is no longer cached.
+- --onedir used with all build_executable.py builds instead of --onefile, to help mitigate issues with threatlocker and a dynamic _MEI* path. 
+- build.yml and msix.yml now enable proper performance i case of --onedir or --onepath.
+
+---
+
 ## [1.3.6] - 2026-01-14  
 ### Fixed
 - Ensure pdf library used is included in xlsx export name
