@@ -92,22 +92,27 @@ jobs:
               
       - name: Prepare MSIX folder structure
         run: |
-          # 1. Clean the target
-          if (Test-Path msix) { Remove-Item -Recurse -Force msix\* }
-          else { New-Item -ItemType Directory -Path msix -Force }
+          # 1. Ensure the msix folder exists and is clean
+          if (Test-Path "msix") { Remove-Item -Recurse -Force "msix/*" }
+          else { New-Item -ItemType Directory -Path "msix" -Force }
 
           # 2. Identify the build output (handles both onefile and onedir)
-          # This finds the first item starting with 'pdflinkcheck-' in the dist folder
           $source = Get-ChildItem "dist/pdflinkcheck-*" | Select-Object -First 1
+          
+          if ($null -eq $source) {
+              Write-Error "No build output found in dist/ folder!"
+              exit 1
+          }
 
           if ($source.PSIsContainer) {
               # It's a directory (--onedir)
-              Write-Host "Detected onedir output. Copying folder contents..."
-              Copy-Item -Recurse -Force "$($source.FullName)\*" msix/
+              Write-Host "Detected onedir output at: $($source.FullName)"
+              # Copy the contents of the folder, not the folder itself
+              Copy-Item -Path "$($source.FullName)\*" -Destination "msix/" -Recurse -Force
           } else {
               # It's a single file (--onefile)
-              Write-Host "Detected onefile output. Copying executable..."
-              Copy-Item -Force $source.FullName msix/
+              Write-Host "Detected onefile output at: $($source.FullName)"
+              Copy-Item -Path $source.FullName -Destination "msix/" -Force
           }
 
       - name: Diagnostic, List MSIX Staging Root

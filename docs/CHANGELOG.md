@@ -18,6 +18,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - --onedir used with all build_executable.py builds instead of --onefile, to help mitigate issues with threatlocker and a dynamic _MEI* path. 
 - build.yml and msix.yml now enable proper performance i case of --onedir or --onepath.
 
+
+## Added:
+- Sign all DLL, PYD, and EXE files packaged into MSIX, for extra care and ThreatLocker mitigation.
+
 ---
 
 ## [1.3.6] - 2026-01-14  

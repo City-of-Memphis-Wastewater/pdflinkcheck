@@ -123,11 +123,11 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
     ]
     # Failing to finish onefile on termux - try both systems
     if True: # msix.yml and build.yml have been adjusted to expect this
-        flag = '--onedir'
-        base_command.append(flag)
+        onedir_or_onefile_flag = '--onedir'
+        base_command.append(onedir_or_onefile_flag)
     else:
-        flag = '--onefile'
-        base_command.append(flag)
+        onedir_or_onefile_flag = '--onefile'
+        base_command.append(onedir_or_onefile_flag)
     if pyhabitat.tkinter_is_available(): # allows termux, etc build to be primarily CLI, becuase the gui wont work anyways
         flag = '--windowed'
         # flag = '--noconsole'
@@ -170,7 +170,15 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
 
     print("\n--- PyInstaller Build Complete ---")
     ext = '.exe' if IS_WINDOWS_BUILD else ''
-    final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
+    if onedir_or_onefile_flag == "--onefile":
+        final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
+    elif onedir_or_onefile_flag == "--onedir":
+        final_path = DIST_DIR / dynamic_exe_name / f"{dynamic_exe_name}{ext}"
+
+    # Fallback for --onefile just in case you switch back
+    if not final_path.exists():
+        final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
+
     print(f"Executable is located at: {final_path.resolve()}") # do not change the wording of this line, it is used in microsoftstore.yml
 
     return final_path.resolve()
@@ -201,8 +209,12 @@ if __name__ == "__main__":
         # ← Move test here, so it only runs on success
         print("Testing the PyInstaller artifact...")
         subprocess.run([str(path), "--help"])
+
+        # Only test GUI if we aren't in a headless CI environment
+        # GitHub Actions sets the GITHUB_ACTIONS environment variable to 'true'
+        is_ci = os.environ.get('GITHUB_ACTIONS') == 'true'
         print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
-        if pyhabitat.tkinter_is_available():
+        if pyhabitat.tkinter_is_available() and not is_ci:
             print(f"Testing GUI for {str(path)}...")
             subprocess.run([str(path), "gui", "--auto-close", "1000"])
         print("Testing complete.")
