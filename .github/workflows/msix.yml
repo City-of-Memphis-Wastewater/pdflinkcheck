@@ -83,8 +83,7 @@ jobs:
           Write-Host "Staging build from: $($sourceDir.FullName)"
           Copy-Item -Path "$($sourceDir.FullName)\*" -Destination "staging/" -Recurse -Force
 
-          # 4. Copy MSIX Metadata (Manifest + Assets) from REPO to staging
-          # This pulls in Assets/, AppxManifest.xml, and AppxManifest_unversioned.xml
+          # 4. Copy MSIX Metadata (Manifests + Assets) from REPO root
           Write-Host "Adding MSIX Metadata from repo..."
           Copy-Item -Path "msix\*" -Destination "staging\" -Recurse -Force
 
@@ -92,14 +91,15 @@ jobs:
           $targetExe = Get-ChildItem "staging/*.exe" -File | Select-Object -First 1
           Rename-Item -Path $targetExe.FullName -NewName "pdflinkcheck.exe" -Force
           
-          # 6. Cleanup and Move to final 'msix' folder name for the rest of the workflow
+          # 6. Final move to the 'msix' folder name the rest of the workflow expects
           if (Test-Path "msix") { Remove-Item -Recurse -Force "msix" }
           Move-Item -Path "staging" -Destination "msix"
 
-          if (Test-Path "msix/pdflinkcheck.exe" -and Test-Path "msix/Assets") {
+          # 7. Corrected Validation Logic
+          if ((Test-Path "msix/pdflinkcheck.exe") -and (Test-Path "msix/Assets")) {
               Write-Host "SUCCESS: Root staging is complete with Assets and EXE."
           } else {
-              Write-Error "CRITICAL: Staging failed! Assets or EXE missing."
+              Write-Error "CRITICAL: Staging failed! Assets or EXE missing in final msix folder."
               exit 1
           }
 
