@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.18] - 2026-01-15  
+### Fixed:
+- For the PyMuPDF library, the document was being preemtively closed. Now a with block is being implemented in analysis_pymupdf.analyze_pdf() rather than erroneously within analysis_pymupdf.extract_links_pymupdf() .
+
+---
+
 ## [1.3.17] - 2026-01-15  
 ### Fixed:
 - PyMuPDF needds to return empty structural_toc list if no links are found
