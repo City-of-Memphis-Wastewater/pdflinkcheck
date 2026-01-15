@@ -6,6 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.17] - 2026-01-15  
+### Fixed:
+- PyMuPDF needds to return empty structural_toc list if no links are found
+- No links: no XLSX.
+- MSIX now build as --onedir successfully, and all three engines are available.
+
+---
+
 ## [1.3.7] - 2026-01-15  
 ### Fixed:
 - Pdfium was being used in report.py regardless of selection from the server, the cli, and the gui.

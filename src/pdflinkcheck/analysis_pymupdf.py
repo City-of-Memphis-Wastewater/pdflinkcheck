@@ -167,8 +167,9 @@ def extract_toc_pymupdf(doc):
     Returns:
         A list of dictionaries representing the structural TOC/bookmarks.
     """
+    # INITIALIZE HERE to avoid UnboundLocalError, if there is no TOC found
+    structural_toc = []
     try:
-        
         structural_toc = analyze_toc_fitz(doc)
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)

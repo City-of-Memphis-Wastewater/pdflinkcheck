@@ -143,19 +143,18 @@ def prepare_links_by_type_(report: Dict, pdf_path: str = None) -> Dict[str, List
 def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Path):
     from openpyxl import Workbook
     wb = Workbook()
+    sheets_created = 0
 
     for sheet_name, links in grouped_links.items():
         if not links:
-            continue
+            continue  # Corrected: Skip this sheet, but keep looking at others
             
         ws = wb.create_sheet(sheet_name)
+        sheets_created += 1
         is_internal = (sheet_name == 'Internal GoTo')
 
         # --- Dynamic Headers ---
-        if is_internal:
-            headers = ['Source Page', 'Dest Page', 'Anchor Text', 'Hyperlink (File)']
-        else:
-            headers = ['Page', 'Anchor Text', 'Hyperlink URL']
+        headers = ['Source Page', 'Dest Page', 'Anchor Text', 'Hyperlink (File)'] if is_internal else ['Page', 'Anchor Text', 'Hyperlink URL']
         
         ws.append(headers)
         for cell in ws[1]:
@@ -163,14 +162,9 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
 
         # --- Dynamic Rows ---
         for link in links:
-            if is_internal:
-                row_data = [link['source'], link['dest'], link['anchor_text'], link['hyperlink']]
-            else:
-                row_data = [link['page'], link['anchor_text'], link['hyperlink']]
-
+            row_data = [link['source'], link['dest'], link['anchor_text'], link['hyperlink']] if is_internal else [link['page'], link['anchor_text'], link['hyperlink']]
             ws.append(row_data)
             
-            # Set the hyperlink on the very last cell of the row
             last_cell = ws.cell(row=ws.max_row, column=len(row_data))
             last_cell.hyperlink = link['hyperlink']
             last_cell.style = 'Hyperlink'
@@ -180,49 +174,17 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
             max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
             ws.column_dimensions[col[0].column_letter].width = min(max_length + 2, 100)
 
+    # Final Safety: If we didn't actually create any sheets, don't try to save
+    if sheets_created == 0:
+        return None
+
     if 'Sheet' in wb.sheetnames:
         wb.remove(wb['Sheet'])
 
     wb.save(output_file)
     print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
-    
-def _export_links_to_xlsx_(grouped_links: Dict[str, List[Dict]], output_file: Path):
-    """
-    Export grouped links into separate sheets in an XLSX workbook.
-    Accepts a pre-constructed Path object for the output file.
-    """
-    from openpyxl import Workbook
+    return True
 
-    wb = Workbook()
-
-    for sheet_name, links in grouped_links.items():
-        ws = wb.create_sheet(sheet_name)
-        # Heading row
-        headers = ['Page', 'Anchor Text', 'Hyperlink']
-        ws.append(headers)
-        for cell in ws[1]:
-            cell.font = Font(bold=True)
-
-        for link in links:
-            page = sanitize_excel_text(link['page'])
-            anchor = sanitize_excel_text(link['anchor_text'])
-            hyperlink = link['hyperlink']
-
-            ws.append([page, anchor, hyperlink])
-            ws.cell(row=ws.max_row, column=3).hyperlink = hyperlink
-            ws.cell(row=ws.max_row, column=3).style = 'Hyperlink'
-
-        # Auto-size columns
-        for col in ws.columns:
-            max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
-            ws.column_dimensions[col[0].column_letter].width = max_length + 2
-
-    # Remove default sheet
-    if 'Sheet' in wb.sheetnames:
-        wb.remove(wb['Sheet'])
-
-    wb.save(output_file)
-    print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
 
 def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
     """
@@ -234,6 +196,11 @@ def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
     # 1. Group and process links
     grouped_links = prepare_links_by_type(report)
 
+    # CHECK: If all groups are empty, don't bother creating the file
+    if not any(grouped_links.values()):
+        print("No links found. Skipping XLSX export.")
+        return None
+    
     # 2. Extract metadata safely
     metadata = report.get("metadata", {})
     file_overview = metadata.get("file_overview", {})
@@ -249,10 +216,11 @@ def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
     timestamp = get_unique_unix_time()
     output_file = output_dir / f"{pdf_stem}{lib_suffix}_{timestamp}_report.xlsx"
     # 3. Write XLSX
-    _export_links_to_xlsx(grouped_links, output_file)
-
-    return output_file
-
+    success = _export_links_to_xlsx(grouped_links, output_file)
+    if success:
+        return output_file
+    else:
+        return None
 # ----------------- Main / Proof-of-Concept -----------------
 
 def main(pdf_path: str = None):
