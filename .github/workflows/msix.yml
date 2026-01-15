@@ -111,40 +111,40 @@ jobs:
 
       - name: Prepare MSIX folder structure
         run: |
-          # 1. Start Fresh
+          # 1. Setup clean staging directory
           if (Test-Path "msix") { Remove-Item -Recurse -Force "msix" }
           New-Item -ItemType Directory -Path "msix" -Force
 
-          # 2. Get the Source Folder (The one containing the EXE and _internal)
+          # 2. Find the build folder (e.g., dist\pdflinkcheck-1.3.12...)
           $sourceDir = Get-ChildItem "dist/pdflinkcheck-*" | Where-Object { $_.PSIsContainer } | Select-Object -First 1
 
           if ($null -eq $sourceDir) {
-              Write-Error "Source build directory not found!"
+              Write-Error "CRITICAL: Could not find the PyInstaller output folder!"
               exit 1
           }
 
-          Write-Host "Copying build from: $($sourceDir.FullName)"
+          Write-Host "Flattening build from: $($sourceDir.FullName)"
 
-          # 3. Copy the ENTIRE folder into msix
-          # This avoids wildcard expansion issues entirely
-          Copy-Item -Path $sourceDir.FullName -Destination "msix/temp_build" -Recurse -Force
+          # 3. Copy everything INSIDE that folder to msix/
+          Copy-Item -Path "$($sourceDir.FullName)\*" -Destination "msix/" -Recurse -Force
 
-          # 4. Move everything UP one level so they are in the root of msix/
-          Get-ChildItem "msix/temp_build/*" | Move-Item -Destination "msix/" -Force
+          # 4. Find the long-named EXE inside msix/ and rename it to 'pdflinkcheck.exe'
+          $dynamicExe = Get-ChildItem "msix/*.exe" | Select-Object -First 1
 
-          # 5. Clean up the temp folder
-          Remove-Item -Recurse -Force "msix/temp_build"
-
-          # 6. Find and rename the EXE to the stable name 'pdflinkcheck.exe'
-          $actualExe = Get-ChildItem "msix/*.exe" | Select-Object -First 1
-
-          if ($actualExe) {
-              Write-Host "Successfully located: $($actualExe.Name)"
-              Rename-Item -Path $actualExe.FullName -NewName "pdflinkcheck.exe" -Force
-              Write-Host "Result: msix/pdflinkcheck.exe is ready."
+          if ($dynamicExe) {
+              Write-Host "Identified dynamic EXE: $($dynamicExe.Name)"
+              Write-Host "Renaming to: pdflinkcheck.exe"
+              Rename-Item -Path $dynamicExe.FullName -NewName "pdflinkcheck.exe" -Force
           } else {
-              Write-Error "CRITICAL: Still no EXE found in msix/ root!"
-              Get-ChildItem "msix/" | Select-Object Name # Final debug list
+              Write-Error "CRITICAL: The EXE was not found after the copy!"
+              exit 1
+          }
+
+          # 5. Final Verification
+          if (Test-Path "msix/pdflinkcheck.exe") {
+              Write-Host "SUCCESS: msix/pdflinkcheck.exe is ready for the manifest."
+          } else {
+              Write-Error "Verification failed: pdflinkcheck.exe is missing from msix/ root."
               exit 1
           }
 
