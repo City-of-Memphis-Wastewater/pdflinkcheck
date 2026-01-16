@@ -9,6 +9,7 @@ from typing import Dict, List
 
 from openpyxl import Workbook
 from openpyxl.styles import Font
+from urllib.parse import quote
 
 from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_unix_time
 from pdflinkcheck.helpers import PageRef
@@ -26,191 +27,172 @@ def sanitize_excel_text(text: str) -> str:
         text = str(text)
     return ''.join(c for c in text if c.isprintable() or c in '\t')
 
+
 def convert_goto_link(link: Dict, pdf_path: str) -> str:
     """
-    Convert internal GoTo link into a clickable file:// URL.
-    Excel will recognize this as a hyperlink.
+    Convert internal GoTo link into a clickable file:// URI.
+    Uses .to_uri() for robust cross-platform path encoding.
     """
     page_index = link.get('destination_page')
-    if page_index is None:
-        return f'file://{Path(pdf_path).resolve()}'
-
-    human_page = page_index + 1
-    full_path = Path(pdf_path).resolve()
-    return f'file://{full_path}#page={human_page}'
-
-def prepare_links_by_type(report: Dict) -> Dict[str, List[Dict]]:
-    from pdflinkcheck.helpers import PageRef
     
-    # Initialize the four requested sheets
-    grouped_links = {
+    # Path.to_uri() handles file:/// and character escaping automatically
+    base_uri = Path(pdf_path).absolute().as_uri()
+    
+    if page_index is None:
+        return base_uri
+
+    # PageRef style logic: 0-index to human page
+    human_page = full_path = Path(pdf_path).resolve()
+    return f"{base_uri}#page={human_page}"
+
+def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[Dict]]:
+    """
+    Groups links and TOC items into four categories.
+    Uses the specific keys: external_links, internal_links, and toc.
+    """
+    payload = results.get("data", {})
+    
+    # These were the missing keys from your debug log
+    ext_links = payload.get('external_links', [])
+    int_links = payload.get('internal_links', [])
+    all_toc = payload.get('toc', [])
+
+    grouped = {
         'Table of Contents': [],
         'Internal Links': [],
         'External Links': [],
         'Other': []
     }
 
-    # 1. Process Table of Contents (TOC) - Pulled from report['toc']
-    for item in report.get('toc', []):
+    # 1. Process TOC
+    for item in all_toc:
         raw_target = item.get('target_page')
-        # Use PageRef to ensure human-readable numbers (1-based)
         pg_human = PageRef.from_index(int(raw_target)).human if isinstance(raw_target, (int, float)) else "N/A"
-        
-        grouped_links['Table of Contents'].append({
-            'level': item.get('level', 1),
-            'title': sanitize_excel_text(item.get('title', 'Untitled')),
-            'target_page': pg_human
+        grouped['Table of Contents'].append({
+            'col1': item.get('level', 1),
+            'col2': sanitize_excel_text(item.get('title', 'Untitled')),
+            'col3': pg_human
         })
 
-    # 2. Process All Links - Pulled from report['links']
-    for link in report.get('links', []):
-        link_type = link.get('type', 'Unknown')
-        anchor_text = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
-        
+    # 2. Process Internal Links (Restoring convert_goto_link logic)
+    for link in int_links:
+        anchor = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
         raw_src = link.get('page')
-        pg_num = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
+        pg_src = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
+        
+        raw_dst = link.get('destination_page')
+        pg_dst = PageRef.from_index(int(raw_dst)).human if isinstance(raw_dst, (int, float)) else "N/A"
+        
+        # Use the dedicated conversion function for the Jump Link
+        jump_url = convert_goto_link(link, pdf_path) if pdf_path else f"Page {pg_dst}"
 
-        # Handle Internal
-        if "Internal" in link_type or "GoTo" in link_type and "Remote" not in link_type:
-            raw_dest = link.get('destination_page')
-            pg_dest = PageRef.from_index(int(raw_dest)).human if isinstance(raw_dest, (int, float)) else "N/A"
-            
-            grouped_links['Internal Links'].append({
-                'source': pg_num,
-                'dest': pg_dest,
-                'anchor_text': anchor_text,
-                'hyperlink': f"Page {pg_dest}" 
+        grouped['Internal Links'].append({
+            'col1': pg_src, 
+            'col2': pg_dst, 
+            'col3': anchor, 
+            'hyperlink': jump_url 
+        })
+
+    # 3. Process External Links
+    for link in ext_links:
+        anchor = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
+        raw_src = link.get('page')
+        pg_src = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
+        
+        url = link.get('url') or ''
+        
+        # Determine if it's truly External or "Other" (Remote/File)
+        l_type = str(link.get('type', '')).lower()
+        if "external" in l_type or "uri" in l_type:
+            grouped['External Links'].append({
+                'col1': pg_src, 'col2': anchor, 'col3': url, 'hyperlink': url
             })
-
-        # Handle External
-        elif "External" in link_type or "URI" in link_type:
-            url = link.get('url') or ''
-            grouped_links['External Links'].append({
-                'page': pg_num,
-                'anchor_text': anchor_text,
-                'hyperlink': url
-            })
-
-        # Handle Other (Remote Files, GoToR, etc.)
         else:
-            other_target = link.get('remote_file') or link.get('url') or 'N/A'
-            grouped_links['Other'].append({
-                'page': pg_num,
-                'anchor_text': anchor_text,
-                'hyperlink': other_target
+            grouped['Other'].append({
+                'col1': pg_src, 'col2': anchor, 'col3': url, 'hyperlink': url
             })
 
-    return grouped_links
+    return grouped
 
-def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Path):
+def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Path) -> bool:
+    """
+    Internal writer that handles the physical creation of the Excel file.
+    """
     wb = Workbook()
-    sheets_created = 0
-
-    # Ensure sheets appear in a logical order
-    order = ['Table of Contents', 'Internal Links', 'External Links', 'Other']
     
-    for sheet_name in order:
+    sheet_configs = [
+        ('Table of Contents', ['Level', 'Title', 'Target Page']),
+        ('Internal Links',   ['Source Page', 'Dest Page', 'Anchor Text', 'Jump Link']),
+        ('External Links',   ['Source Page', 'Anchor Text', 'URL', 'External Link']),
+        ('Other',            ['Source Page', 'Anchor Text', 'Reference', 'Link'])
+    ]
+
+    sheets_actually_written = 0
+
+    for sheet_name, headers in sheet_configs:
         rows = grouped_links.get(sheet_name, [])
         if not rows:
             continue
             
         ws = wb.create_sheet(sheet_name)
-        sheets_created += 1
-
-        # --- Define Dynamic Headers ---
-        if sheet_name == 'Table of Contents':
-            headers = ['Level', 'Title', 'Target Page']
-        elif sheet_name == 'Internal Links':
-            headers = ['Source Page', 'Dest Page', 'Anchor Text', 'Jump to Page']
-        else:
-            headers = ['Source Page', 'Anchor Text', 'Hyperlink / Path']
-        
+        sheets_actually_written += 1
         ws.append(headers)
+        
         for cell in ws[1]:
             cell.font = Font(bold=True)
 
-        # --- Fill Rows ---
-        for entry in rows:
-            if sheet_name == 'Table of Contents':
-                row_data = [entry['level'], entry['title'], entry['target_page']]
-            elif sheet_name == 'Internal Links':
-                row_data = [entry['source'], entry['dest'], entry['anchor_text'], entry['hyperlink']]
-            else:
-                row_data = [entry['page'], entry['anchor_text'], entry['hyperlink']]
-
+        for item in rows:
+            row_data = [item['col1'], item['col2'], item['col3']]
+            if 'hyperlink' in item:
+                row_data.append(item['hyperlink'])
+            
             ws.append(row_data)
             
-            # Apply Hyperlink style to the last column (unless it's TOC which is just text)
-            if sheet_name != 'Table of Contents':
+            if 'hyperlink' in item and item['hyperlink'] != 'N/A':
                 last_cell = ws.cell(row=ws.max_row, column=len(row_data))
-                hlink = entry.get('hyperlink')
-                if hlink and hlink != 'N/A':
-                    last_cell.hyperlink = hlink
-                    last_cell.style = 'Hyperlink'
+                last_cell.hyperlink = item['hyperlink']
+                last_cell.style = 'Hyperlink'
 
-        # Auto-size columns
         for col in ws.columns:
-            max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
-            ws.column_dimensions[col[0].column_letter].width = min(max_length + 2, 80)
-
-    if sheets_created == 0:
-        return None
+            max_len = max((len(str(cell.value)) for cell in col if cell.value), default=10)
+            ws.column_dimensions[col[0].column_letter].width = min(max_len + 2, 70)
 
     if 'Sheet' in wb.sheetnames:
         wb.remove(wb['Sheet'])
 
+    if sheets_actually_written == 0:
+        return False
+
     wb.save(output_file)
+    print(f"sheets_actually_written = {sheets_actually_written}")
     print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
     return True
 
-def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
+def export_report_links_to_xlsx(results: Dict, output_dir: Path = None) -> Path:
     """
-    Takes a report dictionary (from run_report_meat) and exports
-    grouped clickable links to XLSX. Returns the XLSX path.
+    Takes a results dictionary and exports grouped clickable links to XLSX.
     """
     output_dir = output_dir or PDFLINKCHECK_HOME
+    
+    # Extract pdf_path from metadata for the internal link conversion
+    metadata = results.get("metadata", {})
+    file_ov = metadata.get("file_overview", {})
+    pdf_path = file_ov.get("pdf_path", "")
 
-    # 1. Group and process links
-    grouped_links = prepare_links_by_type(report)
+    grouped_links = prepare_links_by_type(results, pdf_path=pdf_path)
 
-    # CHECK: If all groups are empty, don't bother creating the file
-    if not any(grouped_links.values()):
-        print("No links found. Skipping XLSX export.")
+    total_entries = sum(len(v) for v in grouped_links.values())
+    if total_entries == 0:
         return None
     
-    # 2. Extract metadata safely
-    metadata = report.get("metadata", {})
-    file_overview = metadata.get("file_overview", {})
-
-    # Fallback to "report" if pdf_name is missing
-    pdf_name = file_overview.get("pdf_name", "file")
+    pdf_name = file_ov.get("pdf_name", "file")
     pdf_stem = Path(pdf_name).stem
-
-    # Only add the underscore if the library name exists
     lib = metadata.get("library_used")
     lib_suffix = f"_{lib}" if lib else ""
 
     timestamp = get_unique_unix_time()
     output_file = output_dir / f"{pdf_stem}{lib_suffix}_{timestamp}_report.xlsx"
-    # 3. Write XLSX
-    success = _export_links_to_xlsx(grouped_links, output_file)
-    if success:
+
+    if _export_links_to_xlsx(grouped_links, output_file):
         return output_file
-    else:
-        return None
-# ----------------- Main / Proof-of-Concept -----------------
-
-def main(pdf_path: str = None):
-    from pdflinkcheck.report import run_report_meat, get_first_pdf_in_cwd
-    if pdf_path is None:
-        pdf_path = get_first_pdf_in_cwd()
-        if not pdf_path:
-            print("No PDF found in current directory.")
-            sys.exit(1)
-
-    report = run_report_meat(pdf_path=pdf_path, pdf_library = "auto", print_bool=True, concise_print=True)
-
-    export_report_links_to_xlsx(report)
-
-if __name__ == "__main__":
-    main()
+    return None
