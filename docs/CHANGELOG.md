@@ -8,7 +8,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.3.21] - 2026-01-16
 ### Added:
-- Enable onefile vs onedir mode as argparse call to build_executible.py.
+- Enable onefile vs onedir mode as argparse call to build_executible.py; default to onedir if no arg is provided.
 - In build.yml, add a section to call the onefile mode for just Windows.
 
 ---
