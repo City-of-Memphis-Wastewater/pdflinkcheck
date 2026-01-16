@@ -6,10 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-
 ## [1.3.30] - 2026-01-16
 ### Fixed:
 - Implement dist/zipapp/ folder for build_pyz, and referenc this in build.yml for file handling.
+
+### Fxed:
+- Improve build_pyz.py to be compatible with F-Droid Termux, by sending `uv build` to use a tmp dir within $HOME during the wheel build phase.
 
 ### Internal
 - All PYZ builds are not designated to use pdfium but not pymupdf as an extra, to stay small.
