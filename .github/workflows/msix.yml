@@ -70,9 +70,17 @@ jobs:
         id: prepare_msix
         shell: pwsh
         run: |
-          # 1. Detect the dynamic EXE in dist
-          $exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | Select-Object -First 1
-          if ($null -eq $exe) { Write-Error "No EXE found in dist/"; exit 1 }
+          ### 1. Detect the dynamic EXE in dist (defunct, now that we build both onedir and onefile for windows in build.yml)
+          ##$exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | Select-Object -First 1
+          ##if ($null -eq $exe) { Write-Error "No EXE found in dist/"; exit 1 }
+
+          1. Specifically look for the ONEDIR version (avoid the --onefile.exe)
+          # We filter out any file containing '--onefile' in the name
+          $exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | 
+                 Where-Object { $_.Name -notmatch "--onefile" } | 
+                 Select-Object -First 1
+
+          if ($null -eq $exe) { Write-Error "No onedir EXE found in dist/"; exit 1 }
           
           # 2. Setup clean staging directory
           if (Test-Path "staging") { Remove-Item -Recurse -Force "staging" }

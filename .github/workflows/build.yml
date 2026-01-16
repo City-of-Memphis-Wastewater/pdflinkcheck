@@ -72,6 +72,24 @@ jobs:
         run: |
           python build_executable.py --mode onefile
       
+      - name: Post-Build Cleanup (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Write-Host "Removing redundant generic artifacts from both Windows builds..."
+          # Remove sdist and wheel to prevent Release upload collisions with the Ubuntu runner's versions
+          Remove-Item "dist/*.tar.gz" -ErrorAction SilentlyContinue
+          Remove-Item "dist/*.whl" -ErrorAction SilentlyContinue
+          Write-Host "Cleanup complete."
+
+      - name: Post-Build Cleanup (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          echo "Removing redundant generic artifacts from macOS build..."
+          # Delete sdist and wheel to prevent collisions with the Ubuntu runner
+          rm -f dist/*.tar.gz dist/*.whl
+          echo "Cleanup complete."
+
       - name: Diagnostic, List PyInstaller Output
         shell: pwsh
         run: |
@@ -118,8 +136,19 @@ jobs:
         run: |
           mkdir -p dist/upload
 
-          echo "Zipping PyInstaller outputs..."
+          # Only copy generic artifacts on Ubuntu
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            cp dist/*.tar.gz dist/upload/ 2>/dev/null || true
+            cp dist/*.whl dist/upload/ 2>/dev/null || true
+          fi
+
+          echo "Zipping platform-specific outputs..."
           for item in dist/pdflinkcheck-*; do
+            # Skip the generic sdist and wheel files we just handled
+            case "$item" in
+              *.tar.gz|*.whl) continue ;;
+            esac
+
             if [ -d "$item" ]; then
               base=$(basename "$item")
               tar -czf "dist/upload/${base}.tar.gz" -C dist "$base"
@@ -127,12 +156,6 @@ jobs:
               cp "$item" dist/upload/
             fi
           done
-
-          # Only copy generic artifacts once
-          if [ "${{ runner.os }}" = "Linux" ]; then
-            cp dist/*.tar.gz dist/upload/ 2>/dev/null || true
-            cp dist/*.whl dist/upload/ 2>/dev/null || true
-          fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
