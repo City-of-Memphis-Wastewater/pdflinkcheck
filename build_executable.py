@@ -127,7 +127,7 @@ def run_pyinstaller(
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
-    # Failing to finish onefile on termux - try both systems
+    
     # msix.yml and build.yml have been adjusted to expect either onefile or onedir
     if mode == "onefile": 
         onedir_or_onefile_flag = '--onefile'
@@ -219,7 +219,7 @@ if __name__ == "__main__":
         # 3. Determine the executable name (without the extension)
         executable_descriptor = form_dynamic_name(PROJECT_NAME, package_version)
         if args.mode == "onefile":
-            executable_descriptor += "--onefile"
+            executable_descriptor += "-onefile"
 
         # 4. Run the installer
         path = run_pyinstaller(

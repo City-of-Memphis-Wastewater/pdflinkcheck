@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.23] - 2026-01-16
+### Fixed:
+- Upload conflict for the two Windows build runs (onedir and onefile)
+
+### Changed:
+- Adjust build.yml to not yell in case of overwrite. Only build source tar.gz and .whl on ubuntu. 
+
+---
+
 ## [1.3.22] - 2026-01-16
 ### Added:
 - Enable onefile vs onedir mode as argparse call to build_executible.py; default to onedir if no arg is provided.
