@@ -72,7 +72,7 @@ def _get_anchor_text_pypdf(page, rect) -> str:
     raw_extracted = "".join(parts)
     cleaned = " ".join(raw_extracted.split()).strip()
     
-    return cleaned if cleaned else "Graphic/Empty Link"
+    return cleaned if cleaned else "Link (No Text)"
 
 def _resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) -> Optional[int]:
     try:
@@ -126,7 +126,6 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 'rect': list(rect) if rect else None,
                 'link_text': anchor_text,
                 'type': 'Other Action',
-                'target': 'Unknown'
             }
             
             # Handle URI (External)
@@ -135,7 +134,6 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 link_dict.update({
                     'type': 'External (URI)',
                     'url': uri,
-                    'target': uri
                 })
             
             # Handle GoTo (Internal)
@@ -148,8 +146,6 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                     link_dict.update({
                         'type': 'Internal (GoTo/Dest)',
                         'destination_page': dest_page.machine,
-                        #'target': f"Page {target_page}"
-                        'target': dest_page.machine
                     })
             
             # Handle Remote GoTo (GoToR)
@@ -158,7 +154,6 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 link_dict.update({
                     'type': 'Remote (GoToR)',
                     'remote_file': str(remote_file),
-                    'target': f"File: {remote_file}"
                 })
 
             all_links.append(link_dict)

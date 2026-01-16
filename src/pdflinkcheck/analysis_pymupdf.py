@@ -242,7 +242,6 @@ def extract_links_pymupdf(doc):
                     link_dict.update({
                         'destination_page': dest_ref.machine,
                         'destination_view': destination_view,
-                        'target': dest_ref.machine,          # INT (MACHINE INDEX)
                     })
 
                     if kind == fitz.LINK_GOTO:
@@ -257,7 +256,6 @@ def extract_links_pymupdf(doc):
                     link_dict.update({
                         'type': 'External (URI)',
                         'url': uri,
-                        'target': uri # STRING (URL)
                     })
                 
                 # --- CASE 3: REMOTE PDF REFERENCES ---
@@ -265,8 +263,7 @@ def extract_links_pymupdf(doc):
                     remote_file = link.get('file', 'Remote File')
                     link_dict.update({
                         'type': 'Remote (GoToR)',
-                        'remote_file': link.get('file'),
-                        'target': remote_file  # STRING (File Path)
+                        'remote_file': remote_file
                     })
                 
                 # --- CASE 4: OTHERS ---
@@ -274,7 +271,6 @@ def extract_links_pymupdf(doc):
                     link_dict.update({
                         'type': 'Other Action',
                         'action_kind': kind,
-                        'target': 'Unknown'  # STRING
                     })
 
                 links_data.append(link_dict)

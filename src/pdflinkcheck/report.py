@@ -260,7 +260,7 @@ def run_report_meat(
         
         if external_uri_links:
             for i, link in enumerate(external_uri_links, 1):
-                target = link.get('url') or link.get('remote_file') or link.get('target')
+                target = link.get('url') or link.get('remote_file')
                 link_text = link.get('link_text', 'N/A')
                 log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
 
@@ -277,7 +277,7 @@ def run_report_meat(
         
         if other_links:
             for i, link in enumerate(other_links, 1):
-                target = link.get('url') or link.get('remote_file') or link.get('target')
+                target = link.get('url') or link.get('remote_file')
                 link_text = link.get('link_text', 'N/A')
                 log("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link_text[:40], target))
 

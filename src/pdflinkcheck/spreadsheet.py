@@ -11,6 +11,7 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_unix_time
+from pdflinkcheck.helpers import PageRef
 
 # ----------------- Helper Functions -----------------
 
@@ -38,102 +39,51 @@ def convert_goto_link(link: Dict, pdf_path: str) -> str:
     full_path = Path(pdf_path).resolve()
     return f'file://{full_path}#page={human_page}'
 
-def prepare_links_by_type(report: Dict, pdf_path: str = None) -> Dict[str, List[Dict]]:
-    """Prepare links grouped by type for separate Excel shee6ts."""
-    pdf_name = report['metadata']['file_overview']['pdf_name']
-    if pdf_path is None:
-        pdf_path = report["metadata"]["file_overview"]["source_path"]
-    if not pdf_path:
-        raise RuntimeError("source_path missing from report metadata")
-
-    if is_temp_pdf(pdf_name):
-        raise ValueError(f"PDF filename '{pdf_name}' looks like a temporary or unstable file. Provide a stable filename.")
-
-    grouped_links = {'Internal GoTo': [], 'External URI': [], 'Other': []}
-
-    all_links = (
-        report['data'].get('internal_links', []) +
-        report['data'].get('external_links', []) +
-        report['data'].get('other_links', [])
-    )
+def prepare_links_by_type(report: Dict) -> Dict[str, List[Dict]]:
+    from pdflinkcheck.helpers import PageRef
+    
+    all_links = report.get('links', [])
+    grouped_links = {
+        'Internal GoTo': [],
+        'External URI': [],
+        'Other': []
+    }
 
     for link in all_links:
         link_type = link.get('type', 'Unknown')
-        anchor_text = sanitize_excel_text(link.get('link_text', 'N/A'))
-        # Source page is where the link physically lives
-        src_page = link.get('page', 'N/A')
+        anchor_text = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
+        
+        # 1. Translate Source Page
+        raw_src = link.get('page')
+        pg_num = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
 
-        if link_type in ('Internal (GoTo/Dest)', 'Internal (Resolved Action)'):
-            url = convert_goto_link(link, pdf_path)
-            # Dest page is where the link takes you (human-readable +1)
-            dest_raw = link.get('destination_page')
-            dest_page = (dest_raw + 1) if dest_raw is not None else "N/A"
-
+        # 2. Handle Internal
+        if "Internal" in link_type:
+            raw_dest = link.get('destination_page') # Standardized key
+            pg_dest = PageRef.from_index(int(raw_dest)).human if isinstance(raw_dest, (int, float)) else "N/A"
+            
+            # We pass a fake URL for the cell hyperlink, or keep it as text
             grouped_links['Internal GoTo'].append({
-                'source': src_page,
-                'dest': dest_page,
+                'source': pg_num,
+                'dest': pg_dest,
                 'anchor_text': anchor_text,
-                'hyperlink': url
+                'hyperlink': f"Page {pg_dest}" 
             })
+
+        # 3. Handle External
         elif link_type == 'External (URI)':
-            url = link.get('url') or link.get('remote_file') or link.get('target') or ''
+            url = link.get('url') or ''
             grouped_links['External URI'].append({
-                'page': src_page,
+                'page': pg_num,
                 'anchor_text': anchor_text,
                 'hyperlink': url
             })
+
+        # 4. Handle Everything Else
         else:
-            url = link.get('url') or link.get('remote_file') or link.get('target') or ''
+            url = link.get('url') or 'N/A'
             grouped_links['Other'].append({
-                'page': src_page,
-                'anchor_text': anchor_text,
-                'hyperlink': url
-            })
-
-    return grouped_links
-
-def prepare_links_by_type_(report: Dict, pdf_path: str = None) -> Dict[str, List[Dict]]:
-    """Prepare links grouped by type for separate Excel shee6ts."""
-    pdf_name = report['metadata']['file_overview']['pdf_name']
-    if pdf_path is None:
-        pdf_path = report["metadata"]["file_overview"]["source_path"]
-    if not pdf_path:
-        raise RuntimeError("source_path missing from report metadata")
-
-    if is_temp_pdf(pdf_name):
-        raise ValueError(f"PDF filename '{pdf_name}' looks like a temporary or unstable file. Provide a stable filename.")
-
-    grouped_links = {'Internal GoTo': [], 'External URI': [], 'Other': []}
-
-    all_links = (
-        report['data'].get('internal_links', []) +
-        report['data'].get('external_links', []) +
-        report['data'].get('other_links', [])
-    )
-
-    for link in all_links:
-        link_type = link.get('type', 'Unknown')
-        anchor_text = link.get('link_text', 'N/A')
-        anchor_text = sanitize_excel_text(anchor_text)
-
-        if link_type in ('Internal (GoTo/Dest)', 'Internal (Resolved Action)'):
-            url = convert_goto_link(link, pdf_path)
-            grouped_links['Internal GoTo'].append({
-                'page': link.get('page', 'N/A'),
-                'anchor_text': anchor_text,
-                'hyperlink': url
-            })
-        elif link_type == 'External (URI)':
-            url = link.get('url') or link.get('remote_file') or link.get('target') or ''
-            grouped_links['External URI'].append({
-                'page': link.get('page', 'N/A'),
-                'anchor_text': anchor_text,
-                'hyperlink': url
-            })
-        else:
-            url = link.get('url') or link.get('remote_file') or link.get('target') or ''
-            grouped_links['Other'].append({
-                'page': link.get('page', 'N/A'),
+                'page': pg_num,
                 'anchor_text': anchor_text,
                 'hyperlink': url
             })
@@ -162,9 +112,26 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
 
         # --- Dynamic Rows ---
         for link in links:
-            row_data = [link['source'], link['dest'], link['anchor_text'], link['hyperlink']] if is_internal else [link['page'], link['anchor_text'], link['hyperlink']]
+            # 1. Handle Page Number Translation via PageRef
+            if is_internal:
+                raw_source = link.get('source')
+                raw_dest = link.get('dest')
+                
+                # Convert to human (1-based) strings or fallback to 'N/A'
+                pg_source = PageRef.from_index(int(raw_source)).human if isinstance(raw_source, (int, float)) else "N/A"
+                pg_dest = PageRef.from_index(int(raw_dest)).human if isinstance(raw_dest, (int, float)) else "N/A"
+                
+                row_data = [pg_source, pg_dest, link['anchor_text'], link['hyperlink']]
+            else:
+                raw_page = link.get('page')
+                pg_num = PageRef.from_index(int(raw_page)).human if isinstance(raw_page, (int, float)) else "N/A"
+                
+                row_data = [pg_num, link['anchor_text'], link['hyperlink']]
+
+            # 2. Append and Format
             ws.append(row_data)
             
+            # Set the hyperlink on the very last cell of the row
             last_cell = ws.cell(row=ws.max_row, column=len(row_data))
             last_cell.hyperlink = link['hyperlink']
             last_cell.style = 'Hyperlink'

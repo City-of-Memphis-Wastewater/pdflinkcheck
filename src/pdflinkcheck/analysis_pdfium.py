@@ -112,7 +112,8 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                         'target': dest_ref.machine,
                         'source_kind': 'pypdfium2_annot'
                     })
-            
+
+                    
             # Note: We don't close annot here if we are just enumerating by index 
             # in some builds, but standard practice is to increment pos
             pos += 1
