@@ -151,7 +151,7 @@ jobs:
 
             if [ -d "$item" ]; then
               base=$(basename "$item")
-              tar -czf "dist/upload/${base}.tar.gz" -C dist "$base"
+              tar -czf "dist/upload/${base}.tar.gz" -C dist/onedir "$base"
             elif [ -f "$item" ]; then
               cp "$item" dist/upload/
             fi
