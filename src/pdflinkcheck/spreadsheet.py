@@ -42,106 +42,117 @@ def convert_goto_link(link: Dict, pdf_path: str) -> str:
 def prepare_links_by_type(report: Dict) -> Dict[str, List[Dict]]:
     from pdflinkcheck.helpers import PageRef
     
-    all_links = report.get('links', [])
+    # Initialize the four requested sheets
     grouped_links = {
-        'Internal GoTo': [],
-        'External URI': [],
+        'Table of Contents': [],
+        'Internal Links': [],
+        'External Links': [],
         'Other': []
     }
 
-    for link in all_links:
+    # 1. Process Table of Contents (TOC) - Pulled from report['toc']
+    for item in report.get('toc', []):
+        raw_target = item.get('target_page')
+        # Use PageRef to ensure human-readable numbers (1-based)
+        pg_human = PageRef.from_index(int(raw_target)).human if isinstance(raw_target, (int, float)) else "N/A"
+        
+        grouped_links['Table of Contents'].append({
+            'level': item.get('level', 1),
+            'title': sanitize_excel_text(item.get('title', 'Untitled')),
+            'target_page': pg_human
+        })
+
+    # 2. Process All Links - Pulled from report['links']
+    for link in report.get('links', []):
         link_type = link.get('type', 'Unknown')
         anchor_text = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
         
-        # 1. Translate Source Page
         raw_src = link.get('page')
         pg_num = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
 
-        # 2. Handle Internal
-        if "Internal" in link_type:
-            raw_dest = link.get('destination_page') # Standardized key
+        # Handle Internal
+        if "Internal" in link_type or "GoTo" in link_type and "Remote" not in link_type:
+            raw_dest = link.get('destination_page')
             pg_dest = PageRef.from_index(int(raw_dest)).human if isinstance(raw_dest, (int, float)) else "N/A"
             
-            # We pass a fake URL for the cell hyperlink, or keep it as text
-            grouped_links['Internal GoTo'].append({
+            grouped_links['Internal Links'].append({
                 'source': pg_num,
                 'dest': pg_dest,
                 'anchor_text': anchor_text,
                 'hyperlink': f"Page {pg_dest}" 
             })
 
-        # 3. Handle External
-        elif link_type == 'External (URI)':
+        # Handle External
+        elif "External" in link_type or "URI" in link_type:
             url = link.get('url') or ''
-            grouped_links['External URI'].append({
+            grouped_links['External Links'].append({
                 'page': pg_num,
                 'anchor_text': anchor_text,
                 'hyperlink': url
             })
 
-        # 4. Handle Everything Else
+        # Handle Other (Remote Files, GoToR, etc.)
         else:
-            url = link.get('url') or 'N/A'
+            other_target = link.get('remote_file') or link.get('url') or 'N/A'
             grouped_links['Other'].append({
                 'page': pg_num,
                 'anchor_text': anchor_text,
-                'hyperlink': url
+                'hyperlink': other_target
             })
 
     return grouped_links
 
 def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Path):
-    from openpyxl import Workbook
     wb = Workbook()
     sheets_created = 0
 
-    for sheet_name, links in grouped_links.items():
-        if not links:
-            continue  # Corrected: Skip this sheet, but keep looking at others
+    # Ensure sheets appear in a logical order
+    order = ['Table of Contents', 'Internal Links', 'External Links', 'Other']
+    
+    for sheet_name in order:
+        rows = grouped_links.get(sheet_name, [])
+        if not rows:
+            continue
             
         ws = wb.create_sheet(sheet_name)
         sheets_created += 1
-        is_internal = (sheet_name == 'Internal GoTo')
 
-        # --- Dynamic Headers ---
-        headers = ['Source Page', 'Dest Page', 'Anchor Text', 'Hyperlink (File)'] if is_internal else ['Page', 'Anchor Text', 'Hyperlink URL']
+        # --- Define Dynamic Headers ---
+        if sheet_name == 'Table of Contents':
+            headers = ['Level', 'Title', 'Target Page']
+        elif sheet_name == 'Internal Links':
+            headers = ['Source Page', 'Dest Page', 'Anchor Text', 'Jump to Page']
+        else:
+            headers = ['Source Page', 'Anchor Text', 'Hyperlink / Path']
         
         ws.append(headers)
         for cell in ws[1]:
             cell.font = Font(bold=True)
 
-        # --- Dynamic Rows ---
-        for link in links:
-            # 1. Handle Page Number Translation via PageRef
-            if is_internal:
-                raw_source = link.get('source')
-                raw_dest = link.get('dest')
-                
-                # Convert to human (1-based) strings or fallback to 'N/A'
-                pg_source = PageRef.from_index(int(raw_source)).human if isinstance(raw_source, (int, float)) else "N/A"
-                pg_dest = PageRef.from_index(int(raw_dest)).human if isinstance(raw_dest, (int, float)) else "N/A"
-                
-                row_data = [pg_source, pg_dest, link['anchor_text'], link['hyperlink']]
+        # --- Fill Rows ---
+        for entry in rows:
+            if sheet_name == 'Table of Contents':
+                row_data = [entry['level'], entry['title'], entry['target_page']]
+            elif sheet_name == 'Internal Links':
+                row_data = [entry['source'], entry['dest'], entry['anchor_text'], entry['hyperlink']]
             else:
-                raw_page = link.get('page')
-                pg_num = PageRef.from_index(int(raw_page)).human if isinstance(raw_page, (int, float)) else "N/A"
-                
-                row_data = [pg_num, link['anchor_text'], link['hyperlink']]
+                row_data = [entry['page'], entry['anchor_text'], entry['hyperlink']]
 
-            # 2. Append and Format
             ws.append(row_data)
             
-            # Set the hyperlink on the very last cell of the row
-            last_cell = ws.cell(row=ws.max_row, column=len(row_data))
-            last_cell.hyperlink = link['hyperlink']
-            last_cell.style = 'Hyperlink'
+            # Apply Hyperlink style to the last column (unless it's TOC which is just text)
+            if sheet_name != 'Table of Contents':
+                last_cell = ws.cell(row=ws.max_row, column=len(row_data))
+                hlink = entry.get('hyperlink')
+                if hlink and hlink != 'N/A':
+                    last_cell.hyperlink = hlink
+                    last_cell.style = 'Hyperlink'
 
         # Auto-size columns
         for col in ws.columns:
             max_length = max(len(str(cell.value)) if cell.value else 0 for cell in col)
-            ws.column_dimensions[col[0].column_letter].width = min(max_length + 2, 100)
+            ws.column_dimensions[col[0].column_letter].width = min(max_length + 2, 80)
 
-    # Final Safety: If we didn't actually create any sheets, don't try to save
     if sheets_created == 0:
         return None
 
@@ -151,7 +162,6 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
     wb.save(output_file)
     print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
     return True
-
 
 def export_report_links_to_xlsx(report: Dict, output_dir: Path = None) -> Path:
     """

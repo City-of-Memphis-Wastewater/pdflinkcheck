@@ -76,7 +76,6 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                     'link_text': text_page.get_text_bounded(left=l.value, top=t.value, right=r.value, bottom=b.value).strip() or url,
                     'type': 'External (URI)',
                     'url': url,
-                    'target': url,
                     'source_kind': 'pypdfium2_weblink'
                 })
             pdfium_c.FPDFLink_CloseWebLinks(pagelink_raw)
@@ -95,6 +94,8 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                 fs_rect = pdfium_c.FS_RECTF()
                 pdfium_c.FPDFAnnot_GetRect(annot_raw, fs_rect)
                 
+                anchor_text = get_pdfium_text_safe(text_page, fs_rect)
+
                 # Try to get Destination
                 link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
                 dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_annot)
@@ -106,10 +107,9 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                     links.append({
                         'page': source_ref.machine,
                         'rect': [fs_rect.left, fs_rect.bottom, fs_rect.right, fs_rect.top],
-                        'link_text': text_page.get_text_bounded(left=fs_rect.left, top=fs_rect.top, right=fs_rect.right, bottom=fs_rect.bottom).strip(),
+                        'link_text': anchor_text or "Link (No Text)",
                         'type': 'Internal (GoTo/Dest)',
                         'destination_page': dest_ref.machine,
-                        'target': dest_ref.machine,
                         'source_kind': 'pypdfium2_annot'
                     })
 
@@ -123,6 +123,15 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
     doc.close()
     return {"links": links, "toc": toc_list, "file_ov": file_ov}
+
+def get_pdfium_text_safe(text_page, fs_rect, tolerance=2.0):
+    # Ensure min/max logic so we don't pass an inverted rect to PDFium
+    l = min(fs_rect.left, fs_rect.right) - tolerance
+    r = max(fs_rect.left, fs_rect.right) + tolerance
+    t = max(fs_rect.top, fs_rect.bottom) + tolerance
+    b = min(fs_rect.top, fs_rect.bottom) - tolerance
+    
+    return text_page.get_text_bounded(left=l, top=t, right=r, bottom=b).strip()
 
 if __name__ == "__main__":
     import json
