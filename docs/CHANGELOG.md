@@ -6,12 +6,27 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+
+## [1.3.30] - 2026-01-16
+### Fixed:
+- Implement dist/zipapp/ folder for build_pyz, and referenc this in build.yml for file handling.
+
+### Internal
+- All PYZ builds are not designated to use pdfium but not pymupdf as an extra, to stay small.
+
+---
+
 ## [1.3.29] - 2026-01-16
 ### Fixed:
 - Correct path check in build.yml diagnostic to use dist/onedir/ and dist/onefile/
 
 ### Internal:
-- Start to implement prereleases, using `gh release create v1.3.29-test --title "PDF Link Check v1.3.29-test" --prerelease`
+- Start to implement prereleases, using:
+    ```bash
+    git tag v1.3.29-test
+    git push origin v1.3.29-test
+    gh release create v1.3.29-test --title "PDF Link Check v1.3.29-test" --prerelease
+    ```
 
 ---
 

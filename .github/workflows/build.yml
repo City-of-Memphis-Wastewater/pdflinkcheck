@@ -141,23 +141,28 @@ jobs:
         run: |
           mkdir -p dist/upload
 
-          # Only copy generic artifacts on Ubuntu
           if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
             cp dist/*.tar.gz dist/upload/ 2>/dev/null || true
             cp dist/*.whl dist/upload/ 2>/dev/null || true
           fi
 
-          echo "Zipping platform-specific outputs..."
-          for item in dist/onedir/pdflinkcheck-* dist/onefile/pdflinkcheck-*; do
-            # Skip the generic sdist and wheel files we just handled
+          echo "Collecting platform-specific outputs..."
+          for item in dist/onedir/pdflinkcheck-* dist/onefile/pdflinkcheck-* dist/zipapp/pdflinkcheck-*; do
+            [ -e "$item" ] || continue
+
+            # Skip generic artifacts
             case "$item" in
               *.tar.gz|*.whl) continue ;;
             esac
 
+            base=$(basename "$item")
+            parent=$(dirname "$item") # This will be dist/onedir, dist/onefile, or dist/zipapp
+
             if [ -d "$item" ]; then
-              base=$(basename "$item")
-              tar -czf "dist/upload/${base}.tar.gz" -C dist/onedir "$base"
+              # Dynamic -C flag ensures we tar from the correct source folder
+              tar -czf "dist/upload/${base}.tar.gz" -C "$parent" "$base"
             elif [ -f "$item" ]; then
+              # Directly copy .pyz or standalone ELFs
               cp "$item" dist/upload/
             fi
           done
