@@ -177,12 +177,23 @@ jobs:
         with:
           path: artifacts
 
+      - name: Diagnostic - List Downloaded Artifacts
+        shell: bash
+        run: |
+          echo "=== Global Artifacts Directory Structure ==="
+          # This shows exactly which files were pulled from which runner
+          find artifacts -maxdepth 3 -not -path '*/.*'
+          
+          echo "=== Checking for Filename Collisions ==="
+          # This counts how many times each filename appears across all runner folders
+          find artifacts -type f -not -path '*/.*' -printf "%f\n" | sort | uniq -c | sort -nr
+
       - name: Attach artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: artifacts/**/*
           #overwrite: true
-          overwrite_files: true # depends on version
-          fail_on_unmatched_files: true
+          #overwrite_files: true # depends on version
+          #fail_on_unmatched_files: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
