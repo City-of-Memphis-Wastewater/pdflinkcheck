@@ -193,7 +193,7 @@ jobs:
         with:
           files: artifacts/**/*
           #overwrite: true
-          #overwrite_files: true # depends on version
-          #fail_on_unmatched_files: true
+          overwrite_files: true # depends on version
+          fail_on_unmatched_files: true # fails if empty
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

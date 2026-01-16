@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.25] - 2026-01-16
+### Fixed:
+- build.yml is passing. Correct commented line in msix.yml which caused error
+
+###
+- Uncomment the 'overwrite_files' key in the 'Attach artifacts to GitHub Release' section of build.yml; this might or might not, work, with the alternative being the 'overwrite' key (which VS Code flags as erroneous).
+
+---
+
 ## [1.3.23] - 2026-01-16
 ### Fixed:
 - Upload conflict for the two Windows build runs (onedir and onefile)
