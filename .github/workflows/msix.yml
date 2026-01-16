@@ -56,6 +56,7 @@ jobs:
           $output = .\.venv\Scripts\python.exe $script 2>&1 | Tee-Object -Variable log
           Write-Host "$log"
       
+
       - name: Debug, list dist folder, after PyInstaller
         shell: pwsh
         working-directory: ${{ github.workspace }}
@@ -70,16 +71,17 @@ jobs:
         id: prepare_msix
         shell: pwsh
         run: |
-          # 1. Find the EXE that belongs to a 'onedir' structure.
-          # We look for an EXE whose parent directory ALSO contains a folder (usually '_internal')
-          $exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | Where-Object {
+          # 1. Target the onedir output specifically
+          # We look for the EXE whose parent directory has subdirectories (like _internal)
+          $exe = Get-ChildItem "dist/onedir" -Filter "pdflinkcheck*.exe" -Recurse -File | Where-Object {
               $parent = $_.Directory.FullName
-              # Robust check: Does the folder containing this EXE have subdirectories? 
-              # (onefile builds sit in an empty or flat 'dist' folder)
               (Get-ChildItem -Path $parent -Directory).Count -gt 0
           } | Select-Object -First 1
 
-          if ($null -eq $exe) { Write-Error "Could not find onedir EXE (expected a folder with dependencies)."; exit 1 }
+          if ($null -eq $exe) { 
+              Write-Error "Could not find onedir EXE in dist/onedir/ (expected a folder with dependencies)."
+              exit 1 
+          }
 
           Write-Host "Confirmed onedir source: $($exe.FullName)"
 
@@ -87,18 +89,24 @@ jobs:
           if (Test-Path "staging") { Remove-Item -Recurse -Force "staging" }
           New-Item -ItemType Directory -Path "staging" -Force
 
-          # 3. Copy the entire directory (EXE + _internal folder)
+          # 3. Copy MSIX metadata from the repo first (Assets and Manifest)
+          Write-Host "Copying MSIX metadata from repository..."
+          Copy-Item -Path "msix\*" -Destination "staging\" -Recurse -Force
+
+          # 4. Copy the Binaries (The EXE + its internal dependency folder)
+          # We copy the contents of the directory where the EXE was found
           Copy-Item -Path "$($exe.Directory.FullName)\*" -Destination "staging\" -Recurse -Force
 
-          # 5. Rename EXE to stable name
+          # 5. Rename EXE to the stable name the AppxManifest expects
           $targetExe = Get-ChildItem "staging/*.exe" -File | Select-Object -First 1
           Rename-Item -Path $targetExe.FullName -NewName "pdflinkcheck.exe" -Force
           
-          # 6. Final move to the 'msix' folder name the rest of the workflow expects
+          # 6. Final swap: Move staging to the 'msix' folder for the rest of the workflow
+          # This ensures 'Sign inner binaries' and 'makeappx' find everything in one place
           if (Test-Path "msix") { Remove-Item -Recurse -Force "msix" }
           Move-Item -Path "staging" -Destination "msix"
 
-          # 7. Corrected Validation Logic
+          # 7. Validation
           if ((Test-Path "msix/pdflinkcheck.exe") -and (Test-Path "msix/Assets")) {
               Write-Host "SUCCESS: Root staging is complete with Assets and EXE."
           } else {

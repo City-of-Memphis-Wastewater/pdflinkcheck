@@ -6,6 +6,16 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.28] - 2026-01-16
+### Fixed:
+- Migrate to a dist/onedir/ and dist/onepath/ strategy for clear separation. Implement this in build_executable.py, build.yml, and msix.yml.
+
+### Internal:
+- For build_executable.py to work on Termux, PyInstaller must be installed as a dependency to the local venv, not with termux or system pip. This is facilitated by the dev dependency section in ./pyproject.toml.
+- Delete detritis comments from pyproject.toml.
+
+---
+
 ## [1.3.27] - 2026-01-16
 ### Fixed:
 - Correct expected "-onedir" file tail in msix.yml; Now we just validate expected structure of the onedir folder rather than looking for an exe to ignore based on filename.

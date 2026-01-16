@@ -115,7 +115,7 @@ jobs:
           New-Item -Path dist/upload -ItemType Directory -Force
     
           # Find all PyInstaller outputs (both the folder and the --onefile exe)
-          $items = Get-ChildItem "dist/pdflinkcheck-*"
+          $items = Get-ChildItem "dist/onedir/pdflinkcheck-*", "dist/onefile/pdflinkcheck-*"
 
           foreach ($item in $items) {
               $destination = "dist/upload/$($item.Name).zip"
@@ -143,7 +143,7 @@ jobs:
           fi
 
           echo "Zipping platform-specific outputs..."
-          for item in dist/pdflinkcheck-*; do
+          for item in dist/onedir/pdflinkcheck-* dist/onefile/pdflinkcheck-*; do
             # Skip the generic sdist and wheel files we just handled
             case "$item" in
               *.tar.gz|*.whl) continue ;;

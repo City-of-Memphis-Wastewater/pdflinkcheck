@@ -22,6 +22,8 @@ from pdflinkcheck.environment import pymupdf_is_available
 PROJECT_NAME = "pdflinkcheck"
 CLI_MAIN_FILE = Path(f'src/{PROJECT_NAME}/cli.py')
 DIST_DIR = Path("dist")
+DIST_DIR_ONEFILE = DIST_DIR / "onefile" 
+DIST_DIR_ONEDIR = DIST_DIR / "onedir" 
 BUILD_DIR = Path("build/pyinstaller_work")
 RC_TEMPLATE = Path('version.rc.template') # Assume this template exists for Windows
 RC_FILE = Path('version.rc')
@@ -59,23 +61,37 @@ def setup_dirs():
     """Ensure directories exist."""
     BUILD_DIR.mkdir(parents=True, exist_ok=True)
     DIST_DIR.mkdir(parents=True, exist_ok=True)
+    DIST_DIR_ONEFILE.mkdir(parents=True, exist_ok=True)
+    DIST_DIR_ONEDIR.mkdir(parents=True, exist_ok=True)
 
-def clean_artifacts(exe_name: str):
-    """Clean specific output and build folders."""
-    output_file = DIST_DIR / (exe_name + ('.exe' if IS_WINDOWS_BUILD else ''))
 
-    if output_file.exists():
-        print(f"Removing old executable: {output_file.resolve()}")
-        output_file.unlink()
+def clean_artifacts(exe_name: str, mode: str):
+    """Clean specific output and build folders based on mode."""
     
-    #if BUILD_DIR.parent.exists():
-    #    print(f"Removing build folder: {BUILD_DIR.parent.resolve()}")
-    #    shutil.rmtree(BUILD_DIR.parent)
+    
+    # Define what we are cleaning based on mode
+    if mode == "onedir":
+        # In onedir, PyInstaller creates a directory with the exe_name
+        mode_dir = DIST_DIR_ONEDIR
+        target = mode_dir / exe_name
+    else:
+        # In onefile, it's just the .exe (or ELF) file
+        mode_dir = DIST_DIR_ONEFILE
+        ext = '.exe' if IS_WINDOWS_BUILD else ''
+        target = mode_dir / f"{exe_name}{ext}"
+
+    if target.exists():
+        print(f"Removing old build artifact: {target.resolve()}")
+        if target.is_dir():
+            shutil.rmtree(target)
+        else:
+            target.unlink()
+    
+    # Clean the work directory
     if BUILD_DIR.exists():
-        print(f"Removing only build/pyinstaller_work folder: {BUILD_DIR.parent.resolve()}")
+        print(f"Removing build/pyinstaller_work folder: {BUILD_DIR.resolve()}")
         shutil.rmtree(BUILD_DIR)
 
-    
     if IS_WINDOWS_BUILD and RC_FILE.exists():
         RC_FILE.unlink()
 
@@ -92,8 +108,21 @@ def run_pyinstaller(
     
     print(f"--- {PROJECT_NAME} Executable Builder ---")
 
+    
+    ext = '.exe' if IS_WINDOWS_BUILD else ''
+    if mode == "onefile":
+        mode_dist_path = DIST_DIR_ONEFILE 
+        final_path = DIST_DIR_ONEFILE/ f"{dynamic_exe_name}{ext}"
+    elif mode  == "onedir":
+        mode_dist_path = DIST_DIR_ONEDIR
+        final_path = DIST_DIR_ONEDIR / dynamic_exe_name / f"{dynamic_exe_name}{ext}"
+
+    mode_dist_path.mkdir(parents=True, exist_ok=True)
+
+    print(f"Executable is located at: {final_path.resolve()}") 
+
     # Clean and Setup
-    clean_artifacts(exe_name=dynamic_exe_name)
+    clean_artifacts(exe_name=dynamic_exe_name, mode=mode)
     setup_dirs()
 
     
@@ -105,7 +134,7 @@ def run_pyinstaller(
         f'--name={dynamic_exe_name}',
         
         # Output paths
-        f'--distpath={DIST_DIR}',
+        f'--distpath={mode_dist_path}', # <--
         f'--workpath={BUILD_DIR / "work"}',
         f'--specpath={BUILD_DIR}',
 
@@ -127,7 +156,7 @@ def run_pyinstaller(
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
-    
+
     # msix.yml and build.yml have been adjusted to expect either onefile or onedir
     if mode == "onefile": 
         onedir_or_onefile_flag = '--onefile'
@@ -176,17 +205,6 @@ def run_pyinstaller(
         raise SystemExit(e.returncode)
 
     print("\n--- PyInstaller Build Complete ---")
-    ext = '.exe' if IS_WINDOWS_BUILD else ''
-    if onedir_or_onefile_flag == "--onefile":
-        final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
-    elif onedir_or_onefile_flag == "--onedir":
-        final_path = DIST_DIR / dynamic_exe_name / f"{dynamic_exe_name}{ext}"
-
-    # Fallback for --onefile just in case you switch back
-    if not final_path.exists():
-        final_path = DIST_DIR / f"{dynamic_exe_name}{ext}"
-
-    print(f"Executable is located at: {final_path.resolve()}") # do not change the wording of this line, it is used in microsoftstore.yml
 
     return final_path.resolve()
 
