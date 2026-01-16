@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.29] - 2026-01-16
+### Fixed:
+- Correct path check in build.yml diagnostic to use dist/onedir/ and dist/onefile/
+
+---
+
 ## [1.3.28] - 2026-01-16
 ### Fixed:
 - Migrate to a dist/onedir/ and dist/onepath/ strategy for clear separation. Implement this in build_executable.py, build.yml, and msix.yml.

@@ -90,23 +90,28 @@ jobs:
           rm -f dist/*.tar.gz dist/*.whl
           echo "Cleanup complete."
 
+
       - name: Diagnostic, List PyInstaller Output
         shell: pwsh
         run: |
           Write-Host "--- DIST FOLDER OVERVIEW ---"
           Get-ChildItem dist -Depth 1 | Select-Object Name, PSIsContainer, Length | Format-Table -AutoSize
           
-          Write-Host "--- SEARCHING FOR ARTIFACT ---"
-          $item = Get-ChildItem "dist/pdflinkcheck-*" | Select-Object -First 1
-          if ($item) {
-              Write-Host "Found target: $($item.FullName) (Type: $(if($item.PSIsContainer){"Folder"}else{"File"}))"
-              
-              if ($item.PSIsContainer) {
-                  Write-Host "--- DETAILED ONEDIR CONTENTS ---"
-                  Get-ChildItem $item.FullName -Recurse | Select-Object Name, Length | Format-Table -AutoSize
+          Write-Host "--- SEARCHING FOR ARTIFACTS ---"
+          # Look specifically in the new subdirectories
+          $items = Get-ChildItem "dist/onedir/pdflinkcheck-*", "dist/onefile/pdflinkcheck-*"
+          
+          if ($items) {
+              foreach ($item in $items) {
+                  Write-Host "Found target: $($item.FullName) (Type: $(if($item.PSIsContainer){"Folder"}else{"File"}))"
+                  
+                  if ($item.PSIsContainer) {
+                      Write-Host "--- DETAILED ONEDIR CONTENTS (Top 10) ---"
+                      Get-ChildItem $item.FullName | Select-Object Name, Length -First 10 | Format-Table -AutoSize
+                  }
               }
           } else {
-              Write-Error "No pdflinkcheck-* artifacts found in dist/"
+              Write-Error "No pdflinkcheck-* artifacts found in dist/onedir/ or dist/onefile/"
           }
       
       - name: Collect Windows artifacts
