@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.3.19] - 2026-01-15  
 ### Fixed:
 - Anchor text now coming through with pdfium.
+- Ensure hyperlinks are functional in Excel export by using the source_path key.
 
 ### Added:
 - Separate TOC and Internal GoTo Links into two separate pages.
