@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.3.20] - 2026-01-16
+### Fixed:
+- Improve unix section of build.yml to handle both onedir and onefile
+
 ---
 
 ## [1.3.19] - 2026-01-15  
