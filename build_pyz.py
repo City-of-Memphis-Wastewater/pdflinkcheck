@@ -33,6 +33,9 @@ ENTRY_POINT = "pdflinkcheck.cli:app"
 DIST_DIR = Path("dist") / "zipapp" 
 PROJECT_ROOT = Path(__file__).resolve().parent
 
+# Ensure the output directory exists immediately
+DIST_DIR.mkdir(parents=True, exist_ok=True)
+
 # --- Build in Temp File to avoid issues namely on Windows ---
 # Inside build_shiv_pyz()
 build_temp = Path(tempfile.gettempdir()) / "shiv_build_pdflinkcheck"
@@ -98,7 +101,7 @@ def build_wheel():
     run_command(["uv", "build", 
         "--wheel", 
         "--out-dir", str(DIST_DIR)
-    ], env=os.environ.copy())
+    ], env=custom_env)
 
     print("Wheel build complete.")
 
@@ -113,15 +116,6 @@ def ensure_dependencies_and_shiv():
         # This prevents the script from calling 'uv' which isn't available.
         return
     
-    #print("\n2. Ensuring 'shiv', 'build', and runtime dependencies are installed via uv...")
-    # 2a. Check/Install 'build' package (using the activated python, which works in your venv)
-    #try:
-    #    run_command([sys.executable, "-m", "build", "--version"], check=True)
-    #except subprocess.CalledProcessError:
-    #    print("Installing 'build' ...")
-    #    run_command([sys.executable, "-m", "pip", "install", "build"])
-    #    #run_command(["uv", "pip", "install", "build"])
-
     # 2b. INSTALL/SYNC ALL PROJECT DEPENDENCIES (The Fix)
     print("Installing all project dependencies via uv pip install -e .")
     #run_command([sys.executable, "-m", "pip", "install", "-e", "."]) # will this install extras?
@@ -144,16 +138,12 @@ def build_shiv_pyz():
     if version == "0.0.0":
         print("FATAL: Cannot proceed without a valid version found in pyproject.toml.", file=sys.stderr)
         sys.exit(1)
-        
-    DIST_DIR.mkdir(exist_ok=True)
     
     # 1. Ensure dependencies, shiv, and build are ready
     ensure_dependencies_and_shiv()
     
     # 2. Build the wheel 
     build_wheel()
-
-
     
 
     # 3. Find the resulting wheel file

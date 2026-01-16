@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.31] - 2026-01-16
+### Fixed:
+- Ensure dist/zipapp/ dir at the very beginning of build_pyz.py
+- Ensure custom_env is being ued in the case of Termux, so that uv build point ot a temp dir within $HOME.
+
+---
+
 ## [1.3.30] - 2026-01-16
 ### Fixed:
 - Implement dist/zipapp/ folder for build_pyz, and referenc this in build.yml for file handling.
