@@ -70,30 +70,25 @@ jobs:
         id: prepare_msix
         shell: pwsh
         run: |
-          ### 1. Detect the dynamic EXE in dist (defunct, now that we build both onedir and onefile for windows in build.yml)
-          ##$exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | Select-Object -First 1
-          ##if ($null -eq $exe) { Write-Error "No EXE found in dist/"; exit 1 }
+          # 1. Find the EXE that belongs to a 'onedir' structure.
+          # We look for an EXE whose parent directory ALSO contains a folder (usually '_internal')
+          $exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | Where-Object {
+              $parent = $_.Directory.FullName
+              # Robust check: Does the folder containing this EXE have subdirectories? 
+              # (onefile builds sit in an empty or flat 'dist' folder)
+              (Get-ChildItem -Path $parent -Directory).Count -gt 0
+          } | Select-Object -First 1
 
-          # 1. Specifically look for the ONEDIR version (avoid the --onefile.exe)
-          # We filter out any file containing '--onefile' in the name
-          $exe = Get-ChildItem "dist" -Filter "pdflinkcheck*.exe" -Recurse -File | 
-                 Where-Object { $_.Name -notmatch "--onefile" } | 
-                 Select-Object -First 1
+          if ($null -eq $exe) { Write-Error "Could not find onedir EXE (expected a folder with dependencies)."; exit 1 }
 
-          if ($null -eq $exe) { Write-Error "No onedir EXE found in dist/"; exit 1 }
-          
-          # 2. Setup clean staging directory
+          Write-Host "Confirmed onedir source: $($exe.FullName)"
+
+          # 2. Setup clean staging
           if (Test-Path "staging") { Remove-Item -Recurse -Force "staging" }
           New-Item -ItemType Directory -Path "staging" -Force
 
-          # 3. Copy PyInstaller output (EXE + _internal) to staging
-          $sourceDir = $exe.Directory
-          Write-Host "Staging build from: $($sourceDir.FullName)"
-          Copy-Item -Path "$($sourceDir.FullName)\*" -Destination "staging/" -Recurse -Force
-
-          # 4. Copy MSIX Metadata (Manifests + Assets) from REPO root
-          Write-Host "Adding MSIX Metadata from repo..."
-          Copy-Item -Path "msix\*" -Destination "staging\" -Recurse -Force
+          # 3. Copy the entire directory (EXE + _internal folder)
+          Copy-Item -Path "$($exe.Directory.FullName)\*" -Destination "staging\" -Recurse -Force
 
           # 5. Rename EXE to stable name
           $targetExe = Get-ChildItem "staging/*.exe" -File | Select-Object -First 1
