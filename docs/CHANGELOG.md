@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.19] - 2026-01-15  
+### Fixed:
+- Anchor text now coming through with pdfium.
+
+### Added:
+- Separate TOC and Internal GoTo Links into two separate pages.
+
+---
+
 ## [1.3.18] - 2026-01-15  
 ### Fixed:
 - For the PyMuPDF library, the document was being preemtively closed. Now a with block is being implemented in analysis_pymupdf.analyze_pdf() rather than erroneously within analysis_pymupdf.extract_links_pymupdf() .
