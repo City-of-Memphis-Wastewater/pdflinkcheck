@@ -44,8 +44,6 @@ def convert_goto_link(link: Dict, pdf_path: str) -> str:
     human_page = PageRef.from_index(int(page_index)).human
     filepath = f"{base_uri}#page={human_page}"
     
-    # KEEPING DEBUG PRINT FOR VERIFICATION
-    print(f"filepath = {filepath}")
     return filepath
 
 def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[Dict]]:
@@ -56,15 +54,15 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
     payload = results.get("data", {})
     
     # WATCHING THE KEYS - Crucial for debugging payload mismatches
-    print(f"DEBUG: payload.keys() = {list(payload.keys())}")
+    #print(f"DEBUG: payload.keys() = {list(payload.keys())}")
     
     ext_links = payload.get('external_links', [])
     int_links = payload.get('internal_links', [])
     all_toc = payload.get('toc', [])
 
     # DEBUG COUNTS - Verifies if the loops will actually execute
-    print(f"DEBUG: len(int_links) = {len(int_links)}")
-    print(f"DEBUG: len(ext_links) = {len(ext_links)}")
+    #print(f"DEBUG: len(int_links) = {len(int_links)}")
+    #print(f"DEBUG: len(ext_links) = {len(ext_links)}")
 
     grouped = {
         'Table of Contents': [],
@@ -84,7 +82,6 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
         })
 
     # 2. Process Internal Links
-    print(f"pdf_path = {pdf_path}")
     for link in int_links:
         anchor = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
         raw_src = link.get('page')
@@ -207,7 +204,7 @@ def export_report_links_to_xlsx(results: Dict, output_dir: Path = None) -> Path:
     )
     
     # DEBUG: Crucial to see which path we finally settled on
-    print(f"DEBUG: XLSX Path Resolution: '{pdf_path}'")
+    #print(f"DEBUG: XLSX Path Resolution: '{pdf_path}'")
 
     grouped_links = prepare_links_by_type(results, pdf_path=pdf_path)
 
