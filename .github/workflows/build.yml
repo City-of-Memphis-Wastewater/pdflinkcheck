@@ -64,7 +64,12 @@ jobs:
 
       - name: Build executable (PyInstaller)
         run: |
-          python build_executable.py
+          python build_executable.py --mode onedir
+
+      - name: Build onefile executable for Windows (PyInstaller)
+        if: runner.os == 'Windows'
+        run: |
+          python build_executable.py --mode onefile
       
       - name: Diagnostic, List PyInstaller Output
         shell: pwsh
@@ -119,26 +124,6 @@ jobs:
 
           # Only copy generic artifacts once
           if [ "${{ runner.os }}" = "Linux" ]; then
-            cp dist/*.tar.gz dist/upload/ 2>/dev/null || true
-            cp dist/*.whl dist/upload/ 2>/dev/null || true
-          fi
-      - name: Collect Unix artifacts, defunct
-        if: false #runner.os != 'Windows'
-        run: |  
-          mkdir -p dist/upload
-
-          # The 'dist/' directory now only contains files from the current build.
-
-          # 1. Copy all artifacts EXCEPT the sdist (.tar.gz) and wheel (.whl)
-          echo "Staging platform-specific artifacts (PYZ, ELF, etc.)..."
-          find dist/ -maxdepth 1 \
-            -type f \
-            ! -name "*.tar.gz" \
-            ! -name "*.whl" \
-            -exec cp {} dist/upload/ \;
-
-          # 2. Only copy generic artifacts (tar.gz, whl) on ONE runner (e.g., Ubuntu), to avoid redundant copying.
-          if [ "${{ runner.os }}" == "Linux" ]; then
             cp dist/*.tar.gz dist/upload/ 2>/dev/null || true
             cp dist/*.whl dist/upload/ 2>/dev/null || true
           fi

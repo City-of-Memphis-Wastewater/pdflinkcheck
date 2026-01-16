@@ -11,7 +11,7 @@ import subprocess
 import sys
 import os
 from pathlib import Path
-import re
+import argparse
 import pyhabitat
 
 from pdflinkcheck.datacopy import ensure_data_files_for_build
@@ -81,8 +81,14 @@ def clean_artifacts(exe_name: str):
 
 # --- Main PyInstaller Execution ---
 
-def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
-    """Run PyInstaller to build the executable."""
+def run_pyinstaller(
+        dynamic_exe_name: str, 
+        main_script_path: Path,
+        mode: str = "onedir",
+        ):
+    """
+    Run PyInstaller to build the executable.
+    """
     
     print(f"--- {PROJECT_NAME} Executable Builder ---")
 
@@ -122,11 +128,12 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
     # Failing to finish onefile on termux - try both systems
-    if True: # msix.yml and build.yml have been adjusted to expect this
-        onedir_or_onefile_flag = '--onedir'
-        base_command.append(onedir_or_onefile_flag)
-    else:
+    # msix.yml and build.yml have been adjusted to expect either onefile or onedir
+    if mode == "onefile": 
         onedir_or_onefile_flag = '--onefile'
+        base_command.append(onedir_or_onefile_flag)
+    else: # default
+        onedir_or_onefile_flag = '--onedir'
         base_command.append(onedir_or_onefile_flag)
     if pyhabitat.tkinter_is_available(): # allows termux, etc build to be primarily CLI, becuase the gui wont work anyways
         flag = '--windowed'
@@ -185,6 +192,15 @@ def run_pyinstaller(dynamic_exe_name: str, main_script_path: Path):
 
 
 if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--mode",
+        choices = ("onedir","onefile"),
+        default = "onedir",
+        help = "PyInstaller build mode.",
+        )
+    args = parser.parse_args()
     try:
         package_version = get_version_from_pyproject()
         if package_version == "0.0.0":
@@ -202,9 +218,15 @@ if __name__ == "__main__":
 
         # 3. Determine the executable name (without the extension)
         executable_descriptor = form_dynamic_name(PROJECT_NAME, package_version)
+        if args.mode == "onefile":
+            executable_descriptor += "--onefile"
 
         # 4. Run the installer
-        path = run_pyinstaller(executable_descriptor, CLI_MAIN_FILE)
+        path = run_pyinstaller(
+            executable_descriptor, 
+            CLI_MAIN_FILE, 
+            mode = args.mode,
+            )
 
         # ← Move test here, so it only runs on success
         print("Testing the PyInstaller artifact...")
