@@ -10,6 +10,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - Correct path check in build.yml diagnostic to use dist/onedir/ and dist/onefile/
 
+### Internal:
+- Start to implement prereleases, using `gh release create v1.3.29-test --title "PDF Link Check v1.3.29-test" --prerelease`
+
 ---
 
 ## [1.3.28] - 2026-01-16

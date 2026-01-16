@@ -10,6 +10,7 @@ on:
 jobs:
   pypi-publish:
     name: Upload release to PyPI
+    if: github.event.release.prerelease == false && !contains(github.ref, '-test')
     runs-on: ubuntu-latest
 
     # RECOMMENDED: Use a deployment environment for security hardening.

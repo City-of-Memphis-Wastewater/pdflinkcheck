@@ -5,13 +5,12 @@ name: Build and push multi-arch pdflinkcheck image
 on:
   release:
     types: [published]
-  #push:
-  #  tags: [ 'v*.*.*', 'v*.*.*-*' ]
   workflow_dispatch:
 
 jobs:
   docker:
     runs-on: ubuntu-latest
+    if: github.event.release.prerelease == false && !contains(github.ref, '-test')
     permissions:
       contents: read
       packages: write
@@ -30,7 +29,7 @@ jobs:
           
       - name: Build and push
         run: |
-          TAG=${GITHUB_REF#refs/tags/v}
+          TAG=${GITHUB_REF_NAME}
           LOWER_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
