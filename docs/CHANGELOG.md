@@ -6,7 +6,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.3.26] - 2026-01-16
+## [1.3.27] - 2026-01-16
 ### Fixed:
 - Correct expected "-onedir" file tail in msix.yml; Now we just validate expected structure of the onedir folder rather than looking for an exe to ignore based on filename.
 
