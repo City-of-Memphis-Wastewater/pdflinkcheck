@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.3.21] - 2026-01-16
+### Added:
+- Enable onefile vs onedir mode as argparse call to build_executible.py.
+- In build.yml, add a section to call the onefile mode for just Windows.
 
 ---
 

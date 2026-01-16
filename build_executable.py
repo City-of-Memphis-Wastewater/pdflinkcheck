@@ -246,19 +246,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"An unhandled error occurred: {e}", file=sys.stderr)
         sys.exit(1)
-    """
-    # 5. Test for success
-    try:
-        print("Testing the PyInstaller artifact...")
-        subprocess.run([str(path), "--help"])
-        if pyhabitat.tkinter_is_available():
-            #try:
-            print(f"Testing GUI for {str(path)}...")
-            subprocess.run([str(path), "gui", "--auto-close", "1000"])
-            #except Exception as e:
-            #    print(f"Error launching gui: {e}")
-        print("Testing complete.")
-    except Exception as e:
-        print(f"\n ERROR during PyInstaller post-build test: {e}", file=sys.stderr)
-        sys.exit(1)
-    """
+    
