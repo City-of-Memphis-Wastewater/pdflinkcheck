@@ -12,7 +12,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Ensure custom_env is being ued in the case of Termux, so that uv build point ot a temp dir within $HOME.
 
 ### Changed:
-- PyHabitat dependency increased to a minumum of 1.1.9, due to out-migration of the show_system_explorer() function. 
+- PyHabitat dependency increased to a minumum of 1.1.18, due to out-migration of the show_system_explorer() function. 
 
 ---
 
