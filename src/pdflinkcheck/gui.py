@@ -514,12 +514,14 @@ def start_gui(time_auto_close: int = 0):
         app_w, app_h = 700, 500 # known distrubuted size
         app_w, app_h = 800, 500 # stop gap until buttons are reorganized
         # Center and then reveal
-        center_window_on_primary(root, app_w, app_h)
-         # Force a title update to kick the window manager
+        # 2. CONFIG: Set title and geometry while hidden
         root.title(f"PDF Link Check v{get_version_from_pyproject()}")
+        center_window_on_primary(root, app_w, app_h)
         
 
         root.config(cursor="arrow")
+
+        
         root.deiconify()
        
 
