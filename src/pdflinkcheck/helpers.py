@@ -107,28 +107,3 @@ def get_export_path() -> Path:
         PDFLINKCHECK_HOME.mkdir(parents=True, exist_ok=True)
     return PDFLINKCHECK_HOME
 
-def show_system_explorer() -> None:
-    """
-    Opens the system file explorer (File Explorer, Finder, or Nautilus/etc.)
-    to the directory containing the exported reports.
-    """
-    target_dir = get_export_path()
-    
-    try:
-        if pyhabitat.on_windows():
-            # use os.startfile for the most native Windows experience
-            os.startfile(target_dir)
-        elif sys.platform == "darwin":
-            # macOS
-            subprocess.Popen(["open", str(target_dir)])
-        else:
-            # Linux/Other: pyhabitat or xdg-open fallback
-            try:
-                subprocess.Popen(["xdg-open", str(target_dir)])
-            except FileNotFoundError:
-                # If xdg-open is missing, we try to at least log it
-                print(f"Could not open explorer. Manual path: {target_dir}")
-                #messagebox.showinfo("Export Location", f"Reports are saved in:\n{target_dir}")
-    except Exception as e:
-        print(f"Could not open system explorer. Manual path: {target_dir}. Error: {e}")
-

@@ -21,7 +21,7 @@ from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_all_caches, is_in_git_repo
 from pdflinkcheck.tk_utils import center_window_on_primary
-from pdflinkcheck.helpers import show_system_explorer
+from pdflinkcheck.helpers import get_export_path
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -307,7 +307,8 @@ class PDFLinkCheckApp:
         the exported reports, with GUI error handling.
         """
         try:
-            show_system_explorer()
+            target_dir = get_export_path()
+            pyhabitat.show_system_explorer(path = target_dir)
         except Exception as e:
             # The GUI catches the error to show a user-friendly popup
             messagebox.showerror("Error", f"Could not open system explorer: {e}")
@@ -325,21 +326,7 @@ class PDFLinkCheckApp:
             return
 
         try:
-            """
-            #if pyhabitat.is_msix():
-            if pyhabitat.on_windows():
-                # Windows: use the most reliable method
-                threading.Thread(
-                    target=lambda: subprocess.Popen(["notepad.exe", str(target_path)]),
-                    daemon=True
-                ).start()
-            else:
-                # Non-Windows: use pyhabitat's robust cross-platform logic
-                threading.Thread(
-                    target=lambda: pyhabitat.edit_textfile(target_path),
-                    daemon=True
-                ).start()
-            """
+
             # Non-Windows: use pyhabitat's robust cross-platform logic
             threading.Thread(
                 target=lambda: pyhabitat.edit_textfile(target_path),
@@ -519,24 +506,35 @@ def start_gui(time_auto_close: int = 0):
     # Handover
     if root.winfo_exists():
         splash.teardown() # The Splash cleans itself up
-
+        
+        # Restore window borders/decorations
+        root.overrideredirect(False)
+        
         # Re-center the MAIN app window before showing it
         app_w, app_h = 700, 500 # known distrubuted size
         app_w, app_h = 800, 500 # stop gap until buttons are reorganized
         # Center and then reveal
         center_window_on_primary(root, app_w, app_h)
-        
-        root.deiconify()
-        # Restore window borders/decorations
-        #root.overrideredirect(False)
-
-        # Force a title update to kick the window manager
+         # Force a title update to kick the window manager
         root.title(f"PDF Link Check v{get_version_from_pyproject()}")
+        
 
-        root.lift()
-        root.wm_attributes("-topmost", True)
-        root.after(200, lambda: root.wm_attributes("-topmost", False))
+        root.config(cursor="arrow")
+        root.deiconify()
+       
 
+        # Focus is safer than 'topmost' for the mouse cursor
+        root.focus_force()
+
+        # Only use lift(), avoid wm_attributes("-topmost", True) if possible on WSL
+        if not pyhabitat.on_wsl():
+            root.lift()
+            root.wm_attributes("-topmost", True)
+            root.after(200, lambda: root.wm_attributes("-topmost", False))
+        else:
+            # On WSL, just lift and hope for the best without locking the Z-order
+            root.lift()
+    
         if pyhabitat.on_windows():
             try:
                 hwnd = root.winfo_id()
@@ -546,8 +544,8 @@ def start_gui(time_auto_close: int = 0):
 
         if time_auto_close > 0:
             root.after(time_auto_close, root.destroy)
-
-        root.focus_force()
+            
+        
         root.mainloop()
     print("pdflinkcheck: gui closed.")
 

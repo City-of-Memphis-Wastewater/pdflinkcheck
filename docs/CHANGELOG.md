@@ -11,6 +11,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Ensure dist/zipapp/ dir at the very beginning of build_pyz.py
 - Ensure custom_env is being ued in the case of Termux, so that uv build point ot a temp dir within $HOME.
 
+### Changed:
+- PyHabitat dependency increased to a minumum of 1.1.9, due to out-migration of the show_system_explorer() function. 
+
 ---
 
 ## [1.3.30] - 2026-01-16

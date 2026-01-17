@@ -202,13 +202,13 @@ def tools_clear_cache():
 @tools_app.command(name="browse-exports")
 def tools_browse_exports():
     """Open the system file explorer at the report output directory."""
-    from pdflinkcheck.helpers import show_system_explorer, get_export_path
+    from pdflinkcheck.helpers import get_export_path
     
     target_dir = get_export_path()
     console.print(f"Opening: [bold cyan]{target_dir}[/bold cyan]")
     
     try:
-        show_system_explorer()
+        pyhabitat.show_system_explorer(path = target_dir)
     except Exception as e:
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(code=1)

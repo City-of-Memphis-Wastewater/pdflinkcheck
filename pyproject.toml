@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "openpyxl>=3.1.5",
-    "pyhabitat>=1.1.6",
+    "pyhabitat>=1.1.18",
     "pypdf>=6.4.2",
     "rich>=14.2.0",
     "typer>=0.20.0",
