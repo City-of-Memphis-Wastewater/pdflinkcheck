@@ -119,7 +119,7 @@ For developers importing `pdflinkcheck` into other Python projects, the core ana
 |`analyze_pdf_pymupdf()`| PyMuPDF | Fast, ~30 mb, AGPL3+ licensed |
 |`analyze_pdf_pypdf()`| pypdf library | Slow, ~2 mb, Permissively licensed |
 
-Exanple:
+Example:
 
 ```python
 from pdflinkcheck import ( run_report,
@@ -200,9 +200,9 @@ Benefits:
 
 
 ### PDF Library Selection
-At long last, `PyMuPDF` is an optional dependency. All testing comparing `pypdf` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benfit of `pypdf` is small size of packages and cross-platform compatibility. We have recently added a PDFium option, which circumvents the AGPL3+.
+At long last, `PyMuPDF` is an optional dependency. All testing comparing `pypdf` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benefit of `pypdf` is small size of packages and cross-platform compatibility. We have recently added a PDFium option, which circumvents the AGPL3+.
 
-Expecte that all binaries and artifacts contain PyMuPDF, unlss they are built on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
+Expected that all binaries and artifacts contain PyMuPDF, unless they are built on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
 
 To install the complete version use one of these options:
 
