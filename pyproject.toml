@@ -40,16 +40,34 @@ classifiers=[
     "Development Status :: 4 - Beta",
     #"Development Status :: 5 - Production/Stable",
 ]
+author = "George Clayton Bennett" 
+author_email = "george.bennett@memphistn.gov"
 authors = [
     { name = "George Clayton Bennett", email = "george.bennett@memphistn.gov" },
 ]
 maintainers = [
     { name = "George Clayton Bennett", email = "george.bennett@memphistn.gov" },
 ]
+long_description_content_type = "text/markdown"
+keywords = [
+    "pdf",
+    "links",
+    "analysis",
+    "validation",
+    "audit",
+    "cli",
+    "gui",
+    "pymupdf",
+    "pypdf",
+    "pdfium",
+    "document-processing",
+]
 
 [project.urls]
 Homepage = "https://github.com/city-of-memphis-wastewater/pdflinkcheck"
 Repository = "https://github.com/city-of-memphis-wastewater/pdflinkcheck"
+Issues = "https://github.com/city-of-memphis-wastewater/pdflinkcheck/issues"
+Changelog = "https://raw.githubusercontent.com/city-of-memphis-wastewater/pdflinkcheck/main/docs/CHANGELOG.md"
 
 [project.scripts]
 pdflinkcheck = "pdflinkcheck.cli:app"
