@@ -184,7 +184,7 @@ def run_pyinstaller(
         base_command.append("--collect-all")
         base_command.append("pymupdf")
         
-    if pyhabitat.on_apple():
+    if pyhabitat.on_macos():
         base_command.append("--osx-bundle-identifier")
         base_command.append("com.georgeclaytonbennett.pdflinkcheck")
         #base_command.append("--icon=icon.icns")
