@@ -95,7 +95,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
         # --- B. INTERNAL GOTO LINKS (Standard Annotations) ---
         # We iterate through standard link annotations for GoTo actions
-        assess_action(doc,page,links):
+        assess_action(doc,page,links)
         """
         pos = 0
         while True:
