@@ -57,6 +57,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
         # --- A. EXTERNAL WEB LINKS ---
         pagelink_raw = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
         if pagelink_raw:
+            # This is buiilt for only web links - we entirely miss file links
             count = pdfium_c.FPDFLink_CountWebLinks(pagelink_raw)
             for i in range(count):
                 buflen = pdfium_c.FPDFLink_GetURL(pagelink_raw, i, None, 0)
@@ -98,6 +99,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
                 # Try to get Destination
                 link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
+                # Will stabdard annotations evwry include external files?
                 action = pdfium_c.FPDFLink_GetAction(link_annot)
                 action_type = pdfium_c.FPDFAction_GetType(action)
                 print(f"action = {action}")
