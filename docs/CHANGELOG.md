@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+
+## [1.3.31] - 2026-01-16
+### Fixed:
+- Missing external link types added to pdfium engine
+
+---
+
 ## [1.3.31] - 2026-01-16
 ### Fixed:
 - Ensure dist/zipapp/ dir at the very beginning of build_pyz.py
