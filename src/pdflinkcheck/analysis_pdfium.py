@@ -145,7 +145,9 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                         })
 
             finally:
-                pass
+                if annot_raw:
+                    pdfium_c.FPDFPage_CloseAnnot(page.raw, annot_raw)  # ← correct call
+                
                 # pdfium_c.FPDF_CloseAnnot(annot_raw) # does not exist
             # Note: We don't close annot here if we are just enumerating by index 
             # in some builds, but standard practice is to increment pos
