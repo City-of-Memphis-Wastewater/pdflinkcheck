@@ -47,7 +47,7 @@ authors = [
 maintainers = [
     { name = "George Clayton Bennett", email = "george.bennett@memphistn.gov" },
 ]
-long_description_content_type = "text/markdown"
+
 keywords = [
     "pdf",
     "links",
