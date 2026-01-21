@@ -11,9 +11,8 @@ try:
     if pdfium_is_available():
         import pypdfium2 as pdfium
         import pypdfium2.raw as pdfium_c
-        print(dir(pdfium_c))
-        #from pypdfium2._helpers.misc import PdfiumBase # you dont want to do this, it overrides pdfium
-
+        #print(dir(pdfium_c))
+        
                     
     else:
         pdfium = None
