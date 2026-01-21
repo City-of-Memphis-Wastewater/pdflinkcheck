@@ -40,8 +40,7 @@ classifiers=[
     "Development Status :: 4 - Beta",
     #"Development Status :: 5 - Production/Stable",
 ]
-#author = "George Clayton Bennett" 
-#author_email = "george.bennett@memphistn.gov"
+
 authors = [
     { name = "George Clayton Bennett", email = "george.bennett@memphistn.gov" },
 ]
