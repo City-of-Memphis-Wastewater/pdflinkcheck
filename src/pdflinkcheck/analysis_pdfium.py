@@ -308,7 +308,7 @@ def parse_view(dest):
 
     return page_index, view_type, params
 
-def assess_action(doc,page,links, page_index, text_page, source_ref)
+def assess_action(doc,page,links, page_index, text_page, source_ref):
     """
     # Standard annotation action types will help to  include external files
     #- **1** = `FPDFACTION_GOTO` → Internal GoTo
