@@ -168,7 +168,49 @@ def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
 
     except Exception:
         return None
+
 def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
+    """
+    Extract URI path from action.
+    Your PDFium build returns null-terminated UTF-8, not UTF-16.
+    """
+    if not action or not doc_raw:
+        return None
+
+    try:
+        # Probe length
+        buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
+        if buflen <= 1:
+            return None
+
+        # Allocate buffer as char* (for UTF-8)
+        buffer = ctypes.create_string_buffer(buflen)
+
+        # Fill buffer
+        pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
+
+        # buffer.value is bytes up to first null; decode as UTF-8
+        uri_bytes = buffer.value
+        uri = uri_bytes.decode('utf-8', errors='strict').rstrip('\x00').strip()
+
+        # Optional debug (comment out later)
+        print(f"Clean repr URI: {repr(uri)}")
+        print(f"Clean display URI: {uri}")
+
+        return uri if uri else None
+
+    except UnicodeDecodeError as ude:
+        print(f"UTF-8 decode error: {ude}")
+        # Fallback: replace invalid sequences
+        uri = uri_bytes.decode('utf-8', errors='replace').rstrip('\x00').strip()
+        print(f"Fallback repr: {repr(uri)}")
+        return uri if uri else None
+
+    except Exception as e:
+        print(f"URI extraction failed: {str(e)}")
+        return None
+
+def get_uri_from_action_swap_be(action: Any, doc_raw: Any) -> Optional[str]:
     if not action or not doc_raw:
         return None
 

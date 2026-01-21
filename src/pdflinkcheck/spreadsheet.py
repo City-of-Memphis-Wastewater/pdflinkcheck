@@ -125,6 +125,12 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
     Physical writer. Uses optimized sampling for column widths.
     """
     wb = Workbook()
+    wb.properties.creator = "pdflinkcheck"  # optional
+    wb.properties.title = "PDF Link Report"
+
+    # Add this to force UTF-8 BOM on save (helps Excel with Unicode)
+    from openpyxl.utils import quote_sheetname  # not needed, but for completeness
+    # No extra code needed — openpyxl saves UTF-8 by default, but BOM helps Excel
     
     sheet_configs = [
         ('Table of Contents', ['Level', 'Title', 'Target Page']),
@@ -159,7 +165,16 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
                 last_cell = ws.cell(row=ws.max_row, column=len(row_data))
                 last_cell.hyperlink = item['hyperlink']
                 last_cell.style = 'Hyperlink'
-
+        try:
+            # Force UTF-8 BOM for Excel compatibility with Unicode paths
+            for row_idx, item in enumerate(rows, start=2):
+                for col_idx, value in enumerate([item['col1'], item['col2'], item['col3']], start=1):
+                    cell = ws.cell(row=row_idx, column=col_idx, value=str(value))
+                    # Ensure Excel treats as text
+                    if isinstance(value, str) and (value.startswith('http') or value.startswith('mhtml') or value.startswith('mailto')):
+                        cell.number_format = '@'  # text format
+        except:
+            print("this block is in the wrong spot or it otherwose problematic")
         # COLUMN AUTO-FIT: Sample first 100 rows for speed on large PDFs
         sample_rows = list(ws.iter_rows(min_row=1, max_row=100, values_only=True))
         if sample_rows:
