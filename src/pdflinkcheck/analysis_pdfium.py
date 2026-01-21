@@ -170,6 +170,34 @@ def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
         return None
 
 def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
+    if not action or not doc_raw:
+        return None
+
+    try:
+        buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
+        if buflen <= 1:
+            return None
+
+        buffer = (pdfium_c.c_ushort * buflen)()
+        pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
+
+        # Get raw bytes, strip trailing nulls
+        uri_bytes = ctypes.string_at(buffer, (buflen - 1) * 2)
+        # Decode UTF-16LE, replace errors, remove nulls
+        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
+
+        # Debug: show repr() to see exact chars (no terminal rendering issues)
+        print(f"Raw repr URI at pos: {repr(uri)}")
+        # Also print cleaned version
+        print(f"Cleaned URI: {uri}")
+
+        return uri if uri else None
+
+    except Exception as e:
+        print(f"URI extraction failed: {str(e)}")
+        return None
+
+def get_uri_from_action_mojibake(action: Any, doc_raw: Any) -> Optional[str]:
     """
     Extract URI from action (type 3) using correct 4-arg signature.
     Requires doc.raw as first arg.
@@ -203,108 +231,6 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
     except Exception as e:
         print(f"URI extraction failed: {str(e)}")
         return None
-
-def get_uri_from_action____(action: Any) -> Optional[str]:
-    """
-    Extract URI from action (type 3) with maximum compatibility across pypdfium2 versions.
-    """
-    if not action:
-        return None
-
-    try:
-        # Step 1: Probe length (most common call)
-        buflen = pdfium_c.FPDFAction_GetURIPath(action, None, 0)
-        print(f"URI probe success: buflen = {buflen}")  # debug
-
-        if buflen <= 1:
-            print("URI buflen <=1 → empty or invalid")
-            return None
-
-        # Step 2: Allocate and fill
-        buffer = (pdfium_c.c_ushort * buflen)()
-        written = pdfium_c.FPDFAction_GetURIPath(action, buffer, buflen)
-
-        if written != buflen:
-            print(f"URI write mismatch: expected {buflen}, wrote {written}")
-            return None
-
-        # Decode (strip null terminators)
-        uri_bytes = ctypes.string_at(buffer, (buflen - 1) * 2)
-        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
-        print(f"Extracted URI: {uri}")  # success debug
-        return uri if uri else None
-
-    except Exception as e:
-        print(f"URI extraction failed: {str(e)}")
-
-        # Step 3: Fallback - try passing a dummy buffer first (some bindings require it)
-        try:
-            dummy_buf = (pdfium_c.c_ushort * 1)()
-            buflen = pdfium_c.FPDFAction_GetURIPath(action, dummy_buf, 1)
-            print(f"Fallback probe: buflen = {buflen}")
-
-            if buflen > 1:
-                buffer = (pdfium_c.c_ushort * buflen)()
-                pdfium_c.FPDFAction_GetURIPath(action, buffer, buflen)
-                uri = ctypes.string_at(buffer, (buflen - 1) * 2).decode('utf-16le', errors='replace').rstrip('\x00').strip()
-                print(f"Fallback extracted URI: {uri}")
-                return uri if uri else None
-
-        except Exception as fallback_e:
-            print(f"Fallback also failed: {str(fallback_e)}")
-            return None
-
-def get_uri_from_action__(action: Any) -> Optional[str]:
-    """
-    Safely extract URI string from FPDF_ACTION (type 3).
-    Adds length check, error handling, and fallback logging.
-    """
-    if not action:
-        return None
-
-    try:
-        buflen = pdfium_c.FPDFAction_GetURIPath(action, None, 0)
-        print(f"URI buflen = {buflen}")  # ← debug: should be >1 if URI exists
-
-        if buflen <= 1:  # 0 or 1 usually means empty/invalid
-            return None
-
-        buffer = (pdfium_c.c_ushort * buflen)()
-        written = pdfium_c.FPDFAction_GetURIPath(action, buffer, buflen)
-        if written != buflen:
-            print(f"URI write failed: expected {buflen}, got {written}")
-            return None
-
-        # Decode with replacement for bad chars
-        uri_bytes = ctypes.string_at(buffer, (buflen - 1) * 2)
-        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00')
-        return uri.strip() if uri.strip() else None
-
-    except Exception as e:
-        print(f"URI extraction exception: {e}")
-        return None
-
-def get_uri_from_action_(action: Any) -> Optional[str]:
-    """
-    Safely extract URI string from FPDF_ACTION (type 3).
-    Returns string or None if failed / not a URI action.
-    """
-    if not action:
-        return None
-
-    try:
-        buflen = pdfium_c.FPDFAction_GetURIPath(action, None, 0)
-        if buflen <= 0:
-            return None
-
-        buffer = (pdfium_c.c_ushort * buflen)()
-        pdfium_c.FPDFAction_GetURIPath(action, buffer, buflen)
-        uri = ctypes.string_at(buffer, (buflen - 1) * 2).decode('utf-16le', errors='replace')
-        return uri.strip()
-
-    except Exception:
-        return None
-
 
 def get_remote_file_from_action(action: Any, doc_raw: Any) -> Optional[str]:
     """
