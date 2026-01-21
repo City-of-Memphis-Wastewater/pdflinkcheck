@@ -7,7 +7,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ---
 
 
-## [1.3.31] - 2026-01-16
+## [1.3.34] - 2026-01-21
 ### Fixed:
 - Missing external link types added to pdfium engine
 
