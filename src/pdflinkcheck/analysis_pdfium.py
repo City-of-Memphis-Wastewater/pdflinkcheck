@@ -12,7 +12,7 @@ try:
         import pypdfium2 as pdfium
         import pypdfium2.raw as pdfium_c
         print(dir(pdfium_c))
-        from pypdfium2._helpers.misc import PdfiumBase
+        #from pypdfium2._helpers.misc import PdfiumBase # you dont want to do this, it overrides pdfium
 
                     
     else:
@@ -124,7 +124,8 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                     #- **9** = `FPDFACTION_IMPORTDATA` → Import form data
                     action = pdfium_c.FPDFLink_GetAction(link_annot)
                     action_type = pdfium_c.FPDFAction_GetType(action)
-                    print(f"action_type = {action_type}")
+                    if False: # worth keeping around
+                        print(f"action_type = {action_type}")
                     # doc_raw does not exist yet?
                     result = get_action_info(doc, action, fs_rect, anchor_text, source_ref, link_annot)
                     # pdfium_c.FPDFAction_CloseAction(action)
