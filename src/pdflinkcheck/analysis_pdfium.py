@@ -64,7 +64,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
         page = doc.get_page(page_index)
         text_page = page.get_textpage()
         source_ref = PageRef.from_index(page_index)
-
+        
         # --- A. EXTERNAL WEB LINKS ---
         pagelink_raw = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
         if pagelink_raw:
@@ -323,6 +323,9 @@ def assess_action(doc,page,links):
     
     """
     pos = 0
+    text_page = page.get_textpage()
+    source_ref = PageRef.from_index(page_index)
+        
     while True:
         annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
         if not annot_raw:
