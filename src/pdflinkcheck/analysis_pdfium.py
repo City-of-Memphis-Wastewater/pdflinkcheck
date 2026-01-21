@@ -168,7 +168,43 @@ def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
 
     except Exception:
         return None
-def get_uri_from_action(action: Any) -> Optional[str]:
+
+def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
+    """
+    Extract URI from action (type 3) using correct 4-arg signature.
+    Requires doc.raw as first arg.
+    """
+    if not action or not doc_raw:
+        return None
+
+    try:
+        # Probe length (pass doc_raw, action, None, 0)
+        buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
+        print(f"URI probe success: buflen = {buflen}")  # debug
+
+        if buflen <= 1:
+            print("URI buflen <=1 → empty or invalid")
+            return None
+
+        # Allocate and fill
+        buffer = (pdfium_c.c_ushort * buflen)()
+        written = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
+
+        if written != buflen:
+            print(f"URI write mismatch: expected {buflen}, wrote {written}")
+            return None
+
+        # Decode UTF-16LE
+        uri_bytes = ctypes.string_at(buffer, (buflen - 1) * 2)
+        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
+        print(f"Extracted URI: {uri}")  # success debug
+        return uri if uri else None
+
+    except Exception as e:
+        print(f"URI extraction failed: {str(e)}")
+        return None
+
+def get_uri_from_action____(action: Any) -> Optional[str]:
     """
     Extract URI from action (type 3) with maximum compatibility across pypdfium2 versions.
     """
@@ -394,6 +430,22 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
                             source_kind='pypdfium2_annot_goto'
                         ))
                 elif action_type == 3:  # URI
+                    uri = get_uri_from_action(action, doc.raw)  # ← pass doc.raw here!
+                    print(f"Type 3 URI attempt at pos {pos}: {uri}")
+
+                    if uri:
+                        links.append(create_link_dict(
+                            source_ref=source_ref,
+                            rect_norm=rect_norm,
+                            anchor_text=anchor_text,
+                            link_type='External (URI)',
+                            url=uri,
+                            source_kind='pypdfium2_annot_uri'
+                        ))
+                    else:
+                        print(f"Type 3 at pos {pos} — no URI found")
+
+                elif False and action_type == 3:  # URI
                     uri = get_uri_from_action(action)
                     print(f"Type 3 URI attempt at pos {pos}: {uri}")  # ← debug line
 
