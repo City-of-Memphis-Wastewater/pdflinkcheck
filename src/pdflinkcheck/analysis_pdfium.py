@@ -95,6 +95,8 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
         # --- B. INTERNAL GOTO LINKS (Standard Annotations) ---
         # We iterate through standard link annotations for GoTo actions
+        assess_action(doc,page,links):
+        """
         pos = 0
         while True:
             annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
@@ -111,17 +113,6 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                     
                     # Try to get Destination
                     link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
-                    
-                    # Standard annotation action types will help to  include external files
-                    #- **1** = `FPDFACTION_GOTO` → Internal GoTo
-                    #- **3** = `FPDFACTION_URI` → URI action (http, https, mailto, file:, tel:, etc.).  
-                    #- **2** = `FPDFACTION_GOTOR` → GoTo Remote (external file/PDF reference — this is your main missing GoToR case)
-                    #- **4** = `FPDFACTION_LAUNCH` → Launch action (open external file/application)
-                    #- **5** = `FPDFACTION_NAMED` → Named action (e.g., predefined like "NextPage", "Print")
-                    #- **6** = `FPDFACTION_JAVASCRIPT` → Execute JavaScript
-                    #- **7** = `FPDFACTION_SUBMIT` → Form submit
-                    #- **8** = `FPDFACTION_RESET` → Form reset
-                    #- **9** = `FPDFACTION_IMPORTDATA` → Import form data
                     action = pdfium_c.FPDFLink_GetAction(link_annot)
                     action_type = pdfium_c.FPDFAction_GetType(action)
                     if False: # worth keeping around
@@ -153,6 +144,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
             # in some builds, but standard practice is to increment pos
             pos += 1
 
+        """
         page.close()
         text_page.close()
 
@@ -262,6 +254,119 @@ def get_action_info(doc, action, fs_rect, anchor_text, source_ref, link_annot):
         })
     return result
 
+def assess_action(doc,page,links):
+    """
+    # Standard annotation action types will help to  include external files
+    #- **1** = `FPDFACTION_GOTO` → Internal GoTo
+    #- **3** = `FPDFACTION_URI` → URI action (http, https, mailto, file:, tel:, etc.).  
+    #- **2** = `FPDFACTION_GOTOR` → GoTo Remote (external file/PDF reference — this is your main missing GoToR case)
+    #- **4** = `FPDFACTION_LAUNCH` → Launch action (open external file/application)
+    #- **5** = `FPDFACTION_NAMED` → Named action (e.g., predefined like "NextPage", "Print")
+    #- **6** = `FPDFACTION_JAVASCRIPT` → Execute JavaScript
+    #- **7** = `FPDFACTION_SUBMIT` → Form submit
+    #- **8** = `FPDFACTION_RESET` → Form reset
+    #- **9** = `FPDFACTION_IMPORTDATA` → Import form data
+    
+    """
+    pos = 0
+    while True:
+        annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
+        if not annot_raw:
+            break
+
+        try:
+            subtype = pdfium_c.FPDFAnnot_GetSubtype(annot_raw)
+            if subtype != pdfium_c.FPDF_ANNOT_LINK:
+                pos += 1
+                continue
+
+            fs_rect = pdfium_c.FS_RECTF()
+            pdfium_c.FPDFAnnot_GetRect(annot_raw, fs_rect)
+            rect_norm = normalize_rect(fs_rect)
+
+            anchor_text = get_pdfium_text_safe(text_page, fs_rect)
+
+            link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
+            action = pdfium_c.FPDFLink_GetAction(link_annot)
+
+            if action:
+                action_type = pdfium_c.FPDFAction_GetType(action)
+
+                if action_type == 1:  # GOTO
+                    dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_annot)
+                    if dest:
+                        dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
+                        dest_ref = PageRef.from_index(dest_idx)
+                        view_dict = extract_destination_view(dest)
+
+                        links.append(create_link_dict(
+                            source_ref=source_ref,
+                            rect_norm=rect_norm,
+                            anchor_text=anchor_text,
+                            link_type='Internal (GoTo/Dest)',
+                            destination_page=dest_ref.machine,
+                            destination_view=view_dict,
+                            source_kind='pypdfium2_annot_goto'
+                        ))
+
+                elif action_type == 3:  # URI
+                    uri = get_uri_from_action(action)
+                    if uri:
+                        links.append(create_link_dict(
+                            source_ref=source_ref,
+                            rect_norm=rect_norm,
+                            anchor_text=anchor_text,
+                            link_type='External (URI)',
+                            url=uri,
+                            source_kind='pypdfium2_annot_uri'
+                        ))
+
+                elif action_type == 2:  # GOTOR
+                    remote_file = get_remote_file_from_action(action, doc.raw)
+                    dest = pdfium_c.FPDFAction_GetDest(action)
+                    dest_page = None
+                    view_dict = None
+                    if dest:
+                        dest_page = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
+                        view_dict = extract_destination_view(dest)
+
+                    links.append(create_link_dict(
+                        source_ref=source_ref,
+                        rect_norm=rect_norm,
+                        anchor_text=anchor_text,
+                        link_type='Remote (GoToR)',
+                        remote_file=remote_file,
+                        destination_page=dest_page,
+                        destination_view=view_dict,
+                        source_kind='pypdfium2_annot_gotor'
+                    ))
+
+                elif action_type == 4:  # LAUNCH
+                    remote_file = get_remote_file_from_action(action, doc.raw)
+                    links.append(create_link_dict(
+                        source_ref=source_ref,
+                        rect_norm=rect_norm,
+                        anchor_text=anchor_text,
+                        link_type='Launch',
+                        remote_file=remote_file,
+                        source_kind='pypdfium2_annot_launch'
+                    ))
+
+                else:
+                    links.append(create_link_dict(
+                        source_ref=source_ref,
+                        rect_norm=rect_norm,
+                        anchor_text=anchor_text,
+                        link_type='Other Action',
+                        action_kind=action_type,
+                        source_kind='pypdfium2_annot_other'
+                    ))
+
+        finally:
+            pdfium_c.FPDFPage_CloseAnnot(page.raw, annot_raw)
+
+        pos += 1
+    
 def is_high_level(obj):
     return isinstance(obj, PdfiumBase)
 
