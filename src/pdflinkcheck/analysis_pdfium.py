@@ -185,8 +185,8 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
         uri = uri_bytes.decode('utf-8', errors='strict').rstrip('\x00').strip()
 
         # Optional debug (comment out later)
-        print(f"Clean repr URI: {repr(uri)}")
-        print(f"Clean display URI: {uri}")
+        #print(f"Clean repr URI: {repr(uri)}")
+        #print(f"Clean display URI: {uri}")
 
         return uri if uri else None
 
@@ -194,11 +194,11 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
         print(f"UTF-8 decode error: {ude}")
         # Fallback: replace invalid sequences
         uri = uri_bytes.decode('utf-8', errors='replace').rstrip('\x00').strip()
-        print(f"Fallback repr: {repr(uri)}")
+        #print(f"Fallback repr: {repr(uri)}")
         return uri if uri else None
 
     except Exception as e:
-        print(f"URI extraction failed: {str(e)}")
+        #print(f"URI extraction failed: {str(e)}")
         return None
 
 def get_uri_from_action_mojibake(action: Any, doc_raw: Any) -> Optional[str]:
@@ -361,7 +361,7 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
                         ))
                 elif action_type == 3:  # URI
                     uri = get_uri_from_action(action, doc.raw)  # ← pass doc.raw here!
-                    print(f"Type 3 URI attempt at pos {pos}: {uri}")
+                    #print(f"Type 3 URI attempt at pos {pos}: {uri}")
 
                     if uri:
                         links.append(create_link_dict(

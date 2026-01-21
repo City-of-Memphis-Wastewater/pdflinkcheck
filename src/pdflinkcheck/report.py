@@ -128,8 +128,7 @@ def run_report_meat(
     # AUTO MODE
     if pdf_library == "auto":
         pdf_library = assess_default_pdf_library()
-    print(f"pdf_library = {pdf_library}")
-
+    
     # PDFium ENGINE
     if pdf_library == "pdfium":# and pdfium_is_available():
         from pdflinkcheck.analysis_pdfium import analyze_pdf
