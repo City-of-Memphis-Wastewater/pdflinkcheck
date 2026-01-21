@@ -131,12 +131,12 @@ def run_report_meat(
     print(f"pdf_library = {pdf_library}")
 
     # PDFium ENGINE
-    if pdf_library == "pdfium" and pdfium_is_available():
+    if pdf_library == "pdfium":# and pdfium_is_available():
         from pdflinkcheck.analysis_pdfium import analyze_pdf
 
 
     # PyMuPDF Engine
-    elif pdf_library == "pymupdf" and pymupdf_is_available():
+    elif pdf_library == "pymupdf":# and pymupdf_is_available():
         from pdflinkcheck.analysis_pymupdf import analyze_pdf
         
     

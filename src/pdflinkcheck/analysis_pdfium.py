@@ -25,6 +25,9 @@ except ImportError:
 def analyze_pdf(path: str) -> Dict[str, Any]:
     # 1. Guard the entry point
     if not pdfium_is_available() or pdfium is None:
+        print(f"pdfium_is_available() = {pdfium_is_available()}")
+        print(f"pdfium = {pdfium}")
+        
         raise ImportError(
             "pypdfium2 is not installed. "
             "\nInstall it with: \n\tpip install pdflinkcheck[pdfium] \n\t OR \n\t uv sync --extra pdfium"
