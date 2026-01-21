@@ -168,7 +168,6 @@ def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
 
     except Exception:
         return None
-
 def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
     if not action or not doc_raw:
         return None
@@ -184,39 +183,49 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
         # Get full raw bytes
         uri_bytes = ctypes.string_at(buffer, buflen * 2)
 
-        # Strip trailing null byte pairs
+        # Strip trailing nulls (UTF-16 null = \x00\x00 pairs)
         uri_bytes = uri_bytes.rstrip(b'\x00\x00')
-
-        # Strip single trailing null if present
         if uri_bytes.endswith(b'\x00'):
             uri_bytes = uri_bytes[:-1]
 
-        # Detect mojibake (e.g., if starts with known garbled pattern)
-        test_decode = uri_bytes.decode('utf-16le', errors='replace')
-        if test_decode.startswith('桭浴㩬楦敬⼺'):  # known garbled 'mhtml:file://'
-            # Byte swap to treat as big-endian
-            swapped_bytes = b''.join(w.to_bytes(2, 'big') for w in buffer[:buflen-1])  # exclude last null
-            uri = swapped_bytes.decode('utf-16be', errors='strict').rstrip('\x00').strip()
-        else:
-            uri = uri_bytes.decode('utf-16le', errors='strict').rstrip('\x00').strip()
+        # Try LE first (standard)
+        try:
+            uri_le = uri_bytes.decode('utf-16le').rstrip('\x00').strip()
+            # Heuristic: valid URI should contain ':', '/', '\\', or '@' for mailto
+            if ':' in uri_le or '/' in uri_le or '@' in uri_le:
+                print(f"LE success: {repr(uri_le)}")
+                return uri_le
+        except UnicodeDecodeError:
+            pass
 
-        print(f"Clean repr URI: {repr(uri)}")
-        print(f"Clean display URI: {uri}")
+        # Try BE (byte-swapped) if LE fails or looks garbled
+        try:
+            uri_be = uri_bytes.decode('utf-16be').rstrip('\x00').strip()
+            if ':' in uri_be or '/' in uri_be or '@' in uri_be:
+                print(f"BE success: {repr(uri_be)}")
+                return uri_be
+        except UnicodeDecodeError:
+            pass
 
-        return uri if uri else None
+        # Fallback: byte swap manually if both fail
+        swapped = b''.join(uri_bytes[i+1:i-1 if i else None:-1] for i in range(0, len(uri_bytes), 2))
+        try:
+            uri_swapped = swapped.decode('utf-16le').rstrip('\x00').strip()
+            print(f"Swapped BE success: {repr(uri_swapped)}")
+            return uri_swapped
+        except UnicodeDecodeError:
+            pass
 
-    except UnicodeDecodeError as ude:
-        print(f"Decode error: {ude}")
-        # Fallback to replace
-        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
-        print(f"Fallback repr URI: {repr(uri)}")
-        return uri if uri else None
+        # Absolute fallback with replace
+        uri_fallback = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
+        print(f"Fallback (LE replace): {repr(uri_fallback)}")
+        return uri_fallback if uri_fallback else None
 
     except Exception as e:
         print(f"URI extraction failed: {str(e)}")
         return None
 
-
+ 
 def get_uri_from_action_mojibake2(action: Any, doc_raw: Any) -> Optional[str]:
     if not action or not doc_raw:
         return None
