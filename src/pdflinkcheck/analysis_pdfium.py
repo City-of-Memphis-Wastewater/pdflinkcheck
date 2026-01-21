@@ -418,7 +418,9 @@ def assess_action(doc,page,links):
                     ))
 
         finally:
-            pdfium_c.FPDFPage_CloseAnnot(page.raw, annot_raw)
+            if annot_raw;
+                print(f"Closing annot at pos {pos}")
+                pdfium_c.FPDFPage_CloseAnnot(annot_raw)
 
         pos += 1
     
