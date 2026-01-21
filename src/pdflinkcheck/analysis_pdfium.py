@@ -1,9 +1,9 @@
 # src/pdflinkcheck/analysis_pdfium.py
 from __future__ import annotations
 import ctypes
-from typing import List, Dict, Any
-from pdflinkcheck.helpers import PageRef
+from typing import Optional, Dict, Any, Tuple, List
 
+from pdflinkcheck.helpers import PageRef
 from pdflinkcheck.environment import pdfium_is_available
 from pdflinkcheck.helpers import PageRef
 
@@ -103,15 +103,6 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
     return {"links": links, "toc": toc_list, "file_ov": file_ov}
 
 
-import ctypes
-from typing import Optional, Dict, Any, Tuple, List
-
-# Assuming these are already imported:
-# import pypdfium2 as pdfium
-# import pypdfium2.raw as pdfium_c
-# from pdflinkcheck.helpers import PageRef
-
-
 def normalize_rect(fs_rect: pdfium_c.FS_RECTF) -> List[float]:
     """
     Normalize FS_RECTF to consistent [x0, y0, x1, y1] order.
@@ -204,92 +195,6 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
         # Fallback: replace invalid sequences
         uri = uri_bytes.decode('utf-8', errors='replace').rstrip('\x00').strip()
         print(f"Fallback repr: {repr(uri)}")
-        return uri if uri else None
-
-    except Exception as e:
-        print(f"URI extraction failed: {str(e)}")
-        return None
-
-def get_uri_from_action_swap_be(action: Any, doc_raw: Any) -> Optional[str]:
-    if not action or not doc_raw:
-        return None
-
-    try:
-        buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
-        if buflen <= 1:
-            return None
-
-        buffer = (pdfium_c.c_ushort * buflen)()
-        pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
-
-        # Get full raw bytes
-        uri_bytes = ctypes.string_at(buffer, buflen * 2)
-
-        # Strip trailing nulls (UTF-16 null = \x00\x00 pairs)
-        uri_bytes = uri_bytes.rstrip(b'\x00\x00')
-        if uri_bytes.endswith(b'\x00'):
-            uri_bytes = uri_bytes[:-1]
-
-        # Try LE first (standard)
-        try:
-            uri_le = uri_bytes.decode('utf-16le').rstrip('\x00').strip()
-            # Heuristic: valid URI should contain ':', '/', '\\', or '@' for mailto
-            if ':' in uri_le or '/' in uri_le or '@' in uri_le:
-                print(f"LE success: {repr(uri_le)}")
-                return uri_le
-        except UnicodeDecodeError:
-            pass
-
-        # Try BE (byte-swapped) if LE fails or looks garbled
-        try:
-            uri_be = uri_bytes.decode('utf-16be').rstrip('\x00').strip()
-            if ':' in uri_be or '/' in uri_be or '@' in uri_be:
-                print(f"BE success: {repr(uri_be)}")
-                return uri_be
-        except UnicodeDecodeError:
-            pass
-
-        # Fallback: byte swap manually if both fail
-        swapped = b''.join(uri_bytes[i+1:i-1 if i else None:-1] for i in range(0, len(uri_bytes), 2))
-        try:
-            uri_swapped = swapped.decode('utf-16le').rstrip('\x00').strip()
-            print(f"Swapped BE success: {repr(uri_swapped)}")
-            return uri_swapped
-        except UnicodeDecodeError:
-            pass
-
-        # Absolute fallback with replace
-        uri_fallback = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
-        print(f"Fallback (LE replace): {repr(uri_fallback)}")
-        return uri_fallback if uri_fallback else None
-
-    except Exception as e:
-        print(f"URI extraction failed: {str(e)}")
-        return None
-
- 
-def get_uri_from_action_mojibake2(action: Any, doc_raw: Any) -> Optional[str]:
-    if not action or not doc_raw:
-        return None
-
-    try:
-        buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
-        if buflen <= 1:
-            return None
-
-        buffer = (pdfium_c.c_ushort * buflen)()
-        pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
-
-        # Get raw bytes, strip trailing nulls
-        uri_bytes = ctypes.string_at(buffer, (buflen - 1) * 2)
-        # Decode UTF-16LE, replace errors, remove nulls
-        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
-
-        # Debug: show repr() to see exact chars (no terminal rendering issues)
-        print(f"Raw repr URI at pos: {repr(uri)}")
-        # Also print cleaned version
-        print(f"Cleaned URI: {uri}")
-
         return uri if uri else None
 
     except Exception as e:
