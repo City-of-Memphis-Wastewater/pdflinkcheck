@@ -98,6 +98,10 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
                 # Try to get Destination
                 link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
+                action = pdfium_c.FPDFLink_GetAction(link_annot)
+                action_type = pdfium_c.FPDFAction_GetType(action)
+                print(f"action = {action}")
+                print(f"action_type = {action_type}")
                 dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_annot)
                 
                 if dest:
