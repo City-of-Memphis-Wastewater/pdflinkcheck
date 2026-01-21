@@ -181,6 +181,54 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
         buffer = (pdfium_c.c_ushort * buflen)()
         pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
 
+        # Get full raw bytes
+        uri_bytes = ctypes.string_at(buffer, buflen * 2)
+
+        # Strip trailing null byte pairs
+        uri_bytes = uri_bytes.rstrip(b'\x00\x00')
+
+        # Strip single trailing null if present
+        if uri_bytes.endswith(b'\x00'):
+            uri_bytes = uri_bytes[:-1]
+
+        # Detect mojibake (e.g., if starts with known garbled pattern)
+        test_decode = uri_bytes.decode('utf-16le', errors='replace')
+        if test_decode.startswith('桭浴㩬楦敬⼺'):  # known garbled 'mhtml:file://'
+            # Byte swap to treat as big-endian
+            swapped_bytes = b''.join(w.to_bytes(2, 'big') for w in buffer[:buflen-1])  # exclude last null
+            uri = swapped_bytes.decode('utf-16be', errors='strict').rstrip('\x00').strip()
+        else:
+            uri = uri_bytes.decode('utf-16le', errors='strict').rstrip('\x00').strip()
+
+        print(f"Clean repr URI: {repr(uri)}")
+        print(f"Clean display URI: {uri}")
+
+        return uri if uri else None
+
+    except UnicodeDecodeError as ude:
+        print(f"Decode error: {ude}")
+        # Fallback to replace
+        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
+        print(f"Fallback repr URI: {repr(uri)}")
+        return uri if uri else None
+
+    except Exception as e:
+        print(f"URI extraction failed: {str(e)}")
+        return None
+
+
+def get_uri_from_action_mojibake2(action: Any, doc_raw: Any) -> Optional[str]:
+    if not action or not doc_raw:
+        return None
+
+    try:
+        buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
+        if buflen <= 1:
+            return None
+
+        buffer = (pdfium_c.c_ushort * buflen)()
+        pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
+
         # Get raw bytes, strip trailing nulls
         uri_bytes = ctypes.string_at(buffer, (buflen - 1) * 2)
         # Decode UTF-16LE, replace errors, remove nulls
