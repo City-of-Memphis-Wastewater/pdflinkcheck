@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/analysis_output_schema.json",
+  "title": "PDF Link Analysis Output",
+  "description": "Unified structure returned by all PDF analysis engines (PyMuPDF, pypdfium2, etc.) in pdflinkcheck, with per-link validation and risk integrated.",
+  "type": "object",
+  "properties": {
+    "links": {
+      "type": "array",
+      "description": "List of all detected hyperlinks/actions (external, internal, remote)",
+      "items": {
+        "type": "object",
+        "required": ["page", "rect", "link_text", "type"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "0-based page index where the link appears",
+            "minimum": 0
+          },
+          "rect": {
+            "oneOf": [
+              { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number" } },
+              { "type": "null" }
+            ],
+            "description": "[x0, y0, x1, y1] bounding box; null if missing"
+          },
+          "link_text": {
+            "type": "string",
+            "description": "Anchor text or fallback (e.g., 'N/A: No Visible Text')"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "External (URI)",
+              "Internal (GoTo/Dest)",
+              "Internal (Resolved Action)",
+              "Remote (GoToR)",
+              "Launch",
+              "Other Action"
+            ]
+          },
+          "url": { "type": "string", "description": "For External (URI)" },
+          "destination_page": { "type": "integer", "minimum": 0, "description": "For internal GoTo" },
+          "destination_view": {
+            "oneOf": [{ "type": "array" }, { "type": "null" }],
+            "description": "View params (e.g., [zoom, x, y])"
+          },
+          "remote_file": { "type": "string", "description": "For Remote (GoToR) or Launch" },
+          "source_kind": { "type": "string", "description": "Engine-specific (e.g., 'pypdfium2_weblink')" },
+          "xref": { "type": "integer", "description": "PDF xref ID (optional)" },
+          "action_kind": { "type": "integer", "description": "Raw action code if 'Other Action'" },
+          "validation": {
+            "type": "object",
+            "description": "Per-link validation status (defaults to empty if no issues)",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["valid", "broken-page", "broken-file", "unknown-web", "unsupported", "no_destination"]
+              },
+              "reason": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "risk": {
+            "type": "object",
+            "description": "Per-link security risk (empty for non-external links)",
+            "properties": {
+              "score": { "type": "integer", "minimum": 0 },
+              "level": { "type": "string", "enum": ["none", "low", "medium", "high"] },
+              "reasons": { "type": "array", "items": { "type": "string" } }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "toc": {
+      "type": "array",
+      "description": "Structural Table of Contents / Bookmarks",
+      "items": {
+        "type": "object",
+        "required": ["level", "title", "target_page"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string" },
+          "target_page": { "type": "integer", "minimum": 0 },
+          "validation": {
+            "type": "object",
+            "description": "Per-entry validation (e.g., invalid target_page)",
+            "properties": {
+              "status": { "type": "string", "enum": ["valid", "broken-page"] },
+              "reason": { "type": "string" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "file_ov": {
+      "type": "object",
+      "required": ["total_pages", "pdf_path"],
+      "properties": {
+        "total_pages": { "type": "integer", "minimum": 1 },
+        "pdf_name": { "type": "string" },
+        "pdf_path": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "summary_validation": {
+      "type": "object",
+      "description": "Aggregate validation stats across all links/TOC",
+      "properties": {
+        "summary-stats": { "type": "object" },
+        "issues": { "type": "array" },
+        "summary-lines": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "summary_risk": {
+      "type": "object",
+      "description": "Aggregate risk stats across external links",
+      "properties": {
+        "total_external": { "type": "integer" },
+        "scored": { "type": "integer" },
+        "high_risk": { "type": "integer" },
+        "medium_risk": { "type": "integer" },
+        "low_risk": { "type": "integer" }
+      }
+    }
+  },
+  "required": ["links", "toc", "file_ov", "summary_validation", "summary_risk"],
+  "additionalProperties": false
+}
+
+
+
