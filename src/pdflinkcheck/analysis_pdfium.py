@@ -94,7 +94,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
         # --- B. INTERNAL GOTO LINKS (Standard Annotations) ---
         # We iterate through standard link annotations for GoTo actions
-        assess_action(doc,page,links)
+        assess_action(doc,page,links, page_index, text_page, source_ref)
         """
         pos = 0
         while True:
@@ -308,7 +308,7 @@ def parse_view(dest):
 
     return page_index, view_type, params
 
-def assess_action(doc,page,links):
+def assess_action(doc,page,links, page_index, text_page, source_ref)
     """
     # Standard annotation action types will help to  include external files
     #- **1** = `FPDFACTION_GOTO` → Internal GoTo
@@ -323,8 +323,6 @@ def assess_action(doc,page,links):
     
     """
     pos = 0
-    text_page = page.get_textpage()
-    source_ref = PageRef.from_index(page_index)
         
     while True:
         annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
