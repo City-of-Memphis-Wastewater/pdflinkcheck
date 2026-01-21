@@ -12,6 +12,8 @@ try:
         import pypdfium2 as pdfium
         import pypdfium2.raw as pdfium_c
         print(dir(pdfium_c))
+        from pypdfium2._helpers.misc import PdfiumBase
+
                     
     else:
         pdfium = None
@@ -44,8 +46,8 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
         dest = item.get_dest()
         #view = dest.get_view()
         page_index, view_type, params = parse_view(dest)
-        print(f"page_index = {page_index}")
-        print(f"params = {params}")
+        #print(f"page_index = {page_index}")
+        #print(f"params = {params}")
         #print(help(pdfium_c.FPDFDest_GetView))
         #destination_view = pdfium_c.FPDFDest_GetView(dest)
         page_idx = PageRef.from_index(dest.get_index()).machine if dest else 0
@@ -119,10 +121,10 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                     #- **9** = `FPDFACTION_IMPORTDATA` → Import form data
                     action = pdfium_c.FPDFLink_GetAction(link_annot)
                     action_type = pdfium_c.FPDFAction_GetType(action)
-                    print(f"action = {action}")
                     print(f"action_type = {action_type}")
-                    result = get_action_info(doc_raw, action, fs_rect, anchor_text, source_ref)
-                    pdfium_c.FPDFAction_CloseAction(action)
+                    # doc_raw does not exist yet?
+                    result = get_action_info(doc, action, fs_rect, anchor_text, source_ref, link_annot)
+                    # pdfium_c.FPDFAction_CloseAction(action)
                     dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_annot)
                     
                     if dest:
@@ -174,11 +176,11 @@ def parse_view(dest):
     return page_index, view_type, params
 
 
-def get_action_info(doc_raw, action, fs_rect, anchor_text, source_ref):
+def get_action_info(doc, action, fs_rect, anchor_text, source_ref, link_annot):
     if not action:
         return None
     # ... fill in url / remote_file / dest_page / type / etc.
-    
+    doc_raw = doc.raw
     action_type = pdfium_c.FPDFAction_GetType(action)
     result = {'action_type': action_type}
     
@@ -191,6 +193,13 @@ def get_action_info(doc_raw, action, fs_rect, anchor_text, source_ref):
 
     elif action_type == 3:  # FPDFACTION_URI
         # Extract URI string (very similar to your web-link buffer code)
+        if hasattr(action, "get_uri"):
+            uri = action.get_uri()
+        else:
+            uri = None
+            
+        result["uri"] = uri
+        """print(help(pdfium_c.FPDFAction_GetURIPath))
         buflen = pdfium_c.FPDFAction_GetURIPath(action, None, 0)
         if buflen > 0:
             buffer = (pdfium_c.c_ushort * buflen)()
@@ -203,7 +212,7 @@ def get_action_info(doc_raw, action, fs_rect, anchor_text, source_ref):
                 'type': 'External (URI)',
                 'url': uri,
                 'source_kind': 'pypdfium2_annot_uri'
-            })
+            })"""
 
     elif action_type == 2:  # FPDFACTION_GOTOR
         # Extract remote file
@@ -246,6 +255,10 @@ def get_action_info(doc_raw, action, fs_rect, anchor_text, source_ref):
             'source_kind': 'pypdfium2_annot_other'
         })
     return result
+
+def is_high_level(obj):
+    return isinstance(obj, PdfiumBase)
+
 
 if __name__ == "__main__":
     import json
