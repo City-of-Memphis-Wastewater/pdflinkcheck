@@ -95,55 +95,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
         # --- B. INTERNAL GOTO LINKS (Standard Annotations) ---
         # We iterate through standard link annotations for GoTo actions
         assess_action(doc,page,links, page_index, text_page, source_ref)
-        """
-        pos = 0
-        while True:
-            annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
-            if not annot_raw:
-                break
-            try:
-                subtype = pdfium_c.FPDFAnnot_GetSubtype(annot_raw)
-                if subtype == pdfium_c.FPDF_ANNOT_LINK:
-                    # Get Rect
-                    fs_rect = pdfium_c.FS_RECTF()
-                    pdfium_c.FPDFAnnot_GetRect(annot_raw, fs_rect)
-                                    
-                    anchor_text = get_pdfium_text_safe(text_page, fs_rect)
-                    
-                    # Try to get Destination
-                    link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
-                    action = pdfium_c.FPDFLink_GetAction(link_annot)
-                    action_type = pdfium_c.FPDFAction_GetType(action)
-                    if False: # worth keeping around
-                        print(f"action_type = {action_type}")
-                    # doc_raw does not exist yet?
-                    result = get_action_info(doc, action, fs_rect, anchor_text, source_ref, link_annot)
-                    # pdfium_c.FPDFAction_CloseAction(action)
-                    dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_annot)
-                    
-                    if dest:
-                        dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
-                        dest_ref = PageRef.from_index(dest_idx)
-                        
-                        links.append({
-                            'page': source_ref.machine,
-                            'rect': [fs_rect.left, fs_rect.bottom, fs_rect.right, fs_rect.top],
-                            'link_text': anchor_text or "Link (No Text)",
-                            'type': 'Internal (GoTo/Dest)',
-                            'destination_page': dest_ref.machine,
-                            'source_kind': 'pypdfium2_annot'
-                        })
-
-            finally:
-                if annot_raw:
-                    pdfium_c.FPDFPage_CloseAnnot(page.raw, annot_raw)  # ← correct call
-                
-                # pdfium_c.FPDF_CloseAnnot(annot_raw) # does not exist
-            # Note: We don't close annot here if we are just enumerating by index 
-            # in some builds, but standard practice is to increment pos
-            pos += 1
-
-        """
+        
         page.close()
         text_page.close()
 
@@ -363,8 +315,22 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
                             destination_view=view_dict,
                             source_kind='pypdfium2_annot_goto'
                         ))
-
                 elif action_type == 3:  # URI
+                    uri = get_uri_from_action(action)
+                    print(f"Type 3 URI attempt at pos {pos}: {uri}")  # ← debug line
+
+                    if uri:  # Only add if we got something
+                        links.append(create_link_dict(
+                            source_ref=source_ref,
+                            rect_norm=rect_norm,
+                            anchor_text=anchor_text,
+                            link_type='External (URI)',
+                            url=uri,
+                            source_kind='pypdfium2_annot_uri'
+                        ))
+                    else:
+                        print(f"Type 3 at pos {pos} — failed to extract URI")  # ← debug failure
+                elif False and action_type == 3:  # URI
                     uri = get_uri_from_action(action)
                     if uri:
                         links.append(create_link_dict(
@@ -419,7 +385,7 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
 
         finally:
             if annot_raw:
-                print(f"Closing annot at pos {pos}")
+                #print(f"Closing annot at pos {pos}")
                 pdfium_c.FPDFPage_CloseAnnot(annot_raw)
 
         pos += 1
