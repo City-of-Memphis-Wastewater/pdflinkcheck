@@ -151,6 +151,142 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
     doc.close()
     return {"links": links, "toc": toc_list, "file_ov": file_ov}
 
+
+import ctypes
+from typing import Optional, Dict, Any, Tuple, List
+
+# Assuming these are already imported:
+# import pypdfium2 as pdfium
+# import pypdfium2.raw as pdfium_c
+# from pdflinkcheck.helpers import PageRef
+
+
+def normalize_rect(fs_rect: pdfium_c.FS_RECTF) -> List[float]:
+    """
+    Normalize FS_RECTF to consistent [x0, y0, x1, y1] order.
+    PDF uses bottom-left origin; we keep that but ensure x0 < x1, y0 < y1.
+    Returns list of 4 floats or [0,0,0,0] if invalid.
+    """
+    if not fs_rect:
+        return [0.0, 0.0, 0.0, 0.0]
+
+    x0 = min(fs_rect.left, fs_rect.right)
+    x1 = max(fs_rect.left, fs_rect.right)
+    y0 = min(fs_rect.bottom, fs_rect.top)
+    y1 = max(fs_rect.bottom, fs_rect.top)
+
+    # Protect against degenerate/empty rects
+    if x1 <= x0 or y1 <= y0:
+        return [0.0, 0.0, 0.0, 0.0]
+
+    return [float(x0), float(y0), float(x1), float(y1)]
+
+
+def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
+    """
+    Extract view parameters from a destination object.
+    Returns dict like {'fit': 'XYZ', 'zoom': 1.5, 'left': 100, 'top': 200, 'bottom': None} or None.
+    """
+    if not dest:
+        return None
+
+    try:
+        # FPDFDest_GetView returns a tuple: (page_index, view_mode, params_list)
+        # But in pypdfium2 helpers it may vary — fall back to raw if needed
+        view = dest.get_view() if hasattr(dest, 'get_view') else pdfium_c.FPDFDest_GetView(dest)
+
+        if not view or len(view) < 2:
+            return None
+
+        view_mode = view[1]  # e.g. PDFDEST_VIEW_FIT, PDFDEST_VIEW_XYZ, etc.
+        params = view[2] if len(view) > 2 else []
+
+        result = {"fit": str(view_mode)}
+
+        if view_mode in (pdfium_c.PDFDEST_VIEW_XYZ, pdfium_c.PDFDEST_VIEW_FITH,
+                         pdfium_c.PDFDEST_VIEW_FITV, pdfium_c.PDFDEST_VIEW_FITR):
+            # params usually [zoom, left, top] or similar
+            if len(params) >= 3:
+                result.update({
+                    "zoom": float(params[0]) if params[0] is not None else None,
+                    "left": float(params[1]) if params[1] is not None else None,
+                    "top": float(params[2]) if params[2] is not None else None,
+                })
+
+        return result if len(result) > 1 else None  # don't return empty dict
+
+    except Exception:
+        return None
+
+
+def get_uri_from_action(action: Any) -> Optional[str]:
+    """
+    Safely extract URI string from FPDF_ACTION (type 3).
+    Returns string or None if failed / not a URI action.
+    """
+    if not action:
+        return None
+
+    try:
+        buflen = pdfium_c.FPDFAction_GetURIPath(action, None, 0)
+        if buflen <= 0:
+            return None
+
+        buffer = (pdfium_c.c_ushort * buflen)()
+        pdfium_c.FPDFAction_GetURIPath(action, buffer, buflen)
+        uri = ctypes.string_at(buffer, (buflen - 1) * 2).decode('utf-16le', errors='replace')
+        return uri.strip()
+
+    except Exception:
+        return None
+
+
+def get_remote_file_from_action(action: Any, doc_raw: Any) -> Optional[str]:
+    """
+    Extract remote file path from GoToR or Launch action.
+    Returns string (path) or None.
+    """
+    if not action or not doc_raw:
+        return None
+
+    try:
+        filespec = pdfium_c.FPDFAction_GetFileSpec(action)
+        if not filespec:
+            return None
+
+        path_len = pdfium_c.FPDFDoc_GetFileSpecFileName(filespec, None, 0)
+        if path_len <= 0:
+            return None
+
+        path_buf = (pdfium_c.c_ushort * path_len)()
+        pdfium_c.FPDFDoc_GetFileSpecFileName(filespec, path_buf, path_len)
+        path = ctypes.string_at(path_buf, (path_len - 1) * 2).decode('utf-16le', errors='replace')
+        return path.strip()
+
+    except Exception:
+        return None
+
+
+def create_link_dict(
+    source_ref: PageRef,
+    rect_norm: List[float],
+    anchor_text: str,
+    link_type: str,
+    **kwargs
+) -> Dict[str, Any]:
+    """
+    Factory for consistent link dictionary structure.
+    Matches PyMuPDF style as closely as possible.
+    """
+    base = {
+        'page': source_ref.machine,
+        'rect': rect_norm,
+        'link_text': anchor_text.strip() or "Link (No Text)",
+        'type': link_type,
+    }
+    base.update(kwargs)
+    return base
+
 def get_pdfium_text_safe(text_page, fs_rect, tolerance=2.0):
     # Ensure min/max logic so we don't pass an inverted rect to PDFium
     l = min(fs_rect.left, fs_rect.right) - tolerance
@@ -172,87 +308,6 @@ def parse_view(dest):
         raise RuntimeError(f"Unexpected view tuple: {view}")
 
     return page_index, view_type, params
-
-
-def get_action_info(doc, action, fs_rect, anchor_text, source_ref, link_annot):
-    if not action:
-        return None
-    # ... fill in url / remote_file / dest_page / type / etc.
-    doc_raw = doc.raw
-    action_type = pdfium_c.FPDFAction_GetType(action)
-    result = {'action_type': action_type}
-    
-    if action_type == 1:  # FPDFACTION_GOTO
-        # Your existing dest handling
-        dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_annot)
-        if dest:
-            dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
-            # ... add as Internal (GoTo/Dest)
-
-    elif action_type == 3:  # FPDFACTION_URI
-        # Extract URI string (very similar to your web-link buffer code)
-        if hasattr(action, "get_uri"):
-            uri = action.get_uri()
-        else:
-            uri = None
-            
-        result["uri"] = uri
-        """print(help(pdfium_c.FPDFAction_GetURIPath))
-        buflen = pdfium_c.FPDFAction_GetURIPath(action, None, 0)
-        if buflen > 0:
-            buffer = (pdfium_c.c_ushort * buflen)()
-            pdfium_c.FPDFAction_GetURIPath(action, buffer, buflen)
-            uri = ctypes.string_at(buffer, (buflen-1)*2).decode('utf-16le')
-            links.append({
-                'page': source_ref.machine,
-                'rect': [fs_rect.left, fs_rect.bottom, fs_rect.right, fs_rect.top],
-                'link_text': anchor_text or uri,
-                'type': 'External (URI)',
-                'url': uri,
-                'source_kind': 'pypdfium2_annot_uri'
-            })"""
-
-    elif action_type == 2:  # FPDFACTION_GOTOR
-        # Extract remote file
-        filespec = pdfium_c.FPDFAction_GetFileSpec(action)
-        if filespec:
-            path_len = pdfium_c.FPDFDoc_GetFileSpecFileName(filespec, None, 0)
-            if path_len > 0:
-                path_buf = (pdfium_c.c_ushort * path_len)()
-                pdfium_c.FPDFDoc_GetFileSpecFileName(filespec, path_buf, path_len)
-                remote_path = ctypes.string_at(path_buf, (path_len-1)*2).decode('utf-16le')
-                # Optional: also get dest if present
-                dest = pdfium_c.FPDFAction_GetDest(action)  # may be null
-                dest_page = None
-                if dest:
-                    dest_page = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
-                links.append({
-                    'page': source_ref.machine,
-                    'rect': [fs_rect.left, fs_rect.bottom, fs_rect.right, fs_rect.top],
-                    'link_text': anchor_text or remote_path,
-                    'type': 'Remote (GoToR)',
-                    'remote_file': remote_path,
-                    'destination_page': dest_page if dest_page is not None else None,
-                    'source_kind': 'pypdfium2_annot_gotor'
-                })
-
-    elif action_type == 4:  # FPDFACTION_LAUNCH
-        # Similar to GoToR — often overlaps
-        # Use same FPDFAction_GetFileSpec(...)
-        # type: 'Launch'
-        pass
-
-    else:
-        # Catch-all for named, JS, etc.
-        links.append({
-            'page': source_ref.machine,
-            'rect': [fs_rect.left, fs_rect.bottom, fs_rect.right, fs_rect.top],
-            'link_text': anchor_text or f"Unsupported action {action_type}",
-            'type': 'Other Action',
-            'action_kind': action_type,
-            'source_kind': 'pypdfium2_annot_other'
-        })
-    return result
 
 def assess_action(doc,page,links):
     """
