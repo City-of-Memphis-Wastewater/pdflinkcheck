@@ -1,0 +1,16 @@
+1 VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "FileDescription", "pdflinkcheck"
+            VALUE "FileVersion", "{VERSION}"
+            VALUE "ProductName", "pdflinkcheck"
+            VALUE "ProductVersion", "{VERSION}"
+        END
+    END
+END
+
