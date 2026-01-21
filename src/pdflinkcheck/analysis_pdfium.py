@@ -99,7 +99,16 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
 
                 # Try to get Destination
                 link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
-                # Will stabdard annotations evwry include external files?
+                # Standard annotation action types will help to  include external files
+                #- **1** = `FPDFACTION_GOTO` → Internal GoTo
+                #- **3** = `FPDFACTION_URI` → URI action (http, https, mailto, file:, tel:, etc.).  
+                #- **2** = `FPDFACTION_GOTOR` → GoTo Remote (external file/PDF reference — this is your main missing GoToR case)
+                #- **4** = `FPDFACTION_LAUNCH` → Launch action (open external file/application)
+                #- **5** = `FPDFACTION_NAMED` → Named action (e.g., predefined like "NextPage", "Print")
+                #- **6** = `FPDFACTION_JAVASCRIPT` → Execute JavaScript
+                #- **7** = `FPDFACTION_SUBMIT` → Form submit
+                #- **8** = `FPDFACTION_RESET` → Form reset
+                #- **9** = `FPDFACTION_IMPORTDATA` → Import form data
                 action = pdfium_c.FPDFLink_GetAction(link_annot)
                 action_type = pdfium_c.FPDFAction_GetType(action)
                 print(f"action = {action}")
