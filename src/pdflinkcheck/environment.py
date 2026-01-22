@@ -31,7 +31,7 @@ def pymupdf_is_available() -> bool:
     except Exception as e:
         # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
         # Use: `pipx install pdflinkcheck[full]` or alternative.
-        print(f"DEBUG: pymupdf check failed with error: {e}")
+        #print(f"DEBUG: pymupdf check failed with error: {e}")
         return False
 
 
@@ -44,7 +44,7 @@ def pdfium_is_available() -> bool:
     except Exception as e:
         # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
         # Use: `pipx install pdflinkcheck[pdfium]` or alternative.
-        print(f"DEBUG: pdfium check failed with error: {e}")
+        #print(f"DEBUG: pdfium check failed with error: {e}")
         return False
 
 
