@@ -13,7 +13,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Spreadsheet exports are useful. They are managed in `src/pdflinkcheck/spreadsheet.py`.
 - By reading spreadsheet exports and comparsing them between each engine, it easy to see (namely in the 'External' tab) that the data gleaned from any given PDF (if it has external links) is different between the analysis performed in `src/pdflinkcheck/analysis_pypdfium.py ` and analysis performed in `analysis_pymupdf.py ` . 
 - It is assumed at this point that `PyMuPDF` offers higher quality, and it has the keys and schema of records.
+- While external links are now found for `pdfium` is is believed that there is redundacy.
 - A schema has been recorded in `src/pdflinkcheck/data/*.json`; as a goal to move toward. This is mid-refactor, and the schema that is used is represented in `src/pdflinkcheck/report.py` and in `src/pdflinkcheck/stdlib_server.py`.
+- As the permanent schema is considered, we should be aware the pdfium is clearly the best option in terms of licensing and size, and that it is a key feature of this library the be able to be rolled easily without the PyMuPDF dependency. Ergo, to be overly attached to the PyMuPDF-ideal schema is overcoupling the project to a fundamentally separable aspect. We are glad to be able to leverage PyMuPDF as testing continues and to be able to offer it to user who choose to use PyMuPDF.
 - A breakthrough was made in v1.3.34 concerning capturing external links. There was in encoding issue but it was sorted out by reading the docs that Google publishes for PDFium. The anchor text is missing and some links appear redundant. Comparison between the various engines is important for continuous improvement.
 
 ### Internal:
