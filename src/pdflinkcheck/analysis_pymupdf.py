@@ -29,6 +29,8 @@ def analyze_pdf(pdf_path: str):
         "pymupdf is not installed. "
         "\nInstall it with: \n\tpip install pdflinkcheck[pymupdf] \n\t OR \n\ uv sync --extra pymupdf"
     )    
+
+
     data = {"links": [], "toc": [], "file_ov": {}}
 
     try:
@@ -283,15 +285,13 @@ def extract_links_pymupdf(doc):
         print(f"An error occurred: {e}", file=sys.stderr)
     return links_data
 
-def call_stable():
+def demo():
     """
-    Placeholder function for command-line execution (e.g., in __main__).
-    Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
-    passing them as arguments to run_report.
+    Demostrate the use of this file's analyze_pdf(), as called from 
     """
     from pdflinkcheck.report import run_report_and_call_exports
     
     run_report_and_call_exports(pdf_library = "pymupdf")
 
 if __name__ == "__main__":
-    call_stable()
+    demo()
