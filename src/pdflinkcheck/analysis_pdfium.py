@@ -1,4 +1,14 @@
 # src/pdflinkcheck/analysis_pdfium.py
+
+"""
+A performant PDF analysis backend, built on pypdfium2, that challenges the PyMuPDF engine, with a bit of parsing.
+References:
+- https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdf_doc.h#1100
+- https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdfview.h#141-147
+- https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdfview.h#119-128
+- https://pypdfium2.readthedocs.io/en/stable/python_api/raw.html
+
+"""
 from __future__ import annotations
 import ctypes
 from typing import Optional, Dict, Any, Tuple, List

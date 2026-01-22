@@ -129,6 +129,8 @@ def run_report_meat(
     if pdf_library == "auto":
         pdf_library = assess_default_pdf_library()
     
+    analyze_pdf = None
+
     # PDFium ENGINE
     if pdf_library == "pdfium":# and pdfium_is_available():
         from pdflinkcheck.analysis_pdfium import analyze_pdf
@@ -142,6 +144,9 @@ def run_report_meat(
     # pypdf ENGINE
     elif pdf_library == "pypdf":
         from pdflinkcheck.analysis_pypdf import analyze_pdf
+    
+    if analyze_pdf is None: 
+        raise ValidationError("Analysis engine not assigned.")
 
     data = analyze_pdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
     extracted_links = data.get("links", [])
