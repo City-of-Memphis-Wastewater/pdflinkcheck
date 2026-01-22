@@ -38,8 +38,7 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
         print(f"pdfium = {pdfium}")
         
         raise ImportError(
-            "pypdfium2 is not installed. "
-            "\nInstall it with: \n\tpip install pdflinkcheck[pdfium] \n\t OR \n\t uv sync --extra pdfium"
+            "\n\npypdfium2 is not installed. \nInstall it with: \n\n\tpip install pdflinkcheck[pdfium] \n\t\tOR \n\tuv sync --extra pdfium \n"
         )
     doc = pdfium.PdfDocument(pdf_path)
 
