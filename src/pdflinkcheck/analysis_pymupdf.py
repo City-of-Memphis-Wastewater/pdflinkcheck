@@ -27,7 +27,10 @@ def analyze_pdf(pdf_path: str):
     if not pymupdf_is_available() or pymupdf is None:
         raise ImportError(
         "pymupdf is not installed. "
-        "\nInstall it with: \n\tpip install pdflinkcheck[pymupdf] \n\t OR \n\ uv sync --extra pymupdf"
+        "\nInstall it with: "
+        "\n\tpip install pdflinkcheck[pymupdf] " 
+        "\t OR " 
+        "\t uv sync --extra pymupdf "
     )    
 
 
