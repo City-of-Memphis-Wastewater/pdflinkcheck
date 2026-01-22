@@ -22,6 +22,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Function name change: call_stable() -> demo() in analysis_pymupdf.py and analysis_pdfium.py; 
 - Implement a demo function in analysis_pdfim.py.
 - For the demo function, stop using the wrong-direction import from report.py and instead from pdflinkcheck.io import get_first_pdf_in_cwd().
+- `help-tree` CLI  command changed to `helptree`, and is imported from the typer-helptree library rather than carried internally.
 
 ### Removed:
 - pdflinkcheck.io.export_report_data()
