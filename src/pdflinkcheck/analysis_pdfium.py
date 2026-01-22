@@ -41,7 +41,7 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
             "pypdfium2 is not installed. "
             "\nInstall it with: \n\tpip install pdflinkcheck[pdfium] \n\t OR \n\t uv sync --extra pdfium"
         )
-    doc = pdfium.PdfDocument(path)
+    doc = pdfium.PdfDocument(pdf_path)
 
     total_pages = len(doc) # or doc.page_count
 
@@ -250,7 +250,7 @@ def get_uri_from_action_mojibake(action: Any, doc_raw: Any) -> Optional[str]:
 def get_remote_file_from_action(action: Any, doc_raw: Any) -> Optional[str]:
     """
     Extract remote file path from GoToR or Launch action.
-    Returns string (path) or None.
+    Returns string (file path) or None.
     """
     if not action or not doc_raw:
         return None
