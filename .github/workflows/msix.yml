@@ -13,12 +13,12 @@ jobs:
     if: true # whether of not if: github.event.release.prerelease == false, because that MSIX currently is being released manually, and we want to test the whole thing.
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -264,7 +264,7 @@ jobs:
             pdflinkcheck.msix
 
       - name: Upload MSIX artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: msix
           path: pdflinkcheck.msix
@@ -277,7 +277,7 @@ jobs:
     steps:
       - name: Download MSIX artifact
         if: false
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: msix
 
