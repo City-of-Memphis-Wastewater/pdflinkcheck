@@ -20,6 +20,7 @@ def clear_all_caches()->None:
     """Clear every @cache used in pdflinkcheck. Future work: Call from CLI using --clear-cache"""
     pymupdf_is_available.cache_clear()
     pdfium_is_available.cache_clear()
+    pypdf_is_available.cache_clear()
 
     
 @cache
@@ -32,6 +33,19 @@ def pymupdf_is_available() -> bool:
         # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
         # Use: `pipx install pdflinkcheck[full]` or alternative.
         print(f"DEBUG: pymupdf check failed with error: {e}")
+        return False
+
+@cache
+def pypdf_is_available() -> bool:
+    """
+    Check if pypdf is available in the current local version of pdflinkcheck.
+    It is always assumed to be. This is jusy for consistency and rigor.
+    """
+    try:
+        import pypdf
+        return True
+    except Exception as e:
+        print(f"DEBUG: pypdf check failed with error: {e}")
         return False
 
 @cache
