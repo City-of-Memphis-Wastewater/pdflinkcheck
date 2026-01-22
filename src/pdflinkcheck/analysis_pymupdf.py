@@ -26,7 +26,8 @@ Inspect target PDF for both URI links and for GoTo links.
 def analyze_pdf(pdf_path: str):
     if not pymupdf_is_available() or pymupdf is None:
         raise ImportError(
-        "\n\npymupdf is not installed. \nInstall it with: \n\n\t pip install pdflinkcheck[pymupdf] \n\t\tOR \n\t uv sync --extra pymupdf \n"
+        "\n\npymupdf is not installed. \nInstall it with: \n\n\t pip install pdflinkcheck[pymupdf] \n\t\tOR \n\t uv sync --extra pymupdf \n\nPyMuPDF is not expected to work on Termux. \n"
+        
     )    
 
 
