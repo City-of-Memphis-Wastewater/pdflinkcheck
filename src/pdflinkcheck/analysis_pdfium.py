@@ -464,10 +464,13 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
 def is_high_level(obj):
     return isinstance(obj, PdfiumBase)
 
+def demo():
+    """
+    Demostrate the pypdfium2-informed analyze_pdf().
+    """
+    from pdflinkcheck.io import get_first_pdf_in_cwd
+
+    analyze_pdf(pdf_path = get_first_pdf_in_cwd())
 
 if __name__ == "__main__":
-    import json
-    import sys
-    filename = "temOM.pdf"
-    results = analyze_pdf(filename)
-    print(json.dumps(results, indent=2))
+    demo()

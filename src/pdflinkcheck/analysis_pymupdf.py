@@ -287,11 +287,11 @@ def extract_links_pymupdf(doc):
 
 def demo():
     """
-    Demostrate the use of this file's analyze_pdf(), as called from 
+    Demostrate the PyMuPdf-informed analyze_pdf().
     """
-    from pdflinkcheck.report import run_report_and_call_exports
-    
-    run_report_and_call_exports(pdf_library = "pymupdf")
+    from pdflinkcheck.io import get_first_pdf_in_cwd
+
+    analyze_pdf(pdf_path = get_first_pdf_in_cwd())
 
 if __name__ == "__main__":
     demo()

@@ -201,13 +201,11 @@ def _extract_toc_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
 
 def demo():
     """
-    Placeholder function for command-line execution (e.g., in __main__).
-    Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
-    passing them as arguments to run_report.
+    Demostrate the pypdf-informed analyze_pdf().
     """
-    from pdflinkcheck.report import run_report_and_call_exports
-
-    run_report_and_call_exports(pdf_library = "pypdf")
+    from pdflinkcheck.io import get_first_pdf_in_cwd
+    
+    analyze_pdf(pdf_path = get_first_pdf_in_cwd())
 
 if __name__ == "__main__":
     demo()
