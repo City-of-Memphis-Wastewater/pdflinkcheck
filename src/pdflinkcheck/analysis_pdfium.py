@@ -31,7 +31,7 @@ except ImportError:
     pdfium = None
     pdfium_c = None
 
-def analyze_pdf(path: str) -> Dict[str, Any]:
+def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
     # 1. Guard the entry point
     if not pdfium_is_available() or pdfium is None:
         print(f"pdfium_is_available() = {pdfium_is_available()}")
