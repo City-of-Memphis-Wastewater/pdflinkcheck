@@ -10,7 +10,7 @@ from typing import Dict, Any, Optional, List
 from pypdf import PdfReader
 from pypdf.generic import Destination, NameObject, ArrayObject, IndirectObject
 from pdflinkcheck.helpers import PageRef
-
+from pdflinkcheck.environment pypdf_is_available
 
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
 
@@ -19,6 +19,11 @@ Inspect target PDF for both URI links and for GoTo links, using only pypdf, not 
 """
 
 def analyze_pdf(pdf_path: str):
+    if not pypdf_is_available() or pypdf is None:
+        raise ImportError(
+        "pypdf is not installed. "
+        "\nEnsure your venv is active and dependencies are installed."
+    )
     data = {}
     data["links"] = []
     data["toc"] = []
