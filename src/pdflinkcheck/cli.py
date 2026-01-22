@@ -390,13 +390,9 @@ def gui_command(
 # --- Helper, consistent gui failure message. --- 
 def _gui_failure_msg():
     console.print("[bold red]GUI failed to launch[/bold red]")
-    console.print("Ensure pdflinkcheck dependecies are installed and the venv is activated (the dependecies are managed by uv).")
-    console.print("The dependecies for pdflinkcheck are managed by uv.")
-    console.print("Ensure Tkinter is available, especially if using WSLg.")
-    console.print("On Termux/Android, GUI is not supported. Use 'pdflinkcheck analyze <file.pdf>' instead.")
+    console.print("If GUI is not supported for your environment, se 'pdflinkcheck analyze CLI' instead.")
     console.print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
-    pass
-
+    console.print(f"pyhabitat.on_termux() = {pyhabitat.on_termux()}")
 
 
 if __name__ == "__main__":
