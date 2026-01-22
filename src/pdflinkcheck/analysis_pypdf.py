@@ -10,32 +10,19 @@ from typing import Dict, Any, Optional, List
 from pdflinkcheck.helpers import PageRef
 from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
 
-try:
-    from pypdf import PdfReader
-    from pypdf.generic import (
-        Destination,
-        NameObject,
-        ArrayObject,
-        IndirectObject,
-    )
-except ImportError:
-    PdfReader = None
-    Destination = None
-    NameObject = None
-    ArrayObject = None
-    IndirectObject = None
-
+from pypdf import PdfReader
+from pypdf.generic import (
+    Destination,
+    NameObject,
+    ArrayObject,
+    IndirectObject,
+)
 
 """
 Inspect target PDF for both URI links and for GoTo links, using only pypdf, not Fitz
 """
 
 def analyze_pdf(pdf_path: str):
-    if PdfReader is None::
-        raise ImportError(
-        "pypdf is not installed. "
-        "\nEnsure your venv is active and dependencies are installed."
-    )
     data = {}
     data["links"] = []
     data["toc"] = []
