@@ -23,6 +23,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Implement a demo function in analysis_pdfim.py.
 - For the demo function, stop using the wrong-direction import from report.py and instead from pdflinkcheck.io import get_first_pdf_in_cwd().
 
+### Removed:
+- pdflinkcheck.io.export_report_data()
 
 ### Internal:
 - Testing should be implemented, with packaged PDF files that are relatively lightweight (<5 mb) but have various links that can be used to test the performance of the three current PDF engines.
