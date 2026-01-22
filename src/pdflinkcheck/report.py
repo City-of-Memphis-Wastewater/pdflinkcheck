@@ -44,15 +44,12 @@ def run_report_and_call_exports(
     concise_print: bool = False
 ) -> Dict[str, Any]:
     """
-    
     Public entry point. Orchestrates extraction, validation, and file exports.
-    
     """
     #  The meat and potatoes
     report_results = run_report_meat(
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
-        print_bool = print_bool,
         print_bool = print_bool,
         concise_print = concise_print,
     )
