@@ -390,7 +390,7 @@ def gui_command(
 # --- Helper, consistent gui failure message. --- 
 def _gui_failure_msg():
     console.print("[bold red]GUI failed to launch[/bold red]")
-    console.print("If GUI is not supported for your environment, se 'pdflinkcheck analyze CLI' instead.")
+    console.print("Use 'pdflinkcheck analyze CLI' instead.")
     console.print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
     console.print(f"pyhabitat.on_termux() = {pyhabitat.on_termux()}")
 
