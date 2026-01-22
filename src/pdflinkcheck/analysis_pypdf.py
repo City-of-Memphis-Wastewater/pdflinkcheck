@@ -206,7 +206,8 @@ def demo():
     from pdflinkcheck.io import get_first_pdf_in_cwd
     
     analyze_pdf(pdf_path = get_first_pdf_in_cwd())
-    data = analyze_pdf(pdf_path = get_first_pdf_in_cwd())                                          447     print(f"list(data) = {list(data)}")
+    data = analyze_pdf(pdf_path = get_first_pdf_in_cwd())
+    print(f"list(data) = {list(data)}")
     print("pypdf-based analysis complete.")
     print("Use the pdflinkcheck CLI, GUI, or web server to generate export files.")
 
