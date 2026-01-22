@@ -75,6 +75,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
         text_page = page.get_textpage()
         source_ref = PageRef.from_index(page_index)
         
+        """
         # --- A. EXTERNAL WEB LINKS ---
         pagelink_raw = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
         if pagelink_raw:
@@ -101,7 +102,7 @@ def analyze_pdf(path: str) -> Dict[str, Any]:
                     'source_kind': 'pypdfium2_weblink'
                 })
             pdfium_c.FPDFLink_CloseWebLinks(pagelink_raw)
-
+        """
         # --- B. INTERNAL GOTO LINKS (Standard Annotations) ---
         # We iterate through standard link annotations for GoTo actions
         assess_action(doc,page,links, page_index, text_page, source_ref)

@@ -70,11 +70,10 @@ error_logger = setup_error_logger()
 
 # --- Export Functionality ---
 
-def export_report_data(
+def export_report_json(
     report_data: Dict[str, Any], 
     pdf_filename: str, 
-    export_format: str = "JSON",
-    pdf_library: str = "", # expected to be specificed every time.
+    pdf_library: str
 ) -> Path:
     """
     Exports the structured analysis report data to a file in the 
@@ -83,42 +82,15 @@ def export_report_data(
     Args:
         report_data: The dictionary containing the results from run_report.
         pdf_filename: The base filename of the PDF being analyzed (used for the output file name).
-        export_format: The desired output format ('json' currently supported).
-
+    
     Returns:
         The path object pointing to the successfully created report file.
         
     Raises:
         ValueError: If the export_format is not supported.
+
+    Exports structured dictionary results to a .json file.
     """
-    if export_format.upper() != "JSON":
-        error_logger.error(f"Unsupported export format requested: {export_format}")
-        raise ValueError("Only 'JSON' format is currently supported for report export.")
-        
-    # Create an output file name based on the PDF name and a timestamp
-    base_name = Path(pdf_filename).stem
-    output_filename = f"{base_name}_{pdf_library}_report.json"
-    output_path = PDFLINKCHECK_HOME / output_filename
-
-    try:
-        with open(output_path, 'w', encoding='utf-8') as f:
-            # Use indent for readability
-            json.dump(report_data, f, indent=4)
-            
-        print(f"\nReport successfully exported to: {get_friendly_path(output_path)}")
-        return output_path
-        
-    except Exception as e:
-        error_logger.error(f"Failed to export report to JSON: {e}", exc_info=True)
-        # Re-raise the exception after logging for caller to handle
-        raise RuntimeError(f"Report export failed due to an I/O error: {e}")
-
-def export_report_json(
-    report_data: Dict[str, Any], 
-    pdf_filename: str, 
-    pdf_library: str
-) -> Path:
-    """Exports structured dictionary results to a .json file."""
     
     base_name = Path(pdf_filename).stem
     output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.json"
