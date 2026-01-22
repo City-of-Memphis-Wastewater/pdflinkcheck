@@ -20,7 +20,6 @@ def clear_all_caches()->None:
     """Clear every @cache used in pdflinkcheck. Future work: Call from CLI using --clear-cache"""
     pymupdf_is_available.cache_clear()
     pdfium_is_available.cache_clear()
-    pypdf_is_available.cache_clear()
 
     
 @cache
@@ -35,18 +34,6 @@ def pymupdf_is_available() -> bool:
         print(f"DEBUG: pymupdf check failed with error: {e}")
         return False
 
-@cache
-def pypdf_is_available() -> bool:
-    """
-    Check if pypdf is available in the current local version of pdflinkcheck.
-    It is always assumed to be. This is jusy for consistency and rigor.
-    """
-    try:
-        import pypdf
-        return True
-    except Exception as e:
-        print(f"DEBUG: pypdf check failed with error: {e}")
-        return False
 
 @cache
 def pdfium_is_available() -> bool:
@@ -92,6 +79,4 @@ def assess_default_pdf_library():
         return "pdfium"
     elif pymupdf_is_available():
         return "pymupdf"
-    elif pypdf_is_available():
-        return "pypdf"
-    return None 
+    return "pypdf"
