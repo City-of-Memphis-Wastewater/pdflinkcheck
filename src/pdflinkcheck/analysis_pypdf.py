@@ -8,6 +8,8 @@ import logging
 from typing import Dict, Any, Optional, List
 
 try:
+    # pypdf is always expected, 
+    # put in try block to be parallel with pdfium snd pymupdf comparable algoriths.
     import pypdf
     from pypdf import PdfReader
     from pypdf.generic import Destination, NameObject, ArrayObject, IndirectObject
