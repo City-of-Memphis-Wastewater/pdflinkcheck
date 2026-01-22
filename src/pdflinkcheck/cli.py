@@ -38,10 +38,10 @@ app = typer.Typer(
 )
 
 class ExportFormat(str, Enum):
-    json = "json"
-    txt = "txt"
-    xlsx = "xlsx"
-    none = "none"
+    JSON = "json"
+    TXT = "txt"
+    XLSX = "xlsx"
+    NONE = "none"
                 
 ALLOWED_EXPORTS = {"json", "txt", "xlsx", "none"}
 
@@ -171,21 +171,8 @@ def docs_command(
     
     # Exit successfully if any flag was processed
     raise typer.Exit(code=0)
-"""
-@app.command(name="tools_defunct", help= "Additional features, hamburger menu.")
-def tools_command(
-    clear_cache: bool = typer.Option(
-        False,
-        "--clear-cache",
-        is_flag=True,
-        help="Clear the environment caches. \n - pymupdf_is_available() \n - is_in_git_repo() \nMain purpose: Run after adding PyMuPDF to an existing installation where it was previously missing, because pymupdf_is_available() would have been cached as False."
-    )
-    ):
-    from pdflinkcheck.environment import clear_all_caches
-    if clear_cache:
-        clear_all_caches()
-"""
-# Create the sub-group
+
+# Create tools sub-group
 tools_app = typer.Typer(help="Additional utility features and maintenance tools.")
 app.add_typer(tools_app, name="tools")
 
@@ -225,7 +212,7 @@ def analyze_pdf( # Renamed function for clarity
         help="Path to the PDF file to analyze. If omitted, searches current directory."
     ), 
     export_format: List[ExportFormat] = typer.Option(
-        [ExportFormat.json, ExportFormat.txt, ExportFormat.xlsx],
+        [ExportFormat.JSON, ExportFormat.TXT, ExportFormat.XLSX],
         "--format", "-f",
         case_sensitive=False,
         help="Export formats (repeatable). Use --format none to suppress all exports."
@@ -263,9 +250,7 @@ def analyze_pdf( # Renamed function for clarity
     Environment variables sit in the middle of the "priority" hierarchy:
 
     CLI Flag: (Highest priority) analyze -p pypdf will always win.
-
     Env Var: If no flag is present, it checks PDF_ENGINE.
-
     Code Default: (Lowest priority) It falls back to "pypdf" as defined in typer.Option.
     """
 
@@ -277,24 +262,11 @@ def analyze_pdf( # Renamed function for clarity
         console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
     
-    if ExportFormat.none in export_format:
+    if ExportFormat.NONE in export_format:
         export_formats = []
     else:
         export_formats = [f.name.upper() for f in export_format]
     export_format="".join(export_formats)
-    """#VALID_FORMATS = ("JSON","TXT") # extend later
-    requested_formats = [fmt.strip().upper() for fmt in export_format.split(",")]
-    if "NONE" in requested_formats or not export_format.strip() or export_format == "0":
-        export_formats = ""
-    else:
-        # Filter for valid ones: ("JSON", "TXT")
-        # This allows "JSON,TXT" to become "JSONTXT" which run_report logic can handle
-        valid = [f for f in requested_formats if f in ("JSON", "TXT", "XLSX")]
-        export_formats = "".join(valid)
-
-        if not valid and "NONE" not in requested_formats:
-            typer.echo(f"Warning: No valid formats found in '{export_format}'. Supported: JSON, TXT.")
-    """
 
     # The meat and potatoes
     report_results = run_report_and_call_exports(
