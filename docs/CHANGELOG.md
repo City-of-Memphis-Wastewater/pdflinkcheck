@@ -18,6 +18,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - As the permanent schema is considered, we should be aware the pdfium is clearly the best option in terms of licensing and size, and that it is a key feature of this library the be able to be rolled easily without the PyMuPDF dependency. Ergo, to be overly attached to the PyMuPDF-ideal schema is overcoupling the project to a fundamentally separable aspect. We are glad to be able to leverage PyMuPDF as testing continues and to be able to offer it to user who choose to use PyMuPDF.
 - A breakthrough was made in v1.3.34 concerning capturing external links. There was in encoding issue but it was sorted out by reading the docs that Google publishes for PDFium. The anchor text is missing and some links appear redundant. Comparison between the various engines is important for continuous improvement.
 
+### Changed:
+- Function name change: call_stable() -> demo() in analysis_pymupdf.py and analysis_pdfium.py; 
+- Implement a demo function in analysis_pdfim.py.
+- For the demo function, stop using the wrong-direction import from report.py and instead from pdflinkcheck.io import get_first_pdf_in_cwd().
+
+
 ### Internal:
 - Testing should be implemented, with packaged PDF files that are relatively lightweight (<5 mb) but have various links that can be used to test the performance of the three current PDF engines.
 - Use PDF testing in CI/CD for automated but catching and quality assurance.
