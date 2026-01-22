@@ -74,36 +74,7 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
         page = doc.get_page(page_index)
         text_page = page.get_textpage()
         source_ref = PageRef.from_index(page_index)
-        
-        """
-        # --- A. EXTERNAL WEB LINKS ---
-        pagelink_raw = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
-        if pagelink_raw:
-            # This is buiilt for only web links - we entirely miss file links
-            count = pdfium_c.FPDFLink_CountWebLinks(pagelink_raw)
-            for i in range(count):
-                buflen = pdfium_c.FPDFLink_GetURL(pagelink_raw, i, None, 0)
-                url = ""
-                if buflen > 0:
-                    buffer = (pdfium_c.c_uint16 * buflen)() 
-                    pdfium_c.FPDFLink_GetURL(pagelink_raw, i, buffer, buflen)
-                    url = ctypes.string_at(buffer, (buflen-1)*2).decode('utf-16le')
-
-                l, t, r, b = (ctypes.c_double() for _ in range(4))
-                pdfium_c.FPDFLink_GetRect(pagelink_raw, i, 0, ctypes.byref(l), ctypes.byref(t), ctypes.byref(r), ctypes.byref(b))
-                
-                rect = [l.value, b.value, r.value, t.value]
-                links.append({
-                    'page': source_ref.machine,
-                    'rect': rect,
-                    'link_text': text_page.get_text_bounded(left=l.value, top=t.value, right=r.value, bottom=b.value).strip() or url,
-                    'type': 'External (URI)',
-                    'url': url,
-                    'source_kind': 'pypdfium2_weblink'
-                })
-            pdfium_c.FPDFLink_CloseWebLinks(pagelink_raw)
-        """
-        # --- B. INTERNAL GOTO LINKS (Standard Annotations) ---
+        # --- LINKS (Standard Annotations) Internal & External ---
         # We iterate through standard link annotations for GoTo actions
         assess_action(doc,page,links, page_index, text_page, source_ref)
         
@@ -385,33 +356,35 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
                         ))
                     else:
                         print(f"Type 3 at pos {pos} — no URI found")
+                        
+                """
+                # --- A. EXTERNAL WEB LINKS --- (a known duplicate approach)
+                pagelink_raw = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
+                if pagelink_raw:
+                    # This is buiilt for only web links - we entirely miss file links
+                    count = pdfium_c.FPDFLink_CountWebLinks(pagelink_raw)
+                    for i in range(count):
+                        buflen = pdfium_c.FPDFLink_GetURL(pagelink_raw, i, None, 0)
+                        url = ""
+                        if buflen > 0:
+                            buffer = (pdfium_c.c_uint16 * buflen)() 
+                            pdfium_c.FPDFLink_GetURL(pagelink_raw, i, buffer, buflen)
+                            url = ctypes.string_at(buffer, (buflen-1)*2).decode('utf-16le')
 
-                elif False and action_type == 3:  # URI
-                    uri = get_uri_from_action(action)
-                    print(f"Type 3 URI attempt at pos {pos}: {uri}")  # ← debug line
-
-                    if uri:  # Only add if we got something
-                        links.append(create_link_dict(
-                            source_ref=source_ref,
-                            rect_norm=rect_norm,
-                            anchor_text=anchor_text,
-                            link_type='External (URI)',
-                            url=uri,
-                            source_kind='pypdfium2_annot_uri'
-                        ))
-                    else:
-                        print(f"Type 3 at pos {pos} — failed to extract URI")  # ← debug failure
-                elif False and action_type == 3:  # URI
-                    uri = get_uri_from_action(action)
-                    if uri:
-                        links.append(create_link_dict(
-                            source_ref=source_ref,
-                            rect_norm=rect_norm,
-                            anchor_text=anchor_text,
-                            link_type='External (URI)',
-                            url=uri,
-                            source_kind='pypdfium2_annot_uri'
-                        ))
+                        l, t, r, b = (ctypes.c_double() for _ in range(4))
+                        pdfium_c.FPDFLink_GetRect(pagelink_raw, i, 0, ctypes.byref(l), ctypes.byref(t), ctypes.byref(r), ctypes.byref(b))
+                        
+                        rect = [l.value, b.value, r.value, t.value]
+                        links.append({
+                            'page': source_ref.machine,
+                            'rect': rect,
+                            'link_text': text_page.get_text_bounded(left=l.value, top=t.value, right=r.value, bottom=b.value).strip() or url,
+                            'type': 'External (URI)',
+                            'url': url,
+                            'source_kind': 'pypdfium2_weblink'
+                        })
+                    pdfium_c.FPDFLink_CloseWebLinks(pagelink_raw)
+                """
 
                 elif action_type == 2:  # GOTOR
                     remote_file = get_remote_file_from_action(action, doc.raw)
