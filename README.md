@@ -58,11 +58,11 @@ The core functionality is accessed via the `analyze` command.
 ![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3.png)
 
 
-See the Help Tree by unlocking the help-tree CLI command, using the DEV_TYPER_HELP_TREE env var.
+See the Help Tree by unlocking the helptree CLI command, using the DEV_TYPER_HELP_TREE env var.
 
 ```
-DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree` # bash
-$env:DEV_TYPER_HELP_TREE = "1"; pdflinkcheck help-tree` # PowerShell
+DEV_TYPER_HELP_TREE=1 pdflinkcheck helptree` # bash
+$env:DEV_TYPER_HELP_TREE = "1"; pdflinkcheck helptree` # PowerShell
 ```
 
 ![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3_tree_help.png)
@@ -177,10 +177,10 @@ If the `PDFLINKCHECK_GUI_EASTEREGG` environment variable is not set—or if GUI 
 ### Another Easter Egg
 
 ```bash
-DEV_TYPER_HELP_TREE=1 pdflinkcheck help-tree
+DEV_TYPER_HELP_TREE=1 pdflinkcheck helptree
 ```
 
-This `help-tree` feature has not yet been submitted for inclusion into Typer.
+This `helptree` feature has not yet been submitted for inclusion into Typer.
 
 -----
 
