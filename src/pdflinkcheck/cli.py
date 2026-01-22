@@ -7,17 +7,23 @@ from typing import Literal, List
 from typer.models import OptionInfo
 from rich.console import Console
 from pathlib import Path
-from pdflinkcheck.report import run_report_and_call_exports # Assuming core logic moves here 
 from typing import Dict, Optional, Union, List
 import pyhabitat
 import sys
 import os
 from importlib.resources import files
 from enum import Enum
+from typer_helptree import add_typer_helptree
 
+from pdflinkcheck.report import run_report_and_call_exports 
 from pdflinkcheck.version_info import get_version_from_pyproject
-from pdflinkcheck.environment import is_in_git_repo, assess_default_pdf_library, pymupdf_is_available, pdfium_is_available
 from pdflinkcheck.io import get_first_pdf_in_cwd
+from pdflinkcheck.environment import (
+    is_in_git_repo, 
+    assess_default_pdf_library, 
+    pymupdf_is_available, 
+    pdfium_is_available
+)
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -112,12 +118,8 @@ def main(ctx: typer.Context,
         raise typer.Exit(code=0)
 
 
-# help-tree() command: fragile, experimental, defaults to not being included.
 if os.environ.get('DEV_TYPER_HELP_TREE',0) in ('true','1'):
-    from pdflinkcheck.dev import add_typer_help_tree
-    add_typer_help_tree(
-        app = app,
-        console = console)
+    add_typer_helptree(app = app, console = console)
 
 @app.command(name="docs", help="Show the docs for this software.")
 def docs_command(
