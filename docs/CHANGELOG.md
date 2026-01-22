@@ -6,6 +6,19 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.35] - 2026-01-21
+### Reaffirm:
+- pypdf is the standard library. It is a fallback. It is not performant. It is stable. It is lightweight. Pypdf is a dependency. It is not an optional dependency. It's purpose is to be a good fallback.
+- pypdfium2 is faster than pypdf, while having just as permissive as a license and while not being as large as PyMuPDF. When reading spreadhseet exports, managed in `src/pdflinkcheck/spreadsheet.py` it easy to see in the External tab that the data gleaned from any given PDF which has external links is different between the analysis performed in `src/pdflinkcheck/analysis_pypdfium.py `, analysis performed in `/analysis_pymupdf.py ` . It is assumed at this point that `PyMuPDF` offers higher quality.
+- A breakthrough was made in v1.3.34 concerning capturing external links. There was in encoding issue but it was sorted out by reading the docs that Google publishes for PDFium. The anchor text is missing and some links appear redundant. Comparison between the various engines is important for continuous improvement.
+
+
+### Internal:
+- Testing should be implemented, with packaged PDF files that are relatively lightweight (<5 mb) but have various links that can be used to test the performance of the three current PDF engines.
+
+
+---
+
 
 ## [1.3.34] - 2026-01-21
 ### Fixed:
