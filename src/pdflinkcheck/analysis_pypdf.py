@@ -8,7 +8,7 @@ import logging
 from typing import Dict, Any, Optional, List
 
 from pdflinkcheck.helpers import PageRef
-from pdflinkcheck.io import error_logger, export_report_data, get_first_pdf_in_cwd, LOG_FILE_PATH
+from pdflinkcheck.io import error_logger,  get_first_pdf_in_cwd, LOG_FILE_PATH
 
 from pypdf import PdfReader
 from pypdf.generic import (
@@ -199,7 +199,7 @@ def _extract_toc_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
         print(f"TOC error: {e}", file=sys.stderr)
         return []
 
-def call_stable():
+def demo():
     """
     Placeholder function for command-line execution (e.g., in __main__).
     Note: This requires defining PROJECT_NAME, CLI_MAIN_FILE, etc., or 
@@ -210,4 +210,4 @@ def call_stable():
     run_report_and_call_exports(pdf_library = "pypdf")
 
 if __name__ == "__main__":
-    call_stable()
+    demo()
