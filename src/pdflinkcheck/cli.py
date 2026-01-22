@@ -302,7 +302,7 @@ def analyze_pdf( # Renamed function for clarity
         export_format = export_format,
         pdf_library = pdf_library,
         print_bool = print_bool,
-        concise_print = True, # ideal for CLI, to not overwhelm the terminal.
+        concise_print = True # ideal for CLI, to not overwhelm the terminal.
     )
 
     if not report_results or not report_results.get("data"):

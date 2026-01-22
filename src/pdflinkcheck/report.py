@@ -78,7 +78,6 @@ def run_report_and_call_exports(
     
     return report_results
 
-# -----  Stable version: See "report copy.py" for refactor (failing) ----
 def run_report_meat(
         pdf_path: str = None, 
         pdf_library: str = "auto", 
