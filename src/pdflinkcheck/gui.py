@@ -19,7 +19,7 @@ import os
 from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck.version_info import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
-from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_all_caches, is_in_git_repo
+from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_pdf_library_caches, is_in_git_repo
 from pdflinkcheck.tk_utils import center_window_on_primary
 from pdflinkcheck.helpers import get_export_path
 
@@ -136,7 +136,7 @@ class PDFLinkCheckApp:
         tools_menu.add_command(label="Toggle Theme", command=self._toggle_theme)
         tools_menu.add_command(label="Clear Output Window", command=self._clear_output_window)
         tools_menu.add_command(label="Copy Output to Clipboard", command=self._copy_output_to_clipboard)
-        tools_menu.add_command(label="Clear Cache", command=self._clear_all_caches)
+        tools_menu.add_command(label="Recheck PDF Libraries", command=self._recheck_pdf_library_cache)
 
         tools_menu.add_separator()
         tools_menu.add_command(label="License", command=self._show_license)
@@ -376,9 +376,9 @@ class PDFLinkCheckApp:
     def _scroll_to_bottom(self):
         self.output_text.see(tk.END)
 
-    def _clear_all_caches(self):
-        clear_all_caches()
-        messagebox.showinfo("Caches Cleared", f"All caches have been cleared.\nPyMuPDF available: {pymupdf_is_available()}\nPDFium available: {pdfium_is_available()}")
+    def _recheck_pdf_library_cache(self):
+        clear_pdf_library_caches()
+        messagebox.showinfo("Library Status", f"Library Availability Reassessed. \nPyMuPDF available: {pymupdf_is_available()}\nPDFium available: {pdfium_is_available()}")
 
     def _display_error(self, message):
         self.output_text.config(state=tk.NORMAL)

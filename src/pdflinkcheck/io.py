@@ -160,17 +160,17 @@ def get_friendly_path(full_path: str) -> str:
 
     
 def get_unique_unix_time():
-        """
-        Get the unix time for right now.
-        Purpose: When added to a filename, this ensures a unique filename, to avoid overwrites for otherwise identical filenames. 
-        Pros:
-        - cheap, easy, no reason to check for collision
+    """
+    Get the unix time for right now.
+    Purpose: When added to a filename, this ensures a unique filename, to avoid overwrites for otherwise identical filenames. 
+    Pros:
+    - cheap, easy, no reason to check for collision
 
-        Cons:
-        - Longer than YYYYMMDDalpha
-        - not human readable
-        """
-        return int(time.mktime(datetime.now().timetuple())) 
+    Cons:
+    - Longer than YYYYMMDDalpha
+    - not human readable
+    """
+    return int(time.mktime(datetime.now().timetuple())) 
 
     
 def get_first_pdf_in_cwd() -> Optional[str]:

@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.36] - 2026-01-24
+### Changed:
+- "Clear All Caches" button in GUI changed to "Recheck PDF Libraries"
+
+
+---
+
 ## [1.3.35] - 2026-01-21
 ### Reaffirm:
 - pypdf is the standard library. It is a fallback. It is not performant. It is stable. It is lightweight. Pypdf is a dependency. It is not an optional dependency. It's purpose is to be a good fallback.

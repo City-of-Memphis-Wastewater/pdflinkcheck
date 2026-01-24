@@ -16,7 +16,7 @@ Examples:
 - Default to pypdf at load if not pymupdf_is_available(). pymupdf_is_available() is useful for caching a common check in this codebase and setting up explicit logic rather than relying on try/except blocks in each instance. 
 """
 
-def clear_all_caches()->None:
+def clear_pdf_library_caches()->None:
     """Clear every @cache used in pdflinkcheck. Future work: Call from CLI using --clear-cache"""
     pymupdf_is_available.cache_clear()
     pdfium_is_available.cache_clear()

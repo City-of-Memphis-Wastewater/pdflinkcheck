@@ -178,14 +178,17 @@ def docs_command(
 tools_app = typer.Typer(help="Additional utility features and maintenance tools.")
 app.add_typer(tools_app, name="tools")
 
-@tools_app.command(name="clear-cache")
+@tools_app.command(
+        name="check-libs",
+        help = "Recheck the PDF library availability and cache the results."
+        ) 
 def tools_clear_cache():
-    """Clear the environment and engine discovery caches."""
-    from pdflinkcheck.environment import clear_all_caches
-    clear_all_caches()
-    console.print("[green]Discovery caches cleared.[/green]")
+    """Recheck the PDF library availability."""
+    from pdflinkcheck.environment import clear_pdf_library_caches
+    clear_pdf_library_caches()
+    console.print("[green]PDF library availabilty rechecked.[/green]")
     console.print(f"pymupdf_is_available: {pymupdf_is_available()}")
-    console.print(f"pymupdf_is_available: {pdfium_is_available()}")
+    console.print(f"pdfium_is_available: {pdfium_is_available()}")
     
 
 @tools_app.command(name="browse-exports")
