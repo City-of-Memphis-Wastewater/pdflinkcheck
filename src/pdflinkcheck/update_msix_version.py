@@ -1,7 +1,7 @@
 # src/pdflinkcheck/update_msix_version.py
 from __future__ import annotations
 from pathlib import Path
-from pdflinkcheck._version import get_version_from_pyproject
+from pdflinkcheck._version import get_version
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 

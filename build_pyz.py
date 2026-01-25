@@ -22,7 +22,7 @@ import shutil
 
 from build_executable import form_dynamic_name
 from pdflinkcheck.datacopy import ensure_data_files_for_build
-from pdflinkcheck._version import get_version_from_pyproject
+from pdflinkcheck._version import get_version
 
 # Get the one site-packages path where packages are installed in the venv
 SITE_PACKAGES_PATH = site.getsitepackages()[0]

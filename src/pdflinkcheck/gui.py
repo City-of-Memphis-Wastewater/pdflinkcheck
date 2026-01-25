@@ -17,7 +17,7 @@ import os
 
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_and_call_exports
-from pdflinkcheck._version import get_version_from_pyproject
+from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_pdf_library_caches, is_in_git_repo
 from pdflinkcheck.tk_utils import center_window_on_primary

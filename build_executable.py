@@ -15,7 +15,7 @@ import argparse
 import pyhabitat
 
 from pdflinkcheck.datacopy import ensure_data_files_for_build
-from pdflinkcheck._version import get_version_from_pyproject
+from pdflinkcheck._version import get_version
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
 # --- Configuration ---

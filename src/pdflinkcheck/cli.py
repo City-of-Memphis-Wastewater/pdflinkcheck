@@ -16,7 +16,7 @@ from enum import Enum
 from typer_helptree import add_typer_helptree
 
 from pdflinkcheck.report import run_report_and_call_exports 
-from pdflinkcheck._version import get_version_from_pyproject
+from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd
 from pdflinkcheck.environment import (
     is_in_git_repo, 
