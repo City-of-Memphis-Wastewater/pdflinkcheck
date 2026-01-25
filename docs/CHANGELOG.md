@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.37] - 2026-01-25
+### Changed:
+- Dynamic versioning based on VERSION
+
+### Fixed:
+- In analyze_pymupdf.py, correct 'pymupdf is None' -> 'fitz is None'
+
+---
+
 ## [1.3.36] - 2026-01-24
 ### Changed:
 - "Clear All Caches" button in GUI changed to "Recheck PDF Libraries"
