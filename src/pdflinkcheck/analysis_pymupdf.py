@@ -4,11 +4,9 @@
 from __future__ import annotations
 import sys
 from pathlib import Path
-import logging
 from typing import Dict, Any, Optional, List
 
-logging.getLogger("fitz").setLevel(logging.ERROR) 
-
+from pdflinkcheck.io import error_logger
 from pdflinkcheck.environment import pymupdf_is_available
 from pdflinkcheck.helpers import PageRef
 
@@ -19,14 +17,15 @@ try:
         fitz = None
 except ImportError:
     fitz = None
+    error_logger.error(f"fitz import failed")
 
 """
 Inspect target PDF for both URI links and for GoTo links.
 """
 def analyze_pdf(pdf_path: str):
-    if not pymupdf_is_available() or pymupdf is None:
+    if not pymupdf_is_available() or fitz is None:
         raise ImportError(
-        "\n\npymupdf is not installed. \nInstall it with: \n\n\t pip install pdflinkcheck[pymupdf] \n\t\tOR \n\t uv sync --extra pymupdf \n\nPyMuPDF is not expected to work on Termux. \n"
+        "\n\nfitz (pymupdf) is not installed. \nInstall it with: \n\n\t pip install pdflinkcheck[pymupdf] \n\t\tOR \n\t uv sync --extra pymupdf \n\nPyMuPDF is not expected to work on Termux. \n"
         
     )    
 
@@ -101,9 +100,9 @@ def get_anchor_text(page, link_rect):
         # 10 points horizontal to catch wide characters/kerning
         # 3 points vertical to stay within the line
         search_rect = fitz.Rect(
-            rect.x0 - 10, 
+            rect.x0 - 5, 
             rect.y0 - 3, 
-            rect.x1 + 10, 
+            rect.x1 + 5, 
             rect.y1 + 3
         )
 

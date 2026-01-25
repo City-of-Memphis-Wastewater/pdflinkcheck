@@ -83,19 +83,20 @@ class PageRef:
     
 
 """
+## Using the PageRef class
 ### Indexing Map: Physical (0) vs. Logical (1)
 
 | **File**              | **Context**      | **Index Rule**      | **Reasoning**                                                                                          |
 | --------------------- | ---------------- | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `ffi.py` (Rust bridge)| Data Extraction  | **0-indexing only** | Rust's `pdf-extract` and `lopdf` crates are 0-indexed. Data should stay raw.                           |
 | `analysis_pypdf.py`   | Data Extraction  | **0-indexing only** | `pypdf` is 0-indexed. Your previous `+ 1` hacks have been removed.                                     |
 | `analysis_pymupdf.py` | Data Extraction  | **Mixed**           | **Internal:** 0-indexed. **TOC:** `get_toc()` is natively 1-indexed. Needs normalization.              |
 | `validate.py`         | Logic/Validation | **Mixed**           | **Logic:** Uses `START_INDEX=0` for boundary checks. **Strings:** Formats error messages as 1-indexed. |
 | `report.py`           | Output/Reporting | **Mixed**           | **Data:** Keeps dictionary values at 0. **Display:** Formats CLI tables as 1-indexed.                  |
 | `helpers.py`          | Translation      | **Mixed**           | The `PageRef` class acts as the "Border Control" between 0 and 1.                                      |
 | `__init__.py`         | API Surface      | **0-indexing only** | If exposing a library, users expect 0-indexed lists of pages/links.                                    |
-
 """
+
+# ---
 
 def get_export_path() -> Path:
     """
@@ -107,3 +108,13 @@ def get_export_path() -> Path:
         PDFLINKCHECK_HOME.mkdir(parents=True, exist_ok=True)
     return PDFLINKCHECK_HOME
 
+# --- Exceptions --- 
+
+class PDFLinkCheckError(Exception):
+    """Base exception for all pdflinkcheck errors."""
+
+class AnalysisError(PDFLinkCheckError):
+    """Raised when a specific PDF engine fails to process a file."""
+
+class ExportError(PDFLinkCheckError):
+    """Raised when writing the final report (JSON/TXT/XLSX) fails."""

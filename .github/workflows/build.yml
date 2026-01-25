@@ -49,10 +49,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install shiv  pyinstaller build uv
           pip install -e ".[pdfium,pymupdf]"  # Ensure PyMuPDF and/or PDFium precense for the compiler to find 
-         # pip install -e .
 
-      #- name: Build sdist
-      #  run: hatch build --target sdist
   
       - name: Build wheel & sdist
         if: matrix.os == 'ubuntu-latest' # ONLY build this once

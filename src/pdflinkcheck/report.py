@@ -5,14 +5,20 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 from typing import Optional, Dict, Any
-import pyhabitat
 import copy
 
-from pdflinkcheck.io import error_logger, export_report_json, export_report_txt, get_first_pdf_in_cwd, get_friendly_path, LOG_FILE_PATH
-from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, assess_default_pdf_library
+from pdflinkcheck.io import (
+    error_logger, 
+    export_report_json, 
+    export_report_txt, 
+    get_first_pdf_in_cwd, 
+    get_friendly_path, 
+    LOG_FILE_PATH
+)
+from pdflinkcheck.environment import assess_default_pdf_library
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import debug_head, PageRef
+from pdflinkcheck.helpers import PageRef
 from pdflinkcheck.spreadsheet import export_report_links_to_xlsx
 
 SEP_COUNT=28
@@ -132,21 +138,21 @@ def run_report_meat(
     analyze_pdf = None
 
     # PDFium ENGINE
-    if pdf_library == "pdfium":# and pdfium_is_available():
+    if pdf_library == "pdfium":
         from pdflinkcheck.analysis_pdfium import analyze_pdf
 
 
     # PyMuPDF Engine
-    elif pdf_library == "pymupdf":# and pymupdf_is_available():
+    elif pdf_library == "pymupdf":
         from pdflinkcheck.analysis_pymupdf import analyze_pdf
         
     
     # pypdf ENGINE
     elif pdf_library == "pypdf":
         from pdflinkcheck.analysis_pypdf import analyze_pdf
-    
     if analyze_pdf is None: 
-        raise ValidationError("Analysis engine not assigned.")
+        raise RuntimeError(f"Analysis engine for '{pdf_library}' could not be loaded. analyze_pdf = {analyze_pdf}.")
+    
 
     data = analyze_pdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
     extracted_links = data.get("links", [])
@@ -540,13 +546,9 @@ def sanitize_glyphs_for_compatibility(text: str) -> str:
 if __name__ == "__main__":
 
     from pdflinkcheck.io import get_first_pdf_in_cwd
-    pdf_path = get_first_pdf_in_cwd()
-    # Run analysis first
+    pdf_path = get_first_pdf_in_cwd()    # Run analysis first
 
-    if pymupdf_is_available():
-        pdf_library = "pymupdf"
-    else:
-        pdf_library = "pypdf"
+    pdf_library = assess_default_pdf_library()
     report = run_report_and_call_exports(
         pdf_path=pdf_path,
         export_format="",
