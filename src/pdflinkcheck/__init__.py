@@ -9,6 +9,7 @@ Source code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/
 """
 from __future__ import annotations
 import os as _os
+from pdflinkcheck._version import __version__
 
 # Library functions
 #from pdflinkcheck import dev
