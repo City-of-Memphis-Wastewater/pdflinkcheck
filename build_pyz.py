@@ -22,7 +22,7 @@ import shutil
 
 from build_executable import form_dynamic_name
 from pdflinkcheck.datacopy import ensure_data_files_for_build
-from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck._version import get_version_from_pyproject
 
 # Get the one site-packages path where packages are installed in the venv
 SITE_PACKAGES_PATH = site.getsitepackages()[0]
@@ -134,7 +134,7 @@ def ensure_dependencies_and_shiv():
 def build_shiv_pyz():
     """Build the portable PYZ using shiv."""
     
-    version = get_version_from_pyproject()
+    version = get_version()
     if version == "0.0.0":
         print("FATAL: Cannot proceed without a valid version found in pyproject.toml.", file=sys.stderr)
         sys.exit(1)

@@ -15,7 +15,7 @@ import argparse
 import pyhabitat
 
 from pdflinkcheck.datacopy import ensure_data_files_for_build
-from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck._version import get_version_from_pyproject
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
 # --- Configuration ---
@@ -224,7 +224,7 @@ if __name__ == "__main__":
         )
     args = parser.parse_args()
     try:
-        package_version = get_version_from_pyproject()
+        package_version = get_version()
         if package_version == "0.0.0":
             print("FATAL: Cannot find package version in pyproject.toml.", file=sys.stderr)
             sys.exit(1)

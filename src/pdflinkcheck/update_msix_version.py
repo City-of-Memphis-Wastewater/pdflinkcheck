@@ -1,7 +1,7 @@
 # src/pdflinkcheck/update_msix_version.py
 from __future__ import annotations
 from pathlib import Path
-from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck._version import get_version_from_pyproject
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
@@ -45,5 +45,5 @@ def generate_versioned_manifest(version):
 
 
 if __name__ == "__main__":
-    version = get_version_from_pyproject()
+    version = get_version()
     generate_versioned_manifest(version)

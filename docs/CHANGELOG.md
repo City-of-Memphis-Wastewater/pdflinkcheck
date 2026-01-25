@@ -909,7 +909,7 @@ pyproject is now copied forcefully as well, though it is not specifically necess
 - Adjust Gui screenshot reference in 
 
 ### Added:
-- GUI Version: Version info added to frame heading of the Tkinter gui, by leveraging `version_info.get_version_from_pyproject()`
+- GUI Version: Version info added to frame heading of the Tkinter gui, by leveraging `version_info.get_version()`
 - GUI Buttons: Top and Bottom.
 - Asset: `assets/pdflinkcheck_gui_v1.1.51.png`; update GUI screenshot reference in README.
 - Asset: `assets/pdflinkcheck_cli_v1.1.51.png`; add CLI screenshot reference in README.

@@ -17,7 +17,7 @@ import os
 
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_and_call_exports
-from pdflinkcheck.version_info import get_version_from_pyproject
+from pdflinkcheck._version import get_version_from_pyproject
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_pdf_library_caches, is_in_git_repo
 from pdflinkcheck.tk_utils import center_window_on_primary
@@ -60,7 +60,7 @@ class PDFLinkCheckApp:
         style.configure("TRadiobutton", padding=2)
         style.theme_use("forest-dark")
 
-        self.root.title(f"PDF Link Check v{get_version_from_pyproject()}")  # Short title
+        self.root.title(f"PDF Link Check v{get_version()}")  # Short title
         self.root.geometry("700x500")  # Smaller starting size
         self.root.minsize(600, 400)    # Prevent too-small window
 
@@ -515,7 +515,7 @@ def start_gui(time_auto_close: int = 0):
         app_w, app_h = 800, 500 # stop gap until buttons are reorganized
         # Center and then reveal
         # 2. CONFIG: Set title and geometry while hidden
-        root.title(f"PDF Link Check v{get_version_from_pyproject()}")
+        root.title(f"PDF Link Check v{get_version()}")
         center_window_on_primary(root, app_w, app_h)
         
 
