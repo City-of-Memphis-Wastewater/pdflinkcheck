@@ -11,9 +11,6 @@ from __future__ import annotations
 import os as _os
 from pdflinkcheck._version import __version__
 
-# Library functions
-#from pdflinkcheck import dev
-
 # Lazy-loaded orchestrator
 def run_report(pdf_path: str, export_format: str = "JSON", pdf_library: str = "auto", print_bool: bool = True):
     """
@@ -110,6 +107,7 @@ else:
 # -----------------------------
 # Define __all__ such that the library functions are self documenting.
 __all__ = [
+    "__version__",
     "run_report",
     "analyze_pdf_pymupdf",
     "analyze_pdf_pypdf", 
