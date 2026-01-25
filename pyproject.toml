@@ -10,7 +10,7 @@ dependencies = [
     "pypdf>=6.4.2",
     "rich>=14.2.0",
     "typer>=0.20.0",
-    "typer-helptree>=0.1.6",
+    "typer-helptree>=0.1.6", 
 ]
 
 license = "MIT AND AGPL-3.0-or-later"

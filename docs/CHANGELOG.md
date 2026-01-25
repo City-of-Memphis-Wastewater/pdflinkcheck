@@ -10,7 +10,6 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - "Clear All Caches" button in GUI changed to "Recheck PDF Libraries"
 
-
 ---
 
 ## [1.3.35] - 2026-01-21

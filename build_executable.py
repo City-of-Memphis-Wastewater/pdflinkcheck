@@ -16,7 +16,7 @@ import pyhabitat
 
 from pdflinkcheck.datacopy import ensure_data_files_for_build
 from pdflinkcheck.version_info import get_version_from_pyproject
-from pdflinkcheck.environment import pymupdf_is_available
+from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
@@ -183,6 +183,10 @@ def run_pyinstaller(
         base_command.append("fitz")
         base_command.append("--collect-all")
         base_command.append("pymupdf")
+    
+    if pdfium_is_available():
+        base_command.append("--collect-all")
+        base_command.append("pypdfium2")
         
     if pyhabitat.on_macos():
         base_command.append("--osx-bundle-identifier")
