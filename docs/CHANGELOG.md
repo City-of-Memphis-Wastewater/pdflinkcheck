@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.41] - 2026-01-25
+### Fixed:
+- Ensure MSIX build can upload to GitHub release.
+
+---
+
 ## [1.3.40] - 2026-01-25
 ### Changed:
 - '--windowed' PyInstaller flag will only be used in the precise scenario targeting MSIX.
