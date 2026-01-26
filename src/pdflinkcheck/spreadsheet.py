@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: MIT
 
 from __future__ import annotations
-import sys
 import re
 from pathlib import Path
 from typing import Dict, List
@@ -10,7 +9,7 @@ from typing import Dict, List
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
-from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_unix_time
+from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_human_time
 from pdflinkcheck.helpers import PageRef
 
 # ----------------- Helper Functions -----------------
@@ -231,7 +230,7 @@ def export_report_links_to_xlsx(results: Dict, output_dir: Path = None) -> Path:
     pdf_stem = Path(pdf_name).stem
     lib_suffix = f"_{metadata.get('library_used')}" if metadata.get('library_used') else ""
 
-    timestamp = get_unique_unix_time()
+    timestamp = get_unique_human_time()
     output_file = output_dir / f"{pdf_stem}{lib_suffix}_{timestamp}_report.xlsx"
 
     if _export_links_to_xlsx(grouped_links, output_file):

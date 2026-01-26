@@ -150,7 +150,7 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
     """
     if not action or not doc_raw:
         return None
-
+    uri_bytes = b"" # Initialize to avoid UnboundLocalError
     try:
         # Probe length
         buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
@@ -162,6 +162,7 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
 
         # Fill buffer
         pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
+
 
         # buffer.value is bytes up to first null; decode as UTF-8
         uri_bytes = buffer.value
@@ -182,41 +183,6 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
 
     except Exception as e:
         #print(f"URI extraction failed: {str(e)}")
-        return None
-
-def get_uri_from_action_mojibake(action: Any, doc_raw: Any) -> Optional[str]:
-    """
-    Extract URI from action (type 3) using correct 4-arg signature.
-    Requires doc.raw as first arg.
-    """
-    if not action or not doc_raw:
-        return None
-
-    try:
-        # Probe length (pass doc_raw, action, None, 0)
-        buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
-        print(f"URI probe success: buflen = {buflen}")  # debug
-
-        if buflen <= 1:
-            print("URI buflen <=1 → empty or invalid")
-            return None
-
-        # Allocate and fill
-        buffer = (pdfium_c.c_ushort * buflen)()
-        written = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
-
-        if written != buflen:
-            print(f"URI write mismatch: expected {buflen}, wrote {written}")
-            return None
-
-        # Decode UTF-16LE
-        uri_bytes = ctypes.string_at(buffer, (buflen - 1) * 2)
-        uri = uri_bytes.decode('utf-16le', errors='replace').rstrip('\x00').strip()
-        print(f"Extracted URI: {uri}")  # success debug
-        return uri if uri else None
-
-    except Exception as e:
-        print(f"URI extraction failed: {str(e)}")
         return None
 
 def get_remote_file_from_action(action: Any, doc_raw: Any) -> Optional[str]:

@@ -93,7 +93,7 @@ def export_report_json(
     """
     
     base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.json"
+    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.json"
 
     print("For more details, explore the exported file(s).")
     try:
@@ -113,7 +113,7 @@ def export_report_txt(
     """Exports the formatted string buffer to a .txt file."""
     #pdf_filename = implement_non_redundant_naming(pdf_filename) 
     base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_unix_time()}_report.txt" 
+    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.txt" 
  
     report_text_str = "\n".join(report_text)
     
@@ -157,9 +157,10 @@ def get_friendly_path(full_path: str) -> str:
         
     return str(p)
     
-
+def get_unique_human_time()->str:
+    return str(datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d_%H%M%S"))
     
-def get_unique_unix_time():
+def get_unique_unix_time()->str:
     """
     Get the unix time for right now.
     Purpose: When added to a filename, this ensures a unique filename, to avoid overwrites for otherwise identical filenames. 
@@ -170,7 +171,8 @@ def get_unique_unix_time():
     - Longer than YYYYMMDDalpha
     - not human readable
     """
-    return int(time.mktime(datetime.now().timetuple())) 
+    return str(int(time.time()))
+    #return str(int(time.mktime(datetime.now().timetuple())))
 
     
 def get_first_pdf_in_cwd() -> Optional[str]:
