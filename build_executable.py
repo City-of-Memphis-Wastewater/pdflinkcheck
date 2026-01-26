@@ -164,7 +164,10 @@ def run_pyinstaller(
     else: # default
         onedir_or_onefile_flag = '--onedir'
         base_command.append(onedir_or_onefile_flag)
-    if pyhabitat.tkinter_is_available(): # allows termux, etc build to be primarily CLI, becuase the gui wont work anyways
+    
+    # Prepare for MSIX
+    if IS_WINDOWS_BUILD and (mode == "onedir") and pyhabitat.tkinter_is_available(): 
+        # only use windows mode for scenario that targets MSIX
         flag = '--windowed'
         # flag = '--noconsole'
         print(f"Building with the {flag} flag, to favor GUI usage for the artifact, because GUI is avaialble.")
