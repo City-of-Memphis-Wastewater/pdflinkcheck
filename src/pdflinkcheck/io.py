@@ -7,7 +7,7 @@ import json
 import sys
 from pathlib import Path
 from typing import Dict, Any, Union, List, Optional
-from datetime import datetime
+import datetime
 import time
 import pyhabitat
 import os
@@ -172,7 +172,7 @@ def get_unique_unix_time()->str:
     - not human readable
     """
     return str(int(time.time()))
-    #return str(int(time.mktime(datetime.now().timetuple())))
+    #return str(int(time.mktime(datetime.datetime.now().timetuple())))
 
     
 def get_first_pdf_in_cwd() -> Optional[str]:
