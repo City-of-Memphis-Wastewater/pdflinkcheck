@@ -11,7 +11,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Add print to GUI console (after redirect) to confirm that analysis is running, especially when slow.
 
 ### Changed:
-- Get rid of duplicated logic for default engine selection in GUI; leverage the environment.assess_default_pdf_library() functon.
+- Get rid of duplicated logic for default engine selection in GUI; leverage the environment.assess_default_pdf_library() functon. 
 
 ---
 
