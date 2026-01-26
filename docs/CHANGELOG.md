@@ -9,6 +9,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.3.40] - 2026-01-25
 ### Changed:
 - '--windowed' PyInstaller flag will only be used in the precise scenario targeting MSIX.
+- Add MSIX upload to release
+- Add SHA256 checksum to MSIX notes
 
 ---
 
