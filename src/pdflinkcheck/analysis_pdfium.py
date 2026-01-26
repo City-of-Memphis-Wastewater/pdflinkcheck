@@ -3,10 +3,12 @@
 """
 A performant PDF analysis backend, built on pypdfium2, that challenges the PyMuPDF engine, with a bit of parsing.
 References:
+- https://pypdfium2.readthedocs.io/en/stable/python_api.html
+- https://pypdfium2.readthedocs.io/en/stable/python_api/raw.html
 - https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdf_doc.h#1100
 - https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdfview.h#141-147
 - https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdfview.h#119-128
-- https://pypdfium2.readthedocs.io/en/stable/python_api/raw.html
+
 
 """
 from __future__ import annotations
@@ -272,6 +274,92 @@ def get_pdfium_text_safe(text_page, fs_rect, tolerance=2.0):
     
     return text_page.get_text_bounded(left=l, top=t, right=r, bottom=b).strip()
 
+
+def get_link_text_precise(text_page, link_handle):
+    """
+    Extracts text from a link using its QuadPoints (for multi-line links) 
+    or its Annotation Rect.
+    """
+    all_text_segments = []
+    quad_count = pdfium_c.FPDFLink_CountQuadPoints(link_handle)
+    
+    if quad_count > 0:
+        # Handle multi-line links by checking each quad (box) individually
+        for i in range(quad_count):
+            quad = pdfium_c.FS_QUADPOINTSF()
+            pdfium_c.FPDFLink_GetQuadPoints(link_handle, i, ctypes.byref(quad))
+            
+            # PDF coordinates: x1,y1 is bottom-left; x3,y3 is top-right
+            l = min(quad.x1, quad.x2, quad.x3, quad.x4)
+            r = max(quad.x1, quad.x2, quad.x3, quad.x4)
+            b = min(quad.y1, quad.y2, quad.y3, quad.y4)
+            t = max(quad.y1, quad.y2, quad.y3, quad.y4)
+            
+            segment = text_page.get_text_bounded(left=l-1, bottom=b-1, right=r+1, top=t+1)
+            if segment:
+                all_text_segments.append(segment)
+        
+        return " ".join(all_text_segments).strip()
+
+    else:
+        # Fallback to the standard bounding box
+        r = pdfium_c.FS_RECTF()
+        pdfium_c.FPDFLink_GetAnnotRect(link_handle, ctypes.byref(r))
+        
+        anchor_text = text_page.get_text_bounded(
+            left=r.left-1, 
+            bottom=r.bottom-1, 
+            right=r.right+1, 
+            top=r.top+1
+        )
+        return anchor_text.strip() if anchor_text else ""
+    
+
+def get_pdfium_text_smart(page, text_page, fs_rect):
+    """
+    Finds characters inside the rect, then expands to grab full words 
+    without necessarily grabbing the entire line.
+    """
+    # 1. Get all character indices within the link rectangle
+    # count_rects and get_rects identify which characters are physically 'hit'
+    char_indices = text_page.get_chars_bounded(
+        left=fs_rect.left - 1, 
+        top=fs_rect.top + 1, 
+        right=fs_rect.right + 1, 
+        bottom=fs_rect.bottom - 1
+    )
+    
+    if not char_indices:
+        return ""
+
+    start_idx = min(char_indices)
+    end_idx = max(char_indices)
+
+    # 2. Expand Left: look back for a 'boundary'
+    # We look back up to 60 chars (roughly a few words)
+    lookback = max(0, start_idx - 60)
+    prefix_text = text_page.get_text_range(index=lookback, count=start_idx - lookback)
+    
+    # Simple heuristic: Split by spaces and take the last 3 'words'
+    # This prevents grabbing the whole line if the line is long.
+    prefix_words = prefix_text.split()
+    refined_prefix = " ".join(prefix_words[-3:]) if prefix_words else ""
+
+    # 3. Expand Right: look ahead
+    lookahead_limit = 60
+    suffix_text = text_page.get_text_range(index=end_idx + 1, count=lookahead_limit)
+    
+    suffix_words = suffix_text.split()
+    refined_suffix = " ".join(suffix_words[:3]) if suffix_words else ""
+
+    # 4. Get the actual link text
+    link_text = text_page.get_text_range(index=start_idx, count=(end_idx - start_idx) + 1)
+
+    # Combine: [3 words before] + [Link Text] + [3 words after]
+    full_context = f"{refined_prefix} {link_text} {refined_suffix}"
+    
+    return " ".join(full_context.split()).strip()
+
 def parse_view(dest):
     view = dest.get_view()
 
@@ -284,6 +372,102 @@ def parse_view(dest):
         raise RuntimeError(f"Unexpected view tuple: {view}")
 
     return page_index, view_type, params
+
+def assess_action_(doc, page, links, page_index, text_page, source_ref):
+    pos = 0
+    while True:
+        annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
+        if not annot_raw:
+            break
+
+        try:
+            subtype = pdfium_c.FPDFAnnot_GetSubtype(annot_raw)
+            if subtype != pdfium_c.FPDF_ANNOT_LINK:
+                pos += 1
+                continue
+
+            # 1. Get handles and geometry
+            link_handle = pdfium_c.FPDFAnnot_GetLink(annot_raw)
+            
+            fs_rect = pdfium_c.FS_RECTF()
+            pdfium_c.FPDFAnnot_GetRect(annot_raw, fs_rect)
+            rect_norm = normalize_rect(fs_rect)
+
+            # 2. Extract anchor text (using the precise QuadPoint logic)
+            anchor_text = get_link_text_precise(text_page, link_handle)
+
+            # 3. Parse the action
+            action = pdfium_c.FPDFLink_GetAction(link_handle)
+            if action:
+                link_data = parse_pdfium_action(doc, action, link_handle)
+                if link_data:
+                    # Merge in the common fields
+                    link_data.update({
+                        "source_ref": source_ref,
+                        "rect_norm": rect_norm,
+                        "anchor_text": anchor_text,
+                    })
+                    links.append(create_link_dict(**link_data))
+
+        finally:
+            if annot_raw:
+                pdfium_c.FPDFPage_CloseAnnot(annot_raw)
+        
+        pos += 1
+
+def parse_pdfium_action(doc, action, link_handle):
+    """Sub-handler for different PDF action types."""
+    action_type = pdfium_c.FPDFAction_GetType(action)
+    
+    # Internal GOTO
+    if action_type == 1:
+        dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_handle)
+        if dest:
+            dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
+            return {
+                "link_type": 'Internal (GoTo/Dest)',
+                "destination_page": PageRef.from_index(dest_idx).machine,
+                "destination_view": extract_destination_view(dest),
+                "source_kind": 'pypdfium2_annot_goto'
+            }
+
+    # External URI
+    elif action_type == 3:
+        uri = get_uri_from_action(action, doc.raw)
+        return {
+            "link_type": 'External (URI)',
+            "url": uri,
+            "source_kind": 'pypdfium2_annot_uri'
+        }
+
+    # Remote GoTo (External PDF)
+    elif action_type == 2:
+        remote_file = get_remote_file_from_action(action, doc.raw)
+        dest = pdfium_c.FPDFAction_GetDest(action)
+        dest_page = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest) if dest else None
+        return {
+            "link_type": 'Remote (GoToR)',
+            "remote_file": remote_file,
+            "destination_page": dest_page,
+            "destination_view": extract_destination_view(dest) if dest else None,
+            "source_kind": 'pypdfium2_annot_gotor'
+        }
+
+    # External LAUNCH
+    elif action_type == 4:
+        remote_file = get_remote_file_from_action(action, doc.raw)
+        return {
+            "link_type": 'Launch',
+            "remote_file": remote_file,
+            "source_kind": 'pypdfium2_annot_launch'
+        }
+
+    # Catch-all for other types (JS, Named, etc.)
+    return {
+        "link_type": 'Other Action',
+        "action_kind": action_type,
+        "source_kind": 'pypdfium2_annot_other'
+    }
 
 def assess_action(doc,page,links, page_index, text_page, source_ref):
     """
@@ -311,21 +495,28 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
             if subtype != pdfium_c.FPDF_ANNOT_LINK:
                 pos += 1
                 continue
+            link_handle = pdfium_c.FPDFAnnot_GetLink(annot_raw)
+        
+            # 2. Extract precise text (Pass the HANDLE, not the rect)
+            anchor_text = get_link_text_precise(text_page, link_handle)
 
+            # 3. Keep your rect logic exactly as is for the dictionary
             fs_rect = pdfium_c.FS_RECTF()
             pdfium_c.FPDFAnnot_GetRect(annot_raw, fs_rect)
             rect_norm = normalize_rect(fs_rect)
 
-            anchor_text = get_pdfium_text_safe(text_page, fs_rect)
+            # 4. Use the handle for the action (instead of the rect)
+            action = pdfium_c.FPDFLink_GetAction(link_handle)
 
-            link_annot = pdfium_c.FPDFAnnot_GetLink(annot_raw)
-            action = pdfium_c.FPDFLink_GetAction(link_annot)
+           
+            #anchor_text = get_pdfium_text_safe(text_page, fs_rect)
+
 
             if action:
                 action_type = pdfium_c.FPDFAction_GetType(action)
 
                 if action_type == 1:  # GOTO
-                    dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_annot)
+                    dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_handle)
                     if dest:
                         dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
                         dest_ref = PageRef.from_index(dest_idx)
@@ -433,8 +624,6 @@ def assess_action(doc,page,links, page_index, text_page, source_ref):
 
         pos += 1
     
-def is_high_level(obj):
-    return isinstance(obj, PdfiumBase)
 
 def demo():
     """

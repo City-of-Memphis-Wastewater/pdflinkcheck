@@ -74,7 +74,6 @@ def is_in_git_repo(path='.'):
         return False
 
 def assess_default_pdf_library():
-
     if pymupdf_is_available():
         return "pymupdf"
     elif pdfium_is_available():
