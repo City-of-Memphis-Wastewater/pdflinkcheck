@@ -373,7 +373,7 @@ def parse_view(dest):
 
     return page_index, view_type, params
 
-def assess_action_(doc, page, links, page_index, text_page, source_ref):
+def assess_action(doc, page, links, page_index, text_page, source_ref):
     pos = 0
     while True:
         annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
@@ -385,91 +385,70 @@ def assess_action_(doc, page, links, page_index, text_page, source_ref):
             if subtype != pdfium_c.FPDF_ANNOT_LINK:
                 pos += 1
                 continue
-
-            # 1. Get handles and geometry
+            
             link_handle = pdfium_c.FPDFAnnot_GetLink(annot_raw)
+            anchor_text = get_link_text_precise(text_page, link_handle)
             
             fs_rect = pdfium_c.FS_RECTF()
             pdfium_c.FPDFAnnot_GetRect(annot_raw, fs_rect)
             rect_norm = normalize_rect(fs_rect)
 
-            # 2. Extract anchor text (using the precise QuadPoint logic)
-            anchor_text = get_link_text_precise(text_page, link_handle)
-
-            # 3. Parse the action
             action = pdfium_c.FPDFLink_GetAction(link_handle)
+            dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_handle)
+
+            # --- CASE 1: ACTION EXISTS ---
             if action:
-                link_data = parse_pdfium_action(doc, action, link_handle)
-                if link_data:
-                    # Merge in the common fields
-                    link_data.update({
-                        "source_ref": source_ref,
-                        "rect_norm": rect_norm,
-                        "anchor_text": anchor_text,
-                    })
-                    links.append(create_link_dict(**link_data))
+                action_type = pdfium_c.FPDFAction_GetType(action)
+
+                if action_type == 1:  # GOTO
+                    # Reuse existing dest if present, or try to get from action
+                    target_dest = dest or pdfium_c.FPDFAction_GetDest(doc.raw, action)
+                    if target_dest:
+                        dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, target_dest)
+                        links.append(create_link_dict(
+                            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+                            link_type='Internal (GoTo/Dest)',
+                            destination_page=PageRef.from_index(dest_idx).machine,
+                            destination_view=extract_destination_view(target_dest),
+                            source_kind='pypdfium2_annot_goto'
+                        ))
+                
+                elif action_type == 3:  # URI
+                    uri = get_uri_from_action(action, doc.raw)
+                    if uri:
+                        links.append(create_link_dict(
+                            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+                            link_type='External (URI)', url=uri, source_kind='pypdfium2_annot_uri'
+                        ))
+
+                elif action_type == 2:  # GOTOR (Remote)
+                    remote_file = get_remote_file_from_action(action, doc.raw)
+                    r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
+                    links.append(create_link_dict(
+                        source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+                        link_type='Remote (GoToR)', remote_file=remote_file,
+                        destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None,
+                        source_kind='pypdfium2_annot_gotor'
+                    ))
+                # ... handle other types (4, etc) as you had them ...
+
+            # --- CASE 2: NO ACTION, BUT DIRECT DESTINATION ---
+            elif dest:
+                dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
+                links.append(create_link_dict(
+                    source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+                    link_type='Internal (GoTo/Dest)',
+                    destination_page=PageRef.from_index(dest_idx).machine,
+                    destination_view=extract_destination_view(dest),
+                    source_kind='pypdfium2_annot_direct_dest'
+                ))
 
         finally:
             if annot_raw:
                 pdfium_c.FPDFPage_CloseAnnot(annot_raw)
-        
         pos += 1
 
-def parse_pdfium_action(doc, action, link_handle):
-    """Sub-handler for different PDF action types."""
-    action_type = pdfium_c.FPDFAction_GetType(action)
-    
-    # Internal GOTO
-    if action_type == 1:
-        dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_handle)
-        if dest:
-            dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
-            return {
-                "link_type": 'Internal (GoTo/Dest)',
-                "destination_page": PageRef.from_index(dest_idx).machine,
-                "destination_view": extract_destination_view(dest),
-                "source_kind": 'pypdfium2_annot_goto'
-            }
-
-    # External URI
-    elif action_type == 3:
-        uri = get_uri_from_action(action, doc.raw)
-        return {
-            "link_type": 'External (URI)',
-            "url": uri,
-            "source_kind": 'pypdfium2_annot_uri'
-        }
-
-    # Remote GoTo (External PDF)
-    elif action_type == 2:
-        remote_file = get_remote_file_from_action(action, doc.raw)
-        dest = pdfium_c.FPDFAction_GetDest(action)
-        dest_page = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest) if dest else None
-        return {
-            "link_type": 'Remote (GoToR)',
-            "remote_file": remote_file,
-            "destination_page": dest_page,
-            "destination_view": extract_destination_view(dest) if dest else None,
-            "source_kind": 'pypdfium2_annot_gotor'
-        }
-
-    # External LAUNCH
-    elif action_type == 4:
-        remote_file = get_remote_file_from_action(action, doc.raw)
-        return {
-            "link_type": 'Launch',
-            "remote_file": remote_file,
-            "source_kind": 'pypdfium2_annot_launch'
-        }
-
-    # Catch-all for other types (JS, Named, etc.)
-    return {
-        "link_type": 'Other Action',
-        "action_kind": action_type,
-        "source_kind": 'pypdfium2_annot_other'
-    }
-
-def assess_action(doc,page,links, page_index, text_page, source_ref):
+def assess_action_(doc,page,links, page_index, text_page, source_ref):
     """
     # Standard annotation action types will help to  include external files
     #- **1** = `FPDFACTION_GOTO` → Internal GoTo
