@@ -6,7 +6,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.3.38] - 2026-01-25
+## [1.3.39] - 2026-01-25
 ### Added:
 - Add print to GUI console (after redirect) to confirm that analysis is running, especially when slow.
 
@@ -15,7 +15,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.3.37] - 2026-01-25
+## [1.3.38] - 2026-01-25
 ### Changed:
 - analysis_pdfium.py anchor text improved.
 
