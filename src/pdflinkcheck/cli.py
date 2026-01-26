@@ -224,7 +224,7 @@ def analyze_pdf( # Renamed function for clarity
     ),
 
     pdf_library: Literal["auto","pdfium","pypdf", "pymupdf"] = typer.Option(
-        assess_default_pdf_library(),
+        assess_default_pdf_library().lower(),
         "--engine","-e",
         envvar="PDF_ENGINE",
         help="PDF parsing library. pypdf (pure Python), pymupdf (fast, AGPL3+ licensed), pdfium (fast, BSD-3 licensed).",

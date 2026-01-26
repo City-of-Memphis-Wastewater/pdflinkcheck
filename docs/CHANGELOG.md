@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+---
+
+## [1.3.38] - 2026-01-25
+### Added:
+- Add print to GUI console (after redirect) to confirm that analysis is running, especially when slow.
+
+---
+
 ## [1.3.37] - 2026-01-25
 ### Changed:
 - analysis_pdfium.py anchor text improved.

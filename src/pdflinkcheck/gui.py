@@ -19,7 +19,13 @@ import os
 from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
-from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available, clear_pdf_library_caches, is_in_git_repo
+from pdflinkcheck.environment import (
+    assess_default_pdf_library,
+    pymupdf_is_available,  
+    pdfium_is_available, 
+    clear_pdf_library_caches, 
+    is_in_git_repo
+)
 from pdflinkcheck.tk_utils import center_window_on_primary
 from pdflinkcheck.helpers import get_export_path
 
@@ -87,12 +93,10 @@ class PDFLinkCheckApp:
         self.last_txt_path: Optional[Path] = None
         self.last_xlsx_path: Optional[Path] = None
         
-        # Engine detection (This can take a few ms)
-        self.pdf_library_var = tk.StringVar(value="PDFium")
-        if not pdfium_is_available():
-            self.pdf_library_var.set("PyMuPDF")
-        if not pymupdf_is_available():
-            self.pdf_library_var.set("pypdf")
+        # Engine detection 
+        default_pdf_library = assess_default_pdf_library().lower()
+        self.pdf_library_var = tk.StringVar(value=default_pdf_library)
+
 
     
     # --- Theme & Visual Initialization ---
@@ -167,9 +171,9 @@ class PDFLinkCheckApp:
         pdf_library_frame.grid(row=1, column=0, padx=3, pady=3, sticky='nsew')
 
         if pdfium_is_available():
-            ttk.Radiobutton(pdf_library_frame, text="PDFium", variable=self.pdf_library_var, value="PDFium").pack(side='left', padx=5, pady=1) 
+            ttk.Radiobutton(pdf_library_frame, text="PDFium", variable=self.pdf_library_var, value="pdfium").pack(side='left', padx=5, pady=1) 
         if pymupdf_is_available():
-            ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value="PyMuPDF").pack(side='left', padx=3, pady=1)
+            ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value="pymupdf").pack(side='left', padx=3, pady=1)
         ttk.Radiobutton(pdf_library_frame, text="pypdf", variable=self.pdf_library_var, value="pypdf").pack(side='left', padx=3, pady=1)
 
         export_config_frame = ttk.LabelFrame(control_frame, text="Export Enabled:")
@@ -258,6 +262,7 @@ class PDFLinkCheckApp:
             messagebox.showwarning("Copy Failed", "PDF Path field is empty.")
 
     def _run_report_gui(self):
+
         pdf_path_str = self._assess_pdf_path_str()
         if not pdf_path_str:
             return
@@ -277,6 +282,9 @@ class PDFLinkCheckApp:
 
         original_stdout = sys.stdout
         sys.stdout = RedirectText(self.output_text)
+
+        print("Running PDF analysis ...")
+
 
         try:
             report_results = run_report_and_call_exports(

@@ -121,7 +121,7 @@ def run_report_meat(
     pdf_library = pdf_library.lower()
 
     log("\n")
-    log("--- Starting Analysis ... ---")
+    log("--- Analysis ---")
     log("\n")
     if pdf_path is None:
         log("pdf_path is None", overview=True)
@@ -133,7 +133,7 @@ def run_report_meat(
         
     # AUTO MODE
     if pdf_library == "auto":
-        pdf_library = assess_default_pdf_library()
+        pdf_library = assess_default_pdf_library().lower()
     
     analyze_pdf = None
 
@@ -548,7 +548,7 @@ if __name__ == "__main__":
     from pdflinkcheck.io import get_first_pdf_in_cwd
     pdf_path = get_first_pdf_in_cwd()    # Run analysis first
 
-    pdf_library = assess_default_pdf_library()
+    pdf_library = assess_default_pdf_library().lower()
     report = run_report_and_call_exports(
         pdf_path=pdf_path,
         export_format="",
