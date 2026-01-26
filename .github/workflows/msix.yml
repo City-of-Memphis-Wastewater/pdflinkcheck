@@ -10,7 +10,9 @@ on:
 jobs:
   build-msix:
     runs-on: windows-latest
-    if: true # whether of not if: github.event.release.prerelease == false, because that MSIX currently is being released manually, and we want to test the whole thing.
+    permissions:
+      contents: write
+    if: true # whether or not if: github.event.release.prerelease == false, because that MSIX currently is being released manually, and we want to test the whole thing.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
