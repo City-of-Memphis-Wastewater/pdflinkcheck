@@ -52,10 +52,22 @@ def pdfium_is_available() -> bool:
 def is_in_dev_environment() -> bool:
     """
     Determines if the code is running in a local development context.
-    Returns False if the execution is bundled, sandboxed, or lacks dev markers.
+
+    Determines if the code is running in a local development context.
+    
+    NOTE: This logic is only appropriate for the 'highest consuming project' 
+    (the Application). If placed in a library, it will detect the library's 
+    dev-state, not the state of the app using it. This is due to the use of `os.path.abspath(__file__)`.
     """
-    # 1. Check for 'Artifact' states. 
-    # If it's a binary or managed package, it's not a dev environment.
+
+    # --- Explicit Developer Overrides ---
+    # Allows a dev to force dev-behavior even in a bundled/installed artifact.
+    if os.getenv('PYTHON_ENV') == 'development' or os.getenv('DEV_MODE') == '1':
+        return True
+    
+    # --- Check for 'Artifact' states. ---
+    # If the app is packaged, frozen, or managed by a tool like pipx, 
+    # we treat it as "Production" regardless of the file system layout.
     if any([
         pyhabitat.as_frozen(),
         pyhabitat.is_msix(),
@@ -67,23 +79,31 @@ def is_in_dev_environment() -> bool:
     ]):
         return False
 
-    # 2. Check for the source of truth: Git.
+    # --- Check for .git dir ---
     # Use the directory of the file calling this function, or pyhabitat's location
     # as a proxy for the source tree.
     try:
+        
+        current_file_path = os.path.abspath(__file__)
+
+
+        # Look relative to this module file to find the repo root.
+        # Since this is part of the 'highest consuming project', this path
+        # is a reliable proxy for the application's installation state.
+        # Quick exit: If we are inside site-packages, we are 'installed', not 'in dev'.
+        if "site-packages" in current_file_path or "dist-packages" in current_file_path:
+            return False
+        
         # We look relative to the module file to find the repo root
-        current_file_dir = os.path.dirname(os.path.abspath(__file__))
-        if pyhabitat.is_in_git_repo(current_file_dir):
+        if pyhabitat.is_in_git_repo(os.path.dirname(current_file_path)):
             return True
+            
     except Exception:
+        # If path detection fails, we default to the safer 'False' (Production)
         pass
 
-    # 3. Explicit Developer Overrides
-    if os.getenv('PYTHON_ENV') == 'development' or os.getenv('DEV_MODE') == '1':
-        return True
-
     return False
-
+    
 
 def assess_default_pdf_library():
     if pymupdf_is_available():

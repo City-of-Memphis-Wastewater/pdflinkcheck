@@ -19,7 +19,7 @@ from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd
 from pdflinkcheck.environment import (
-    is_in_git_repo, 
+    is_in_dev_environment,
     assess_default_pdf_library, 
     pymupdf_is_available, 
     pdfium_is_available
@@ -140,17 +140,20 @@ def docs_command(
         console.print("[yellow]Please use either the --license or --readme flag.[/yellow]")
         return # Typer will automatically show the help message.
 
-    if is_in_git_repo():
-        """This is too aggressive. But we don't expect it often. Probably worth it."""
+    # --- Development Sync Check ---
+    # We use your new check to see if we are in a dev context.
+    # If so, we trigger the data copy to ensure we aren't viewing stale docs.
+    if is_in_dev_environment():
         from pdflinkcheck.datacopy import ensure_data_files_for_build
         ensure_data_files_for_build()
+        console.print("[dim italic]Dev mode detected: Synced data files.[/dim italic]")
 
     # --- Handle --license flag ---
     if license:
         try:
             license_path = files("pdflinkcheck.data") / "LICENSE"
             license_text = license_path.read_text(encoding="utf-8")
-            console.print(f"\n[bold green]=== GNU AFFERO GENERAL PUBLIC LICENSE V3+ ===[/bold green]")
+            console.print(f"\n[bold green]=== LICENSE ===[/bold green]")
             console.print(license_text, highlight=False)
             
         except FileNotFoundError:

@@ -10,7 +10,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.3.42] - 2026-01-26
 ### Changed:
 - Implement is_in_dev_environment() to use new tri-state pyhabitat.is_in_git_repo()
-- Bump pyhabitat version to 
+- Bump pyhabitat version to 1.1.35
 
 ---
 

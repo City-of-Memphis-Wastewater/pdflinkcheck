@@ -10,8 +10,8 @@ import importlib.resources as resources
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
-# --- COPY LICENSE FILE TO PACKAGE DATA ---
-def ensure_package_pyproject(source_root_path: Path, package_data_path: Path):
+# --- COPY PYPROJECT FILE TO PACKAGE DATA ---
+def _ensure_package_pyproject(source_root_path: Path, package_data_path: Path):
     """Copies the root puyproject.toml file into the expected package data path."""
     source = source_root_path / "pyproject.toml"
     destination = package_data_path / "src" / "pdflinkcheck" / "data" / "pyproject.toml"
@@ -58,7 +58,9 @@ def ensure_data_files_for_build():
     print(f"PROJECT_ROOT = {PROJECT_ROOT}")
     ensure_package_license(PROJECT_ROOT, PROJECT_ROOT)
     ensure_package_readme(PROJECT_ROOT, PROJECT_ROOT)
-    ensure_package_pyproject(PROJECT_ROOT, PROJECT_ROOT)
+    if False:
+        # now that we are not versioning from the src/pdflinkcheck/data/pyproject.toml file but rather from the src/pdflinkcheck/VERSION file, it should be safe to remove this 
+        _ensure_package_pyproject(PROJECT_ROOT, PROJECT_ROOT)
 
 
 def get_data_root() -> Path:
