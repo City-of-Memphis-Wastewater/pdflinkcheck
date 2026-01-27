@@ -40,7 +40,10 @@ This sounds wild, to go from native core to web tech back to native distribution
 - Web stack interfaces (HTML, CSS, TS/JS) offers the most control and best portability of graphics, with lots of people having built tools that you can leverage.
 - Making your code accessible via web requests and/or an API will help it have the widest possible reach.
 
-Personally, I get really excited when my Python code can run smoothly on Windows, iOS, Linux, and mostly importantly, as Linux on Android via Termux. Yes, sure, if Android is a target, the same core can be packaged as an Android app and be more accessible. Why do I want Termux? Because it's more about leveraging the machine. Basically, with code that can run on Termux, I can take any old android phone in a drawer and use it like I might use a Raspberry Pi. Tkinter will not run from Termux, not without proot. It is better to start a server on Termux, and then vew the app on localhost through your browser.
+Personally, I get really excited when my Python code can run smoothly on Windows, iOS, Linux, and mostly importantly, as Android via Termux. Yes, the same Python core can be packaged as an Android app. Why do I want Termux? Because it's about leveraging the machine. When a package can run on Termux, it means that a user can take any old android phone in a drawer and use it like I might use a Raspberry Pi. 
+
+Termux Friendly GUI:
+Tkinter will not run from Termux, not without proot. The correct approach is better to start a server on Termux, and then view the app on localhost through your browser.
 
 Links:
 - https://docs.python.org/3/library/tkinter.html
