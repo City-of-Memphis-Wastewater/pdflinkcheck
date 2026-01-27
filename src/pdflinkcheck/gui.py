@@ -24,7 +24,7 @@ from pdflinkcheck.environment import (
     pymupdf_is_available,  
     pdfium_is_available, 
     clear_pdf_library_caches, 
-    is_in_git_repo
+    is_in_dev_environment
 )
 from pdflinkcheck.tk_utils import center_window_on_primary
 from pdflinkcheck.helpers import get_export_path
@@ -411,7 +411,7 @@ class PDFLinkCheckApp:
         try:
             content = (files("pdflinkcheck.data") / filename).read_text(encoding="utf-8")
         except FileNotFoundError:
-            if is_in_git_repo():
+            if is_in_dev_environment():
                 messagebox.showinfo("Development Mode", f"Embedded {filename} not found.\nTrying to copy from project root...")
                 try:
                     from pdflinkcheck.datacopy import ensure_data_files_for_build

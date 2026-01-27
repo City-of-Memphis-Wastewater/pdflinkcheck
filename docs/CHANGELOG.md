@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+
+---
+
+## [1.3.42] - 2026-01-26
+### Changed:
+- Implement is_in_dev_environment() to use new tri-state pyhabitat.is_in_git_repo()
+- Bump pyhabitat version to 
+
 ---
 
 ## [1.3.41] - 2026-01-25

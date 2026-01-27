@@ -4,15 +4,15 @@
 from __future__ import annotations
 from functools import cache
 import subprocess
+import os
+import pyhabitat
 """
 Environment checks.
 
 Functions:
-- is_in_git_repo()
-- pymupdf_is_available()
 
 Examples:
-- is_in_git_repo() is used when deciding to force load src/pdflinkcheck/data/ files, when CLI docs is called, and if they are not found when called in the GUI,
+- is_in_dev_environment() is used when deciding to force load src/pdflinkcheck/data/ files, when CLI docs is called, and if they are not found when called in the GUI,
 - Default to pypdf at load if not pymupdf_is_available(). pymupdf_is_available() is useful for caching a common check in this codebase and setting up explicit logic rather than relying on try/except blocks in each instance. 
 """
 
@@ -48,30 +48,42 @@ def pdfium_is_available() -> bool:
         return False
 
 
-def is_in_git_repo(path='.'):
+@cache
+def is_in_dev_environment() -> bool:
     """
-    Check if the given path is inside a Git repository.
-    
-    Uses 'git rev-parse --is-inside-work-tree' command.
+    Determines if the code is running in a local development context.
+    Returns False if the execution is bundled, sandboxed, or lacks dev markers.
+    """
+    # 1. Check for 'Artifact' states. 
+    # If it's a binary or managed package, it's not a dev environment.
+    if any([
+        pyhabitat.as_frozen(),
+        pyhabitat.is_msix(),
+        pyhabitat.is_pipx(),
+        pyhabitat.is_pyz(),
+        pyhabitat.is_elf(),
+        pyhabitat.is_windows_portable_executable(),
+        pyhabitat.is_macos_executable()
+    ]):
+        return False
 
-    """
+    # 2. Check for the source of truth: Git.
+    # Use the directory of the file calling this function, or pyhabitat's location
+    # as a proxy for the source tree.
     try:
-        # Run the git command, suppressing output
-        result = subprocess.run(
-            ['git', 'rev-parse', '--is-inside-work-tree'],
-            cwd=path,
-            check=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-        )
-        return result.stdout.strip().decode('utf-8') == 'true'
-    except subprocess.CalledProcessError:
-        # The command fails if it's not a git repository
-        return False
-    except FileNotFoundError:
-        # Handle the case where the 'git' executable is not found
-        print("Error: 'git' command not found. Please ensure Git is installed and in your PATH.")
-        return False
+        # We look relative to the module file to find the repo root
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        if pyhabitat.is_in_git_repo(current_file_dir):
+            return True
+    except Exception:
+        pass
+
+    # 3. Explicit Developer Overrides
+    if os.getenv('PYTHON_ENV') == 'development' or os.getenv('DEV_MODE') == '1':
+        return True
+
+    return False
+
 
 def assess_default_pdf_library():
     if pymupdf_is_available():
