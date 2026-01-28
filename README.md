@@ -61,8 +61,7 @@ The core functionality is accessed via the `analyze` command.
 See the Help Tree by unlocking the helptree CLI command, using the DEV_TYPER_HELP_TREE env var.
 
 ```
-DEV_TYPER_HELP_TREE=1 pdflinkcheck helptree` # bash
-$env:DEV_TYPER_HELP_TREE = "1"; pdflinkcheck helptree` # PowerShell
+pdflinkcheck helptree
 ```
 
 ![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3_tree_help.png)
