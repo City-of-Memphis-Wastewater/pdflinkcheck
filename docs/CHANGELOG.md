@@ -10,6 +10,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - Update spelling error in I have Questions and Improve the Termux blurb.
 
+###Changed:
+- Increase typer-helptree version to 0.1.10, with form add_typer_helptree(app, console, version=__version__, hidden=True), to pass in __version__ from the consuming program (tjis one, pdflinkcheck)
+
 ---
 
 ## [1.3.42] - 2026-01-26
