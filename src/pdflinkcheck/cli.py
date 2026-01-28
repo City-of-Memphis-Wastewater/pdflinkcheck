@@ -16,7 +16,7 @@ from enum import Enum
 from typer_helptree import add_typer_helptree
 
 from pdflinkcheck.report import run_report_and_call_exports 
-from pdflinkcheck._version import get_version
+from pdflinkcheck._version import get_version, __version__
 from pdflinkcheck.io import get_first_pdf_in_cwd
 from pdflinkcheck.environment import (
     is_in_dev_environment,
@@ -34,7 +34,7 @@ os.environ["TERM"] = "xterm-256color"
 
 app = typer.Typer(
     name="pdflinkcheck",
-    help=f"A command-line tool for comprehensive PDF link analysis and reporting. (v{get_version()})",
+    help=f"A command-line tool for comprehensive PDF link analysis and reporting. (v{__version__})",
     add_completion=False,
     invoke_without_command = True, 
     no_args_is_help = False,
@@ -110,7 +110,7 @@ def main(ctx: typer.Context,
     If no subcommand is provided, launch the GUI.
     """
     if version:
-        typer.echo(get_version())
+        typer.echo(__version__)
         raise typer.Exit(code=0)
         
     if ctx.invoked_subcommand is None:
@@ -119,7 +119,7 @@ def main(ctx: typer.Context,
 
 
 if os.environ.get('DEV_TYPER_HELP_TREE',0) in ('true','1'):
-    add_typer_helptree(app = app, console = console)
+    add_typer_helptree(app = app, console = console, version = __version__)
 
 @app.command(name="docs", help="Show the docs for this software.")
 def docs_command(
