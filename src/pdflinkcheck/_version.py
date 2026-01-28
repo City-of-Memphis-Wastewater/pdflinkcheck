@@ -13,7 +13,7 @@ def get_version() -> str:
     except Exception:
         pass
     
-    # 1. Try metadata (Installed)
+    # Try metadata (Installed)
     try:
         from importlib.metadata import version, PackageNotFoundError
         return version("pdflinkcheck")
