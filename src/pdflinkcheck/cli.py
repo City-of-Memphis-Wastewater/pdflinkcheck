@@ -118,8 +118,7 @@ def main(ctx: typer.Context,
         raise typer.Exit(code=0)
 
 
-if os.environ.get('DEV_TYPER_HELP_TREE',0) in ('true','1'):
-    add_typer_helptree(app = app, console = console, version = __version__)
+add_typer_helptree(app = app, console = console, version = __version__)
 
 @app.command(name="docs", help="Show the docs for this software.")
 def docs_command(
