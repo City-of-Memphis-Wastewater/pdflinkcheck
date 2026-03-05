@@ -265,7 +265,7 @@ jobs:
             pdflinkcheck.msix
 
       - name: Upload MSIX artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: msix
           path: pdflinkcheck.msix
@@ -298,7 +298,7 @@ jobs:
     steps:
       - name: Download MSIX artifact
         if: false
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: msix
 
