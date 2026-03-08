@@ -58,13 +58,18 @@ The core functionality is accessed via the `analyze` command.
 ![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3.png)
 
 
-See the Help Tree by unlocking the helptree CLI command, using the DEV_TYPER_HELP_TREE env var.
+See the `pdflinkcheck` Typer CLI structure.
 
 ```
 pdflinkcheck helptree
 ```
 
 ![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3_tree_help.png)
+
+`helptree` is utility funtion for Typer CLIs, imported from the `typer-helptree` library.
+
+- GitHub: https://github.com/City-of-Memphis-Wastewater/typer-helptree
+- PyPI: https://pypi.org/project/typer-helptree/
 
 
 
@@ -172,14 +177,6 @@ pdflinkcheck.start_gui()
 ```
 
 If the `PDFLINKCHECK_GUI_EASTEREGG` environment variable is not set—or if GUI support is unavailable—`pdflinkcheck` behaves as a normal library with no GUI functions exposed.
-
-### Another Easter Egg
-
-```bash
-DEV_TYPER_HELP_TREE=1 pdflinkcheck helptree
-```
-
-This `helptree` feature has not yet been submitted for inclusion into Typer.
 
 -----
 
