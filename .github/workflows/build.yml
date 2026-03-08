@@ -165,7 +165,7 @@ jobs:
           done
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: pdflinkcheck-${{ matrix.os }}
           path: dist/upload/
@@ -180,7 +180,7 @@ jobs:
     
     steps:
       - name: Download all artifacts (from all three OS runners)
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
