@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.3.45] - 2026-03-08
 ### Fixed:
 - README usage of typer-helptree no longer should reference outdated DEV_TYPER_HELPTREE env var.
+- Use SVG helptree image now, and update reference in README.
 
 ---
 

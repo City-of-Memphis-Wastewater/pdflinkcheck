@@ -64,7 +64,7 @@ See the `pdflinkcheck` Typer CLI structure.
 pdflinkcheck helptree
 ```
 
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.3_tree_help.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.3.45_helptree.svg)
 
 `helptree` is utility funtion for Typer CLIs, imported from the `typer-helptree` library.
 
