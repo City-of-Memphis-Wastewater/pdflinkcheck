@@ -6,6 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.46] - 2026-03-11?
+### Fixed:
+- Increase pyhabitat to 1.2.3, which now has better handling for launching file explorer from WSL, in launch.show_system_explorer()
+
+### Changed:
+- Improve caching in publish.yml, to use `cache-dependency-glob: "pyproject.toml"`, to avod error message regarding missing uv.lock file.
+
+---
+
 ## [1.3.45] - 2026-03-08
 ### Fixed:
 - README usage of typer-helptree no longer should reference outdated DEV_TYPER_HELPTREE env var.
