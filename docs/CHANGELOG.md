@@ -6,7 +6,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.3.46] - 2026-03-11?
+## [1.3.46] - 2026-03-11
 ### Fixed:
 - Increase pyhabitat to 1.2.3, which now has better handling for launching file explorer from WSL, in launch.show_system_explorer()
 
