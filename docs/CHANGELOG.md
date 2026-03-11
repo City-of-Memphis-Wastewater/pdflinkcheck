@@ -13,6 +13,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Changed:
 - Improve caching in publish.yml, to use `cache-dependency-glob: "pyproject.toml"`, to avod error message regarding missing uv.lock file.
 
+### Added:
+- ./scripts/update_index_version.sh copied from dworshak for udateing the helptree reference in README; this should become a part of the typer-helptree package.
+
 ---
 
 ## [1.3.45] - 2026-03-08
