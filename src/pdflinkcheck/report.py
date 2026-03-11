@@ -172,7 +172,7 @@ def run_report_meat(
         if not extracted_links and not structural_toc:
             log("\n")
             log(f"No hyperlinks or structural TOC found in {pdf_name}.", overview=True)
-            log("(This is common for scanned/image-only PDFs.)", overview=True)
+            log("(This is common for scanned/image-only PDFs.)/n", overview=True)
             
             empty_result = {
                 "data": {

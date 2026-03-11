@@ -97,6 +97,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }
+#pyhabitat = { path = "../pyhabitat/dist/pyhabitat-1.2.3-py3-none-any.whl" }
 
 [tool.setuptools.dynamic]
 version = {file = "src/pdflinkcheck/VERSION"}
