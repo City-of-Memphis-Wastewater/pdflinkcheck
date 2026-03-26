@@ -10,6 +10,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - Increase pyhabitat to 1.2.6, which handles on_termux() for Python 3.13 properly.
 
+### Changed:
+- Make the helptree cli entry not hidden.
+
 ---
 
 ## [1.3.46] - 2026-03-11
