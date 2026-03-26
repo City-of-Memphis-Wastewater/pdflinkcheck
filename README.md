@@ -6,7 +6,7 @@ A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links wit
 
 -----
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.3.3.png)
+![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.3.47.png)
 
 -----
 
