@@ -6,11 +6,11 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "openpyxl>=3.1.5",
-    "pyhabitat>=1.1.35",
+    "pyhabitat>=1.2.6",
     "pypdf>=6.4.2",
     "rich>=14.2.0",
     "typer>=0.20.0",
-    "typer-helptree>=0.2.6", 
+    "typer-helptree>=0.2.7", 
 ]
 
 license = "MIT AND AGPL-3.0-or-later"
