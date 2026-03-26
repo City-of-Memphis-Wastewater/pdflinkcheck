@@ -12,6 +12,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ### Changed:
 - Make the helptree cli entry not hidden.
+- Updated `--help` image in README, which now includes helptree.
 
 ---
 
