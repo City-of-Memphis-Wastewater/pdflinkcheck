@@ -65,7 +65,7 @@ pdflinkcheck helptree
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.3.46_helptree.svg" width="100%" alt="Screenshot of the pdflinkcheck CLI helptree">
+  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.3.47_helptree.svg" width="100%" alt="Screenshot of the pdflinkcheck CLI helptree">
 </p>
 `helptree` is utility funtion for Typer CLIs, imported from the `typer-helptree` library.
 
