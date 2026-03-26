@@ -250,6 +250,7 @@ uv run  python -m pdflinkcheck.stdlib_server
 
 
 The `AGPL3-or-later` is required for binaries of `pdflinkcheck` which include `PyMuPDF`, which is licensed under the `AGPL3`.
+Including `PyMuPDF` as a dependency of `pdflinkcheck` is entirely optional.
 The source code itself for `pdflinkcheck` is licensed under the `MIT`. 
 
 The AGPL3-or-later license has significant implications for **distribution and network use**, particularly for organizations:
