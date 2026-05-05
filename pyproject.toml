@@ -4,6 +4,7 @@ dynamic = ["version"] # look in src/pdflinkcheck/VERSION
 description = "A purpose-built PDF link analysis and reporting tool with GUI and CLI."
 readme = "README.md"
 requires-python = ">=3.9"
+
 dependencies = [
     "openpyxl>=3.1.5",
     "pyhabitat>=1.2.6",
@@ -74,10 +75,9 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 
 
 [project.optional-dependencies]
-# If you choose to include PyMuPDF, you must comply with the AGPL3
-pymupdf = ["pymupdf>=1.24.0,<2.0.0"] # fails on termux
+pymupdf = ["pymupdf>=1.24.0,<2.0.0"] # fails on termux # If you choose to include PyMuPDF, you must comply with the AGPL3
 pdfium = ["pypdfium2>=5.2.0,<6.0.0"]
-full = ["pymupdf>=1.24.0,<2.0.0", "pypdfium2>=5.2.0,<6.0.0"]
+#full = ["pdlinkcheck[pymupdf,pdfium]"]
 
 # add with `uv sync --group dev`, plus other extras, like `--extra pdfium`
 [dependency-groups]
@@ -101,3 +101,14 @@ pdflinkcheck = { path = "src/pdflinkcheck" }
 
 [tool.setuptools.dynamic]
 version = {file = "src/pdflinkcheck/VERSION"}
+
+[tool.dist-config]
+# Base dependencies for all versions
+base-deps = [
+    "openpyxl>=3.1.5",
+    "pyhabitat>=1.2.6",
+    "pypdf>=6.4.2",
+    "rich>=14.2.0",
+    "typer>=0.20.0",
+    "typer-helptree>=0.2.7",
+]
