@@ -279,7 +279,7 @@ jobs:
 
       - name: Upload to GitHub Release
         if: github.event_name == 'release' # Only run when a release is actually published
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: pdflinkcheck.msix
           # This appends the hash to the release notes body
