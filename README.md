@@ -159,10 +159,19 @@ This feature is **disabled by default** and has **no effect on normal imports**.
 
 Set the environment variable before importing the library:
 
+```bash
+export PDFLINKCHECK_GUI_EASTEREGG=true
+```
+or
+
 ```python
 import os
 os.environ["PDFLINKCHECK_GUI_EASTEREGG"] = "true"
+```
 
+and then 
+
+```python
 import pdflinkcheck
 pdflinkcheck.start_gui()
 ```
