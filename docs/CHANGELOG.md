@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.3.48] - 2026-05-18
+### Fixed:
+- __init__.py  improved to use lazy loading and modern 3.7+ standards.
+
+---
+
 ## [1.3.47] - 2026-03-26
 ### Fixed:
 - Increase pyhabitat to 1.2.6, which handles on_termux() for Python 3.13 properly.

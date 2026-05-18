@@ -59,7 +59,7 @@ def __getattr__(name: str):
 
     # Dynamic lookups for the GUI function invocation
     if name == "start_gui":
-        def _missing_gui(*args, **kwargs):
+        def _missing_gui():
             raise RuntimeError(
                 "start_gui requires pyhabitat and a Tkinter-capable environment"
             )
