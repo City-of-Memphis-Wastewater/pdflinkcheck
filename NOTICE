@@ -1,1 +1,4 @@
-This program incorporates PyMuPDF, which is licensed under the AGPLv3.
+pdflinkcheck optionally supports integration with PyMuPDF,
+which is licensed under the GNU AGPLv3.
+Users who install or distribute builds including PyMuPDF
+should review PyMuPDF's license terms.

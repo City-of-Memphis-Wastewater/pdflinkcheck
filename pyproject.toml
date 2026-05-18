@@ -14,8 +14,9 @@ dependencies = [
     "typer-helptree>=0.2.7", 
 ]
 
-license = "MIT AND AGPL-3.0-or-later"
-license-files = ["LICENSE", "LICENSE-MIT", "LICENSE-AGPL3"]
+#license = "MIT AND AGPL-3.0-or-later"
+license = "MIT"
+license-files = ["LICENSE", "LICENSE-MIT", "NOTICE"]
 
 classifiers=[
     "Programming Language :: Python :: 3",
