@@ -167,7 +167,7 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
     print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
     return True
 
-def export_report_links_to_xlsx(results: Dict, output_dir: Optional[Union[str, Path]] = None) -> Optional[Path]:
+def export_report_links_to_xlsx(results: Dict, pdf_path: Optional[Union[str, Path]], pdf_library_name: str, output_dir: Optional[Union[str, Path]] = None) -> Optional[Path]:
     """Main entry point for spreadsheet generation."""
     output_dir = Path(output_dir) if output_dir else PDFLINKCHECK_HOME
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -176,6 +176,7 @@ def export_report_links_to_xlsx(results: Dict, output_dir: Optional[Union[str, P
     file_ov = metadata.get("file_overview", {}) or {}
     
     pdf_path = (
+        pdf_path or
         file_ov.get("source_path") or 
         file_ov.get("pdf_path") or 
         file_ov.get("processing_path") or 
@@ -186,10 +187,9 @@ def export_report_links_to_xlsx(results: Dict, output_dir: Optional[Union[str, P
     
     pdf_name = file_ov.get("pdf_name") or file_ov.get("source_path") or "file"
     pdf_stem = Path(pdf_name).stem
-    lib_suffix = f"_{metadata.get('library_used')}" if metadata.get('c') else ""
 
     timestamp = get_unique_human_time()
-    output_file = output_dir / f"{pdf_stem}{lib_suffix}_{timestamp}_report.xlsx"
+    output_file = output_dir / f"{pdf_stem}_{pdf_library_name}_{timestamp}_report.xlsx"
 
     if _export_links_to_xlsx(grouped_links, output_file):
         return output_file

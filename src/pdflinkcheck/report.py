@@ -80,7 +80,7 @@ def run_report_and_call_exports(
         if selected_formats & ExportFormat.TXT:
             output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library_name = pdf_library.name.lower(),output_dir=output_dir)
         if selected_formats & ExportFormat.XLSX:
-            output_path_xlsx = export_report_links_to_xlsx(report_results,output_dir=output_dir)
+            output_path_xlsx = export_report_links_to_xlsx(report_results,pdf_path, pdf_library_name = pdf_library.name.lower(),output_dir=output_dir)
 
     # 4. Inject the file info into the results dictionary
     report_results["files"] = {

@@ -26,21 +26,28 @@ def test_pdf_differential_engine_parity(pdf_path):
 
         if backend == PdfEngine.PDFIUM and not pdfium_is_available():
             continue
+
         report_results = run_report_and_call_exports(
             pdf_path=str(pdf_path),
-            export_format=ExportFormat.NONE,  # Don't pollute disk
+            export_format=ExportFormat.ALL,  # Don't pollute disk
             pdf_library=backend,
             print_bool=False,
-            concise_print=True
+            concise_print=True,
+            output_dir=str(TEST_OUTPUT_DIR) # Pin the destination to our isolated workspace folder
         )
         
         stats = report_results["data"]["validation"]["summary-stats"]
         engine_telemetry[backend.name] = stats.get("total_checked", 0)
 
     # Verify structural integrity across all backends
-    pypdf_count = engine_telemetry["PYPDF"]
-    pymupdf_count = engine_telemetry["PYMUPDF"]
-    pdfium_count = engine_telemetry["PDFIUM"]
+    # Use .get() with a default fallback to avoid KeyError when an engine is skipped
+    pypdf_count = engine_telemetry.get("PYPDF")
+    pymupdf_count = engine_telemetry.get("PYMUPDF")
+    pdfium_count = engine_telemetry.get("PDFIUM")
 
-    assert pypdf_count == pymupdf_count, f"PYPDF found {pypdf_count} links, but PYMUPDF found {pymupdf_count}."
-    assert pypdf_count == pdfium_count, f"PYPDF found {pypdf_count} links, but PDFIUM found {pdfium_count}."
+    # Only run comparative assertions if both engines actually executed
+    if pypdf_count is not None and pymupdf_count is not None:
+        assert pypdf_count == pymupdf_count, f"PYPDF found {pypdf_count} links, but PYMUPDF found {pymupdf_count}."
+        
+    if pypdf_count is not None and pdfium_count is not None:
+        assert pypdf_count == pdfium_count, f"PYPDF found {pypdf_count} links, but PDFIUM found {pdfium_count}."
