@@ -86,7 +86,7 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
     return {"links": links, "toc": toc_list, "file_ov": file_ov}
 
 
-def normalize_rect(fs_rect: pdfium_c.FS_RECTF) -> List[float]:
+def normalize_rect_floats_defunct(fs_rect: pdfium_c.FS_RECTF) -> List[float]:
     """
     Normalize FS_RECTF to consistent [x0, y0, x1, y1] order.
     PDF uses bottom-left origin; we keep that but ensure x0 < x1, y0 < y1.
@@ -106,6 +106,24 @@ def normalize_rect(fs_rect: pdfium_c.FS_RECTF) -> List[float]:
 
     return [float(x0), float(y0), float(x1), float(y1)]
 
+def normalize_rect(fs_rect: pdfium_c.FS_RECTF, precision: int = 2) -> List[float]:
+    """
+    Normalize FS_RECTF to consistent [x0, y0, x1, y1] order with standardized decimal precision.
+    """
+    if not fs_rect:
+        return [0.0, 0.0, 0.0, 0.0]
+
+    x0 = min(fs_rect.left, fs_rect.right)
+    x1 = max(fs_rect.left, fs_rect.right)
+    y0 = min(fs_rect.bottom, fs_rect.top)
+    y1 = max(fs_rect.bottom, fs_rect.top)
+
+    if x1 <= x0 or y1 <= y0:
+        return [0.0, 0.0, 0.0, 0.0]
+
+    # Enforce standard rounding precision here
+    return [round(float(x0), precision), round(float(y0), precision), 
+            round(float(x1), precision), round(float(y1), precision)]
 
 def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
     """
