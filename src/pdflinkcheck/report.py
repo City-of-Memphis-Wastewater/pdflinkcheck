@@ -15,10 +15,9 @@ from pdflinkcheck.io import (
     get_friendly_path, 
     LOG_FILE_PATH
 )
-from pdflinkcheck.environment import assess_default_pdf_library
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import PageRef, ExportFormat
+from pdflinkcheck.helpers import PageRef, ExportFormat, PdfEngine
 from pdflinkcheck.spreadsheet import export_report_links_to_xlsx
 
 SEP_COUNT=28
@@ -44,8 +43,8 @@ EMPTY_VALIDATION = {
 
 def run_report_and_call_exports(
     pdf_path: str = None, 
-    export_format: str = "JSON", 
-    pdf_library: str = "auto", 
+    export_format: ExportFormat=ExportFormat.JSON, 
+    pdf_library: PdfEngine= PdfEngine.resolve_auto_flag(), 
     print_bool: bool=True,
     concise_print: bool = False,
     output_dir: Optional[str] = None
@@ -68,6 +67,7 @@ def run_report_and_call_exports(
         concise_print = concise_print,
         
     )
+    print(f"dir(pdf_library) = {dir(pdf_library)}")
     # 2. Initialize file path tracking
     output_path_json = None
     output_path_txt = None
@@ -77,9 +77,9 @@ def run_report_and_call_exports(
         report_data_dict = report_results["data"]
         report_buffer_str = report_results["text-lines"]
         if selected_formats & ExportFormat.JSON:
-            output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library,output_dir=output_dir)
+            output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library_name = pdf_library.name.lower(),output_dir=output_dir)
         if selected_formats & ExportFormat.TXT:
-            output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library,output_dir=output_dir)
+            output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library_name = pdf_library.name.lower(),output_dir=output_dir)
         if selected_formats & ExportFormat.XLSX:
             output_path_xlsx = export_report_links_to_xlsx(report_results,output_dir=output_dir)
 
@@ -94,7 +94,7 @@ def run_report_and_call_exports(
 
 def run_report_meat(
         pdf_path: str = None, 
-        pdf_library: str = "auto", 
+        pdf_library: PdfEngine= PdfEngine.resolve_auto_flag(), 
         print_bool: bool=True,
         concise_print: bool=False
         ) -> Dict[str, Any]:
@@ -126,7 +126,17 @@ def run_report_meat(
         if overview:
             report_buffer_overview.append(msg)
     
-    pdf_library = pdf_library.lower()
+    # --- ADD THIS BOUNDARY SAFEGUARD ---
+    # Handle direct string inputs from legacy tests or programmatic usage safely
+    if isinstance(pdf_library, str):
+        pdf_library = PdfEngine.from_str(pdf_library)
+    elif not isinstance(pdf_library, PdfEngine):
+        # Fallback safeguard if something weird gets passed down
+        pdf_library = PdfEngine.resolve_auto_flag()
+
+    # 1. Resolve AUTO to a concrete singular option instantly via our enum logic
+    resolved_engine = pdf_library.resolve()
+    resolved_pdf_library_name = resolved_engine.name.lower()
 
     log("\n")
     log("--- Analysis ---")
@@ -134,45 +144,35 @@ def run_report_meat(
     if pdf_path is None:
         log("pdf_path is None", overview=True)
         log("Tip: Drop a PDF in the current folder or pass in a path arg.")
-        _return_empty_report(report_buffer)
+        _return_empty_report(report_buffer,pdf_library_name=resolved_pdf_library_name)
     else:
         pdf_name = Path(pdf_path).name
     resolved_path = str(Path(pdf_path).resolve())
         
-    # AUTO MODE
-    if pdf_library == "auto":
-        pdf_library = assess_default_pdf_library().lower()
     
+    
+    # 2. Match the exact flag target directly via clean identity conditional blocks
     analyze_pdf = None
 
-    # PDFium ENGINE
-    if pdf_library == "pdfium":
+    if resolved_engine == PdfEngine.PDFIUM:
         from pdflinkcheck.analysis_pdfium import analyze_pdf
-
-
-    # PyMuPDF Engine
-    elif pdf_library == "pymupdf":
+    elif resolved_engine == PdfEngine.PYMUPDF:
         from pdflinkcheck.analysis_pymupdf import analyze_pdf
-        
-    
-    # pypdf ENGINE
-    elif pdf_library == "pypdf":
+    elif resolved_engine == PdfEngine.PYPDF:
         from pdflinkcheck.analysis_pypdf import analyze_pdf
-    if analyze_pdf is None: 
-        raise RuntimeError(f"Analysis engine for '{pdf_library}' could not be loaded. analyze_pdf = {analyze_pdf}.")
-    
 
+    if analyze_pdf is None: 
+        raise RuntimeError(f"Analysis engine for '{resolved_pdf_library_name}' could not be loaded. analyze_pdf = {analyze_pdf}.")
+    
     data = analyze_pdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
     extracted_links = data.get("links", [])
     structural_toc = data.get("toc", [])
     file_ov = data.get("file_ov", [])
     total_pages = file_ov.get("total_pages",0)
-    
-
         
     try:
         log(f"Target file: {get_friendly_path(pdf_path)}", overview=True)
-        log(f"PDF Engine: {pdf_library}", overview=True)
+        log(f"PDF Engine: {resolved_pdf_library_name}", overview=True)
 
         toc_entry_count = len(structural_toc)
         str_structural_toc = get_structural_toc(structural_toc)
@@ -197,7 +197,7 @@ def run_report_meat(
                         "source_path": resolved_path,        # user-facing, stable
                         "processing_path": resolved_path,    # internal only
                     },
-                    "library_used": pdf_library,
+                    "library_used": resolved_pdf_library_name,
                     "link_counts": {
                         "toc_entry_count": 0,
                         "internal_goto_links_count": 0,
@@ -322,7 +322,7 @@ def run_report_meat(
                         "source_path": resolved_path,
                         "processing_path": resolved_path,    # internal only
                     },
-                "library_used": pdf_library,
+                "library_used": resolved_pdf_library_name,
                 "link_counts": {
                     "toc_entry_count": toc_entry_count,
                     "internal_goto_links_count": internal_goto_links_count,
@@ -382,7 +382,7 @@ def run_report_meat(
                         "source_path": resolved_path,        # user-facing, stable
                         "processing_path": resolved_path,    # internal only
                     },
-                    "library_used": pdf_library,
+                    "library_used": resolved_pdf_library_name,
                     "link_counts": {
                         "toc_entry_count": 0,
                         "internal_goto_links_count": 0,
@@ -420,7 +420,7 @@ def run_report_meat(
                         "source_path": resolved_path,        # user-facing, stable
                         "processing_path": resolved_path,    # internal only
                     },
-                "library_used": pdf_library,
+                "library_used": resolved_pdf_library_name,
                 "link_counts": {
                         "toc_entry_count": 0,
                         "internal_goto_links_count": 0,
@@ -444,7 +444,7 @@ def _print_report_algorithm(report_buffer,report_buffer_overview, print_bool, co
         else:
             print(report_buffer_str)
     
-def _return_empty_report(report_buffer: str, pdf_library: str)-> dict:
+def _return_empty_report(report_buffer: str, pdf_library_name: str)-> dict:
     
     empty_report = {
             "data": {
@@ -461,7 +461,7 @@ def _return_empty_report(report_buffer: str, pdf_library: str)-> dict:
                     "source_path": "null",        # user-facing, stable
                     "processing_path": "null",    # internal only
                 },
-                "library_used": pdf_library,
+                "library_used": pdf_library_name,
                 "link_counts": {
                     "toc_entry_count": 0,
                     "internal_goto_links_count": 0,
@@ -556,11 +556,10 @@ if __name__ == "__main__":
     from pdflinkcheck.io import get_first_pdf_in_cwd
     pdf_path = get_first_pdf_in_cwd()    # Run analysis first
 
-    pdf_library = assess_default_pdf_library().lower()
     report = run_report_and_call_exports(
         pdf_path=pdf_path,
         export_format=ExportFormat.NONE,
-        pdf_library=pdf_library,
+        pdf_library=PdfEngine.AUTO,
         print_bool=True,  # We handle printing in validation
         concise_print=False
     )

@@ -73,7 +73,7 @@ error_logger = setup_error_logger()
 def export_report_json(
     report_data: Dict[str, Any], 
     pdf_filename: str, 
-    pdf_library: str,
+    pdf_library_name: str,
     output_dir: Optional[Union[str, Path]] = None
 ) -> Path:
     """
@@ -97,7 +97,7 @@ def export_report_json(
     target_dir.mkdir(parents=True, exist_ok=True)
 
     base_name = Path(pdf_filename).stem
-    output_path = target_dir / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.json"
+    output_path = target_dir / f"{base_name}_{pdf_library_name}_{get_unique_human_time()}_report.json"
     
     print("For more details, explore the exported file(s).")
     try:
@@ -112,7 +112,7 @@ def export_report_json(
 def export_report_txt(
     report_text: str, 
     pdf_filename: str, 
-    pdf_library: str,
+    pdf_library_name: str,
     output_dir: Optional[Union[str, Path]] = None
 ) -> Path:
     """Exports the formatted string buffer to a .txt file."""
@@ -120,7 +120,7 @@ def export_report_txt(
     target_dir.mkdir(parents=True, exist_ok=True)
 
     base_name = Path(pdf_filename).stem
-    output_path = target_dir / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.txt"
+    output_path = target_dir / f"{base_name}_{pdf_library_name}_{get_unique_human_time()}_report.txt"
  
     report_text_str = "\n".join(report_text)
     

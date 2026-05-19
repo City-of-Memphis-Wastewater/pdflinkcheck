@@ -20,14 +20,13 @@ from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
 from pdflinkcheck.environment import (
-    assess_default_pdf_library,
     pymupdf_is_available,  
     pdfium_is_available, 
     clear_pdf_library_caches, 
     is_in_dev_environment
 )
 from pdflinkcheck.tk_utils import center_window_on_primary
-from pdflinkcheck.helpers import get_export_path, ExportFormat
+from pdflinkcheck.helpers import get_export_path, ExportFormat, PdfEngine
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -94,9 +93,7 @@ class PDFLinkCheckApp:
         self.last_xlsx_path: Optional[Path] = None
         
         # Engine detection 
-        default_pdf_library = assess_default_pdf_library().lower()
-        self.pdf_library_var = tk.StringVar(value=default_pdf_library)
-
+        self.pdf_library_var = tk.StringVar(value=PdfEngine.AUTO.name)
 
     
     # --- Theme & Visual Initialization ---
@@ -266,18 +263,9 @@ class PDFLinkCheckApp:
         pdf_path_str = self._assess_pdf_path_str()
         if not pdf_path_str:
             return
-
-        '''
-        export_format = ""
-        if self.do_export_report_json_var.get():
-            export_format += "JSON"
-        if self.do_export_report_txt_var.get():
-            export_format += "TXT"
-        if self.do_export_report_xlsx_var.get():
-            export_format += "XLSX"
-        '''
         
-        # NATIVE CHECKBOX ACCUMULATION: Build bitmask dynamically using bitwise OR assignments
+        # Cleanly resolve your export checkboxes into a flag mask: 
+        # Build bitmask dynamically using bitwise OR assignments
         export_format = ExportFormat.NONE
         if self.do_export_report_json_var.get():
             export_format |= ExportFormat.JSON
@@ -286,7 +274,9 @@ class PDFLinkCheckApp:
         if self.do_export_report_xlsx_var.get():
             export_format |= ExportFormat.XLSX
 
-        pdf_library = self.pdf_library_var.get().lower()
+        # Parse the GUI string variable straight back into a type-safe PdfEngine enum
+        gui_engine_selection = self.pdf_library_var.get()
+        pdf_library = PdfEngine.from_str(gui_engine_selection)
 
         self.output_text.config(state=tk.NORMAL)
         self.output_text.delete('1.0', tk.END)

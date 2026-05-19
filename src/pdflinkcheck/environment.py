@@ -104,10 +104,3 @@ def is_in_dev_environment() -> bool:
 
     return False
     
-
-def assess_default_pdf_library():
-    if pymupdf_is_available():
-        return "pymupdf"
-    elif pdfium_is_available():
-        return "pdfium"
-    return "pypdf"

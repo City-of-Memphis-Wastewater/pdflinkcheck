@@ -20,11 +20,10 @@ from pdflinkcheck._version import __version__
 from pdflinkcheck.io import get_first_pdf_in_cwd
 from pdflinkcheck.environment import (
     is_in_dev_environment,
-    assess_default_pdf_library, 
     pymupdf_is_available, 
     pdfium_is_available
 )
-from pdflinkcheck.helpers import ExportFormat
+from pdflinkcheck.helpers import ExportFormat, PdfEngine
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -32,6 +31,26 @@ console = Console() # to be above the tkinter check, in case of console.print
 os.environ["FORCE_COLOR"] = "1"
 # Optional but helpful for full terminal feature detection
 os.environ["TERM"] = "xterm-256color"
+
+from enum import Enum
+import typer
+from typing import List, Optional
+from pathlib import Path
+
+# A simple choice map for Typer's presentation layer
+class EngineChoice(str, Enum):
+    PYPDF = "pypdf"
+    PYMUPDF = "pymupdf"
+    PDFIUM = "pdfium"
+    AUTO = "auto"
+    ALL = "all"
+
+class ExportFormatChoice(str, Enum):
+    JSON = "json"
+    TXT = "txt"
+    XLSX = "xlsx"
+    NONE = "none"
+    ALL = "all"
 
 app = typer.Typer(
     name="pdflinkcheck",
@@ -44,18 +63,8 @@ app = typer.Typer(
                       "help_option_names": ["-h", "--help"]},
 )
 
-'''
-class ExportFormat(str, Enum):
-    JSON = "json"
-    TXT = "txt"
-    XLSX = "xlsx"
-    NONE = "none"
-                
-ALLOWED_EXPORTS = {"json", "txt", "xlsx", "none"}
-'''
 
 def debug_callback(value: bool):
-#def debug_callback(ctx: typer.Context, value: bool):
     if value:
         # This runs IMMEDIATELY when --debug is parsed, even before --help
          # 1. Access the list of all command-line arguments
@@ -69,33 +78,6 @@ def debug_callback(value: bool):
 if "--show-command" in sys.argv or "--debug" in sys.argv: # requires that --show-command flag be used before the sub command
     debug_callback(True)
 
-
-'''        
-def _parse_export_formats(value: str) -> List[str]:
-    """
-    Parse a comma-separated string of export formats, validate allowed values.
-    Converts everything to lowercase.
-    """
-    if not value:
-        return []
-
-    # Split by comma and normalize
-    parts = [v.strip().lower() for v in value.split(",")]
-
-    # Validate
-    invalid = [v for v in parts if v not in ALLOWED_EXPORTS]
-    if invalid:
-        raise typer.BadParameter(
-            f"Invalid export format(s): {', '.join(invalid)}. "
-            f"Allowed values: {', '.join(sorted(ALLOWED_EXPORTS))}"
-        )
-
-    # If 'none' is included, return empty list to suppress exports
-    if "none" in parts:
-        return []
-
-    return parts
-'''
     
 @app.callback()
 def main(ctx: typer.Context,
@@ -221,18 +203,21 @@ def analyze_pdf( # Renamed function for clarity
         resolve_path=True,
         help="Path to the PDF file to analyze. If omitted, searches current directory."
     ), 
-    export_format: List[ExportFormat] = typer.Option(
-        [ExportFormat.JSON, ExportFormat.TXT, ExportFormat.XLSX],
+    export_format: List[ExportFormatChoice] = typer.Option(
+        [ExportFormat.JSON.name.lower(), ExportFormat.TXT.name.lower(), ExportFormat.XLSX.name.lower()],
         "--format", "-f",
         case_sensitive=False,
-        help="Export formats (repeatable). Use --format none to suppress all exports."
+        help="Export formats (repeatable). Use '--format none' to suppress all exports."
     ),
 
-    pdf_library: Literal["auto","pdfium","pypdf", "pymupdf"] = typer.Option(
-        assess_default_pdf_library().lower(),
+    #pdf_library: Literal["auto","pdfium","pypdf", "pymupdf"] = typer.Option(
+    pdf_library: List[EngineChoice] = typer.Option(
+        [PdfEngine.resolve_auto_flag().name.lower()],
         "--engine","-e",
         envvar="PDF_ENGINE",
-        help="PDF parsing library. pypdf (pure Python), pymupdf (fast, AGPL3+ licensed), pdfium (fast, BSD-3 licensed).",
+        #help="PDF parsing library. pypdf (pure Python), pymupdf (fast, AGPL3+ licensed), pdfium (fast, BSD-3 licensed).",
+        #help=f"PDF parsing library backend choices: {', '.join([k.lower() for k in PdfEngine.__members__ ])}",
+        help=f"PDF parsing library backend choice.",
     ),
     print_bool: bool = typer.Option(
         True,
@@ -259,7 +244,7 @@ def analyze_pdf( # Renamed function for clarity
     Overriding Order
     Environment variables sit in the middle of the "priority" hierarchy:
 
-    CLI Flag: (Highest priority) analyze -p pypdf will always win.
+    CLI Flag: (Highest priority) analyze -e pypdf will always win.
     Env Var: If no flag is present, it checks PDF_ENGINE.
     Code Default: (Lowest priority) It falls back to "pypdf" as defined in typer.Option.
     """
@@ -272,14 +257,46 @@ def analyze_pdf( # Renamed function for clarity
         console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
     
-    # Single elegant reduction line, keeping cli.py purely focused on presentation
-    resolved_format = ExportFormat.from_iterable(export_format)
+    # Single Source of Truth validation: Check against the enum names + virtual keywords
+    for engine in pdf_library:
+        cleaned = engine.strip().lower()
+        if cleaned not in ("all", "none") and cleaned.upper() not in PdfEngine.__members__:
+            # Reconstruct the allowed list on the fly for the error message
+            allowed_tokens = [k.lower() for k in PdfEngine.__members__ if k not in ("NONE", "ALL")] + ["all", "none"]
+            console.print(f"[red]Error: '{engine}' is not a valid engine choice.[/red]")
+            console.print(f"[dim]Choose from: {', '.join(allowed_tokens)}[/dim]")
+            raise typer.Exit(code=1)
+
+    # 1. Resolve export formats from the Typer choice enum to your internal Flag
+    resolved_format = ExportFormat.NONE
+    
+    # Handle the virtual keywords first
+    if any(f == ExportFormatChoice.NONE for f in export_format):
+        resolved_format = ExportFormat.NONE
+    elif any(f == ExportFormatChoice.ALL for f in export_format):
+        # Assuming your ExportFormat flag has an ALL mask (or combine them)
+        resolved_format = ExportFormat.JSON | ExportFormat.TXT | ExportFormat.XLSX
+    else:
+        # Map the incoming string values directly to your internal Flag enum names
+        for f in export_format:
+            resolved_format |= ExportFormat[f.name]
+
+    # 2. Resolve PDF engines from the Typer choice enum to your internal Flag
+    resolved_engine = PdfEngine(0)
+    
+    if any(e == EngineChoice.ALL for e in pdf_library):
+        resolved_engine = PdfEngine.PYPDF | PdfEngine.PYMUPDF | PdfEngine.PDFIUM
+    elif any(e == EngineChoice.AUTO for e in pdf_library):
+        resolved_engine = PdfEngine.resolve_auto_flag()
+    else:
+        for engine in pdf_library:
+            resolved_engine |= PdfEngine.from_str(engine.value)
     
     # The meat and potatoes
     report_results = run_report_and_call_exports(
         pdf_path=str(pdf_path), 
         export_format = resolved_format,
-        pdf_library = pdf_library,
+        pdf_library = resolved_engine,
         print_bool = print_bool,
         concise_print = True # ideal for CLI, to not overwhelm the terminal.
     )
@@ -354,6 +371,25 @@ def gui_command(
     
     from pdflinkcheck.gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
+
+def parse_engine_flags(values: Optional[List[str]]) -> PdfEngine:
+    """
+    Callback that converts incoming repeatable CLI engine strings 
+    into a unified type-safe PdfEngine bitmask.
+    """
+    if not values:
+        return PdfEngine.AUTO
+
+    combined_mask = PdfEngine.NONE
+    for val in values:
+        # Match against our robust internal parser logic
+        parsed = PdfEngine.from_str(val)
+        if parsed == PdfEngine.NONE and val.strip().lower() != "none":
+            raise typer.BadParameter(
+                f"'{val}' is not a valid engine choice. Choose from: auto, pypdf, pymupdf, pdfium, all."
+            )
+        combined_mask |= parsed
+    return combined_mask
 
 # --- Helper, consistent gui failure message. --- 
 def _gui_failure_msg():

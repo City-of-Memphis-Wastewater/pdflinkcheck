@@ -6,9 +6,10 @@ from pathlib import Path
 from enum import Flag, auto
 import functools
 import operator
-from typing import Optional, Iterable, Any
+from typing import Optional, Iterable, Any, Set
 
 from pdflinkcheck.io import PDFLINKCHECK_HOME
+from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
 """
 Helper functions
@@ -116,6 +117,68 @@ class ExportFormat(Flag):
         if not formats or cls.NONE in formats:
             return cls.NONE
         return functools.reduce(operator.or_, formats, cls.NONE)
+
+
+class PdfEngine(Flag):
+    PYPDF = auto()    # 1
+    PYMUPDF = auto()  # 2
+    PDFIUM = auto()   # 4
+    AUTO = auto()     # 8
+    
+    # Combined option for running differential matrix checks
+    ALL = PYPDF | PYMUPDF | PDFIUM
+
+    @classmethod
+    def from_str(cls, value: Optional[str]) -> "PdfEngine":
+        """Parses a raw string engine request into an explicit flag choice."""
+        # Since NONE is removed, fallback cleanly to AUTO if string is dead or empty
+        if not value or value.strip().lower() in ("none", ""):
+            return cls.AUTO
+        
+        normalized = value.strip().lower()
+        if normalized == "auto":
+            return cls.AUTO
+        if normalized == "all":
+            return cls.ALL
+
+        # Start with an empty combined mask state
+        result = cls(0)
+        for token in normalized.split(","):
+            token_clean = token.strip()
+            if token_clean == "pypdf":
+                result |= cls.PYPDF
+            elif token_clean in ("pymupdf", "fitz"):
+                result |= cls.PYMUPDF
+            elif token_clean in ("pdfium", "pypdfium2"):
+                result |= cls.PDFIUM
+                
+        # If string was invalid tokens and result flag remains 0, fallback to AUTO
+        return result if result.value != 0 else cls.AUTO
+
+    @classmethod
+    def resolve_auto_flag(cls) -> "PdfEngine":
+        """Fallbacks cleanly based on physical package availability."""
+        from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
+        if pymupdf_is_available():
+            return cls.PYMUPDF
+        if pdfium_is_available():
+            return cls.PDFIUM
+        return cls.PYPDF
+
+    def resolve(self) -> "PdfEngine":
+        """
+        Evaluates the instance flag. If the AUTO bit is present, it scrubs it 
+        and blends in the dynamic system fallback engine.
+        """
+        if not (self & PdfEngine.AUTO):
+            return self
+        
+        # Strip AUTO out and merge with dynamic system availability fallback
+        remaining = self.value & ~PdfEngine.AUTO.value
+        if remaining == 0:
+            return self.resolve_auto_flag()
+        return PdfEngine(remaining)
+    
 """
 ## Using the PageRef class
 ### Indexing Map: Physical (0) vs. Logical (1)
