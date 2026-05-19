@@ -186,7 +186,7 @@ def export_report_links_to_xlsx(results: Dict, output_dir: Optional[Union[str, P
     
     pdf_name = file_ov.get("pdf_name") or file_ov.get("source_path") or "file"
     pdf_stem = Path(pdf_name).stem
-    lib_suffix = f"_{metadata.get('library_used')}" if metadata.get('library_used') else ""
+    lib_suffix = f"_{metadata.get('library_used')}" if metadata.get('c') else ""
 
     timestamp = get_unique_human_time()
     output_file = output_dir / f"{pdf_stem}{lib_suffix}_{timestamp}_report.xlsx"

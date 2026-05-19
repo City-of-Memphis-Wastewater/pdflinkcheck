@@ -19,7 +19,7 @@ def test_pdf_link_and_structure_integrity(pdf_path):
         pdf_path=str(pdf_path),
         #export_format="JSON,TXT,XLSX",       # Force generation of json, txt, and xlsx formats
         export_format= ExportFormat.ALL,
-        pdf_library=PdfEngine.PYPDF,       # Use standard pure-Python parser
+        pdf_library=PdfEngine.AUTO,       # Use standard pure-Python parser
         print_bool=False,
         concise_print=True,
         output_dir=str(TEST_OUTPUT_DIR) # Pin the destination to our isolated workspace folder

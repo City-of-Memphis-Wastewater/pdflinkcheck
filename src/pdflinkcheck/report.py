@@ -67,7 +67,6 @@ def run_report_and_call_exports(
         concise_print = concise_print,
         
     )
-    print(f"dir(pdf_library) = {dir(pdf_library)}")
     # 2. Initialize file path tracking
     output_path_json = None
     output_path_txt = None

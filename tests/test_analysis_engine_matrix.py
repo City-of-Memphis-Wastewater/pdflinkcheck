@@ -3,6 +3,7 @@ import pathlib
 import pytest
 from pdflinkcheck.report import run_report_and_call_exports
 from pdflinkcheck.helpers import ExportFormat, PdfEngine
+from pdflinkcheck.environment import pdfium_is_available, pymupdf_is_available
 
 TEST_OUTPUT_DIR = pathlib.Path(__file__).resolve().parent / "test_outputs"
 
@@ -19,6 +20,12 @@ def test_pdf_differential_engine_parity(pdf_path):
 
     # Explicitly loop over the backends under test
     for backend in concrete_backends:
+
+        if backend == PdfEngine.PYMUPDF and not pymupdf_is_available():
+            continue
+
+        if backend == PdfEngine.PDFIUM and not pdfium_is_available():
+            continue
         report_results = run_report_and_call_exports(
             pdf_path=str(pdf_path),
             export_format=ExportFormat.NONE,  # Don't pollute disk

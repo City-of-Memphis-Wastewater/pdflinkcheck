@@ -269,15 +269,7 @@ def analyze_pdf( # Renamed function for clarity
     # The mapping loop reduces down to a clean dictionary lookup
     for choice in pdf_library:
         resolved_engine |= PdfEngine[choice.name]
-    
-    '''if any(e == EngineChoice.ALL for e in pdf_library):
-        resolved_engine = PdfEngine.PYPDF | PdfEngine.PYMUPDF | PdfEngine.PDFIUM
-    elif any(e == EngineChoice.AUTO for e in pdf_library):
-        resolved_engine = PdfEngine.resolve_auto_flag()
-    else:
-        for engine in pdf_library:
-            resolved_engine |= PdfEngine.from_str(engine.value)
-    '''
+
     # The meat and potatoes
     report_results = run_report_and_call_exports(
         pdf_path=str(pdf_path), 
