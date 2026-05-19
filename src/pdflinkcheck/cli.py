@@ -12,7 +12,6 @@ import pyhabitat
 import sys
 import os
 from importlib.resources import files
-from enum import Enum
 from typer_helptree import add_typer_helptree
 
 from pdflinkcheck.report import run_report_and_call_exports 
@@ -23,7 +22,7 @@ from pdflinkcheck.environment import (
     pymupdf_is_available, 
     pdfium_is_available
 )
-from pdflinkcheck.helpers import ExportFormat, PdfEngine
+from pdflinkcheck.helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoice
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -36,21 +35,6 @@ from enum import Enum
 import typer
 from typing import List, Optional
 from pathlib import Path
-
-# A simple choice map for Typer's presentation layer
-class EngineChoice(str, Enum):
-    PYPDF = "pypdf"
-    PYMUPDF = "pymupdf"
-    PDFIUM = "pdfium"
-    AUTO = "auto"
-    ALL = "all"
-
-class ExportFormatChoice(str, Enum):
-    JSON = "json"
-    TXT = "txt"
-    XLSX = "xlsx"
-    NONE = "none"
-    ALL = "all"
 
 app = typer.Typer(
     name="pdflinkcheck",
@@ -210,8 +194,7 @@ def analyze_pdf( # Renamed function for clarity
         help="Export formats (repeatable). Use '--format none' to suppress all exports."
     ),
 
-    #pdf_library: Literal["auto","pdfium","pypdf", "pymupdf"] = typer.Option(
-    pdf_library: List[EngineChoice] = typer.Option(
+    pdf_library: List[PdfEngineChoice] = typer.Option(
         [PdfEngine.resolve_auto_flag().name.lower()],
         "--engine","-e",
         envvar="PDF_ENGINE",
@@ -283,15 +266,18 @@ def analyze_pdf( # Renamed function for clarity
 
     # 2. Resolve PDF engines from the Typer choice enum to your internal Flag
     resolved_engine = PdfEngine(0)
+    # The mapping loop reduces down to a clean dictionary lookup
+    for choice in pdf_library:
+        resolved_engine |= PdfEngine[choice.name]
     
-    if any(e == EngineChoice.ALL for e in pdf_library):
+    '''if any(e == EngineChoice.ALL for e in pdf_library):
         resolved_engine = PdfEngine.PYPDF | PdfEngine.PYMUPDF | PdfEngine.PDFIUM
     elif any(e == EngineChoice.AUTO for e in pdf_library):
         resolved_engine = PdfEngine.resolve_auto_flag()
     else:
         for engine in pdf_library:
             resolved_engine |= PdfEngine.from_str(engine.value)
-    
+    '''
     # The meat and potatoes
     report_results = run_report_and_call_exports(
         pdf_path=str(pdf_path), 

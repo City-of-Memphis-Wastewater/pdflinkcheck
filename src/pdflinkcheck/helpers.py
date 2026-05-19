@@ -3,7 +3,7 @@ from __future__ import annotations
 from pprint import pprint
 from typing import Any, Dict
 from pathlib import Path
-from enum import Flag, auto
+from enum import Flag, auto, Enum
 import functools
 import operator
 from typing import Optional, Iterable, Any, Set
@@ -178,7 +178,31 @@ class PdfEngine(Flag):
         if remaining == 0:
             return self.resolve_auto_flag()
         return PdfEngine(remaining)
-    
+
+# ==========================================
+# TYPE-SAFE TYPER PRESENTATION LAYERS (Derived Natively)
+# ==========================================
+
+class ExportFormatChoice(str, Enum):
+    """Presentation layer choices for Typer derived from ExportFormat flags."""
+    NONE = "none"
+    JSON = "json"
+    TXT = "txt"
+    XLSX = "xlsx"
+    ALL = "all"
+
+
+class PdfEngineChoice(str, Enum):
+    """Presentation layer choices for Typer derived from PdfEngine flags."""
+    PYPDF = "pypdf"
+    PYMUPDF = "pymupdf"
+    PDFIUM = "pdfium"
+    AUTO = "auto"
+    ALL = "all"
+# ==========================================
+# Documentation
+# ==========================================
+
 """
 ## Using the PageRef class
 ### Indexing Map: Physical (0) vs. Logical (1)
