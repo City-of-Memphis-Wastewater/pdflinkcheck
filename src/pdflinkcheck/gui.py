@@ -27,7 +27,7 @@ from pdflinkcheck.environment import (
     is_in_dev_environment
 )
 from pdflinkcheck.tk_utils import center_window_on_primary
-from pdflinkcheck.helpers import get_export_path
+from pdflinkcheck.helpers import get_export_path, ExportFormat
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -267,6 +267,7 @@ class PDFLinkCheckApp:
         if not pdf_path_str:
             return
 
+        '''
         export_format = ""
         if self.do_export_report_json_var.get():
             export_format += "JSON"
@@ -274,6 +275,16 @@ class PDFLinkCheckApp:
             export_format += "TXT"
         if self.do_export_report_xlsx_var.get():
             export_format += "XLSX"
+        '''
+        
+        # NATIVE CHECKBOX ACCUMULATION: Build bitmask dynamically using bitwise OR assignments
+        export_format = ExportFormat.NONE
+        if self.do_export_report_json_var.get():
+            export_format |= ExportFormat.JSON
+        if self.do_export_report_txt_var.get():
+            export_format |= ExportFormat.TXT
+        if self.do_export_report_xlsx_var.get():
+            export_format |= ExportFormat.XLSX
 
         pdf_library = self.pdf_library_var.get().lower()
 
@@ -284,7 +295,6 @@ class PDFLinkCheckApp:
         sys.stdout = RedirectText(self.output_text)
 
         print("Running PDF analysis ...")
-
 
         try:
             report_results = run_report_and_call_exports(

@@ -18,7 +18,7 @@ from pdflinkcheck.io import (
 from pdflinkcheck.environment import assess_default_pdf_library
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import PageRef
+from pdflinkcheck.helpers import PageRef, ExportFormat
 from pdflinkcheck.spreadsheet import export_report_links_to_xlsx
 
 SEP_COUNT=28
@@ -47,39 +47,47 @@ def run_report_and_call_exports(
     export_format: str = "JSON", 
     pdf_library: str = "auto", 
     print_bool: bool=True,
-    concise_print: bool = False
+    concise_print: bool = False,
+    output_dir: Optional[str] = None
 ) -> Dict[str, Any]:
     """
     Public entry point. Orchestrates extraction, validation, and file exports.
     """
+
+    # At the top of run_report_and_call_exports inside report.py
+    if isinstance(export_format, str):
+        selected_formats = ExportFormat.from_str(export_format)
+    else:
+        selected_formats = export_format
+        
     #  The meat and potatoes
     report_results = run_report_meat(
         pdf_path=str(pdf_path), 
         pdf_library = pdf_library,
         print_bool = print_bool,
         concise_print = concise_print,
+        
     )
     # 2. Initialize file path tracking
     output_path_json = None
     output_path_txt = None
     output_path_xlsx = None
-    
-    
+
     if export_format:
         report_data_dict = report_results["data"]
         report_buffer_str = report_results["text-lines"]
-        if "JSON" in export_format.upper():
-            output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library)
-        if "TXT" in export_format.upper():
-            output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library)
-        if "XLSX" in export_format.upper():
-            output_path_xlsx = export_report_links_to_xlsx(report_results)
+        if selected_formats & ExportFormat.JSON:
+            output_path_json = export_report_json(report_data_dict, pdf_path, pdf_library,output_dir=output_dir)
+        if selected_formats & ExportFormat.TXT:
+            output_path_txt = export_report_txt(report_buffer_str, pdf_path, pdf_library,output_dir=output_dir)
+        if selected_formats & ExportFormat.XLSX:
+            output_path_xlsx = export_report_links_to_xlsx(report_results,output_dir=output_dir)
 
     # 4. Inject the file info into the results dictionary
     report_results["files"] = {
-        "export_path_json": output_path_json, 
-        "export_path_txt": output_path_txt,
-        "export_path_xlsx": output_path_xlsx
+        "export_path_json": str(output_path_json) if output_path_json else None, 
+        "export_path_txt": str(output_path_txt) if output_path_txt else None,
+        "export_path_xlsx": str(output_path_xlsx) if output_path_xlsx else None
     }
     
     return report_results
@@ -551,7 +559,7 @@ if __name__ == "__main__":
     pdf_library = assess_default_pdf_library().lower()
     report = run_report_and_call_exports(
         pdf_path=pdf_path,
-        export_format="",
+        export_format=ExportFormat.NONE,
         pdf_library=pdf_library,
         print_bool=True,  # We handle printing in validation
         concise_print=False

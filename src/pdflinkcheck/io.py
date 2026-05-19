@@ -73,7 +73,8 @@ error_logger = setup_error_logger()
 def export_report_json(
     report_data: Dict[str, Any], 
     pdf_filename: str, 
-    pdf_library: str
+    pdf_library: str,
+    output_dir: Optional[Union[str, Path]] = None
 ) -> Path:
     """
     Exports the structured analysis report data to a file in the 
@@ -91,10 +92,13 @@ def export_report_json(
 
     Exports structured dictionary results to a .json file.
     """
-    
-    base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.json"
+    # Resolve the destination target folder dynamically
+    target_dir = Path(output_dir) if output_dir else PDFLINKCHECK_HOME
+    target_dir.mkdir(parents=True, exist_ok=True)
 
+    base_name = Path(pdf_filename).stem
+    output_path = target_dir / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.json"
+    
     print("For more details, explore the exported file(s).")
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
@@ -108,12 +112,15 @@ def export_report_json(
 def export_report_txt(
     report_text: str, 
     pdf_filename: str, 
-    pdf_library: str
+    pdf_library: str,
+    output_dir: Optional[Union[str, Path]] = None
 ) -> Path:
     """Exports the formatted string buffer to a .txt file."""
-    #pdf_filename = implement_non_redundant_naming(pdf_filename) 
+    target_dir = Path(output_dir) if output_dir else PDFLINKCHECK_HOME
+    target_dir.mkdir(parents=True, exist_ok=True)
+
     base_name = Path(pdf_filename).stem
-    output_path = PDFLINKCHECK_HOME / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.txt" 
+    output_path = target_dir / f"{base_name}_{pdf_library}_{get_unique_human_time()}_report.txt"
  
     report_text_str = "\n".join(report_text)
     

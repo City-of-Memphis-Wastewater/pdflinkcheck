@@ -27,3 +27,4 @@ src/pdflinkcheck/data/README.md
 uv.lock
 /msix-build/
 *:Zone.Identifier
+tests/test_outputs/

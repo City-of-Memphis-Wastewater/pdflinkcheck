@@ -16,7 +16,7 @@ from enum import Enum
 from typer_helptree import add_typer_helptree
 
 from pdflinkcheck.report import run_report_and_call_exports 
-from pdflinkcheck._version import get_version, __version__
+from pdflinkcheck._version import __version__
 from pdflinkcheck.io import get_first_pdf_in_cwd
 from pdflinkcheck.environment import (
     is_in_dev_environment,
@@ -24,6 +24,7 @@ from pdflinkcheck.environment import (
     pymupdf_is_available, 
     pdfium_is_available
 )
+from pdflinkcheck.helpers import ExportFormat
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -43,6 +44,7 @@ app = typer.Typer(
                       "help_option_names": ["-h", "--help"]},
 )
 
+'''
 class ExportFormat(str, Enum):
     JSON = "json"
     TXT = "txt"
@@ -50,6 +52,7 @@ class ExportFormat(str, Enum):
     NONE = "none"
                 
 ALLOWED_EXPORTS = {"json", "txt", "xlsx", "none"}
+'''
 
 def debug_callback(value: bool):
 #def debug_callback(ctx: typer.Context, value: bool):
@@ -67,7 +70,7 @@ if "--show-command" in sys.argv or "--debug" in sys.argv: # requires that --show
     debug_callback(True)
 
 
-        
+'''        
 def _parse_export_formats(value: str) -> List[str]:
     """
     Parse a comma-separated string of export formats, validate allowed values.
@@ -92,7 +95,7 @@ def _parse_export_formats(value: str) -> List[str]:
         return []
 
     return parts
-
+'''
     
 @app.callback()
 def main(ctx: typer.Context,
@@ -269,16 +272,13 @@ def analyze_pdf( # Renamed function for clarity
         console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
     
-    if ExportFormat.NONE in export_format:
-        export_formats = []
-    else:
-        export_formats = [f.name.upper() for f in export_format]
-    export_format="".join(export_formats)
-
+    # Single elegant reduction line, keeping cli.py purely focused on presentation
+    resolved_format = ExportFormat.from_iterable(export_format)
+    
     # The meat and potatoes
     report_results = run_report_and_call_exports(
         pdf_path=str(pdf_path), 
-        export_format = export_format,
+        export_format = resolved_format,
         pdf_library = pdf_library,
         print_bool = print_bool,
         concise_print = True # ideal for CLI, to not overwhelm the terminal.
@@ -287,17 +287,6 @@ def analyze_pdf( # Renamed function for clarity
     if not report_results or not report_results.get("data"):
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
         raise typer.Exit(code=0)
-
-    #validation_results = report_results["data"]["validation"]
-    # Optional: fail on broken links
-    #broken_page_count = validation_results["summary-stats"]["broken-page"] + validation_results["summary-stats"]["broken-file"]
-    
-    #if broken_page_count > 0:
-        console.print(f"\n[bold yellow]Warning:[/bold yellow] {broken_page_count} broken link(s) found.")
-    #else:
-    #    console.print(f"\n[bold green]Success:[/bold green] No broken links or TOC issues!\n")
-
-    #raise typer.Exit(code=0 if broken_page_count == 0 else 1)
 
 @app.command(name="serve")
 def serve(

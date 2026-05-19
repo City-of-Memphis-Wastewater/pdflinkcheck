@@ -3,10 +3,10 @@ from __future__ import annotations
 from pprint import pprint
 from typing import Any, Dict
 from pathlib import Path
-import pyhabitat
-import subprocess
-import os
-import sys
+from enum import Flag, auto
+import functools
+import operator
+from typing import Optional, Iterable, Any
 
 from pdflinkcheck.io import PDFLINKCHECK_HOME
 
@@ -82,6 +82,40 @@ class PageRef:
         return f"PageRef(index={self.index}, human={self.human})"
     
 
+class ExportFormat(Flag):
+    NONE = 0
+    JSON = auto()
+    TXT = auto()
+    XLSX = auto()
+    # Define multi-flags (all checkboxes ticked) natively
+    ALL = JSON | TXT | XLSX
+
+    @classmethod
+    def from_str(cls, value: Optional[str]) -> ExportFormat:
+        """Parse comma-separated choices or 'all' safely into a single flag integer."""
+        if not value or value.strip().lower() in ("none", ""):
+            return cls.NONE
+        
+        if value.strip().lower() == "all":
+            return cls.ALL
+            
+        result = cls.NONE
+        # Leverage the enum's native mapping to check membership directly
+        for token in value.split(","):
+            try:
+                result |= cls[token.strip().upper()]
+            except KeyError:
+                continue # Ignore garbage options gracefully
+        return result
+    @classmethod
+    def from_iterable(cls, formats: Optional[Iterable[Any]]) -> ExportFormat:
+        """
+        Reduces an iterable of flags (like Typer's List[ExportFormat]) 
+        into a single consolidated bitmask flag choice.
+        """
+        if not formats or cls.NONE in formats:
+            return cls.NONE
+        return functools.reduce(operator.or_, formats, cls.NONE)
 """
 ## Using the PageRef class
 ### Indexing Map: Physical (0) vs. Logical (1)

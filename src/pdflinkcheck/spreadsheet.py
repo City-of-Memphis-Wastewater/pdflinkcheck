@@ -4,7 +4,7 @@
 from __future__ import annotations
 import re
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Union
 
 from openpyxl import Workbook
 from openpyxl.styles import Font
@@ -31,37 +31,21 @@ def convert_goto_link(link: Dict, pdf_path: str) -> str:
     Uses .as_uri() for robust cross-platform path encoding.
     """
     page_index = link.get('destination_page')
-    
-    # Path.as_uri() handles file:/// and character escaping automatically
-    # This ensures it works on WSL and Windows without manual slashing
     base_uri = Path(pdf_path).absolute().as_uri()
     
     if page_index is None:
         return base_uri
 
-    # Use PageRef with .human to ensure 1-based numbering in the URI fragment
     human_page = PageRef.from_index(int(page_index)).human
-    filepath = f"{base_uri}#page={human_page}"
-    
-    return filepath
+    return f"{base_uri}#page={human_page}"
 
 def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[Dict]]:
-    """
-    Groups links and TOC items into four categories.
-    Watches keys closely to ensure data extraction.
-    """
-    payload = results.get("data", {})
+    """Groups links and TOC items into categories."""
+    payload = results.get("data", {}) if results else {}
     
-    # WATCHING THE KEYS - Crucial for debugging payload mismatches
-    #print(f"DEBUG: payload.keys() = {list(payload.keys())}")
-    
-    ext_links = payload.get('external_links', [])
-    int_links = payload.get('internal_links', [])
-    all_toc = payload.get('toc', [])
-
-    # DEBUG COUNTS - Verifies if the loops will actually execute
-    #print(f"DEBUG: len(int_links) = {len(int_links)}")
-    #print(f"DEBUG: len(ext_links) = {len(ext_links)}")
+    ext_links = payload.get('external_links', []) or []
+    int_links = payload.get('internal_links', []) or []
+    all_toc = payload.get('toc', []) or []
 
     grouped = {
         'Table of Contents': [],
@@ -89,7 +73,6 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
         raw_dst = link.get('destination_page')
         pg_dst = PageRef.from_index(int(raw_dst)).human if isinstance(raw_dst, (int, float)) else "N/A"
         
-        # Calls convert_goto_link (contains the filepath print)
         jump_url = convert_goto_link(link, pdf_path) if pdf_path else f"Page {pg_dst}"
 
         grouped['Internal Links'].append({
@@ -120,16 +103,10 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
     return grouped
 
 def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Path) -> bool:
-    """
-    Physical writer. Uses optimized sampling for column widths.
-    """
+    """Physical writer. Writes layout structural headers even if empty."""
     wb = Workbook()
-    wb.properties.creator = "pdflinkcheck"  # optional
+    wb.properties.creator = "pdflinkcheck"
     wb.properties.title = "PDF Link Report"
-
-    # Add this to force UTF-8 BOM on save (helps Excel with Unicode)
-    from openpyxl.utils import quote_sheetname  # not needed, but for completeness
-    # No extra code needed — openpyxl saves UTF-8 by default, but BOM helps Excel
     
     sheet_configs = [
         ('Table of Contents', ['Level', 'Title', 'Target Page']),
@@ -138,43 +115,40 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
         ('Other',            ['Source Page', 'Anchor Text', 'Reference', 'Link'])
     ]
 
-    sheets_actually_written = 0
-
     for sheet_name, headers in sheet_configs:
         rows = grouped_links.get(sheet_name, [])
-        if not rows:
-            continue
-            
+        
+        # Always construct the sheets so structural validations/tests find a physical artifact
         ws = wb.create_sheet(sheet_name)
-        sheets_actually_written += 1
         ws.append(headers)
         
         # Bold headers
         for cell in ws[1]:
             cell.font = Font(bold=True)
 
+        # Write rows cleanly inline
         for item in rows:
             row_data = [item['col1'], item['col2'], item['col3']]
             if 'hyperlink' in item:
                 row_data.append(item['hyperlink'])
             
             ws.append(row_data)
+            current_row = ws.max_row
             
+            # Use dynamic column length safety assignment
             if 'hyperlink' in item and item['hyperlink'] != 'N/A':
-                last_cell = ws.cell(row=ws.max_row, column=len(row_data))
-                last_cell.hyperlink = item['hyperlink']
-                last_cell.style = 'Hyperlink'
-        try:
-            # Force UTF-8 BOM for Excel compatibility with Unicode paths
-            for row_idx, item in enumerate(rows, start=2):
-                for col_idx, value in enumerate([item['col1'], item['col2'], item['col3']], start=1):
-                    cell = ws.cell(row=row_idx, column=col_idx, value=str(value))
-                    # Ensure Excel treats as text
-                    if isinstance(value, str) and (value.startswith('http') or value.startswith('mhtml') or value.startswith('mailto')):
-                        cell.number_format = '@'  # text format
-        except:
-            print("this block is in the wrong spot or it otherwose problematic")
-        # COLUMN AUTO-FIT: Sample first 100 rows for speed on large PDFs
+                link_cell = ws.cell(row=current_row, column=len(row_data))
+                link_cell.hyperlink = item['hyperlink']
+                link_cell.style = 'Hyperlink'
+            
+            # String enforcement logic safely clamped to row range bounds
+            for col_idx in range(1, len(row_data) + 1):
+                cell = ws.cell(row=current_row, column=col_idx)
+                val_str = str(cell.value or '')
+                if val_str.startswith(('http', 'mhtml', 'mailto', 'file')):
+                    cell.number_format = '@'
+
+        # COLUMN AUTO-FIT
         sample_rows = list(ws.iter_rows(min_row=1, max_row=100, values_only=True))
         if sample_rows:
             for i, column_cells in enumerate(zip(*sample_rows)):
@@ -185,31 +159,22 @@ def _export_links_to_xlsx(grouped_links: Dict[str, List[Dict]], output_file: Pat
                         max_len = max(max_len, len(str(val)))
                 ws.column_dimensions[column_letter].width = min(max_len + 2, 70)
 
-    # Remove the default empty sheet created by Workbook()
+    # Clean default artifact sheet
     if 'Sheet' in wb.sheetnames:
         wb.remove(wb['Sheet'])
 
-    if sheets_actually_written == 0:
-        return False
-
     wb.save(output_file)
-    print(f"sheets_actually_written = {sheets_actually_written}")
     print(f"XLSX exported successfully to {get_friendly_path(output_file)}")
     return True
 
-def export_report_links_to_xlsx(results: Dict, output_dir: Path = None) -> Path:
-    """
-    Main entry point for spreadsheet generation.
-    Prioritizes 'source_path' to handle server-side uploads correctly.
-    """
-    output_dir = output_dir or PDFLINKCHECK_HOME
+def export_report_links_to_xlsx(results: Dict, output_dir: Optional[Union[str, Path]] = None) -> Optional[Path]:
+    """Main entry point for spreadsheet generation."""
+    output_dir = Path(output_dir) if output_dir else PDFLINKCHECK_HOME
+    output_dir.mkdir(parents=True, exist_ok=True)
     
-    metadata = results.get("metadata", {})
-    file_ov = metadata.get("file_overview", {})
+    metadata = results.get("metadata", {}) or {}
+    file_ov = metadata.get("file_overview", {}) or {}
     
-    # 1. Prioritize source_path (Original filename from server upload)
-    # 2. Fallback to pdf_path (Local CLI path)
-    # 3. Fallback to processing_path (The actual temp file used)
     pdf_path = (
         file_ov.get("source_path") or 
         file_ov.get("pdf_path") or 
@@ -217,14 +182,7 @@ def export_report_links_to_xlsx(results: Dict, output_dir: Path = None) -> Path:
         ""
     )
     
-    # DEBUG: Crucial to see which path we finally settled on
-    #print(f"DEBUG: XLSX Path Resolution: '{pdf_path}'")
-
     grouped_links = prepare_links_by_type(results, pdf_path=pdf_path)
-
-    total_entries = sum(len(v) for v in grouped_links.values())
-    if total_entries == 0:
-        return None
     
     pdf_name = file_ov.get("pdf_name") or file_ov.get("source_path") or "file"
     pdf_stem = Path(pdf_name).stem

@@ -57,7 +57,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from pdflinkcheck import environment as enviro
-
+from pdflinkcheck.helpers import ExportFormat
 from pdflinkcheck.report import run_report_and_call_exports
 
 
@@ -537,7 +537,8 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             # Run report analysis
             result = run_report_and_call_exports(
                 pdf_path=tmp_path,
-                export_format="json,txt", # xlsx will break with tmp paths in hyperlinks
+                #export_format="json,txt", # xlsx will break with tmp paths in hyperlinks
+                export_format=ExportFormat.JSON | ExportFormat.TXT,
                 pdf_library=upload.pdf_library,
                 print_bool=False,
             )

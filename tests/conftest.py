@@ -1,36 +1,29 @@
 # tests/conftest.py
-
-import os
 import pathlib
 import pytest
-import urllib.request
 
-@pytest.fixture(scope="session")
-def pdf_test_dir():
-    # Look for local sibling directory first
+def get_all_test_pdfs():
+    """Locate the cloned asset repository relative to this codebase."""
+    # Look for the standard sibling directory layout
     local_path = pathlib.Path(__file__).resolve().parents[2] / "public-documents" / "assets" / "pdf"
     
     if local_path.exists() and local_path.is_dir():
-        return local_path
+        return list(local_path.glob("*.pdf"))
         
-    # Fallback to a temporary cache directory for downloaded remote test assets
-    cache_dir = pathlib.Path(__file__).resolve().parent / ".test_pdf_cache"
-    cache_dir.mkdir(exist_ok=True)
-    return cache_dir
+    return []
 
-@pytest.fixture
-def get_test_pdf(pdf_test_dir):
-    def _get_pdf(filename):
-        target_file = pdf_test_dir / filename
-        if target_file.exists():
-            return target_file
+def pytest_generate_tests(metafunc):
+    """Dynamically parameterize tests based on files discovered on disk."""
+    if "pdf_path" in metafunc.fixturenames:
+        pdf_paths = get_all_test_pdfs()
+        
+        if not pdf_paths:
+            # Provide actionable feedback to the engineer instead of hanging on a git pull
+            raise FileNotFoundError(
+                "\n\n[pdflinkcheck Test Suite Error]: Test assets folder not found!\n"
+                "Please clone the public-documents repo as a sibling directory to this repository:\n"
+                "git clone git@github.com:City-of-Memphis-Wastewater/public-documents.git ../public-documents\n"
+            )
             
-        # Remote fallback URL
-        remote_url = f"https://raw.githubusercontent.com/City-of-Memphis-Wastewater/public-documents/main/assets/pdf/{filename}"
-        try:
-            urllib.request.urlretrieve(remote_url, target_file)
-            return target_file
-        except Exception as e:
-            pytest.fail(f"Could not retrieve test asset {filename} from local or remote: {e}")
-            
-    return _get_pdf
+        ids = [p.name for p in pdf_paths]
+        metafunc.parametrize("pdf_path", pdf_paths, ids=ids)

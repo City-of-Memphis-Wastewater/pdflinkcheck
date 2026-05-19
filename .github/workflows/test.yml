@@ -1,0 +1,34 @@
+name: Run pdflinkcheck Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the actual application code
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          path: pdflinkcheck
+
+      # Step 2: Check out the assets repository exactly where the test suite expects it
+      - name: Checkout Public Documents Assets
+        uses: actions/checkout@v4
+        with:
+          repository: City-of-Memphis-Wastewater/public-documents
+          ref: dev # or main, depending on your target stability branch
+          path: public-documents
+
+      # Step 3: Set up Python and environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv and run tests
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          cd pdflinkcheck
+          uv sync
+          uv run pytest -v
