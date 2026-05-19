@@ -1,3 +1,5 @@
+# tests/conftest.py
+
 import os
 import pathlib
 import pytest
