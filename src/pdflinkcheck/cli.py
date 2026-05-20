@@ -31,11 +31,6 @@ os.environ["FORCE_COLOR"] = "1"
 # Optional but helpful for full terminal feature detection
 os.environ["TERM"] = "xterm-256color"
 
-from enum import Enum
-import typer
-from typing import List, Optional
-from pathlib import Path
-
 app = typer.Typer(
     name="pdflinkcheck",
     help=f"A command-line tool for comprehensive PDF link analysis and reporting. (v{__version__})",

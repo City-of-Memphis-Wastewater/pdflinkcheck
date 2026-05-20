@@ -11,6 +11,7 @@ import datetime
 import time
 import pyhabitat
 import os
+from enum import Enum
 
 # --- Configuration ---
 
@@ -102,7 +103,8 @@ def export_report_json(
     print("For more details, explore the exported file(s).")
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(report_data, f, indent=4)
+            safe_payload = make_json_safe(report_data)
+            json.dump(safe_payload, f, indent=4)
         print(f"JSON report exported: {get_friendly_path(output_path)}")
         return output_path
     except Exception as e:
@@ -131,6 +133,29 @@ def export_report_txt(
     except Exception as e:
         error_logger.error(f"TXT export failed: {e}", exc_info=True)
         raise RuntimeError(f"TXT export failed: {e}")
+
+def make_json_safe(obj):
+    """
+    Recursively convert non-JSON-safe objects into serializable primitives.
+    """
+
+    if isinstance(obj, Path):
+        return str(obj)
+
+    if isinstance(obj, Enum):
+        return obj.name.lower()
+
+    if isinstance(obj, dict):
+        return {
+            str(k): make_json_safe(v)
+            for k, v in obj.items()
+        }
+
+    if isinstance(obj, (list, tuple, set)):
+        return [make_json_safe(v) for v in obj]
+
+    return obj
+
 
 # --- helpers ---
 def get_friendly_path(full_path: str) -> str:

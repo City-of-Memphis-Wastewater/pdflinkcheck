@@ -59,6 +59,7 @@ from typing import Optional
 from pdflinkcheck import environment as enviro
 from pdflinkcheck.helpers import ExportFormat, PdfEngine
 from pdflinkcheck.report import run_report_and_call_exports
+from pdflinkcheck.io import make_json_safe
 
 
 # =========================
@@ -421,7 +422,8 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
     # -------- Utilities --------
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
-        body = json.dumps(payload, indent=2, ensure_ascii=False).encode("utf-8")
+        safe_payload = make_json_safe(payload)
+        body = json.dumps(safe_payload, indent=2, ensure_ascii=False).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
@@ -528,6 +530,9 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
         print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
         tmp_path: Optional[str] = None
 
+        pdf_library = PdfEngine.from_str(upload.pdf_library) if isinstance(upload.pdf_library, str) else upload.pdf_library
+        pdf_library = pdf_library.resolve_if_auto()
+
         try:
             # Save PDF to temp file
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
@@ -539,7 +544,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 pdf_path=str(tmp_path),
                 #export_format="json,txt", # xlsx will break with tmp paths in hyperlinks
                 export_format=ExportFormat.JSON | ExportFormat.TXT,
-                pdf_library=PdfEngine.from_str(upload.pdf_library),
+                pdf_library=pdf_library,
                 print_bool=False,
             )
             result_metadata = result.get("metadata", {})
