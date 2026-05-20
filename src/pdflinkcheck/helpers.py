@@ -7,6 +7,7 @@ from enum import Flag, auto, Enum
 import functools
 import operator
 from typing import Optional, Iterable, Any, Set
+from dataclasses import dataclass
 
 from pdflinkcheck.io import PDFLINKCHECK_HOME
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
@@ -82,6 +83,13 @@ class PageRef:
     def __repr__(self):
         return f"PageRef(index={self.index}, human={self.human})"
     
+
+@dataclass
+class ReportRequest:
+    pdf_path: Path
+    engine: PdfEngine
+    exports: ExportFormat
+    output_dir: Path | None
 
 class ExportFormat(Flag):
     NONE = 0
@@ -188,7 +196,7 @@ class PdfEngine(Flag):
             return cls.PDFIUM
         return cls.PYPDF
 
-    def resolve(self) -> "PdfEngine":
+    def resolve_if_auto(self) -> "PdfEngine":
         """
         Evaluates the instance flag. If the AUTO bit is present, it scrubs it 
         and blends in the dynamic system fallback engine.

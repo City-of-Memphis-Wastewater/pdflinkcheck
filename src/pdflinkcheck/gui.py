@@ -80,7 +80,6 @@ class PDFLinkCheckApp:
 
         # --- 1. Variable State Management ---
         self.pdf_path = tk.StringVar(value="")
-        self.pdf_library_var = tk.StringVar(value=PdfEngine.PYMUPDF.name)
         self.do_export_report_json_var = tk.BooleanVar(value=True)
         self.do_export_report_txt_var = tk.BooleanVar(value=True)
         self.do_export_report_xlsx_var = tk.BooleanVar(value=True)

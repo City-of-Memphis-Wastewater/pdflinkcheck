@@ -42,9 +42,9 @@ EMPTY_VALIDATION = {
 
 
 def run_report_and_call_exports(
-    pdf_path: str = None, 
-    export_format: ExportFormat=ExportFormat.JSON, 
-    pdf_library: PdfEngine= PdfEngine.resolve_auto_flag(), 
+    pdf_path: str | Path | None = None, 
+    export_format: ExportFormat | None = ExportFormat.JSON, 
+    pdf_library: PdfEngine | None = None, 
     print_bool: bool=True,
     concise_print: bool = False,
     output_dir: Optional[str] = None
@@ -53,15 +53,19 @@ def run_report_and_call_exports(
     Public entry point. Orchestrates extraction, validation, and file exports.
     """
 
-    # At the top of run_report_and_call_exports inside report.py
-    if isinstance(export_format, str):
-        selected_formats = ExportFormat.from_str(export_format)
-    else:
-        selected_formats = export_format
+    if pdf_library is None:
+        pdf_library = PdfEngine.resolve_auto_flag()
+
+    if not pdf_path:
+        raise ValueError("pdf_path is required")
+    pdf_path = Path(pdf_path)
+
+    
+    selected_formats = export_format
         
     #  The meat and potatoes
-    report_results = run_report_meat(
-        pdf_path=str(pdf_path), 
+    report_results = run_report_core(
+        pdf_path=pdf_path, 
         pdf_library = pdf_library,
         print_bool = print_bool,
         concise_print = concise_print,
@@ -91,9 +95,9 @@ def run_report_and_call_exports(
     
     return report_results
 
-def run_report_meat(
-        pdf_path: str = None, 
-        pdf_library: PdfEngine= PdfEngine.resolve_auto_flag(), 
+def run_report_core(
+        pdf_path: Path | None = None, 
+        pdf_library: PdfEngine = PdfEngine.resolve_auto_flag(), 
         print_bool: bool=True,
         concise_print: bool=False
         ) -> Dict[str, Any]:
@@ -105,7 +109,7 @@ def run_report_meat(
     prints a comprehensive, user-friendly report to the console.
 
     Args:   
-        pdf_path: The file system path (str) to the target PDF document.
+        pdf_path: The file system path (Path) to the target PDF document.
 
     Returns:
         A dictionary containing the structured results of the analysis:
@@ -129,12 +133,11 @@ def run_report_meat(
     # Handle direct string inputs from legacy tests or programmatic usage safely
     if isinstance(pdf_library, str):
         pdf_library = PdfEngine.from_str(pdf_library)
-    elif not isinstance(pdf_library, PdfEngine):
-        # Fallback safeguard if something weird gets passed down
-        pdf_library = PdfEngine.resolve_auto_flag()
+
+    assert isinstance(pdf_library, PdfEngine)
 
     # 1. Resolve AUTO to a concrete singular option instantly via our enum logic
-    resolved_engine = pdf_library.resolve()
+    resolved_engine = pdf_library.resolve_if_auto()
     resolved_pdf_library_name = resolved_engine.name.lower()
 
     log("\n")
@@ -147,7 +150,6 @@ def run_report_meat(
     else:
         pdf_name = Path(pdf_path).name
     resolved_path = str(Path(pdf_path).resolve())
-        
     
     
     # 2. Match the exact flag target directly via clean identity conditional blocks

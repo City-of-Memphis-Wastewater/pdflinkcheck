@@ -57,7 +57,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from pdflinkcheck import environment as enviro
-from pdflinkcheck.helpers import ExportFormat
+from pdflinkcheck.helpers import ExportFormat, PdfEngine
 from pdflinkcheck.report import run_report_and_call_exports
 
 
@@ -532,14 +532,14 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             # Save PDF to temp file
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
                 tmp.write(upload.pdf_bytes)
-                tmp_path = tmp.name
+                tmp_path = Path(tmp.name)
 
             # Run report analysis
             result = run_report_and_call_exports(
-                pdf_path=tmp_path,
+                pdf_path=str(tmp_path),
                 #export_format="json,txt", # xlsx will break with tmp paths in hyperlinks
                 export_format=ExportFormat.JSON | ExportFormat.TXT,
-                pdf_library=upload.pdf_library,
+                pdf_library=PdfEngine.from_str(upload.pdf_library),
                 print_bool=False,
             )
             result_metadata = result.get("metadata", {})
