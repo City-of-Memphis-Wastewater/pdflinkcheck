@@ -217,6 +217,10 @@ class PdfEngine(Flag):
             result |= cls[choice.name]
 
         return result.resolve()
+    
+    @classmethod
+    def from_gui(cls, value: str) -> "PdfEngine":
+        return cls.from_str(value)
 
 # ==========================================
 # TYPE-SAFE TYPER PRESENTATION LAYERS (Derived Natively)

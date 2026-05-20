@@ -80,7 +80,7 @@ class PDFLinkCheckApp:
 
         # --- 1. Variable State Management ---
         self.pdf_path = tk.StringVar(value="")
-        self.pdf_library_var = tk.StringVar(value="pymupdf")
+        self.pdf_library_var = tk.StringVar(value=PdfEngine.PYMUPDF.name)
         self.do_export_report_json_var = tk.BooleanVar(value=True)
         self.do_export_report_txt_var = tk.BooleanVar(value=True)
         self.do_export_report_xlsx_var = tk.BooleanVar(value=True)
@@ -93,7 +93,7 @@ class PDFLinkCheckApp:
         self.last_xlsx_path: Optional[Path] = None
         
         # Engine detection 
-        self.pdf_library_var = tk.StringVar(value=PdfEngine.AUTO.name)
+        self.pdf_library_var = tk.StringVar(value=PdfEngine.resolve_auto_flag().name)
 
     
     # --- Theme & Visual Initialization ---
@@ -168,10 +168,10 @@ class PDFLinkCheckApp:
         pdf_library_frame.grid(row=1, column=0, padx=3, pady=3, sticky='nsew')
 
         if pdfium_is_available():
-            ttk.Radiobutton(pdf_library_frame, text="PDFium", variable=self.pdf_library_var, value="pdfium").pack(side='left', padx=5, pady=1) 
+            ttk.Radiobutton(pdf_library_frame, text="PDFium", variable=self.pdf_library_var, value=PdfEngine.PDFIUM.name).pack(side='left', padx=5, pady=1) 
         if pymupdf_is_available():
-            ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value="pymupdf").pack(side='left', padx=3, pady=1)
-        ttk.Radiobutton(pdf_library_frame, text="pypdf", variable=self.pdf_library_var, value="pypdf").pack(side='left', padx=3, pady=1)
+            ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value=PdfEngine.PYMUPDF.name).pack(side='left', padx=3, pady=1)
+        ttk.Radiobutton(pdf_library_frame, text="pypdf", variable=self.pdf_library_var, value=PdfEngine.PYPDF.name).pack(side='left', padx=3, pady=1)
 
         export_config_frame = ttk.LabelFrame(control_frame, text="Export Enabled:")
         export_config_frame.grid(row=1, column=1, padx=3, pady=3, sticky='nsew')
@@ -258,25 +258,38 @@ class PDFLinkCheckApp:
         else:
             messagebox.showwarning("Copy Failed", "PDF Path field is empty.")
 
+    def _get_export_format_selection(self) -> ExportFormat:
+        # Cleanly resolve your export checkboxes into a flag mask: 
+        # Build bitmask dynamically using bitwise OR assignments
+        
+        result = ExportFormat.NONE
+
+        checkbox_map = {
+            self.do_export_report_json_var: ExportFormat.JSON,
+            self.do_export_report_txt_var: ExportFormat.TXT,
+            self.do_export_report_xlsx_var: ExportFormat.XLSX,
+        }
+
+        for var, flag in checkbox_map.items():
+            if var.get():
+                result |= flag
+
+        return result
+
+    def _get_pdf_engine_selection(self) -> PdfEngine:
+        return PdfEngine.from_gui(self.pdf_library_var.get())
+        
     def _run_report_gui(self):
 
         pdf_path_str = self._assess_pdf_path_str()
         if not pdf_path_str:
             return
-        
-        # Cleanly resolve your export checkboxes into a flag mask: 
-        # Build bitmask dynamically using bitwise OR assignments
-        export_format = ExportFormat.NONE
-        if self.do_export_report_json_var.get():
-            export_format |= ExportFormat.JSON
-        if self.do_export_report_txt_var.get():
-            export_format |= ExportFormat.TXT
-        if self.do_export_report_xlsx_var.get():
-            export_format |= ExportFormat.XLSX
 
-        # Parse the GUI string variable straight back into a type-safe PdfEngine enum
-        gui_engine_selection = self.pdf_library_var.get()
-        pdf_library = PdfEngine.from_str(gui_engine_selection)
+        # Parse the GUI checkbox export format boolean variables into a type-safe ExportFormat enum
+        export_format = self._get_export_format_selection()
+        
+        # Parse the GUI radio PDF engine selection string variable straight back into a type-safe PdfEngine enum
+        pdf_library = _get_pdf_engine_selection()
 
         self.output_text.config(state=tk.NORMAL)
         self.output_text.delete('1.0', tk.END)
@@ -302,9 +315,9 @@ class PDFLinkCheckApp:
         except Exception as e:
             messagebox.showinfo(
                 "Engine Fallback",
-                f"Error encountered with {pdf_library}: {e}\n\nFalling back to pypdf."
+                f"Error encountered with {pdf_library}: {e}\n\nFalling back to automated library selection."
             )
-            self.pdf_library_var.set("pypdf")
+            self.pdf_library_var.set(PdfEngine.resolve_auto_flag().name)
         finally:
             sys.stdout = original_stdout
             self.output_text.config(state=tk.DISABLED)

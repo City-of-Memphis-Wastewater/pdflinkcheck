@@ -157,7 +157,11 @@ def docs_command(
 
 # Create tools sub-group
 tools_app = typer.Typer(help="Additional utility features and maintenance tools.")
-app.add_typer(tools_app, name="tools")
+app.add_typer(
+    tools_app,
+    name="tools",
+    no_args_is_help = True
+    )
 
 @tools_app.command(
         name="check-libs",
@@ -186,71 +190,71 @@ def tools_browse_exports():
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(code=1)
 
-    @app.command(name="analyze")
-    def analyze_pdf(
-        pdf_path: Optional[Path] = typer.Argument(
-            None, 
-            exists=True, 
-            file_okay=True, 
-            dir_okay=False, 
-            readable=True,
-            resolve_path=True,
-            help="Path to the PDF file to analyze. If omitted, searches current directory."
-        ), 
-        export_format: List[ExportFormatChoice] = typer.Option(
-            [ExportFormat.JSON.name.lower(), ExportFormat.TXT.name.lower(), ExportFormat.XLSX.name.lower()],
-            "--format", "-f",
-            case_sensitive=False,
-            help="Export formats (repeatable). Use '--format none' to suppress all exports."
-        ),
+@app.command(name="analyze")
+def analyze_pdf(
+    pdf_path: Optional[Path] = typer.Argument(
+        None, 
+        exists=True, 
+        file_okay=True, 
+        dir_okay=False, 
+        readable=True,
+        resolve_path=True,
+        help="Path to the PDF file to analyze. If omitted, searches current directory."
+    ), 
+    export_format: List[ExportFormatChoice] = typer.Option(
+        [ExportFormat.JSON.name.lower(), ExportFormat.TXT.name.lower(), ExportFormat.XLSX.name.lower()],
+        "--format", "-f",
+        case_sensitive=False,
+        help="Export formats (repeatable). Use '--format none' to suppress all exports."
+    ),
 
-        pdf_library: List[PdfEngineChoice] = typer.Option(
-            [PdfEngine.resolve_auto_flag().name.lower()],
-            "--engine","-e",
-            envvar="PDF_ENGINE",
-            help=f"PDF parsing library backend choice.",
-        ),
-        print_bool: bool = typer.Option(
-            True,
-            "--print/--quiet",
-            help="Print or do not print the analysis and validation report to console."
-        )
-    ):
-        """
-        Analyzes the specified PDF file for all internal, external, and unlinked references.
+    pdf_library: List[PdfEngineChoice] = typer.Option(
+        [PdfEngine.resolve_auto_flag().name.lower()],
+        "--engine","-e",
+        envvar="PDF_ENGINE",
+        help=f"PDF parsing library backend choice.",
+    ),
+    print_bool: bool = typer.Option(
+        True,
+        "--print/--quiet",
+        help="Print or do not print the analysis and validation report to console."
+    )
+):
+    """
+    Analyzes the specified PDF file for all internal, external, and unlinked references.
 
-        Checks:
-        • Internal GoTo links point to valid pages
-        • Remote GoToR links point to existing files
-        • TOC bookmarks target valid pages
+    Checks:
+    • Internal GoTo links point to valid pages
+    • Remote GoToR links point to existing files
+    • TOC bookmarks target valid pages
 
-        Validates:
-        • Are referenced files available?
-        • Are the page numbers referenced by GoTo links within the length of the document?
-        """
+    Validates:
+    • Are referenced files available?
+    • Are the page numbers referenced by GoTo links within the length of the document?
+    """
 
+    if pdf_path is None:
+        pdf_path = get_first_pdf_in_cwd()
         if pdf_path is None:
-            pdf_path = get_first_pdf_in_cwd()
-            if pdf_path is None:
-                console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
-                raise typer.Exit(code=1)
-            console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
+            console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
+            raise typer.Exit(code=1)
+        console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
-        resolved_format = ExportFormat.from_choices(export_format)
-        resolved_engine = PdfEngine.from_choices(pdf_library)
+    resolved_format = ExportFormat.from_choices(export_format)
+    resolved_engine = PdfEngine.from_choices(pdf_library)
 
-        # The meat and potatoes
-        report_results = run_report_and_call_exports(
-            pdf_path=str(pdf_path), 
-            export_format = resolved_format,
-            pdf_library = resolved_engine,
-            print_bool = print_bool,
-            concise_print = True # ideal for CLI, to not overwhelm the terminal.
-        )
+    # The meat and potatoes
+    report_results = run_report_and_call_exports(
+        pdf_path=str(pdf_path), 
+        export_format = resolved_format,
+        pdf_library = resolved_engine,
+        print_bool = print_bool,
+        concise_print = True # ideal for CLI, to not overwhelm the terminal.
+    )
 
-        if not report_results or not report_results.get("data"):
-            console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
-            raise typer.Exit(code=0)
+    if not report_results or not report_results.get("data"):
+        console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
+        raise typer.Exit(code=0)
 
 @app.command(name="serve")
 def serve(
@@ -318,25 +322,6 @@ def gui_command(
     
     from pdflinkcheck.gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
-
-def parse_engine_flags(values: Optional[List[str]]) -> PdfEngine:
-    """
-    Callback that converts incoming repeatable CLI engine strings 
-    into a unified type-safe PdfEngine bitmask.
-    """
-    if not values:
-        return PdfEngine.AUTO
-
-    combined_mask = PdfEngine.NONE
-    for val in values:
-        # Match against our robust internal parser logic
-        parsed = PdfEngine.from_str(val)
-        if parsed == PdfEngine.NONE and val.strip().lower() != "none":
-            raise typer.BadParameter(
-                f"'{val}' is not a valid engine choice. Choose from: auto, pypdf, pymupdf, pdfium, all."
-            )
-        combined_mask |= parsed
-    return combined_mask
 
 # --- Helper, consistent gui failure message. --- 
 def _gui_failure_msg():
