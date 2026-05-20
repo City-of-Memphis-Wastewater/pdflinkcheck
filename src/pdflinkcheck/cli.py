@@ -78,6 +78,16 @@ def main(ctx: typer.Context,
     """
     If no subcommand is provided, launch the GUI.
     """
+    
+    """
+    Fun Typer fact:
+    Overriding Order
+    Environment variables sit in the middle of the "priority" hierarchy:
+
+    CLI Flag: (Highest priority) analyze -e pypdf will always win.
+    Env Var: If no flag is present, it checks PDF_ENGINE.
+    Code Default: (Lowest priority) It falls back to "pypdf" as defined in typer.Option.
+    """
     if version:
         typer.echo(__version__)
         raise typer.Exit(code=0)
@@ -176,112 +186,71 @@ def tools_browse_exports():
         console.print(f"[bold red]Error:[/bold red] {e}")
         raise typer.Exit(code=1)
 
-@app.command(name="analyze") # Added a command name 'analyze' for clarity
-def analyze_pdf( # Renamed function for clarity
-    pdf_path: Optional[Path] = typer.Argument(
-        None, 
-        exists=True, 
-        file_okay=True, 
-        dir_okay=False, 
-        readable=True,
-        resolve_path=True,
-        help="Path to the PDF file to analyze. If omitted, searches current directory."
-    ), 
-    export_format: List[ExportFormatChoice] = typer.Option(
-        [ExportFormat.JSON.name.lower(), ExportFormat.TXT.name.lower(), ExportFormat.XLSX.name.lower()],
-        "--format", "-f",
-        case_sensitive=False,
-        help="Export formats (repeatable). Use '--format none' to suppress all exports."
-    ),
+    @app.command(name="analyze")
+    def analyze_pdf(
+        pdf_path: Optional[Path] = typer.Argument(
+            None, 
+            exists=True, 
+            file_okay=True, 
+            dir_okay=False, 
+            readable=True,
+            resolve_path=True,
+            help="Path to the PDF file to analyze. If omitted, searches current directory."
+        ), 
+        export_format: List[ExportFormatChoice] = typer.Option(
+            [ExportFormat.JSON.name.lower(), ExportFormat.TXT.name.lower(), ExportFormat.XLSX.name.lower()],
+            "--format", "-f",
+            case_sensitive=False,
+            help="Export formats (repeatable). Use '--format none' to suppress all exports."
+        ),
 
-    pdf_library: List[PdfEngineChoice] = typer.Option(
-        [PdfEngine.resolve_auto_flag().name.lower()],
-        "--engine","-e",
-        envvar="PDF_ENGINE",
-        #help="PDF parsing library. pypdf (pure Python), pymupdf (fast, AGPL3+ licensed), pdfium (fast, BSD-3 licensed).",
-        #help=f"PDF parsing library backend choices: {', '.join([k.lower() for k in PdfEngine.__members__ ])}",
-        help=f"PDF parsing library backend choice.",
-    ),
-    print_bool: bool = typer.Option(
-        True,
-        "--print/--quiet",
-        help="Print or do not print the analysis and validation report to console."
-    )
-):
-    """
-    Analyzes the specified PDF file for all internal, external, and unlinked references.
+        pdf_library: List[PdfEngineChoice] = typer.Option(
+            [PdfEngine.resolve_auto_flag().name.lower()],
+            "--engine","-e",
+            envvar="PDF_ENGINE",
+            help=f"PDF parsing library backend choice.",
+        ),
+        print_bool: bool = typer.Option(
+            True,
+            "--print/--quiet",
+            help="Print or do not print the analysis and validation report to console."
+        )
+    ):
+        """
+        Analyzes the specified PDF file for all internal, external, and unlinked references.
 
-    Checks:
-    • Internal GoTo links point to valid pages
-    • Remote GoToR links point to existing files
-    • TOC bookmarks target valid pages
+        Checks:
+        • Internal GoTo links point to valid pages
+        • Remote GoToR links point to existing files
+        • TOC bookmarks target valid pages
 
-    Validates:
-    • Are referenced files available?
-    • Are the page numbers referenced by GoTo links within the length of the document?
+        Validates:
+        • Are referenced files available?
+        • Are the page numbers referenced by GoTo links within the length of the document?
+        """
 
-    """
-
-    """
-    Fun Typer fact:
-    Overriding Order
-    Environment variables sit in the middle of the "priority" hierarchy:
-
-    CLI Flag: (Highest priority) analyze -e pypdf will always win.
-    Env Var: If no flag is present, it checks PDF_ENGINE.
-    Code Default: (Lowest priority) It falls back to "pypdf" as defined in typer.Option.
-    """
-
-    if pdf_path is None:
-        pdf_path = get_first_pdf_in_cwd()
         if pdf_path is None:
-            console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
-            raise typer.Exit(code=1)
-        console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
+            pdf_path = get_first_pdf_in_cwd()
+            if pdf_path is None:
+                console.print("[red]Error: No PDF file provided and none found in current directory.[/red]")
+                raise typer.Exit(code=1)
+            console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
-    
-    # Single Source of Truth validation: Check against the enum names + virtual keywords
-    for engine in pdf_library:
-        cleaned = engine.strip().lower()
-        if cleaned not in ("all", "none") and cleaned.upper() not in PdfEngine.__members__:
-            # Reconstruct the allowed list on the fly for the error message
-            allowed_tokens = [k.lower() for k in PdfEngine.__members__ if k not in ("NONE", "ALL")] + ["all", "none"]
-            console.print(f"[red]Error: '{engine}' is not a valid engine choice.[/red]")
-            console.print(f"[dim]Choose from: {', '.join(allowed_tokens)}[/dim]")
-            raise typer.Exit(code=1)
+        resolved_format = ExportFormat.from_choices(export_format)
+        resolved_engine = PdfEngine.from_choices(pdf_library)
 
-    # 1. Resolve export formats from the Typer choice enum to your internal Flag
-    resolved_format = ExportFormat.NONE
-    
-    # Handle the virtual keywords first
-    if any(f == ExportFormatChoice.NONE for f in export_format):
-        resolved_format = ExportFormat.NONE
-    elif any(f == ExportFormatChoice.ALL for f in export_format):
-        # Assuming your ExportFormat flag has an ALL mask (or combine them)
-        resolved_format = ExportFormat.JSON | ExportFormat.TXT | ExportFormat.XLSX
-    else:
-        # Map the incoming string values directly to your internal Flag enum names
-        for f in export_format:
-            resolved_format |= ExportFormat[f.name]
+        # The meat and potatoes
+        report_results = run_report_and_call_exports(
+            pdf_path=str(pdf_path), 
+            export_format = resolved_format,
+            pdf_library = resolved_engine,
+            print_bool = print_bool,
+            concise_print = True # ideal for CLI, to not overwhelm the terminal.
+        )
 
-    # 2. Resolve PDF engines from the Typer choice enum to your internal Flag
-    resolved_engine = PdfEngine(0)
-    # The mapping loop reduces down to a clean dictionary lookup
-    for choice in pdf_library:
-        resolved_engine |= PdfEngine[choice.name]
-
-    # The meat and potatoes
-    report_results = run_report_and_call_exports(
-        pdf_path=str(pdf_path), 
-        export_format = resolved_format,
-        pdf_library = resolved_engine,
-        print_bool = print_bool,
-        concise_print = True # ideal for CLI, to not overwhelm the terminal.
-    )
-
-    if not report_results or not report_results.get("data"):
-        console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
-        raise typer.Exit(code=0)
+        if not report_results or not report_results.get("data"):
+            console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")
+            raise typer.Exit(code=0)
 
 @app.command(name="serve")
 def serve(

@@ -108,8 +108,9 @@ class ExportFormat(Flag):
             except KeyError:
                 continue # Ignore garbage options gracefully
         return result
+
     @classmethod
-    def from_iterable(cls, formats: Optional[Iterable[Any]]) -> ExportFormat:
+    def from_iterable(cls, formats: Optional[Iterable[ExportFormat]]) -> ExportFormat:
         """
         Reduces an iterable of flags (like Typer's List[ExportFormat]) 
         into a single consolidated bitmask flag choice.
@@ -117,6 +118,28 @@ class ExportFormat(Flag):
         if not formats or cls.NONE in formats:
             return cls.NONE
         return functools.reduce(operator.or_, formats, cls.NONE)
+
+    @classmethod
+    def from_choices(
+        cls,
+        choices: Optional[Iterable["ExportFormatChoice"]]
+    ) -> "ExportFormat":
+
+        if not choices:
+            return cls.NONE
+
+        if ExportFormatChoice.NONE in choices:
+            return cls.NONE
+
+        if ExportFormatChoice.ALL in choices:
+            return cls.ALL
+
+        result = cls.NONE
+
+        for choice in choices:
+            result |= cls[choice.name]
+
+        return result
 
 
 class PdfEngine(Flag):
@@ -142,7 +165,7 @@ class PdfEngine(Flag):
             return cls.ALL
 
         # Start with an empty combined mask state
-        result = cls(0)
+        result = cls.AUTO
         for token in normalized.split(","):
             token_clean = token.strip()
             if token_clean == "pypdf":
@@ -178,6 +201,22 @@ class PdfEngine(Flag):
         if remaining == 0:
             return self.resolve_auto_flag()
         return PdfEngine(remaining)
+
+    @classmethod
+    def from_choices(
+        cls,
+        choices: Optional[Iterable["PdfEngineChoice"]]
+    ) -> "PdfEngine":
+
+        if not choices:
+            return cls.resolve_auto_flag()
+
+        result = cls.AUTO
+
+        for choice in choices:
+            result |= cls[choice.name]
+
+        return result.resolve()
 
 # ==========================================
 # TYPE-SAFE TYPER PRESENTATION LAYERS (Derived Natively)
