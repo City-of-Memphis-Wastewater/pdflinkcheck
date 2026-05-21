@@ -57,8 +57,8 @@ from dataclasses import dataclass
 from typing import Optional
 
 from pdflinkcheck import environment as enviro
-from pdflinkcheck.helpers import ExportFormat, PdfEngine
-from pdflinkcheck.report import run_report_and_call_exports
+from pdflinkcheck.helpers import ExportFormat, PdfEngine, ReportRequest
+from pdflinkcheck.report import run_report
 from pdflinkcheck.io import make_json_safe
 
 
@@ -540,13 +540,14 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 tmp_path = Path(tmp.name)
 
             # Run report analysis
-            result = run_report_and_call_exports(
+            request = ReportRequest(
                 pdf_path=str(tmp_path),
-                #export_format="json,txt", # xlsx will break with tmp paths in hyperlinks
                 export_format=ExportFormat.JSON | ExportFormat.TXT,
                 pdf_library=pdf_library,
                 print_bool=False,
             )
+            result = run_report(request)
+    
             result_metadata = result.get("metadata", {})
             if "file_overview" in result_metadata:
                 result["metadata"]["file_overview"]["source_path"] = upload.filename
