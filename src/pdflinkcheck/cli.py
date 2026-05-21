@@ -14,7 +14,7 @@ import os
 from importlib.resources import files
 from typer_helptree import add_typer_helptree
 
-from pdflinkcheck.report import run_report
+from pdflinkcheck.report import run_report_request
 from pdflinkcheck._version import __version__
 from pdflinkcheck.io import get_first_pdf_in_cwd
 from pdflinkcheck.environment import (
@@ -246,7 +246,7 @@ def analyze_pdf(
         print_bool = print_bool,
         concise_print = True # ideal for CLI, to not overwhelm the terminal.
     )
-    report_results = run_report(request)
+    report_results = run_report_request(request)
 
     if not report_results or not report_results.get("data"):
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")

@@ -58,7 +58,7 @@ from typing import Optional
 
 from pdflinkcheck import environment as enviro
 from pdflinkcheck.helpers import ExportFormat, PdfEngine, ReportRequest
-from pdflinkcheck.report import run_report
+from pdflinkcheck.report import run_report_request
 from pdflinkcheck.io import make_json_safe
 
 
@@ -546,7 +546,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 pdf_library=pdf_library,
                 print_bool=False,
             )
-            result = run_report(request)
+            result = run_report_request(request)
     
             result_metadata = result.get("metadata", {})
             if "file_overview" in result_metadata:

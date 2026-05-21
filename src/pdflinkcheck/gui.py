@@ -16,7 +16,7 @@ import subprocess
 import os
 
 # --- Core Imports ---
-from pdflinkcheck.report import run_report
+from pdflinkcheck.report import run_report_request
 from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
 from pdflinkcheck.environment import (
@@ -304,7 +304,7 @@ class PDFLinkCheckApp:
                 export_format=export_format,
                 pdf_library=pdf_library
             )
-            report_results = run_report(request)
+            report_results = run_report_request(request)
             self.current_report_text = report_results.get("text-lines", "")
             self.current_report_data = report_results.get("data", {})
 

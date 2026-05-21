@@ -41,7 +41,7 @@ EMPTY_VALIDATION = {
     }
 
 
-def run_report(request: ReportRequest) -> dict:
+def run_report_request(request: ReportRequest) -> dict:
     return run_report_and_call_exports(
         request.pdf_path, 
         request.export_format, 

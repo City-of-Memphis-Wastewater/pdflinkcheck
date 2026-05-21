@@ -15,6 +15,9 @@ from pdflinkcheck._version import __version__
 __all__ = [
     "__version__",
     "run_report",
+    "ReportRequest",
+    "ExportFormat",
+    "PdfEngine",
     "analyze_pdf_pymupdf",
     "analyze_pdf_pypdf",
     "analyze_pdf_pdfium",
@@ -31,6 +34,18 @@ def __getattr__(name: str):
     if name == "run_report":
         from pdflinkcheck.report import run_report_and_call_exports
         return run_report_and_call_exports
+
+    if name == "ReportRequest":
+        from pdflinkcheck.helpers import ReportRequest
+        return ReportRequest
+    
+    if name == "ExportFormat":
+        from pdflinkcheck.helpers import ExportFormat
+        return ExportFormat
+
+    if name == "PdfEngine":
+        from pdflinkcheck.helpers import PdfEngine
+        return PdfEngine
 
     if name == "analyze_pdf_pypdf":
         try:
