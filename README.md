@@ -67,7 +67,7 @@ pdflinkcheck helptree
 <p align="center">
   <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.3.48_helptree.svg" width="100%" alt="Screenshot of the pdflinkcheck CLI helptree">
 </p>
-`helptree` is utility funtion for Typer CLIs, imported from the `typer-helptree` library.
+`helptree` is a utility function for Typer CLIs, imported from the `typer-helptree` library.
 
 - GitHub: https://github.com/City-of-Memphis-Wastewater/typer-helptree
 - PyPI: https://pypi.org/project/typer-helptree/
@@ -195,7 +195,7 @@ If the `PDFLINKCHECK_GUI_EASTEREGG` environment variable is not set—or if GUI 
 ### Termux Compatibility as a Key Goal
 A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible.
 
-Termux compatibility is important in the modern age, because Android devices are common among technicians, field engineers, and maintenace staff. 
+Termux compatibility is important in the modern age, because Android devices are common among technicians, field engineers, and maintenance staff. 
 Android is the most common operating system in the Global South. 
 We aim to produce stable software that can do the most possible good. 
 
@@ -206,9 +206,9 @@ Benefits:
 
 
 ### PDF Library Selection
-At long last, `PyMuPDF` is an optional dependency. All testing comparing `pypdf` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benefit of `pypdf` is small size of packages and cross-platform compatibility. We have recently added a PDFium option, which circumvents the AGPL3+.
+`PyMuPDF` is an optional dependency. All testing comparing `pypdf` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benefit of `pypdf` is small size of packages and cross-platform compatibility. We have recently added a PDFium option, which circumvents the AGPL3+.
 
-Expected that all binaries and artifacts contain PyMuPDF, unless they are built on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
+It is expected that all binaries and artifacts contain PyMuPDF, unless they are built on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
 
 To install the complete version use one of these options:
 
