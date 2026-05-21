@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.4.1] - 2026-05-21
+### Changed:
+- Use ExportFormat flag enum, PdfEngine flag enum, and ReportRequest dataclass to represent stable, defensive forms.
+
+---
+
 ## [1.3.48] - 2026-05-18
 ### Fixed:
 - __init__.py  improved to use lazy loading and modern 3.7+ standards.
