@@ -259,6 +259,13 @@ uv run  python -m pdflinkcheck.stdlib_server
 
 Please see the LICENSE file, the NOTICE file, and the PyMuPDf sourcecode.
 
+
+|**Build Type**|**License Outcome**|
+|---|---|
+|Core + pypdf|MIT|
+|Core + PDFium|MIT|
+|Core + PyMuPDF|AGPL obligations apply|
+
 It is entirely optional to include `PyMuPDF` as a dependency of `pdflinkcheck`. Leverage pyproject.toml `--extra` flags to choose what is included.
 The source code itself for `pdflinkcheck` is licensed under the `MIT`. 
 
