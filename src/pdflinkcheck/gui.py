@@ -16,7 +16,7 @@ import subprocess
 import os
 
 # --- Core Imports ---
-from pdflinkcheck.report import run_report_and_call_exports
+from pdflinkcheck.report import run_report
 from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
 from pdflinkcheck.environment import (
@@ -26,7 +26,7 @@ from pdflinkcheck.environment import (
     is_in_dev_environment
 )
 from pdflinkcheck.tk_utils import center_window_on_primary
-from pdflinkcheck.helpers import get_export_path, ExportFormat, PdfEngine
+from pdflinkcheck.helpers import get_export_path, ExportFormat, PdfEngine, ReportRequest
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
@@ -299,11 +299,12 @@ class PDFLinkCheckApp:
         print("Running PDF analysis ...")
 
         try:
-            report_results = run_report_and_call_exports(
+            request = ReportRequest(
                 pdf_path=pdf_path_str,
                 export_format=export_format,
-                pdf_library=pdf_library,
+                pdf_library=pdf_library
             )
+            report_results = run_report(request)
             self.current_report_text = report_results.get("text-lines", "")
             self.current_report_data = report_results.get("data", {})
 

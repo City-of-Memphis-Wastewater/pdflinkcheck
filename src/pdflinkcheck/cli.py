@@ -14,7 +14,7 @@ import os
 from importlib.resources import files
 from typer_helptree import add_typer_helptree
 
-from pdflinkcheck.report import run_report_and_call_exports 
+from pdflinkcheck.report import run_report
 from pdflinkcheck._version import __version__
 from pdflinkcheck.io import get_first_pdf_in_cwd
 from pdflinkcheck.environment import (
@@ -22,7 +22,7 @@ from pdflinkcheck.environment import (
     pymupdf_is_available, 
     pdfium_is_available
 )
-from pdflinkcheck.helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoice
+from pdflinkcheck.helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoice, ReportRequest
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -239,13 +239,14 @@ def analyze_pdf(
     resolved_engine = PdfEngine.from_choices(pdf_library)
 
     # The meat and potatoes
-    report_results = run_report_and_call_exports(
+    request = ReportRequest(
         pdf_path=str(pdf_path), 
         export_format = resolved_format,
         pdf_library = resolved_engine,
         print_bool = print_bool,
         concise_print = True # ideal for CLI, to not overwhelm the terminal.
     )
+    report_results = run_report(request)
 
     if not report_results or not report_results.get("data"):
         console.print("[yellow]No links or TOC found — nothing to validate.[/yellow]")

@@ -17,7 +17,7 @@ from pdflinkcheck.io import (
 )
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import PageRef, ExportFormat, PdfEngine
+from pdflinkcheck.helpers import PageRef, ExportFormat, PdfEngine, ReportRequest
 from pdflinkcheck.spreadsheet import export_report_links_to_xlsx
 
 SEP_COUNT=28
@@ -41,6 +41,15 @@ EMPTY_VALIDATION = {
     }
 
 
+def run_report(request: ReportRequest) -> dict:
+    return run_report_and_call_exports(
+        request.pdf_path, 
+        request.export_format, 
+        request.pdf_library, 
+        request.print_bool,
+        request.concise_print,
+        request.output_dir)
+     
 def run_report_and_call_exports(
     pdf_path: str | Path | None = None, 
     export_format: ExportFormat | None = ExportFormat.JSON, 

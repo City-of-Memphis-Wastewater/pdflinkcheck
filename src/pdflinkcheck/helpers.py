@@ -7,7 +7,7 @@ from enum import Flag, auto, Enum
 import functools
 import operator
 from typing import Optional, Iterable, Any, Set
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pdflinkcheck.io import PDFLINKCHECK_HOME
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
@@ -224,7 +224,7 @@ class PdfEngine(Flag):
         for choice in choices:
             result |= cls[choice.name]
 
-        return result.resolve()
+        return result.resolve_if_auto()
     
     @classmethod
     def from_gui(cls, value: str) -> "PdfEngine":
@@ -250,6 +250,35 @@ class PdfEngineChoice(str, Enum):
     PDFIUM = "pdfium"
     AUTO = "auto"
     ALL = "all"
+
+
+from pathlib import Path
+from typing import Optional
+
+# =================
+# Formalized request structure
+# =================
+
+@dataclass(slots=True)
+class ReportRequest:
+    pdf_path: Path
+    export_format: ExportFormat = ExportFormat.JSON
+    pdf_library: PdfEngine = PdfEngine.AUTO
+    print_bool: bool = True
+    concise_print: bool = False
+    output_dir: Optional[Path] = None
+
+    def normalize(self) -> "ReportRequest":
+        self.pdf_path = Path(self.pdf_path)
+
+        if isinstance(self.pdf_library, str):
+            self.pdf_library = PdfEngine.from_str(self.pdf_library)
+
+        if isinstance(self.export_format, str):
+            self.export_format = ExportFormat.from_str(self.export_format)
+
+        return self
+
 # ==========================================
 # Documentation
 # ==========================================
