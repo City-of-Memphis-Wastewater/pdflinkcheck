@@ -84,13 +84,6 @@ class PageRef:
         return f"PageRef(index={self.index}, human={self.human})"
     
 
-@dataclass
-class ReportRequest:
-    pdf_path: Path
-    engine: PdfEngine
-    exports: ExportFormat
-    output_dir: Path | None
-
 class ExportFormat(Flag):
     NONE = 0
     JSON = auto()
@@ -251,9 +244,6 @@ class PdfEngineChoice(str, Enum):
     AUTO = "auto"
     ALL = "all"
 
-
-from pathlib import Path
-from typing import Optional
 
 # =================
 # Formalized request structure
