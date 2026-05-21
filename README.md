@@ -272,4 +272,11 @@ Links:
 - pypdfium2 source code: https://github.com/pypdfium2-team/pypdfium2
 - pypdf source code: https://github.com/py-pdf/pypdf/
 
-Copyright © 2025 George Clayton Bennett
+---
+
+## Alternative PDF Link Analysis Solutions
+
+- https://evermap.com/Tutorial-ABM-AutoBookmark-PDF-Link-Checker.asp
+- https://www.powermapper.com/products/sortsite/ads/links-link-checker/
+- https://bootlin.com/blog/pdf-link-checker/
+
