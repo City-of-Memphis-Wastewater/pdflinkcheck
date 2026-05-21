@@ -18,6 +18,7 @@ __all__ = [
     "ReportRequest",
     "ExportFormat",
     "PdfEngine",
+    "PageRef",
     "analyze_pdf_pymupdf",
     "analyze_pdf_pypdf",
     "analyze_pdf_pdfium",
@@ -46,6 +47,10 @@ def __getattr__(name: str):
     if name == "PdfEngine":
         from pdflinkcheck.helpers import PdfEngine
         return PdfEngine
+
+    if name == "PageRef":
+        from pdflinkcheck.helpers import PageRef
+        return PageRef
 
     if name == "analyze_pdf_pypdf":
         try:

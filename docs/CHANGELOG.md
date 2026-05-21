@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is (read: strives to be) based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [1.4.2] - 2026-05-21
+### Changed:
+- Include in __init__: ExportFormat, PdfEngine, ReportRequest, PageRef
+- Change recently added safe report.run_report(request:ReportRequest) to run_report_request() for clarity; pdflinkcheck.run_report() is already available as a renaming of report.run_report_and_*
+
 ---
 
 ## [1.4.1] - 2026-05-21
