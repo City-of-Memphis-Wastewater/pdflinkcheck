@@ -14,6 +14,7 @@ import ctypes
 from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
+from pdflinkcheck.helpers import PageRef
 from pdflinkcheck.environment import pdfium_is_available
 
 try:
