@@ -18,7 +18,6 @@ from typing import Optional, Dict, Any, Tuple, List
 
 from pdflinkcheck.helpers import PageRef
 from pdflinkcheck.environment import pdfium_is_available
-from pdflinkcheck.helpers import PageRef
 
 try:
     if pdfium_is_available():
@@ -438,47 +437,46 @@ def assess_action(doc, page, links, page_index, text_page, source_ref):
             if action:
                 action_type = pdfium_c.FPDFAction_GetType(action)
 
-                if action_type == 1:  # GOTO
+                if action_type == PdfActionType.GOTO:  # GOTO
                     # Reuse existing dest if present, or try to get from action
                     target_dest = dest or pdfium_c.FPDFAction_GetDest(doc.raw, action)
                     if target_dest:
                         dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, target_dest)
                         links.append(create_link_dict(
                             source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                            link_type='Internal (GoTo/Dest)',
+                            link_type=LinkType.INTERNAL,
                             destination_page=PageRef.from_index(dest_idx).machine,
                             destination_view=extract_destination_view(target_dest),
-                            source_kind='pypdfium2_annot_goto'
+                            source_kind=SourceKindPdfium.ANNOT_GOTO
                         ))
                 
-                elif action_type == 3:  # URI
+                elif action_type == PdfActionType.URI:  # URI
                     uri = get_uri_from_action(action, doc.raw)
                     if uri:
                         links.append(create_link_dict(
                             source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                            link_type='External (URI)', url=uri, source_kind='pypdfium2_annot_uri'
+                            link_type=LinkType.EXTERNAL, url=uri, source_kind=SourceKindPdfium.ANNOT_URI
                         ))
 
-                elif action_type == 2:  # GOTOR (Remote)
+                elif action_type == PdfActionType.GOTOR:  # GOTOR (Remote)
                     remote_file = get_remote_file_from_action(action, doc.raw)
                     r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
                     links.append(create_link_dict(
                         source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                        link_type='Remote (GoToR)', remote_file=remote_file,
+                        link_type=LinkType.REMOTE, remote_file=remote_file,
                         destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None,
-                        source_kind='pypdfium2_annot_gotor'
+                        source_kind=SourceKindPdfium.ANNOT_GOTOR
                     ))
-                # ... handle other types (4, etc) as you had them ...
 
             # --- CASE 2: NO ACTION, BUT DIRECT DESTINATION ---
             elif dest:
                 dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
                 links.append(create_link_dict(
                     source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                    link_type='Internal (GoTo/Dest)',
+                    link_type=LinkType.INTERNAL,
                     destination_page=PageRef.from_index(dest_idx).machine,
                     destination_view=extract_destination_view(dest),
-                    source_kind='pypdfium2_annot_direct_dest'
+                    source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST
                 ))
 
         finally:
@@ -525,14 +523,11 @@ def assess_action_(doc,page,links, page_index, text_page, source_ref):
             # 4. Use the handle for the action (instead of the rect)
             action = pdfium_c.FPDFLink_GetAction(link_handle)
 
-           
-            #anchor_text = get_pdfium_text_safe(text_page, fs_rect)
-
 
             if action:
                 action_type = pdfium_c.FPDFAction_GetType(action)
 
-                if action_type == 1:  # GOTO
+                if action_type == PdfActionType.GOTO:  # GOTO
                     dest = pdfium_c.FPDFLink_GetDest(doc.raw, link_handle)
                     if dest:
                         dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
@@ -543,57 +538,27 @@ def assess_action_(doc,page,links, page_index, text_page, source_ref):
                             source_ref=source_ref,
                             rect_norm=rect_norm,
                             anchor_text=anchor_text,
-                            link_type='Internal (GoTo/Dest)',
+                            link_type=LinkType.INTERNAL,
                             destination_page=dest_ref.machine,
                             destination_view=view_dict,
-                            source_kind='pypdfium2_annot_goto'
+                            source_kind=SourceKindPdfium.ANNOT_GOTO
                         ))
-                elif action_type == 3:  # URI
+                elif action_type == PdfActionType.URI:  # URI
                     uri = get_uri_from_action(action, doc.raw)  # ← pass doc.raw here!
-                    #print(f"Type 3 URI attempt at pos {pos}: {uri}")
 
                     if uri:
                         links.append(create_link_dict(
                             source_ref=source_ref,
                             rect_norm=rect_norm,
                             anchor_text=anchor_text,
-                            link_type='External (URI)',
+                            link_type=LinkType.EXTERNAL,
                             url=uri,
-                            source_kind='pypdfium2_annot_uri'
+                            source_kind=SourceKindPdfium.ANNOT_URI
                         ))
                     else:
                         print(f"Type 3 at pos {pos} — no URI found")
-                        
-                    """
-                    # --- A. EXTERNAL WEB LINKS --- (a known duplicate approach)
-                    pagelink_raw = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
-                    if pagelink_raw:
-                        # This is buiilt for only web links - we entirely miss file links
-                        count = pdfium_c.FPDFLink_CountWebLinks(pagelink_raw)
-                        for i in range(count):
-                            buflen = pdfium_c.FPDFLink_GetURL(pagelink_raw, i, None, 0)
-                            url = ""
-                            if buflen > 0:
-                                buffer = (pdfium_c.c_uint16 * buflen)() 
-                                pdfium_c.FPDFLink_GetURL(pagelink_raw, i, buffer, buflen)
-                                url = ctypes.string_at(buffer, (buflen-1)*2).decode('utf-16le')
 
-                            l, t, r, b = (ctypes.c_double() for _ in range(4))
-                            pdfium_c.FPDFLink_GetRect(pagelink_raw, i, 0, ctypes.byref(l), ctypes.byref(t), ctypes.byref(r), ctypes.byref(b))
-                            
-                            rect = [l.value, b.value, r.value, t.value]
-                            links.append({
-                                'page': source_ref.machine,
-                                'rect': rect,
-                                'link_text': text_page.get_text_bounded(left=l.value, top=t.value, right=r.value, bottom=b.value).strip() or url,
-                                'type': 'External (URI)',
-                                'url': url,
-                                'source_kind': 'pypdfium2_weblink'
-                            })
-                        pdfium_c.FPDFLink_CloseWebLinks(pagelink_raw)
-                    """
-
-                elif action_type == 2:  # GOTOR
+                elif action_type == PdfActionType.GOTOR:  # GOTOR
                     remote_file = get_remote_file_from_action(action, doc.raw)
                     dest = pdfium_c.FPDFAction_GetDest(action)
                     dest_page = None
@@ -606,22 +571,22 @@ def assess_action_(doc,page,links, page_index, text_page, source_ref):
                         source_ref=source_ref,
                         rect_norm=rect_norm,
                         anchor_text=anchor_text,
-                        link_type='Remote (GoToR)',
+                        link_type=LinkType.REMOTE,
                         remote_file=remote_file,
                         destination_page=dest_page,
                         destination_view=view_dict,
-                        source_kind='pypdfium2_annot_gotor'
+                        source_kind=SourceKindPdfium.ANNOT_GOTOR
                     ))
 
-                elif action_type == 4:  # LAUNCH
+                elif action_type == PdfActionType.LAUNCH:  # LAUNCH
                     remote_file = get_remote_file_from_action(action, doc.raw)
                     links.append(create_link_dict(
                         source_ref=source_ref,
                         rect_norm=rect_norm,
                         anchor_text=anchor_text,
-                        link_type='Launch',
+                        link_type=LinkType.LAUNCH,
                         remote_file=remote_file,
-                        source_kind='pypdfium2_annot_launch'
+                        source_kind=SourceKindPdfium.ANNOT_LAUNCH
                     ))
 
                 else:
@@ -629,14 +594,13 @@ def assess_action_(doc,page,links, page_index, text_page, source_ref):
                         source_ref=source_ref,
                         rect_norm=rect_norm,
                         anchor_text=anchor_text,
-                        link_type='Other Action',
+                        link_type=LinkType.OTHER,
                         action_kind=action_type,
-                        source_kind='pypdfium2_annot_other'
+                        source_kind=SourceKindPdfium.ANNOT_OTHER
                     ))
 
         finally:
             if annot_raw:
-                #print(f"Closing annot at pos {pos}")
                 pdfium_c.FPDFPage_CloseAnnot(annot_raw)
 
         pos += 1
