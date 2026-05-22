@@ -75,10 +75,10 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
         try:
             text_page = page.get_textpage()
             try:
-            source_ref = PageRef.from_index(page_index)
-            # --- LINKS (Standard Annotations) Internal & External ---
-            # We iterate through standard link annotations for GoTo actions
-            assess_action(doc,page,links, page_index, text_page, source_ref)
+                source_ref = PageRef.from_index(page_index)
+                # --- LINKS (Standard Annotations) Internal & External ---
+                # We iterate through standard link annotations for GoTo actions
+                assess_action(doc,page,links, page_index, text_page, source_ref)
             finally:
                 text_page.close()
         finally:
