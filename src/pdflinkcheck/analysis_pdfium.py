@@ -23,9 +23,6 @@ try:
     if pdfium_is_available():
         import pypdfium2 as pdfium
         import pypdfium2.raw as pdfium_c
-        #print(dir(pdfium_c))
-        
-                    
     else:
         pdfium = None
         pdfium_c = None
@@ -59,29 +56,34 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
         dest = item.get_dest()
         #view = dest.get_view()
         page_index, view_type, params = parse_view(dest)
-        #print(f"page_index = {page_index}")
-        #print(f"params = {params}")
-        #print(help(pdfium_c.FPDFDest_GetView))
+        #logger.debug(f"page_index = {page_index}")
+        #logger.debug(f"params = {params}")
+        #logger.debug(help(pdfium_c.FPDFDest_GetView))
         #destination_view = pdfium_c.FPDFDest_GetView(dest)
         page_idx = PageRef.from_index(dest.get_index()).machine if dest else 0
         if title or page_idx > 0:
-            key = (title, page_idx)
+            key = (item.level, title, page_idx)
             if key not in seen_toc:
                 toc_list.append({"level": item.level + 1, "title": title, "target_page": page_idx})
                 seen_toc.add(key)
 
     # 2. Link Enumeration
     for page_index in range(len(doc)):
-        page = doc.get_page(page_index)
-        text_page = page.get_textpage()
-        source_ref = PageRef.from_index(page_index)
-        # --- LINKS (Standard Annotations) Internal & External ---
-        # We iterate through standard link annotations for GoTo actions
-        assess_action(doc,page,links, page_index, text_page, source_ref)
         
-        page.close()
-        text_page.close()
+        page = doc.get_page(page_index)
 
+        try:
+            text_page = page.get_textpage()
+            try:
+            source_ref = PageRef.from_index(page_index)
+            # --- LINKS (Standard Annotations) Internal & External ---
+            # We iterate through standard link annotations for GoTo actions
+            assess_action(doc,page,links, page_index, text_page, source_ref)
+            finally:
+                text_page.close()
+        finally:
+            page.close()
+        
     doc.close()
     return {"links": links, "toc": toc_list, "file_ov": file_ov}
 
@@ -187,8 +189,8 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
         uri = uri_bytes.decode('utf-8', errors='strict').rstrip('\x00').strip()
 
         # Optional debug (comment out later)
-        #print(f"Clean repr URI: {repr(uri)}")
-        #print(f"Clean display URI: {uri}")
+        #logger.debug(f"Clean repr URI: {repr(uri)}")
+        #logger.debug(f"Clean display URI: {uri}")
 
         return uri if uri else None
 
