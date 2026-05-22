@@ -59,7 +59,6 @@ class SourceKindPdfium(str, Enum):
     ANNOT_GOTOR = "pypdfium2_annot_gotor"
     ANNOT_LAUNCH = "pypdfium2_annot_launch"
     ANNOT_OTHER = "pypdfium2_annot_other"
-    TEXT_STREAM_EXTRACTED = "pypdfium2_text_stream_extracted"
 
 def _guard_pdfium_availability() -> None:
     """Ensures pypdfium2 components are properly installed and available."""
