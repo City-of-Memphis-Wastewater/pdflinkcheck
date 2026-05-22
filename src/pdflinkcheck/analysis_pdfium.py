@@ -13,6 +13,7 @@ References:
 """
 from __future__ import annotations
 import ctypes
+from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
 from pdflinkcheck.helpers import PageRef
@@ -30,15 +31,56 @@ except ImportError:
     pdfium = None
     pdfium_c = None
 
+class PdfActionType(IntEnum):
+    """
+    Standard PDF structural action types mapped to PDFium specifications.
+    Reference: fpdf_doc.h action type macros
+    """
+    UNSUPPORTED = 0
+    GOTO = 1         # Internal destination
+    GOTOR = 2        # Remote destination (external PDF file reference)
+    URI = 3          # External web / application resource locator
+    LAUNCH = 4       # Launch external application or open arbitrary files
+    NAMED = 5        # Predefined structural names (e.g., NextPage, Print)
+    VJS = 6          # Embedded JavaScript execution engine blocks
+    SUBMIT = 7       # Form field submission data pipelines
+    RESET = 8        # Form tracking component control reset actions
+    IMPORTDATA = 9   # Interactive external form initialization values
+
+
+class LinkType(str, Enum):
+    """Normalized categories of extracted document elements for reporting/filtering."""
+    INTERNAL = "Internal (GoTo/Dest)"
+    EXTERNAL = "External (URI)"
+    REMOTE = "Remote (GoToR)"
+    LAUNCH = "Launch"
+    OTHER = "Other Action"
+
+
+class SourceKindPdfium(str, Enum):
+    """Tracks exactly which internal PDF pipeline or object type exposed the target link."""
+    ANNOT_DIRECT_DEST = "pypdfium2_annot_direct_dest"
+    ANNOT_GOTO = "pypdfium2_annot_goto"
+    ANNOT_URI = "pypdfium2_annot_uri"
+    ANNOT_GOTOR = "pypdfium2_annot_gotor"
+    ANNOT_LAUNCH = "pypdfium2_annot_launch"
+    ANNOT_OTHER = "pypdfium2_annot_other"
+
+
+def _guard_pdfium_availability() -> None:
+    """Ensures pypdfium2 components are properly installed and available."""
+    if not pdfium_is_available() or pdfium is None:
+        raise ImportError(
+            "\n\npypdfium2 is not installed. \n"
+            "Install it with: \n\n"
+            "\tpip install pdflinkcheck[pdfium] \n"
+            "\t\tOR \n"
+            "\tuv sync --extra pdfium \n"
+        )
+
 def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
     # 1. Guard the entry point
-    if not pdfium_is_available() or pdfium is None:
-        print(f"pdfium_is_available() = {pdfium_is_available()}")
-        print(f"pdfium = {pdfium}")
-        
-        raise ImportError(
-            "\n\npypdfium2 is not installed. \nInstall it with: \n\n\tpip install pdflinkcheck[pdfium] \n\t\tOR \n\tuv sync --extra pdfium \n"
-        )
+    _guard_pdfium_availability()
     doc = pdfium.PdfDocument(pdf_path)
 
     total_pages = len(doc) # or doc.page_count
@@ -606,7 +648,13 @@ def demo():
     """
     from pdflinkcheck.io import get_first_pdf_in_cwd
 
-    data = analyze_pdf(pdf_path = get_first_pdf_in_cwd())
+    pdf_path = get_first_pdf_in_cwd()
+    if not pdf_path:
+        print(" [!] No PDF found in the current working directory to run testing.")
+        print("     Drop a dummy PDF into ~/dev/pdflinkcheck or pass an explicit path to test.")
+        return
+    
+    data = analyze_pdf(pdf_path = pdf_path)
     print(f"list(data) = {list(data)}")
     print("pypdfium2-based analysis complete.")
     print("Use the pdflinkcheck CLI, GUI, or web server to generate export files.")
