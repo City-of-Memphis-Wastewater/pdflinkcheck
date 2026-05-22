@@ -8,7 +8,6 @@ References:
 - https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdfview.h#141-147
 - https://pdfium.googlesource.com/pdfium/+/refs/heads/main/public/fpdfview.h#119-128
 """
-
 from __future__ import annotations
 import ctypes
 from enum import IntEnum, Enum
@@ -76,22 +75,17 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
     # 1. Guard the entry point
     _guard_pdfium_availability()
     doc = pdfium.PdfDocument(pdf_path)
-    try:
-        total_pages = len(doc)
-        toc_list = extract_toc(doc)
-        links = extract_all_links(doc)
-        
-        file_ov = {"total_pages": total_pages}
-        return {"links": links, "toc": toc_list, "file_ov": file_ov}
-    finally:
-        doc.close()
 
+    total_pages = len(doc) # or doc.page_count
 
-def extract_toc(doc: pdfium.PdfDocument) -> List[Dict[str, Any]]:
-    """Extracts the Table of Contents (TOC) structure from the document."""
+    links = []
     toc_list = []
+    file_ov = {}
     seen_toc = set()
 
+    file_ov["total_pages"] = total_pages
+
+    # 1. TOC Extraction (Matches PyMuPDF logic)
     for item in doc.get_toc():
         title = item.get_title() if hasattr(item, "get_title") else ""
         dest = item.get_dest()
@@ -99,22 +93,13 @@ def extract_toc(doc: pdfium.PdfDocument) -> List[Dict[str, Any]]:
         page_index, view_type, params = parse_view(dest)
         #destination_view = pdfium_c.FPDFDest_GetView(dest)
         page_idx = PageRef.from_index(dest.get_index()).machine if dest else 0
-        
         if title or page_idx > 0:
             key = (item.level, title, page_idx)
             if key not in seen_toc:
-                toc_list.append({
-                    "level": item.level + 1, 
-                    "title": title, 
-                    "target_page": page_idx
-                })
+                toc_list.append({"level": item.level + 1, "title": title, "target_page": page_idx})
                 seen_toc.add(key)
-    return toc_list
 
-
-def extract_all_links(doc: pdfium.PdfDocument) -> List[Dict[str, Any]]:
-    """Iterates through all pages in the document to look for link entries."""
-    links = []
+    # 2. Link Enumeration
     for page_index in range(len(doc)):
         page = doc.get_page(page_index)
         try:
@@ -150,28 +135,34 @@ def normalize_rect(fs_rect: pdfium_c.FS_RECTF, precision: int = 2) -> List[float
     if x1 <= x0 or y1 <= y0:
         return [0.0, 0.0, 0.0, 0.0]
 
-    return [
-        round(float(x0), precision), round(float(y0), precision), 
-        round(float(x1), precision), round(float(y1), precision)
-    ]
-
+    # Enforce standard rounding precision here
+    return [round(float(x0), precision), round(float(y0), precision), 
+            round(float(x1), precision), round(float(y1), precision)]
 
 def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
-    """Extract view parameters from a destination object."""
+    """
+    Extract view parameters from a destination object.
+    Returns dict like {'fit': 'XYZ', 'zoom': 1.5, 'left': 100, 'top': 200, 'bottom': None} or None.
+    """
     if not dest:
         return None
 
     try:
+        # FPDFDest_GetView returns a tuple: (page_index, view_mode, params_list)
+        # But in pypdfium2 helpers it may vary — fall back to raw if needed
         view = dest.get_view() if hasattr(dest, 'get_view') else pdfium_c.FPDFDest_GetView(dest)
+
         if not view or len(view) < 2:
             return None
 
-        view_mode = view[1]
+        view_mode = view[1]  # e.g. PDFDEST_VIEW_FIT, PDFDEST_VIEW_XYZ, etc.
         params = view[2] if len(view) > 2 else []
+
         result = {"fit": str(view_mode)}
 
         if view_mode in (pdfium_c.PDFDEST_VIEW_XYZ, pdfium_c.PDFDEST_VIEW_FITH,
                          pdfium_c.PDFDEST_VIEW_FITV, pdfium_c.PDFDEST_VIEW_FITR):
+            # params usually [zoom, left, top] or similar
             if len(params) >= 3:
                 result.update({
                     "zoom": float(params[0]) if params[0] is not None else None,
@@ -183,17 +174,24 @@ def extract_destination_view(dest: Any) -> Optional[Dict[str, Any]]:
     except Exception:
         return None
 
-
 def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
-    """Extract URI path string safely out of low-level string buffer fragments."""
+    """
+    Extract URI path from action.
+    Your PDFium build returns null-terminated UTF-8, not UTF-16.
+    """
     if not action or not doc_raw:
         return None
+    uri_bytes = b"" # Initialize to avoid UnboundLocalError
     try:
+        # Probe length
         buflen = pdfium_c.FPDFAction_GetURIPath(doc_raw, action, None, 0)
         if buflen <= 1:
             return None
 
+        # Allocate buffer as char* (for UTF-8)
         buffer = ctypes.create_string_buffer(buflen)
+
+        # Fill buffer
         pdfium_c.FPDFAction_GetURIPath(doc_raw, action, buffer, buflen)
 
         # buffer.value is bytes up to first null; decode as UTF-8
@@ -215,9 +213,11 @@ def get_uri_from_action(action: Any, doc_raw: Any) -> Optional[str]:
         #print(f"URI extraction failed: {str(e)}")
         return None
 
-
 def get_remote_file_from_action(action: Any, doc_raw: Any) -> Optional[str]:
-    """Extract remote file path from GoToR or Launch action."""
+    """
+    Extract remote file path from GoToR or Launch action.
+    Returns string (file path) or None.
+    """
     if not action or not doc_raw:
         return None
 
@@ -241,21 +241,30 @@ def create_link_dict(
     source_ref: PageRef,
     rect_norm: List[float],
     anchor_text: str,
-    link_type: LinkType,
-    source_kind: SourceKindPdfium,
+    link_type: str,
     **kwargs
 ) -> Dict[str, Any]:
-    """Factory for consistent link dictionary structure."""
+    """
+    Factory for consistent link dictionary structure.
+    Matches PyMuPDF style as closely as possible.
+    """
     base = {
         'page': source_ref.machine,
         'rect': rect_norm,
         'link_text': anchor_text.strip() or "Link (No Text)",
-        'type': link_type.value,
-        'source_kind': source_kind.value,
+        'type': link_type,
     }
     base.update(kwargs)
     return base
 
+def get_pdfium_text_safe(text_page, fs_rect, tolerance=2.0):
+    # Ensure min/max logic so we don't pass an inverted rect to PDFium
+    l = min(fs_rect.left, fs_rect.right) - tolerance
+    r = max(fs_rect.left, fs_rect.right) + tolerance
+    t = max(fs_rect.top, fs_rect.bottom) + tolerance
+    b = min(fs_rect.top, fs_rect.bottom) - tolerance
+    
+    return text_page.get_text_bounded(left=l, top=t, right=r, bottom=b).strip()
 
     
 def get_link_text_precise(text_page: Any, link_handle: Any) -> str:
@@ -279,10 +288,8 @@ def get_link_text_precise(text_page: Any, link_handle: Any) -> str:
             
             segment = text_page.get_text_bounded(left=l-1, bottom=b-1, right=r+1, top=t+1)
             if segment:
-                cleaned = " ".join(segment.split())
-                # REPAIR: Deduplicate overlapping bounding boxes across lines
-                if cleaned and cleaned not in all_text_segments:
-                    all_text_segments.append(cleaned)
+                all_text_segments.append(segment)
+        
         return " ".join(all_text_segments).strip()
 
     # Fallback to the standard bounding box if no quadpoints exist
@@ -452,12 +459,10 @@ def _dispatch_direct_dest(
     ))
 
 def demo():
-    """Runs a quick local integration check on the first PDF discovered in the working directory."""
+    """
+    Demostrate the pypdfium2-informed analyze_pdf().
+    """
     from pdflinkcheck.io import get_first_pdf_in_cwd
-    pdf = get_first_pdf_in_cwd()
-    if pdf:
-        data = analyze_pdf(pdf_path=pdf)
-        print(f"Analysis complete. Extracted {len(data.get('links', []))} links.")
 
     pdf_path = get_first_pdf_in_cwd()
     if not pdf_path:
