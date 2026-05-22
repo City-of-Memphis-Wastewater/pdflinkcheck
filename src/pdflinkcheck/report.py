@@ -406,7 +406,7 @@ def run_report_core(
             }
     except Exception as e:
         error_logger.error(f"Critical failure during run_report for {pdf_path}: {e}", exc_info=True)
-        log(f"FATAL: Analysis failed: {str(e)}. Check logs at {LOG_FILE_PATH}", file=sys.stderr)
+        log(f"FATAL: Analysis failed: {str(e)}. Check logs at {LOG_FILE_PATH}")
 
         # Always return a safe empty result on error
         _print_report_algorithm(report_buffer,report_buffer_overview, print_bool, concise_print)
