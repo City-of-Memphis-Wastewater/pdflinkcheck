@@ -280,8 +280,18 @@ def get_link_text_precise(text_page, link_handle):
             r = max(quad.x1, quad.x2, quad.x3, quad.x4)
             b = min(quad.y1, quad.y2, quad.y3, quad.y4)
             t = max(quad.y1, quad.y2, quad.y3, quad.y4)
-            
+            def dedup_and_normalize_segment():
+                seen = set()
+
+                for segment in all_text_segments:
+                    cleaned = " ".join(segment.split())
+                    if cleaned:
+                        seen.add(cleaned)
+
+                return " ".join(seen)
+
             segment = text_page.get_text_bounded(left=l-1, bottom=b-1, right=r+1, top=t+1)
+
             if segment:
                 all_text_segments.append(segment)
         
