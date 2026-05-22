@@ -109,13 +109,8 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
                 source_ref = PageRef.from_index(page_index)
                 # --- LINKS (Standard Annotations) Internal & External ---
                 # We iterate through standard link annotations for GoTo actions
-                
-                # Pass 1: Recover heavy annotation layers (GoTo, GoToR, explicit layout actions)
                 assess_action(doc, page, links, page_index, text_page, source_ref)
                 
-                # Pass 2: Fall back to text character stream scanning to harvest inline web URLs
-                extract_text_links(doc, page, links, text_page, source_ref)
-
             finally:
                 text_page.close()
         finally:
@@ -463,86 +458,6 @@ def _dispatch_direct_dest(
         destination_view=extract_destination_view(dest),
         source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST
     ))
-
-def extract_text_links(
-    doc: Any, 
-    page: Any, 
-    links: List[Dict[str, Any]],
-    text_page: Any, 
-    source_ref: PageRef, 
-) -> None:
-    """Scans raw page text streams for text-encoded URLs missing from traditional annotations."""
-    # Instantiates the specialized text link extraction pipeline
-    link_page = pdfium_c.FPDFLink_LoadWebLinks(text_page.raw)
-    if not link_page:
-        return
-
-    try:
-        count = pdfium_c.FPDFLink_CountWebLinks(link_page)
-        for i in range(count):
-            # Probe length (returns number of characters, including the null terminator)
-            buflen = pdfium_c.FPDFLink_GetURL(link_page, i, None, 0)
-            if buflen <= 1:
-                continue
-
-            # Allocate internal buffer array for UTF-16LE characters (2 bytes per character)
-            buf = (pdfium_c.c_ushort * buflen)()
-            pdfium_c.FPDFLink_GetURL(link_page, i, buf, buflen)
-            
-            # Decode the raw binary values up to the null boundary
-            url = ctypes.string_at(buf, (buflen - 1) * 2).decode('utf-16le', errors='replace').strip()
-            if not url:
-                continue
-
-            # Retrieve precise rectangular geometry matching the textual link target
-            rect_count = pdfium_c.FPDFLink_CountRects(link_page, i)
-            for r_idx in range(rect_count):
-                # Allocate individual C-double variables to receive out-parameters
-                left = pdfium_c.c_double()
-                top = pdfium_c.c_double()
-                right = pdfium_c.c_double()
-                bottom = pdfium_c.c_double()
-
-                # Call the function passing references to all 4 coordinate pointers
-                pdfium_c.FPDFLink_GetRect(
-                    link_page, 
-                    i, 
-                    r_idx, 
-                    pdfium_c.byref(left), 
-                    pdfium_c.byref(top), 
-                    pdfium_c.byref(right), 
-                    pdfium_c.byref(bottom)
-                )
-
-                # Map individual raw fields to the required normalized structure format
-                # Note: If normalize_rect expects an FS_RECTF instance, instantiate a local one:
-                fs_rect = pdfium_c.FS_RECTF()
-                fs_rect.left = float(left.value)
-                fs_rect.top = float(top.value)
-                fs_rect.right = float(right.value)
-                fs_rect.bottom = float(bottom.value)
-
-                rect_norm = normalize_rect(fs_rect)
-
-                # Pull physical text fragments directly within coordinate bounds
-                anchor_text = text_page.get_text_bounded(
-                    left=fs_rect.left - 1,
-                    bottom=fs_rect.bottom - 1,
-                    right=fs_rect.right + 1,
-                    top=fs_rect.top + 1
-                ) or url
-
-                links.append(create_link_dict(
-                    source_ref=source_ref,
-                    rect_norm=rect_norm,
-                    anchor_text=anchor_text,
-                    link_type=LinkType.EXTERNAL,
-                    url=url,
-                    source_kind="pypdfium2_text_stream_extracted"
-                ))
-    finally:
-        pdfium_c.FPDFLink_CloseWebLinks(link_page)
-
 
 def demo():
     """
