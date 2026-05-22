@@ -4,8 +4,9 @@
 from __future__ import annotations
 import sys
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import copy
+import unicodedata
 
 from pdflinkcheck.io import (
     error_logger, 
@@ -489,7 +490,7 @@ def _return_empty_report(report_buffer: str, pdf_library_name: str)-> dict:
         
 def get_structural_toc(structural_toc: list) -> str:
     """
-    Formats the structural TOC data into a hierarchical string and optionally prints it.
+    Formats the structural TOC data into a hierarchical string.
 
     Args:
         structural_toc: A list of TOC dictionaries.
@@ -501,11 +502,7 @@ def get_structural_toc(structural_toc: list) -> str:
     def log_toc(msg: str):
         toc_buffer.append(msg)
         
-    log_toc("\n")
-    log_toc("=" * SEP_COUNT)
-    log_toc("## Structural Table of Contents (PDF Bookmarks/Outline)")
-    log_toc("=" * SEP_COUNT)
-
+    log_toc: List[str] = ["\n" + "=" * SEP_COUNT, "## Structural Table of Contents (PDF Bookmarks/Outline)", "=" * SEP_COUNT]
     if not structural_toc:
         msg = "No structural TOC (bookmarks/outline) found."
         log_toc(msg)
@@ -522,26 +519,16 @@ def get_structural_toc(structural_toc: list) -> str:
         indent = " " * 4 * (item['level'] - 1)
         # Handle cases where page might be N/A or None
         target_page = item.get('target_page', "N/A")
-        
         # Determine the human-facing string
-        if isinstance(target_page, int):
-            # Convert 0-index back to human (1-index) for the report
-            display_val = PageRef.from_index(target_page).human
-        else:
-            display_val = str(target_page)
-
+        display_val = PageRef.from_index(target_page).human if isinstance(target_page, int) else str(target_page)
         page_str = str(display_val).rjust(page_width)
-
         log_toc(f"{indent}{item['title']} . . . page {page_str}")
 
     log_toc("-" * SEP_COUNT)
     
     # Final aggregation
     str_structural_toc = "\n".join(toc_buffer)
-        
     return str_structural_toc
-
-import unicodedata
 
 def sanitize_glyphs_for_compatibility(text: str) -> str:
     """Replaces emojis with ASCII tags to prevent rendering bugs in gedit/WSL2."""
