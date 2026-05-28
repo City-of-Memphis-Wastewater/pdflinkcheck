@@ -258,21 +258,15 @@ class PDFLinkCheckApp:
             messagebox.showwarning("Copy Failed", "PDF Path field is empty.")
 
     def _get_export_format_selection(self) -> ExportFormat:
-        # Cleanly resolve your export checkboxes into a flag mask: 
-        # Build bitmask dynamically using bitwise OR assignments
-        
+        # Build bitmask by checking the state of each BooleanVar directly
         result = ExportFormat.NONE
 
-        checkbox_map = {
-            self.do_export_report_json_var: ExportFormat.JSON,
-            self.do_export_report_txt_var: ExportFormat.TXT,
-            self.do_export_report_xlsx_var: ExportFormat.XLSX,
-        }
-
-        for var, flag in checkbox_map.items():
-            if var.get():
-                result |= flag
-
+        if self.do_export_report_json_var.get():
+            result |= ExportFormat.JSON
+        if self.do_export_report_txt_var.get():
+            result |= ExportFormat.TXT
+        if self.do_export_report_xlsx_var.get():
+            result |= ExportFormat.XLSX
         return result
 
     def _get_pdf_engine_selection(self) -> PdfEngine:
@@ -288,7 +282,7 @@ class PDFLinkCheckApp:
         export_format = self._get_export_format_selection()
         
         # Parse the GUI radio PDF engine selection string variable straight back into a type-safe PdfEngine enum
-        pdf_library = _get_pdf_engine_selection()
+        pdf_library = self._get_pdf_engine_selection()
 
         self.output_text.config(state=tk.NORMAL)
         self.output_text.delete('1.0', tk.END)

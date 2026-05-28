@@ -296,13 +296,15 @@ def get_structural_toc(structural_toc: list) -> str:
     toc_buffer = []
     def log_toc(msg: str):
         toc_buffer.append(msg)
-        
-    log_toc: List[str] = ["\n" + "=" * SEP_COUNT, "## Structural Table of Contents (PDF Bookmarks/Outline)", "=" * SEP_COUNT]
+    
+    # Rename this list variable to avoid overwriting the function 'log_toc'
+    header_list = ["\n" + "=" * SEP_COUNT, "## Structural Table of Contents (PDF Bookmarks/Outline)", "=" * SEP_COUNT]
+    toc_buffer.extend(header_list)
+
     if not structural_toc:
         msg = "No structural TOC (bookmarks/outline) found."
         log_toc(msg)
-        output = "\n".join(toc_buffer)
-        return output
+        return "\n".join(toc_buffer)
 
     # Determine max page width for consistent alignment
     valid_pages = [item['target_page'] for item in structural_toc if isinstance(item['target_page'], int)]
@@ -322,8 +324,7 @@ def get_structural_toc(structural_toc: list) -> str:
     log_toc("-" * SEP_COUNT)
     
     # Final aggregation
-    str_structural_toc = "\n".join(toc_buffer)
-    return str_structural_toc
+    return "\n".join(toc_buffer)
 
 def sanitize_glyphs_for_compatibility(text: str) -> str:
     """Replaces emojis with ASCII tags to prevent rendering bugs in gedit/WSL2."""
