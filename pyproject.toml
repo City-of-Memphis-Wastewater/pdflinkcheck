@@ -103,13 +103,3 @@ pdflinkcheck = { path = "src/pdflinkcheck" }
 [tool.setuptools.dynamic]
 version = {file = "src/pdflinkcheck/VERSION"}
 
-[tool.dist-config]
-# Base dependencies for all versions
-base-deps = [
-    "openpyxl>=3.1.5",
-    "pyhabitat>=1.2.6",
-    "pypdf>=6.4.2",
-    "rich>=14.2.0",
-    "typer>=0.20.0",
-    "typer-helptree>=0.2.7",
-]
