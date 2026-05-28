@@ -10,6 +10,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Fixed:
 - Corrected variable error in get_structural_toc()
 - Corrected GUI checkbox code to check each TK boolean var to convert to enum safely.
+- Add click>=8.1.8 as a dep.
 
 ---
 
