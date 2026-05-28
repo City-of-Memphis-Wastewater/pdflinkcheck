@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.4.3] - 2026-05-28
+### Fixed:
+- Corrected variable error in get_structural_toc()
+- Corrected GUI checkbox code to check each TK boolean var to convert to enum safely.
+
+---
+
 ## [1.4.2] - 2026-05-21
 ### Changed:
 - Include in __init__: ExportFormat, PdfEngine, ReportRequest, PageRef
