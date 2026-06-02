@@ -6,6 +6,7 @@ import typer
 from typing import Literal, List
 from typer.models import OptionInfo
 from rich.console import Console
+from rich.logging import RichHandler
 from pathlib import Path
 from typing import Dict, Optional, Union, List
 import pyhabitat
@@ -13,6 +14,7 @@ import sys
 import os
 from importlib.resources import files
 from typer_helptree import add_typer_helptree
+import logging
 
 from pdflinkcheck.report import run_report_request
 from pdflinkcheck._version import __version__
@@ -42,8 +44,7 @@ app = typer.Typer(
                       "help_option_names": ["-h", "--help"]},
 )
 
-
-def debug_callback(value: bool):
+def show_command_callback(value: bool):
     if value:
         # This runs IMMEDIATELY when --debug is parsed, even before --help
          # 1. Access the list of all command-line arguments
@@ -54,43 +55,56 @@ def debug_callback(value: bool):
         typer.echo(f"command:\n{command_string}\n")
     return value
 
-if "--show-command" in sys.argv or "--debug" in sys.argv: # requires that --show-command flag be used before the sub command
-    debug_callback(True)
-
+def configure_logging(debug: bool):
+    """
+    Idempotent logging configuration.
+    """
+    root_logger = logging.getLogger("pdflinkcheck")
+    # Avoid adding handlers multiple times
+    if root_logger.handlers:
+        return
+        
+    level = logging.DEBUG if debug else logging.WARNING
+    root_logger.setLevel(level)
     
-@app.callback()
-def main(ctx: typer.Context,
-    version: Optional[bool] = typer.Option(
-    None, "--version", is_flag=True, help="Show the version."
-    ),
-    debug: bool = typer.Option(
-        False, "--debug", is_flag=True, help="Enable verbose debug logging and echo the full command string."
-    ),
-    show_command: bool = typer.Option(
-        False, "--show-command", is_flag=True, help="Echo the full command string to the console before execution."
-    )
-    ):
-    """
-    If no subcommand is provided, launch the GUI.
-    """
+    # Use RichHandler for a clean, colorful look
+    handler = RichHandler(console=console, show_time=debug, show_path=debug)
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    root_logger.addHandler(handler)
+    root_logger.debug("Debug logging enabled.")
     
-    """
-    Fun Typer fact:
-    Overriding Order
-    Environment variables sit in the middle of the "priority" hierarchy:
+def configure_root_logging(debug: bool):
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
 
-    CLI Flag: (Highest priority) analyze -e pypdf will always win.
-    Env Var: If no flag is present, it checks PDF_ENGINE.
-    Code Default: (Lowest priority) It falls back to "pypdf" as defined in typer.Option.
-    """
+    level = logging.DEBUG if debug else logging.WARNING
+    root_logger.setLevel(level)
+    handler = RichHandler(console=console, show_time=debug, show_path=debug,log_time_format="[%H:%M:%S]")
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    root_logger.addHandler(handler)
+    root_logger.debug("Debug logging enabled.")
+
+@app.callback(invoke_without_command=True, no_args_is_help=False)
+def main(
+    ctx: typer.Context,
+    version: bool = typer.Option(False, "--version", is_flag=True),
+    debug: bool = typer.Option(False, "--debug", is_flag=True),
+):
     if version:
         typer.echo(__version__)
-        raise typer.Exit(code=0)
+        raise typer.Exit()
+        
+    # Configure logging immediately
+    configure_root_logging(debug)
+    
+    # Join the string from the command line arg and log debug to show the command.
+    full_command_list = sys.argv
+    command_string = " ".join(full_command_list)
+    logging.debug(f"command:\n{command_string}\n")
         
     if ctx.invoked_subcommand is None:
         gui_command()
-        raise typer.Exit(code=0)
-
 
 add_typer_helptree(app = app, console = console, version = __version__, hidden = False)
 
@@ -177,7 +191,7 @@ def tools_browse_exports():
     from pdflinkcheck.helpers import get_export_path
     
     target_dir = get_export_path()
-    console.print(f"Opening: [bold cyan]{target_dir}[/bold cyan]")
+    logging.debug(f"Opening: {target_dir}")
     
     try:
         pyhabitat.show_system_explorer(path = target_dir)

@@ -14,6 +14,7 @@ import ctypes
 import threading
 import subprocess
 import os
+import logging
 
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_request
@@ -500,11 +501,11 @@ def start_gui(time_auto_close: int = 0):
     
     # app = PDFLinkCheckApp(root=root)
     # App Initialization
-    print("pdflinkcheck: Initializing PDF Link Check Engine...")
+    logger.debug("Run PDF Link Check Engine")
     try:
         app = PDFLinkCheckApp(root=root)
     except Exception as e:
-        print(f"Startup Error: {e}")
+        logging.debug(f"Startup Error: {e}")
         root.destroy()
         return
     
@@ -564,7 +565,7 @@ def start_gui(time_auto_close: int = 0):
             
         
         root.mainloop()
-    print("pdflinkcheck: gui closed.")
+    logger.debug("pdflinkcheck: gui closed.")
 
 if __name__ == "__main__":
     start_gui()
