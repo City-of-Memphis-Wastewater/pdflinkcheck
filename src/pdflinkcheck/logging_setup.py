@@ -1,0 +1,36 @@
+# src/dworshak_secret/logging_setup.py
+from __future__ import annotations
+import logging
+import sys
+import traceback
+from rich.logging import RichHandler
+from rich.console import Console
+console = Console(stderr=True)
+
+logger = logging.getLogger("pdflinkcheck")
+
+def configure_logging_for_application(debug: bool=False,verbose: bool=False):
+    INTENT="app"
+
+    if debug:
+        level = logging.DEBUG
+    elif verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARNING
+
+    logger.setLevel(level)
+
+    # Remove existing handlers to avoid duplicates if called multiple times
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
+    handler = RichHandler(console=console, show_time=False, show_path=debug,log_time_format="[%H:%M:%S]")
+    handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(handler)
+    logger.debug(f"Debug logging enabled for {INTENT}.")
+    logger.info(f"Verbose logging enabled for {INTENT}.")
+    
+def log_traceback(logger):
+    if logger.level <= logging.DEBUG:
+        traceback.print_exc(file=sys.stderr)

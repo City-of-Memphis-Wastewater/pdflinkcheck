@@ -25,6 +25,7 @@ from pdflinkcheck.environment import (
     pdfium_is_available
 )
 from pdflinkcheck.helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoice, ReportRequest
+from .logging_setup import configure_logging_for_application
 
 console = Console() # to be above the tkinter check, in case of console.print
 
@@ -73,30 +74,19 @@ def configure_logging(debug: bool):
     root_logger.addHandler(handler)
     root_logger.debug("Debug logging enabled.")
     
-def configure_root_logging(debug: bool):
-    root_logger = logging.getLogger()
-    for handler in root_logger.handlers[:]:
-        root_logger.removeHandler(handler)
-
-    level = logging.DEBUG if debug else logging.WARNING
-    root_logger.setLevel(level)
-    handler = RichHandler(console=console, show_time=debug, show_path=debug,log_time_format="[%H:%M:%S]")
-    handler.setFormatter(logging.Formatter("%(message)s"))
-    root_logger.addHandler(handler)
-    root_logger.debug("Debug logging enabled.")
 
 @app.callback(invoke_without_command=True, no_args_is_help=False)
 def main(
     ctx: typer.Context,
     version: bool = typer.Option(False, "--version", is_flag=True),
-    debug: bool = typer.Option(False, "--debug", is_flag=True),
+    debug: bool = typer.Option(False, "--debug","-d", is_flag=True),
+    verbose: bool = typer.Option(False, "--verbose","-v", is_flag=True),
 ):
     if version:
         typer.echo(__version__)
         raise typer.Exit()
         
-    # Configure logging immediately
-    configure_root_logging(debug)
+    configure_logging_for_application(debug,verbose)
     
     # Join the string from the command line arg and log debug to show the command.
     full_command_list = sys.argv
