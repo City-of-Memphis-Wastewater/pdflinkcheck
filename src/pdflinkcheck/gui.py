@@ -15,7 +15,7 @@ import threading
 import subprocess
 import os
 import logging
-
+logger = logging.getLogger(__name__)
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_request
 from pdflinkcheck._version import get_version

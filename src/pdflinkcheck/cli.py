@@ -27,6 +27,7 @@ from pdflinkcheck.environment import (
 from pdflinkcheck.helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoice, ReportRequest
 from .logging_setup import configure_logging_for_application
 
+logger = logging.getLogger(__name__)
 console = Console() # to be above the tkinter check, in case of console.print
 
 # Force Rich to always enable colors, even when running from a .pyz bundle
