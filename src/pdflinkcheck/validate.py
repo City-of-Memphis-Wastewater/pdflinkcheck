@@ -65,6 +65,8 @@ def run_validation(
     broken_page_count = 0
     no_destination_page_count = 0
     unknown_web_count = 0
+    web_ping_fail_count = 0
+    web_ping_success_count = 0
     unknown_reasonableness_count = 0
     unknown_link_count = 0
 
@@ -142,11 +144,14 @@ def run_validation(
                 logger.debug(f"ping url:{url}")
                 ping_response = ping_url(url)
                 logger.debug(ping_response)
+                logger.debug(f"{ping_response.success=}")
+                status=None
                 if ping_response.success:
                     # non ideal use actual
                     status = "web-ping-success"
                 else:
                     status = "web-ping-fail"
+                logger.debug(f"{status=}")
                 reason = str(ping_response.response)
             else:
                 status = "unknown-web"
@@ -163,6 +168,10 @@ def run_validation(
             valid_count += 1
         elif status =="file-found":
             file_found_count += 1
+        elif status == "web-ping-fail":
+            web_ping_fail_count += 1
+        elif status == "web-ping-success":
+            web_ping_success_count += 1
         elif status == "unknown-web":
             unknown_web_count += 1
         elif status == "unknown-reasonableness":
@@ -239,6 +248,8 @@ def run_validation(
         "broken-page": broken_page_count,
         "broken-file": broken_file_count,
         "no_destination_page_count": no_destination_page_count,
+        "web_ping_fail_count":web_ping_fail_count,
+        "web_ping_success_count":web_ping_success_count,
         "unknown-web": unknown_web_count,
         "unknown-reasonableness": unknown_reasonableness_count,
         "unknown-link": unknown_link_count 
