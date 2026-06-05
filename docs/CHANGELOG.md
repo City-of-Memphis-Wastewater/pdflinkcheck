@@ -6,6 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.4.4] - 2026-06-05
+### Changed:
+- Logging improvements, for application.
+- Loggers are now defined in logging_setup.py.
+- Paths are now defined in paths.py
+
+---
+
 ## [1.4.3] - 2026-05-28
 ### Fixed:
 - Corrected variable error in get_structural_toc()
