@@ -33,7 +33,7 @@ def test_pdf_differential_engine_parity(pdf_path):
             pdf_library=backend,
             print_bool=False,
             concise_print=True,
-            output_dir=str(TEST_OUTPUT_DIR) # Pin the destination to our isolated workspace folder
+            output_dir=str(TEST_OUTPUT_DIR), # Pin the destination to our isolated workspace folder
             check_external=False
         )
         
