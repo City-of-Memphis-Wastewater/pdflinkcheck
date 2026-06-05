@@ -8,7 +8,7 @@ from .helpers import PingUrlResult
 def ping_url(url:str|None):
     logger.debug(f"ping:{url=} (not yet implemented)")
     success = False
-    status = 666
-    reason = "not yet implemented"
-    result = PingUrlResult(success,status,reason)
+    response = 666
+    text = "not yet implemented"
+    result = PingUrlResult(success,response,text)
     return result

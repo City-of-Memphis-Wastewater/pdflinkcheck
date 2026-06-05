@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 import copy
 import unicodedata
+import logging
+logger = logging.getLogger(__name__)
 
 from pyhabitat import check_executable_path
 
@@ -68,6 +70,7 @@ def run_report_and_call_exports(
     Public entry point. Orchestrates extraction, validation, and file exports.
     """
 
+    logger.debug(f"{check_external=}")
     if pdf_library is None:
         pdf_library = PdfEngine.resolve_auto_flag()
 
