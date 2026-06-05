@@ -8,7 +8,6 @@ import logging
 from typing import Dict, Any, Optional, List
 
 from pdflinkcheck.helpers import PageRef
-from pdflinkcheck.io import error_logger,  get_first_pdf_in_cwd, LOG_FILE_PATH
 
 from pypdf import PdfReader
 from pypdf.generic import (

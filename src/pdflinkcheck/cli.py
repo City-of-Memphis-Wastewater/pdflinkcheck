@@ -57,24 +57,6 @@ def show_command_callback(value: bool):
         typer.echo(f"command:\n{command_string}\n")
     return value
 
-def configure_logging(debug: bool):
-    """
-    Idempotent logging configuration.
-    """
-    root_logger = logging.getLogger("pdflinkcheck")
-    # Avoid adding handlers multiple times
-    if root_logger.handlers:
-        return
-        
-    level = logging.DEBUG if debug else logging.WARNING
-    root_logger.setLevel(level)
-    
-    # Use RichHandler for a clean, colorful look
-    handler = RichHandler(console=console, show_time=debug, show_path=debug)
-    handler.setFormatter(logging.Formatter("%(message)s"))
-    root_logger.addHandler(handler)
-    root_logger.debug("Debug logging enabled.")
-    
 
 @app.callback(invoke_without_command=True, no_args_is_help=False)
 def main(
