@@ -202,7 +202,7 @@ def run_report_core(
 
         # Execute validation pipeline on defensive deep copy
         report_results = copy.deepcopy(intermediate_results)
-        validation_results = run_validation(report_results=report_results, pdf_path=pdf_path, check_external=False)
+        validation_results = run_validation(report_results=report_results, pdf_path=pdf_path, check_external=check_external)
 
         for line in validation_results.get("summary-lines", []):
             log(line, overview=True)

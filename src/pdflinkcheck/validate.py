@@ -2,12 +2,16 @@
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/validate.py
 from __future__ import annotations
+from dataclasses import dataclass
+from sre_constants import SUCCESS
 import sys
 from pathlib import Path
+from tkinter.tix import STATUS
 from typing import Dict, Any
 
 from pdflinkcheck.io import get_friendly_path
-from pdflinkcheck.helpers import PageRef  # Importing the established helper
+from pdflinkcheck.helpers import PageRef  # Importing the established 
+from .ping import ping_url
 
 SEP_COUNT=28
 
@@ -128,8 +132,11 @@ def run_validation(
             url = link.get("url")
             if url and url.startswith(("http://", "https://")) and check_external:
                 # Optional: add requests-based check later
-                status = "unknown-web"
-                reason = "External URL validation not enabled"
+                # ping, please
+                ping_response = ping_url()
+                if ping_response.success:
+                    status = ping_response.status
+                    reason = f"{ping_response.response}"
             else:
                 status = "unknown-web"
                 reason = "External link (no network check)"

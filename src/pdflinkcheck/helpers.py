@@ -84,6 +84,7 @@ class PageRef:
         return f"PageRef(index={self.index}, human={self.human})"
     
 
+    
 class ExportFormat(Flag):
     NONE = 0
     JSON = auto()
@@ -244,6 +245,12 @@ class PdfEngineChoice(str, Enum):
     AUTO = "auto"
     ALL = "all"
 
+
+@dataclass()
+class PingUrlResult:
+    success: bool
+    status: int
+    reason: str
 
 # =================
 # Formalized request structure
