@@ -545,6 +545,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 export_format=ExportFormat.JSON | ExportFormat.TXT,
                 pdf_library=pdf_library,
                 print_bool=False,
+                check_external=False
             )
             result = run_report_request(request)
     

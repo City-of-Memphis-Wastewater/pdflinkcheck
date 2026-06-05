@@ -8,6 +8,8 @@ from typing import Optional, Dict, Any, List
 import copy
 import unicodedata
 
+from pyhabitat import check_executable_path
+
 from .logging_setup import error_logger    
 from .paths import LOG_FILE_PATH
 
@@ -50,7 +52,8 @@ def run_report_request(request: ReportRequest) -> dict:
         request.pdf_library, 
         request.print_bool,
         request.concise_print,
-        request.output_dir)
+        request.output_dir,
+        request.check_external)
      
 def run_report_and_call_exports(
     pdf_path: str | Path | None = None, 
@@ -58,7 +61,8 @@ def run_report_and_call_exports(
     pdf_library: PdfEngine | None = None, 
     print_bool: bool=True,
     concise_print: bool = False,
-    output_dir: Optional[str] = None
+    output_dir: Optional[str] = None,
+    check_external:bool=False
 ) -> Dict[str, Any]:
     """
     Public entry point. Orchestrates extraction, validation, and file exports.
@@ -80,6 +84,7 @@ def run_report_and_call_exports(
         pdf_library = pdf_library,
         print_bool = print_bool,
         concise_print = concise_print,
+        check_external=check_external
         
     )
     # 2. Initialize file path tracking
@@ -110,7 +115,8 @@ def run_report_core(
     pdf_path: Path | None = None, 
     pdf_library: PdfEngine = PdfEngine.resolve_auto_flag(), 
     print_bool: bool = True,
-    concise_print: bool = False
+    concise_print: bool = False,
+    check_external:bool =False
 ) -> Dict[str, Any]:
     """Core high-level PDF link analysis logic coordinator."""
     report_buffer: List[str] = []
@@ -196,7 +202,7 @@ def run_report_core(
 
         # Execute validation pipeline on defensive deep copy
         report_results = copy.deepcopy(intermediate_results)
-        validation_results = run_validation(report_results=report_results, pdf_path=pdf_path)
+        validation_results = run_validation(report_results=report_results, pdf_path=pdf_path, check_external=False)
 
         for line in validation_results.get("summary-lines", []):
             log(line, overview=True)
@@ -345,8 +351,7 @@ def sanitize_glyphs_for_compatibility(text: str) -> str:
 
 
 
-if __name__ == "__main__":
-
+def demo():
     from pdflinkcheck.io import get_first_pdf_in_cwd
     pdf_path = get_first_pdf_in_cwd()    # Run analysis first
 
@@ -366,3 +371,5 @@ if __name__ == "__main__":
         print("Success!")
         print(f"list(report['data']) = {list(report['data'])}")
 
+if __name__ == "__main__":
+    demo()

@@ -34,6 +34,7 @@ def test_pdf_differential_engine_parity(pdf_path):
             print_bool=False,
             concise_print=True,
             output_dir=str(TEST_OUTPUT_DIR) # Pin the destination to our isolated workspace folder
+            check_external=False
         )
         
         stats = report_results["data"]["validation"]["summary-stats"]

@@ -84,6 +84,8 @@ class PDFLinkCheckApp:
         self.do_export_report_json_var = tk.BooleanVar(value=True)
         self.do_export_report_txt_var = tk.BooleanVar(value=True)
         self.do_export_report_xlsx_var = tk.BooleanVar(value=True)
+        self.do_check_external_links = tk.BooleanVar(value=False)
+
         self.current_report_text = None
         self.current_report_data = None
 
@@ -94,6 +96,7 @@ class PDFLinkCheckApp:
         
         # Engine detection 
         self.pdf_library_var = tk.StringVar(value=PdfEngine.resolve_auto_flag().name)
+
 
     
     # --- Theme & Visual Initialization ---
@@ -272,6 +275,9 @@ class PDFLinkCheckApp:
 
     def _get_pdf_engine_selection(self) -> PdfEngine:
         return PdfEngine.from_gui(self.pdf_library_var.get())
+    
+    def _get_check_external_links_selection(self) -> bool:
+        return self.do_check_external_links.get()
         
     def _run_report_gui(self):
 
@@ -284,7 +290,10 @@ class PDFLinkCheckApp:
         
         # Parse the GUI radio PDF engine selection string variable straight back into a type-safe PdfEngine enum
         pdf_library = self._get_pdf_engine_selection()
-
+        
+        # Should we ping external links?
+        check_external = self._get_check_external_links_selection()
+        
         self.output_text.config(state=tk.NORMAL)
         self.output_text.delete('1.0', tk.END)
 
@@ -292,12 +301,16 @@ class PDFLinkCheckApp:
         sys.stdout = RedirectText(self.output_text)
 
         print("Running PDF analysis ...")
-
+        
+        # Add input field later
+        #check_external = False
+        
         try:
             request = ReportRequest(
                 pdf_path=pdf_path_str,
                 export_format=export_format,
-                pdf_library=pdf_library
+                pdf_library=pdf_library,
+                check_external= check_external
             )
             report_results = run_report_request(request)
             self.current_report_text = report_results.get("text-lines", "")

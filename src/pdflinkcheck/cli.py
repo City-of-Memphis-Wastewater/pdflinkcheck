@@ -200,7 +200,12 @@ def analyze_pdf(
         True,
         "--print/--quiet",
         help="Print or do not print the analysis and validation report to console."
-    )
+    ),
+    check_external: bool = typer.Option(
+        False,
+        "--ping",
+        help="Ping URI / external links"
+    ),
 ):
     """
     Analyzes the specified PDF file for all internal, external, and unlinked references.
@@ -231,7 +236,8 @@ def analyze_pdf(
         export_format = resolved_format,
         pdf_library = resolved_engine,
         print_bool = print_bool,
-        concise_print = True # ideal for CLI, to not overwhelm the terminal.
+        concise_print = True, # ideal for CLI, to not overwhelm the terminal.
+        check_external= check_external
     )
     report_results = run_report_request(request)
 

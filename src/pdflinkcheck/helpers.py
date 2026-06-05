@@ -257,6 +257,7 @@ class ReportRequest:
     print_bool: bool = True
     concise_print: bool = False
     output_dir: Optional[Path] = None
+    check_external: bool = False
 
     def normalize(self) -> "ReportRequest":
         self.pdf_path = Path(self.pdf_path)
