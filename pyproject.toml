@@ -11,7 +11,7 @@ dependencies = [
     "pypdf>=6.4.2",
     "rich>=14.2.0",
     "typer>=0.20.0",
-    "typer-helptree>=0.2.8",
+    "typer-helptree>=0.2.10.2",
     "click>=8.1.8",
 ]
 
