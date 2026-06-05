@@ -9,7 +9,7 @@ import operator
 from typing import Optional, Iterable, Any, Set
 from dataclasses import dataclass, field
 
-from pdflinkcheck.io import PDFLINKCHECK_HOME
+from .paths import PDFLINKCHECK_HOME
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
 """

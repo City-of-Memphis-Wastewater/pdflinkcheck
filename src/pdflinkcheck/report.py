@@ -8,13 +8,14 @@ from typing import Optional, Dict, Any, List
 import copy
 import unicodedata
 
+from .logging_setup import error_logger    
+from .paths import LOG_FILE_PATH
+
 from pdflinkcheck.io import (
-    error_logger, 
     export_report_json, 
     export_report_txt, 
     get_first_pdf_in_cwd, 
     get_friendly_path, 
-    LOG_FILE_PATH
 )
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk

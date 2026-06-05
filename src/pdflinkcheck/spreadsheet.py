@@ -9,7 +9,8 @@ from typing import Dict, List, Optional, Union
 from openpyxl import Workbook
 from openpyxl.styles import Font
 
-from pdflinkcheck.io import PDFLINKCHECK_HOME, get_friendly_path, get_unique_human_time
+from .paths import PDFLINKCHECK_HOME
+from pdflinkcheck.io import get_friendly_path, get_unique_human_time
 from pdflinkcheck.helpers import PageRef
 
 # ----------------- Helper Functions -----------------

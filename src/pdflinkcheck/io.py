@@ -13,61 +13,8 @@ import pyhabitat
 import os
 from enum import Enum
 
-# --- Configuration ---
-
-# Define the base directory for pdflinkcheck data (~/.pdflinkcheck)
-try:
-    # Use the home directory and append the tool's name
-    PDFLINKCHECK_HOME = Path.home() / ".pdflinkcheck"
-except Exception:
-    # Fallback if Path.home() fails in certain environments (e.g., some CI runners)
-    PDFLINKCHECK_HOME = Path("/tmp/.pdflinkcheck_temp")
-
-# Ensure the directory exists
-PDFLINKCHECK_HOME.mkdir(parents=True, exist_ok=True)
-
-# Define the log file path
-LOG_FILE_PATH = PDFLINKCHECK_HOME / "pdflinkcheck_errors.log"
-
-# --- Logging Setup ---
-
-# Set up a basic logger for error tracking
-def setup_error_logger():
-    """
-    Configures a basic logger that writes errors and warnings to a file 
-    in the PDFLINKCHECK_HOME directory.
-
-    # Example of how an external module can log an error:
-    # from pdflinkcheck.io import error_logger
-    # try: 
-    #     ...
-    # except Exception as e:
-    #     error_logger.exception("An exception occurred during link extraction.")
-
-    """
-    # Create the logger instance
-    logger = logging.getLogger('pdflinkcheck_logger')
-    logger.setLevel(logging.WARNING) # Log WARNING and above
-
-    # Prevent propagation to the root logger (which might print to console)
-    logger.propagate = False 
-
-    # Create file handler
-    file_handler = logging.FileHandler(LOG_FILE_PATH, mode='a')
-    file_handler.setLevel(logging.WARNING)
-    
-    # Create formatter
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    
-    # Check if the handler is already added (prevents duplicate log entries)
-    if not any(isinstance(handler, logging.FileHandler) for handler in logger.handlers):
-        logger.addHandler(file_handler)
-
-    return logger
-
-# Initialize the logger instance
-error_logger = setup_error_logger()
+from .logging_setup import error_logger
+from .paths import PDFLINKCHECK_HOME, LOG_FILE_PATH
 
 # --- Export Functionality ---
 
