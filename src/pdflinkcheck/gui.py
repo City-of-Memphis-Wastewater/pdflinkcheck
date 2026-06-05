@@ -176,12 +176,13 @@ class PDFLinkCheckApp:
             ttk.Radiobutton(pdf_library_frame, text="PyMuPDF", variable=self.pdf_library_var, value=PdfEngine.PYMUPDF.name).pack(side='left', padx=3, pady=1)
         ttk.Radiobutton(pdf_library_frame, text="pypdf", variable=self.pdf_library_var, value=PdfEngine.PYPDF.name).pack(side='left', padx=3, pady=1)
 
-        export_config_frame = ttk.LabelFrame(control_frame, text="Export Enabled:")
+        export_config_frame = ttk.LabelFrame(control_frame, text="Export & Config:")
         export_config_frame.grid(row=1, column=1, padx=3, pady=3, sticky='nsew')
 
         ttk.Checkbutton(export_config_frame, text="JSON", variable=self.do_export_report_json_var).pack(side=tk.LEFT, padx=4)
         ttk.Checkbutton(export_config_frame, text="TXT", variable=self.do_export_report_txt_var).pack(side=tk.LEFT, padx=4)
         ttk.Checkbutton(export_config_frame, text="XLSX", variable=self.do_export_report_xlsx_var).pack(side=tk.LEFT, padx=4)
+        ttk.Checkbutton(export_config_frame, text="Ping", variable=self.do_check_external_links).pack(side=tk.LEFT, padx=4)
         
         self.export_actions_frame = ttk.LabelFrame(control_frame, text="Open Report Files:")
         self.export_actions_frame.grid(row=1, column=2, padx=3, pady=3, sticky='nsew')
