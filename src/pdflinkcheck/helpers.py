@@ -246,12 +246,6 @@ class PdfEngineChoice(str, Enum):
     ALL = "all"
 
 
-@dataclass()
-class PingUrlResult:
-    success: bool
-    status: int
-    reason: str
-
 # =================
 # Formalized request structure
 # =================
