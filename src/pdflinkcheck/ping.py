@@ -11,6 +11,18 @@ class PingUrlResult:
     success: bool
     status: int
     reason: str
+   
+    @property
+    def success(self) -> str:
+        """Typical web return status integer interpretations."""
+        return {
+            True: 200,
+            False: 404,
+            None: 666
+        }.get(self.status, "Error.")
+
+    def __bool__(self):
+        return self.success
 
     
 def ping_url(url:str|None):
