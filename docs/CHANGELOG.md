@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.1] - 2026-06-06
+### Changed:
+- Canary: Ping, call not actually made.
+-  ping.ping_url(), PingResult
+
+---
+
 ## [1.4.4] - 2026-06-05
 ### Changed:
 - Logging improvements, for application.
