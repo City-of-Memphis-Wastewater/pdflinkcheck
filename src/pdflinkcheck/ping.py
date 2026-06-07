@@ -14,19 +14,28 @@ logger = logging.getLogger(__name__)
 @dataclass()
 #@dataclass
 class PingUrlResult:
-    success: bool
     status: int
     reason: str
-    @property
 
+    e@property
+    def success(self) -> bool | None:
+
+        if self.status == 0:
+            return None
+
+        if 200 <= self.status < 400:
+            return True
+
+        return False
+        
+   @property
     def success_text(self) -> str:
-        """Typical web return status integer interpretations."""
         return {
-            True: 200,
-            False: 404,
-            None: 666
+            200: "OK",
+            404: "Not Found",
+            666: "Not Yet Implemented",
         }.get(self.status, "Error.")
-
+    
     #def __bool__(self):
     #   return self.success
 
