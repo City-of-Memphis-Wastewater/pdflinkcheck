@@ -12,12 +12,14 @@ logger = logging.getLogger(__name__)
 # dataclass example(s): ObtainResult
 
 @dataclass()
+#@dataclass
 class PingUrlResult:
     success: bool
     status: int
     reason: str
     @property
-    def success(self) -> str:
+
+    def success_text(self) -> str:
         """Typical web return status integer interpretations."""
         return {
             True: 200,
@@ -25,13 +27,13 @@ class PingUrlResult:
             None: 666
         }.get(self.status, "Error.")
 
-    def __bool__(self):
-        return self.success
+    #def __bool__(self):
+    #   return self.success
 
 # --- Useful Functions, External-Facing, Discoverible, Stable, Primitives, Etc ---
 def ping_url(url:str|None):
     logger.debug(f"ping:{url=} (not yet implemented)")
-    succe1ss = False
+    success = False
     response = 666
     text = "not yet implemented"
     result = PingUrlResult(success,response,text)
