@@ -6,7 +6,10 @@ from dataclasses import dataclass
 from sre_constants import SUCCESS
 import sys
 from pathlib import Path
-from tkinter.tix import STATUS
+try:
+    from tkinter.tix import STATUS
+except:
+    pass
 from typing import Dict, Any
 import logging
 
