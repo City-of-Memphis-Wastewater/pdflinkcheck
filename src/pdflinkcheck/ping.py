@@ -29,7 +29,7 @@ class PingUrlResult:
 
         return False
         
-   @property
+    @property
     def success_text(self) -> str:
         return {
             200: "OK",
@@ -43,10 +43,9 @@ class PingUrlResult:
 # --- Useful Functions, External-Facing, Discoverible, Stable, Primitives, Etc ---
 def ping_url(url:str|None):
     logger.debug(f"ping:{url=} (not yet implemented)")
-    success = False
     response = 666
     text = "not yet implemented"
-    result = PingUrlResult(success,response,text)
+    result = PingUrlResult(response,text)
     return result
 
 
