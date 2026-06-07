@@ -18,7 +18,7 @@ class PingUrlResult:
     status: int
     reason: str
 
-    e@property
+    @property
     def success(self) -> bool | None:
 
         if self.status == 0:
