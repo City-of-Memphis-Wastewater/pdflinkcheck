@@ -56,7 +56,7 @@ Ways to launch the GUI interface:
 The core functionality is accessed via the `analyze` command. 
 
 `pdflinkcheck --help`:
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.3.47.png)
+![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.4.4.png)
 
 
 See the `pdflinkcheck` Typer CLI structure.
