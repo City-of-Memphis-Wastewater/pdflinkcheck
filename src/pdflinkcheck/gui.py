@@ -29,6 +29,8 @@ from pdflinkcheck.environment import (
 from pdflinkcheck.tk_utils import center_window_on_primary
 from pdflinkcheck.helpers import get_export_path, ExportFormat, PdfEngine, ReportRequest
 
+APP_BANNER_TITLE = "PDF Link Check"
+
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
     def __init__(self, text_widget):
@@ -66,7 +68,7 @@ class PDFLinkCheckApp:
         style.configure("TRadiobutton", padding=2)
         style.theme_use("forest-dark")
 
-        self.root.title(f"PDF Link Check v{get_version()}")  # Short title
+        self.root.title(f"{APP_BANNER_TITLE} v{get_version()}")  # Short title
         self.root.geometry("700x500")  # Smaller starting size
         self.root.minsize(600, 400)    # Prevent too-small window
 
@@ -545,7 +547,6 @@ def start_gui(time_auto_close: int = 0):
         app_w, app_h = 800, 500 # stop gap until buttons are reorganized
         # Center and then reveal
         # 2. CONFIG: Set title and geometry while hidden
-        root.title(f"PDF Link Check v{get_version()}")
         center_window_on_primary(root, app_w, app_h)
         
 
