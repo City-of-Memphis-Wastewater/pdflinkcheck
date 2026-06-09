@@ -16,7 +16,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from pdflinkcheck.io import get_friendly_path
-from pdflinkcheck.helpers import PageRef  # Importing the established 
+from pdflinkcheck.helpers import PageRef 
 from .ping import ping_url
 
 SEP_COUNT=28
