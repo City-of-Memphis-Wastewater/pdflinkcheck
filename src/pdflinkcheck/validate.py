@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
+import re
 
 from pdflinkcheck.io import get_friendly_path
 from pdflinkcheck.helpers import PageRef 
@@ -14,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 SEP_COUNT = 28
 START_INDEX = 0  
+
+# Standard RFC 5322 compliant lightweight email pattern
+EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+
 
 
 class ValidationCounter:
@@ -80,12 +85,42 @@ def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str
     return "broken-file", f"File not found: {remote_file}"
 
 
+def _check_email_protocol(url_str: str) -> Tuple[str, str]:
+    """
+    Parses and validates mailto protocol strings for syntax correctness.
+    
+    Extracts the core address by stripping the protocol prefix and any 
+    trailing query parameters (e.g., ?subject=, ?body=).
+    """
+    # Strip the 'mailto:' prefix (case-insensitive slice)
+    email_part = url_str[7:].split('?')[0].strip()
+    
+    if not email_part:
+        return "web-ping-fail", "Malformed mailto link: Missing email address"
+        
+    if EMAIL_REGEX.match(email_part):
+        return "web-ping-valid", "Valid email address syntax"
+        
+    return "web-ping-fail", f"Invalid email address formatting: '{email_part}'"
+
 def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str]:
     """Evaluates network URI structure and processes pings if allowed."""
-    if not is_valid_web_url(url):
-        if url:
-            return "web-ping-fail", "Malformed or unparseable URL syntax"
+    if not url:
         return "unknown-web", "External link (no URL provided)"
+        
+    url_stripped = url.strip()
+    url_lower = url_stripped.lower()
+    
+    # Handle known local/application protocols natively
+    if url_lower.startswith("mailto:"):
+        return _check_email_protocol(url_stripped)
+    
+    if url_lower.startswith(("file:", "mhtml:")):
+        return "broken-file", f"Forbidden local hardcoded reference: {url}"
+
+    # Proceed to web link verification
+    if not is_valid_web_url(url):
+        return "web-ping-fail", "Malformed or unparseable URL syntax"
 
     if not check_external:
         return "unknown-web", "External link (no network check)"
