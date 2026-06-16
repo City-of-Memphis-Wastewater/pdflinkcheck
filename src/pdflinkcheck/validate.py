@@ -2,330 +2,238 @@
 # SPDX-License-Identifier: MIT
 # src/pdflinkcheck/validate.py
 from __future__ import annotations
-from dataclasses import dataclass
-#from sre_constants import SUCCESS
-import sys
-from pathlib import Path
-try:
-    from tkinter.tix import STATUS
-except:
-    pass
-from typing import Dict, Any
 import logging
-
-logger = logging.getLogger(__name__)
+from pathlib import Path
+from typing import Dict, Any, List, Tuple
 
 from pdflinkcheck.io import get_friendly_path
 from pdflinkcheck.helpers import PageRef 
 from .ping import is_valid_web_url, ping_url
 
-SEP_COUNT=28
+logger = logging.getLogger(__name__)
 
+SEP_COUNT = 28
 START_INDEX = 0  
-# Internal 0-based start
-# Define the offset. 
-# The PDF engines are 0-based.
-# We will add +1 only for the HUMAN REASON strings.
 
+
+class ValidationCounter:
+    """Manages validation metric accumulation and categorization safely."""
+    def __init__(self, total_found: int):
+        self.stats = {
+            "total_found": total_found,
+            "internal-page-jump-valid": 0,
+            "toc-jump-valid": 0,
+            "file-found-valid": 0,
+            "web-ping-valid": 0,
+            "unknown-web": 0,
+            "unknown-reasonableness": 0,
+            "unknown-link": 0,
+            "broken-page": 0,
+            "broken-file": 0,
+            "no-destination-page": 0,
+            "web-ping-fail": 0
+        }
+        self.issues: List[Dict[str, Any]] = []
+
+    def record(self, status: str, link_payload: Dict[str, Any]):
+        """Increments stats and tracks failures in the issues registry."""
+        if status in self.stats:
+            self.stats[status] += 1
+            
+        if status in ("broken-page", "broken-file", "no-destination-page", "web-ping-fail"):
+            self.issues.append(link_payload)
+
+
+# =====================================================================
+# Pure Validation Sub-Engines
+# =====================================================================
+
+def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
+    """Evaluates index targeting against document thresholds using PageRef translation."""
+    if dest_page is None:
+        return "no-destination-page", "No destination page resolved"
+    try:
+        page_ref = PageRef.from_index(int(dest_page))
+        
+        if page_ref.machine < START_INDEX:
+            return "broken-page", f"Target page {page_ref.human} is invalid (negative index)."
+            
+        if total_pages is None:
+            return "unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+            
+        if page_ref.machine >= total_pages:
+            return "broken-page", f"Page {page_ref.human} out of range (1–{total_pages})"
+            
+        return "internal-page-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
+    except (ValueError, TypeError):
+        return "broken-page", f"Invalid page value: {dest_page}"
+
+
+def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str]:
+    """Evaluates OS filesystem presence for local cross-document references."""
+    if not remote_file:
+        return "broken-file", "Missing remote file name"
+    
+    target_path = (pdf_dir / remote_file).resolve()
+    if target_path.exists() and target_path.is_file():
+        return "file-found-valid", f"Found: {target_path.name}"
+    return "broken-file", f"File not found: {remote_file}"
+
+
+def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str]:
+    """Evaluates network URI structure and processes pings if allowed."""
+    if not is_valid_web_url(url):
+        if url:
+            return "web-ping-fail", "Malformed or unparseable URL syntax"
+        return "unknown-web", "External link (no URL provided)"
+
+    if not check_external:
+        return "unknown-web", "External link (no network check)"
+
+    ping_res = ping_url(url)
+    logger.debug(f"Ping result: {ping_res}")
+    
+    if ping_res.success:
+        return "web-ping-valid", f"HTTP {ping_res.status_code}: {ping_res.reason}"
+    
+    reason = f"HTTP {ping_res.status_code}: {ping_res.reason}" if ping_res.status_code else ping_res.reason
+    return "web-ping-fail", reason
+
+
+# =====================================================================
+# Main Coordinator & Orchestration Boundary
+# =====================================================================
 
 def run_validation(
     report_results: Dict[str, Any],
     pdf_path: str,
     check_external: bool = False
 ) -> Dict[str, Any]:
-    """
-    Validates links during run_report_*() using a partial completion of the data dict.
-
-    Args:
-        report_results: The dict returned by run_report_and_call_exports()
-        pdf_path: Path to the original PDF (needed for relative file checks and page count)
-        check_external: Whether to validate HTTP URLs (requires network + requests)
-
-    Returns:
-        Validation summary stats with valid/broken counts and detailed issues
-    """
+    """Coordinates deep asset testing across document boundaries."""
     data = report_results.get("data", {})
     metadata = report_results.get("metadata", {})
-
     all_links = data.get("external_links", []) + data.get("internal_links", [])
     toc = data.get("toc", [])
-    total_pages = metadata.get("file_overview", {}).get("total_pages",None)
+    total_pages = metadata.get("file_overview", {}).get("total_pages", None)
+
+    total_found = (
+        metadata.get("link_counts", {}).get("total_links_count", 0) + 
+        metadata.get("link_counts", {}).get("toc_entry_count", 0)
+    )
 
     if not all_links and not toc:
-        print("No links or TOC to validate.")
-        return {"summary-stats": {"valid": 0, "broken": 0}, "issues": []}
-
+        return {
+            "pdf_path": pdf_path,
+            "summary-stats": {"total_found": 0}, 
+            "issues": [], 
+            "summary-lines": [],
+            "total_pages": total_pages
+        }
 
     pdf_dir = Path(pdf_path).parent
+    tracker = ValidationCounter(total_found)
 
-    issues = []
-    valid_count = 0 # add more granulaity for types of valid links
-    file_found_count = 0
-    broken_file_count = 0
-    broken_page_count = 0
-    no_destination_page_count = 0
-    unknown_web_count = 0
-    web_ping_fail_count = 0
-    web_ping_success_count = 0
-    unknown_reasonableness_count = 0
-    unknown_link_count = 0
-
-    # Validate active links
-    #print("DEBUG validate: entering loop with", len(all_links), "links")
+    # Dispatch Pass 1: Standard Document Annotations
     for link in all_links:
         link_type = link.get("type")
-        status = "valid"
-        reason = None
-
+        
         if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
-            dest_page_raw = link.get("destination_page")
-
-            if dest_page_raw is not None:
-
-                try:
-                    # Use PageRef to handle translation
-                    target_page_ref = PageRef.from_index(int(dest_page_raw))
-                    #target_page = int(dest_page_raw)
-                    
-                    # 1. Immediate Failure: Below 0
-                    if target_page_ref.machine < START_INDEX:
-                        status = "broken-page"
-                        # We use target_page + 1 to show the user what they "saw"
-                        reason = f"Target page {target_page_ref.human} is invalid (negative index)."
-
-                    # 2. Case: We don't know the max page count
-                    elif total_pages is None:
-                        # If it's 0 or higher, we assume it might be okay but can't be sure
-                        status = "unknown-reasonableness"
-                        reason = f"Page {target_page_ref.human} seems reasonable, but total page count is unavailable."
-
-                    # 3. Case: Out of Upper Bounds
-                    elif target_page_ref.machine >= total_pages:
-                        status = "broken-page"
-                        # User sees 1-based, e.g., "Page 101 out of range (1-100)"
-                        reason = f"Page {target_page_ref.human} out of range (1–{total_pages})"
-
-                    # 4. Case: Perfect Match
-                    else:
-                        status = "valid"
-                        reason = f"Page {target_page_ref.human} within range (1–{total_pages})"
-
-                except (ValueError, TypeError):
-                    status = "broken-page"
-                    reason = f"Invalid page value: {dest_page_raw}"
-
-                except (ValueError, TypeError):
-                    status = "broken-page"
-                    reason = f"Invalid page value: {dest_page_raw}"
-
-            elif dest_page_raw is None:
-                status = "no-destinstion-page"
-                reason = "No destination page resolved"
-
+            status, reason = _check_internal_jump(link.get("destination_page"), total_pages)
         elif link_type == "Remote (GoToR)":
-            remote_file = link.get("remote_file")
-            if not remote_file:
-                status = "broken-file"
-                reason = "Missing remote file name"
-            else:
-                target_path = (pdf_dir / remote_file).resolve()
-                if target_path.exists() and target_path.is_file():
-                    status = "file-found"
-                    reason = f"Found: {target_path.name}"
-                else:
-                    status = "broken-file"
-                    reason = f"File not found: {remote_file}"
-            
+            status, reason = _check_remote_file(link.get("remote_file"), pdf_dir)
         elif link_type == "External (URI)":
-            url = link.get("url")
-            if is_valid_web_url(url) and check_external:
-                ping_response = ping_url(url)
-                logger.debug(ping_response)
-                status=None
-                if ping_response.success:
-                    # non ideal use actual
-                    status = "web-ping-success"
-                    reason = f"HTTP {ping_response.status_code}: {ping_response.reason}"
-                else:
-                    status = "web-ping-fail"
-                    reason = f"HTTP {ping_response.status_code}: {ping_response.reason}" if ping_response.status_code else ping_response.reason
-                
-            else:
-                # If it failed parsing or lacked a host, it's inherently broken
-                if url and not is_valid_web_url:
-                    status = "web-ping-fail"
-                    status_code = None
-                    reason = "Malformed or unparseable URL syntax"
-                else:
-                    status = "unknown-web"
-                    status_code = None
-                    reason = "External link (no network check)"
-            
+            status, reason = _check_external_uri(link.get("url"), check_external)
         else:
-            status = "unknown-link"
-            reason = "Other/unsupported link type"
-            
-        link_with_val = link.copy()
-        link_with_val["validation"] = {"status": status, "reason": reason}
+            status, reason = "unknown-link", "Other/unsupported link type"
 
-        if status == "valid":
-            valid_count += 1
-        elif status =="file-found":
-            file_found_count += 1
-        elif status == "web-ping-fail":
-            web_ping_fail_count += 1
-        elif status == "web-ping-success":
-            web_ping_success_count += 1
-        elif status == "unknown-web":
-            unknown_web_count += 1
-        elif status == "unknown-reasonableness":
-            unknown_reasonableness_count += 1
-        elif status == "unknown-link":
-            unknown_link_count += 1
-        elif status == "broken-page":
-            broken_page_count += 1
-            issues.append(link_with_val)
-        elif status == "broken-file":
-            broken_file_count += 1
-            issues.append(link_with_val)
-        elif status == "no-destinstion-page":
-            no_destination_page_count += 1
-            issues.append(link_with_val)
+        validated_link = link.copy()
+        validated_link["validation"] = {"status": status, "reason": reason}
+        tracker.record(status, validated_link)
 
-    # Validate TOC entries
+    # Dispatch Pass 2: Table of Contents Bookmarks
     for entry in toc:
-        try:
-            # Coerce to int; we expect 0-based index from the engine
-            # In the context of the ing Map, -1 acts as a "Sentinel Value." It represents a state that is strictly outside the "Machine" range
-            target_page_raw = int(entry.get("target_page", -1))
-            target_page_ref = PageRef.from_index(int(target_page_raw))
+        raw_page = entry.get("target_page", -1)
+        status, reason = _check_internal_jump(raw_page, total_pages)
+        
+        if status == "internal-page-jump-valid":
+            status = "toc-jump-valid"
+        elif status == "broken-page":
+            try:
+                human_label = PageRef.from_index(int(raw_page)).human
+            except (ValueError, TypeError):
+                human_label = str(raw_page)
+            reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
 
-            status = "valid"
-            reason = ""
-
-            # 1. Check for negative indices (anything below our START_INDEX)
-            if target_page_ref.machine < START_INDEX:
-                status = "broken-page"
-                broken_page_count += 1
-                # User sees Page 0 or lower as the problem
-                reason = f"TOC targets invalid page number: {target_page_ref.human}"
-
-            # 2. Case: total_pages is unknown
-            elif total_pages is None:
-                status = "unknown-reasonableness"
-                unknown_reasonableness_count += 1
-                reason = f"Page {target_page_ref.human} unknown (could not verify total pages)"
-
-            # 3. Case: Out of range (Upper Bound)
-            # Index 100 in a 100-page doc (total_pages=100) is out of bounds
-            elif target_page_ref.machine >= total_pages:
-                status = "broken-page"
-                broken_page_count += 1
-                reason = f"TOC targets page {target_page_ref.human} (out of 1–{total_pages})"
-
-            # 4. Valid Case
-            else:
-                status = "valid"
-                valid_count += 1
-                # We skip issues.append for valid TOC entries to keep the issues list clean
-                continue
-
-        except (ValueError, TypeError):
-            status = "broken-page"
-            broken_page_count += 1
-            reason = f"Invalid page reference: {entry.get('target_page')}"
-
-        # Only reaches here if status is not "valid" (because of 'continue' above)
-        issues.append({
+        validated_toc = {
             "type": "TOC Entry",
             "title": entry.get("title", "Untitled"),
             "level": entry.get("level", 0),
-            "target_page": target_page_ref.machine, # Stored as 0-indexed for data consistency
+            "target_page": raw_page,
             "validation": {"status": status, "reason": reason}
-        })
-    
-    total_checked = metadata.get("link_counts",{}).get("total_links_count",0) + metadata.get("link_counts",{}).get("toc_entry_count",0)
-    summary_stats = {
-        "total_checked": total_checked,
-        "valid": valid_count,
-        "file-found": file_found_count,
-        "broken-page": broken_page_count,
-        "broken-file": broken_file_count,
-        "no_destination_page_count": no_destination_page_count,
-        "web_ping_fail_count":web_ping_fail_count,
-        "web_ping_success_count":web_ping_success_count,
-        "unknown-web": unknown_web_count,
-        "unknown-reasonableness": unknown_reasonableness_count,
-        "unknown-link": unknown_link_count 
-    }
+        }
+        tracker.record(status, validated_toc)
 
-    
-    def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, check_external):
-        """
-        Prepare the validation overview for modular reuse
-        """
-        validation_buffer = []
+    report_buffer = generate_validation_summary_txt_buffer(tracker.stats, tracker.issues, pdf_path, check_external)
 
-        # Helper to handle conditional printing and mandatory buffering
-        def log(msg: str):
-            validation_buffer.append(msg)
-
-        log("\n")
-        log("=" * SEP_COUNT)
-        log("## Validation Results")
-        log("=" * SEP_COUNT)
-        log(f"PDF Path = {get_friendly_path(pdf_path)}")
-        log(f"Total items checked: {summary_stats['total_checked']}")
-        log(f"✅ Valid: {summary_stats['valid']}")
-        log(f"✅ Web Addresses Valid: {summary_stats['web-ping-success']}")
-        log(f"🌐 Web Addresses Not Checked (Ping: {check_external}): {summary_stats['unknown-web']}")
-        log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
-        log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
-        log(f"❌ Broken Page Reference (Page number beyond scope of availability): {summary_stats['broken-page']}")
-        log(f"❌ Broken File Reference (File not available): {summary_stats['broken-file']}")
-        log(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
-        log("=" * SEP_COUNT)
-
-        if issues:
-            log("\n## Issues Found")
-            log("{:<5} | {:<12} | {:<30} | {}".format("Idx", "Type", "Text", "Problem"))
-            log("-" * SEP_COUNT)
-            for i, issue in enumerate(issues[:25], 1):
-                link_type = issue.get("type", "Link")
-                text = issue.get("link_text", "") or issue.get("title", "") or "N/A"
-                text = text[:30]
-                reason = issue["validation"]["reason"]
-                log("{:<5} | {:<12} | {:<30} | {}".format(i, link_type, text, reason))
-            if len(issues) > 25:
-                log(f"... and {len(issues) - 25} more issues")
-
-        elif summary_stats.get('total_checked', 0) == 0:
-            # Check if this was a total crash or just an empty PDF
-            if summary_stats.get('is_error_fallback'): 
-                 log("\nStatus: Validation could not be performed due to a processing error.")
-            else:
-                 log("\nStatus: No links or TOC entries were found to validate.")
-
-        else:
-            log("Success: No broken links or TOC issues!")
-
-        # Final aggregation of the buffer into one string
-        validation_buffer_str = "\n".join(validation_buffer)
-        
-        results = dict()
-        results["validation_summary_str"] = validation_buffer_str
-        results["validation_summary_lines"] = validation_buffer
-        return results
-    
-    results_validation = generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, check_external)
-
-    validation_results = {
-        "pdf_path" : pdf_path,
-        "summary-stats": summary_stats,
-        "issues": issues,
-        #"summary-txt": results_validation["validation_summary_str"],
-        "summary-lines": results_validation["validation_summary_lines"],
+    return {
+        "pdf_path": pdf_path,
+        "summary-stats": tracker.stats,
+        "issues": tracker.issues,
+        "summary-lines": report_buffer["validation_summary_lines"],
         "total_pages": total_pages
     }
 
-    return validation_results
+
+def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, check_external):
+    """Generates structural text layers from state engine snapshots."""
+    buf = []
+    
+    buf.append("\n" + "=" * SEP_COUNT)
+    buf.append("## Validation Results")
+    buf.append("=" * SEP_COUNT)
+    buf.append(f"PDF Path = {get_friendly_path(pdf_path)}")
+    buf.append(f"Total items found: {summary_stats['total_found']}")
+    buf.append(f"✅ TOC Page Jump Valid: {summary_stats['toc-jump-valid']}")
+    buf.append(f"✅ Internal Page Jump Valid: {summary_stats['internal-page-jump-valid']}")
+    buf.append(f"✅ File Targets Found: {summary_stats['file-found-valid']}")
+    buf.append(f"✅ Web Addresses Valid: {summary_stats['web-ping-valid']}")
+    buf.append(f"🌐 Web Addresses Not Checked (Ping: {check_external}): {summary_stats['unknown-web']}")
+    buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['unknown-reasonableness']}")
+    buf.append(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
+    buf.append(f"❌ Broken Page Reference: {summary_stats['broken-page']}")
+    buf.append(f"❌ Broken File Reference: {summary_stats['broken-file']}")
+    buf.append(f"❌ No Destination Resolved: {summary_stats['no-destination-page']}")
+    buf.append(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
+    buf.append("=" * SEP_COUNT)
+
+    if issues:
+        buf.append("\n## Issues Found")
+        # Added explicit "Target/URL" column asset header
+        buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format("Idx", "Type", "Anchor Text", "Target / URL", "Problem"))
+        buf.append("-" * (SEP_COUNT + 50)) # Extended divider line for width matching
+        
+        for i, issue in enumerate(issues[:25], 1):
+            itype = issue.get("type", "Link")
+            
+            # Extract anchor visual text or fallback onto title
+            itext = (issue.get("link_text") or issue.get("title") or "—")
+            itext = (itext[:22] + "...") if len(itext) > 25 else itext
+            
+            # Extract actual underlying execution target string
+            itarget = (issue.get("url") or issue.get("remote_file") or f"Page {issue.get('target_page', 'N/A')}")
+            itarget = (itarget[:27] + "...") if len(itarget) > 30 else itarget
+            
+            ireason = issue["validation"]["reason"]
+            buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format(i, itype, itext, itarget, ireason))
+            
+        if len(issues) > 25:
+            buf.append(f"... and {len(issues) - 25} more issues")
+    elif summary_stats.get('total_found', 0) == 0:
+        buf.append("\nStatus: No items were discovered to evaluate.")
+    else:
+        buf.append("\nSuccess: Document structural references verified perfectly!")
+
+    return {
+        "validation_summary_str": "\n".join(buf),
+        "validation_summary_lines": buf
+    }
