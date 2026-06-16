@@ -40,18 +40,6 @@ class PingUrlResult:
             666: "Not Yet Implemented",
         }.get(self.status_code, "Error.")
     
-    #def __bool__(self):
-    #   return self.success
-
-# --- 
-
-def ping_url_mock(url:str|None):
-    logger.debug(f"ping:{url=}")
-    response = 666
-    text = "not yet implemented"
-    result = PingUrlResult(response,text)
-    return result
-
 # ---
 
 def ping_url(url: str | None) -> PingUrlResult:

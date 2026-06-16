@@ -139,7 +139,6 @@ def run_validation(
         elif link_type == "External (URI)":
             url = link.get("url")
             if is_valid_web_url(url) and check_external:
-                logger.debug(f"ping url:{url}")
                 ping_response = ping_url(url)
                 logger.debug(ping_response)
                 status=None
@@ -278,13 +277,13 @@ def run_validation(
         log(f"PDF Path = {get_friendly_path(pdf_path)}")
         log(f"Total items checked: {summary_stats['total_checked']}")
         log(f"✅ Valid: {summary_stats['valid']}")
-        #log(f"✅ Valid: {summary_stats['valid']}")
-        #log(f"✅ Valid: {summary_stats['valid']}")
-        log(f"🌐 Web Addresses (Ping: {check_external}): {summary_stats['unknown-web']}")
+        log(f"✅ Web Addresses Valid: {summary_stats['web-ping-success']}")
+        log(f"🌐 Web Addresses Not Checked (Ping: {check_external}): {summary_stats['unknown-web']}")
         log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
         log(f"❌ Broken Page Reference (Page number beyond scope of availability): {summary_stats['broken-page']}")
         log(f"❌ Broken File Reference (File not available): {summary_stats['broken-file']}")
+        log(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
         log("=" * SEP_COUNT)
 
         if issues:
