@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 from pdflinkcheck.io import get_friendly_path
 from pdflinkcheck.helpers import PageRef 
-from .ping import ping_url
+from .ping import is_valid_web_url, ping_url
 
 SEP_COUNT=28
 
@@ -138,26 +138,29 @@ def run_validation(
             
         elif link_type == "External (URI)":
             url = link.get("url")
-            if url and url.startswith(("http://", "https://")) and check_external:
-                # Optional: add requests-based check later
-                # ping, please
+            if is_valid_web_url(url) and check_external:
                 logger.debug(f"ping url:{url}")
                 ping_response = ping_url(url)
                 logger.debug(ping_response)
-                #logger.debug(f"{ping_response.success=}")
-                #logger.debug(f"{ping_response.status_code=}")
-                #logger.debug(f"{ping_response.reason=}")
                 status=None
                 if ping_response.success:
                     # non ideal use actual
                     status = "web-ping-success"
+                    reason = f"HTTP {ping_response.status_code}: {ping_response.reason}"
                 else:
                     status = "web-ping-fail"
-                #logger.debug(f"{status=}")
-                reason = str(ping_response.status_code) + " - " + str(ping_response.reason)
+                    reason = f"HTTP {ping_response.status_code}: {ping_response.reason}" if ping_response.status_code else ping_response.reason
+                
             else:
-                status = "unknown-web"
-                reason = "External link (no network check)"
+                # If it failed parsing or lacked a host, it's inherently broken
+                if url and not is_valid_web_url:
+                    status = "web-ping-fail"
+                    status_code = None
+                    reason = "Malformed or unparseable URL syntax"
+                else:
+                    status = "unknown-web"
+                    status_code = None
+                    reason = "External link (no network check)"
             
         else:
             status = "unknown-link"
