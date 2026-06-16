@@ -145,6 +145,8 @@ def run_validation(
                 ping_response = ping_url(url)
                 logger.debug(ping_response)
                 logger.debug(f"{ping_response.success=}")
+                logger.debug(f"{ping_response.status=}")
+                logger.debug(f"{ping_response.reason=}")
                 status=None
                 if ping_response.success:
                     # non ideal use actual
@@ -152,7 +154,7 @@ def run_validation(
                 else:
                     status = "web-ping-fail"
                 logger.debug(f"{status=}")
-                reason = str(ping_response.response)
+                reason = str(ping_response.reason)
             else:
                 status = "unknown-web"
                 reason = "External link (no network check)"
