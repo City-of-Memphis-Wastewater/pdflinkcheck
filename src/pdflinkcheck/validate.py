@@ -258,7 +258,7 @@ def run_validation(
     }
 
     
-    def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path):
+    def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, check_external):
         """
         Prepare the validation overview for modular reuse
         """
@@ -277,7 +277,7 @@ def run_validation(
         log(f"✅ Valid: {summary_stats['valid']}")
         #log(f"✅ Valid: {summary_stats['valid']}")
         #log(f"✅ Valid: {summary_stats['valid']}")
-        log(f"🌐 Web Addresses (Ping: OFF): {summary_stats['unknown-web']}")
+        log(f"🌐 Web Addresses (Ping: {check_external}): {summary_stats['unknown-web']}")
         log(f"⚠️ Unknown Page Reasonableness (Due to Missing Total Page Count): {summary_stats['unknown-reasonableness']}")
         log(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
         log(f"❌ Broken Page Reference (Page number beyond scope of availability): {summary_stats['broken-page']}")
@@ -315,7 +315,7 @@ def run_validation(
         results["validation_summary_lines"] = validation_buffer
         return results
     
-    results_validation = generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path)
+    results_validation = generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, check_external)
 
     validation_results = {
         "pdf_path" : pdf_path,
