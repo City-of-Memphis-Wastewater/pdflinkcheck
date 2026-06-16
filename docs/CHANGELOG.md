@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.3] - 2026-06-16
+### Changed:
+- helptree improved with typer-helptree 0.2.10.5
+- Validation fleshed out for various valid cases, "valid" not being grandular enough, and refactored for modular function usage.
+
+---
+
 ## [1.5.1beta] - 2026-06-06
 ### Changed:
 - Canary: Ping, call not actually made.
