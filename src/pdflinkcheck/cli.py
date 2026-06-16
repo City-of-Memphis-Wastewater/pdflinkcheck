@@ -6,7 +6,6 @@ import typer
 from typing import Literal, List
 from typer.models import OptionInfo
 from rich.console import Console
-from rich.logging import RichHandler
 from pathlib import Path
 from typing import Dict, Optional, Union, List
 import pyhabitat

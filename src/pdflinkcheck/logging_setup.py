@@ -21,13 +21,16 @@ def configure_logging_for_application(debug: bool=False,verbose: bool=False):
     else:
         level = logging.WARNING
 
+    logger = logging.getLogger("pdflinkcheck")
     logger.setLevel(level)
+
+    logger.propagate = True
 
     # Remove existing handlers to avoid duplicates if called multiple times
     if logger.hasHandlers():
         logger.handlers.clear()
 
-    handler = RichHandler(console=console, show_time=False, show_path=debug,log_time_format="[%H:%M:%S]")
+    handler = RichHandler(console=console, show_time=False, show_path=False,log_time_format="[%H:%M:%S]")
     handler.setFormatter(logging.Formatter("%(message)s"))
     logger.addHandler(handler)
     logger.debug(f"Debug logging enabled for {INTENT}.")
