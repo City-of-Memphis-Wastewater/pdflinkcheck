@@ -154,8 +154,9 @@ def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str
         return "telephone-number", f"Phone number not checked."
         
     if url_lower.startswith(("file:", "mhtml:")):
-        return "file-target-broken", f"Forbidden local hardcoded reference: {url}"
-
+        #return "file-target-broken", f"Forbidden local hardcoded reference: {url}"
+        return "file-target-broken", f"Forbidden local hardcoded reference."
+        
     # Proceed to web link verification
     if not is_valid_web_url(url):
         return "web-ping-fail", "Malformed or unparseable URL syntax"
