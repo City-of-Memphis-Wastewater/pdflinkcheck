@@ -31,7 +31,8 @@ def make_fresh_stats(total_found):
         "web-ping-valid": 0,
         "email-address-valid": 0,
         "email-address-broken": 0,
-        "unknown-web": 0,
+        "unknown-web-url-missing": 0,
+        "unknown-web-not-pinged": 0,
         "internal-jump-unknown-reasonableness": 0,
         "unknown-link": 0,
         "internal-page-jump-broken": 0,
@@ -140,7 +141,7 @@ def _check_email_protocol(url_str: str) -> Tuple[str, str]:
 def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str]:
     """Evaluates network URI structure and processes pings if allowed."""
     if not url:
-        return "unknown-web", "External link (no URL provided)"
+        return "unknown-web-url-missing", "External link (no URL provided)"
         
     url_stripped = url.strip()
     url_lower = url_stripped.lower()
@@ -160,7 +161,7 @@ def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str
         return "web-ping-fail", "Malformed or unparseable URL syntax"
 
     if not check_external:
-        return "unknown-web", "External link (no network check)"
+        return "unknown-web-not-pinged", "External link (no network check)"
 
     ping_res = ping_url(url)
     logger.debug(f"Ping result: {ping_res}")
@@ -273,7 +274,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append(f"✅ Internal Page Jumps Valid: {summary_stats['internal-page-jump-valid']}")
     buf.append(f"✅ File Targets Valid: {summary_stats['file-target-valid']}")
     buf.append(f"✅ Web Addresses Valid: {summary_stats['web-ping-valid']}")
-    buf.append(f"🌐 Web Addresses Not Checked: {summary_stats['unknown-web']}")
+    buf.append(f"🌐 Web Addresses Not Checked: {summary_stats['unknown-web-not-pinged']}")
     buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['internal-jump-unknown-reasonableness']}")
     buf.append(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
     buf.append(f"❌ Broken Page Reference: {summary_stats['internal-page-jump-broken']}")
