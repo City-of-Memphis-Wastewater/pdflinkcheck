@@ -21,7 +21,7 @@ EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
 def make_fresh_stats(total_found):
     stats_fresh = {
-        "total_found": total_found,
+        "total-found": total_found,
         "internal-page-jump-valid": 0,
         "toc-jump-valid": 0,
         "file-target-valid": 0,
@@ -161,7 +161,7 @@ def run_validation(
     if not all_links and not toc:
         return {
             "pdf_path": pdf_path,
-            "summary-stats": {"total_found": 0}, 
+            "summary-stats": {"total-found": 0}, 
             "issues": [], 
             "summary-lines": [],
             "total_pages": total_pages
@@ -229,7 +229,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append("## Validation Results")
     buf.append("=" * SEP_COUNT)
     buf.append(f"PDF Path = {get_friendly_path(pdf_path)}")
-    buf.append(f"Total items found: {summary_stats['total_found']}")
+    buf.append(f"Total items found: {summary_stats['total-found']}")
     buf.append(f"✅ TOC Page Jumps Valid: {summary_stats['toc-jump-valid']}")
     buf.append(f"✅ Internal Page Jumps Valid: {summary_stats['internal-page-jump-valid']}")
     buf.append(f"✅ File Targets Valid: {summary_stats['file-target-valid']}")
@@ -265,7 +265,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             
         if len(issues) > 25:
             buf.append(f"... and {len(issues) - 25} more issues")
-    elif summary_stats.get('total_found', 0) == 0:
+    elif summary_stats.get('total-found', 0) == 0:
         buf.append("\nStatus: No items were discovered to evaluate.")
     else:
         buf.append("\nSuccess: Document structural references verified perfectly!")
