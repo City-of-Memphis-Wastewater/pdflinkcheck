@@ -311,3 +311,19 @@ class AnalysisError(PDFLinkCheckError):
 
 class ExportError(PDFLinkCheckError):
     """Raised when writing the final report (JSON/TXT/XLSX) fails."""
+
+class LinkTypes(str, Enum):
+    """Normalized categories of extracted document elements for reporting/filtering."""
+    INTERNAL = "Internal (GoTo/Dest)"
+    INTERNAL_RESOLVED = "Internal (Resolved Action)"  # Standardize this variant
+    EXTERNAL = "External (URI)"
+    REMOTE = "Remote (GoToR)"
+    LAUNCH = "Launch"
+    OTHER = "Other Action"
+
+class PageValidationResult(Enum):
+    NEGATIVE = "negative"
+    HIGH = "high"
+    ZERO = "zero"
+    UNKNOWN = "unknown"
+    REASONABLE = "reasonable"

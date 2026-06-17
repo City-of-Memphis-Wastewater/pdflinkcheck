@@ -25,21 +25,6 @@ class ValidationStatus(Enum):
     VALID = "valid"
     BROKEN = "broken"
     UNKNOWN = "unknown"
-
-class PageValidationResult(Enum):
-    NEGATIVE = "negative"
-    HIGH = "high"
-    ZERO = "zero"
-    UNKNOWN = "unknown"
-    REASONABLE = "reasonable"
-
-class LinkTypes(Enum):
-    INDEST = "Internal (GoTo/Dest)"
-    INRES = "Internal (Resolved Action)"
-    REMGOTO = "Remote (GoToR)"
-    EXT = "External (URI)"
-    OTH = "Other/unsupported link type"
-
     
 def make_fresh_stats(total_found):
     stats_fresh = {
@@ -312,8 +297,8 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append(f"❌ TOC Page Jumps Not Resolved: {summary_stats['toc-jump-no-destination-page']}")
     buf.append(f"❌ Internal Page Jumps Not Resolved: {summary_stats['internal-jump-no-destination-page']}")
     buf.append(f"❌ Web Address Pings Failed: {summary_stats['web-ping-fail']}")
-    buf.append(f"❌ Email Addresses Broken: {summary_stats['email-address-broken']}")
     buf.append(f"❌ Web Addresses Missing: {summary_stats['unknown-web-url-missing']}")
+    buf.append(f"❌ Email Addresses Broken: {summary_stats['email-address-broken']}")
     
     buf.append("=" * SEP_COUNT)
 

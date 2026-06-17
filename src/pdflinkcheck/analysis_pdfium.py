@@ -13,7 +13,7 @@ import ctypes
 from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
-from pdflinkcheck.helpers import PageRef
+from pdflinkcheck.helpers import PageRef, LinkType
 from pdflinkcheck.environment import pdfium_is_available
 
 try:
@@ -42,14 +42,6 @@ class PdfActionType(IntEnum):
     SUBMIT = 7       # Form field submission data pipelines
     RESET = 8        # Form tracking component control reset actions
     IMPORTDATA = 9   # Interactive external form initialization values
-
-class LinkType(str, Enum):
-    """Normalized categories of extracted document elements for reporting/filtering."""
-    INTERNAL = "Internal (GoTo/Dest)"
-    EXTERNAL = "External (URI)"
-    REMOTE = "Remote (GoToR)"
-    LAUNCH = "Launch"
-    OTHER = "Other Action"
 
 class SourceKindPdfium(str, Enum):
     """Tracks exactly which internal PDF pipeline or object type exposed the target link."""
