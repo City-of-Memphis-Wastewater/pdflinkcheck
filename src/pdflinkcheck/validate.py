@@ -25,6 +25,8 @@ def make_fresh_stats(total_found):
         "internal-page-jump-valid": 0,
         "toc-jump-valid": 0,
         "toc-jump-broken": 0,
+        "toc-jump-no-destination-page": 0,
+        "toc-jump-unknown-reasonableness": 0,
         "file-target-valid": 0,
         "web-ping-valid": 0,
         "unknown-web": 0,
