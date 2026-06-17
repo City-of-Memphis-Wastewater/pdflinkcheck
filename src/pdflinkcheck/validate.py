@@ -19,25 +19,27 @@ START_INDEX = 0
 # Standard RFC 5322 compliant lightweight email pattern
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
-
+def make_fresh_stats(total_found):
+    stats_fresh = {
+        "total_found": total_found,
+        "internal-page-jump-valid": 0,
+        "toc-jump-valid": 0,
+        "file-target-valid": 0,
+        "web-ping-valid": 0,
+        "unknown-web": 0,
+        "unknown-reasonableness": 0,
+        "unknown-link": 0,
+        "broken-page": 0,
+        "file-target-broken": 0,
+        "no-destination-page": 0,
+        "web-ping-fail": 0
+    }
+    return stats_fresh
 
 class ValidationCounter:
     """Manages validation metric accumulation and categorization safely."""
     def __init__(self, total_found: int):
-        self.stats = {
-            "total_found": total_found,
-            "internal-page-jump-valid": 0,
-            "toc-jump-valid": 0,
-            "file-found-valid": 0,
-            "web-ping-valid": 0,
-            "unknown-web": 0,
-            "unknown-reasonableness": 0,
-            "unknown-link": 0,
-            "broken-page": 0,
-            "broken-file": 0,
-            "no-destination-page": 0,
-            "web-ping-fail": 0
-        }
+        self.stats = make_fresh_stats(total_found)
         self.issues: List[Dict[str, Any]] = []
 
     def record(self, status: str, link_payload: Dict[str, Any]):
@@ -45,7 +47,7 @@ class ValidationCounter:
         if status in self.stats:
             self.stats[status] += 1
             
-        if status in ("broken-page", "broken-file", "no-destination-page", "web-ping-fail"):
+        if status in ("broken-page", "file-target-broken", "no-destination-page", "web-ping-fail"):
             self.issues.append(link_payload)
 
 
@@ -77,12 +79,12 @@ def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, 
 def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str]:
     """Evaluates OS filesystem presence for local cross-document references."""
     if not remote_file:
-        return "broken-file", "Missing remote file name"
+        return "file-target-broken", "Missing remote file name"
     
     target_path = (pdf_dir / remote_file).resolve()
     if target_path.exists() and target_path.is_file():
-        return "file-found-valid", f"Found: {target_path.name}"
-    return "broken-file", f"File not found: {remote_file}"
+        return "file-target-valid", f"Found: {target_path.name}"
+    return "file-target-broken", f"File not found: {remote_file}"
 
 
 def _check_email_protocol(url_str: str) -> Tuple[str, str]:
@@ -116,7 +118,7 @@ def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str
         return _check_email_protocol(url_stripped)
     
     if url_lower.startswith(("file:", "mhtml:")):
-        return "broken-file", f"Forbidden local hardcoded reference: {url}"
+        return "file-target-broken", f"Forbidden local hardcoded reference: {url}"
 
     # Proceed to web link verification
     if not is_valid_web_url(url):
@@ -228,15 +230,15 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append("=" * SEP_COUNT)
     buf.append(f"PDF Path = {get_friendly_path(pdf_path)}")
     buf.append(f"Total items found: {summary_stats['total_found']}")
-    buf.append(f"✅ TOC Page Jump Valid: {summary_stats['toc-jump-valid']}")
-    buf.append(f"✅ Internal Page Jump Valid: {summary_stats['internal-page-jump-valid']}")
-    buf.append(f"✅ File Targets Found: {summary_stats['file-found-valid']}")
+    buf.append(f"✅ TOC Page Jumps Valid: {summary_stats['toc-jump-valid']}")
+    buf.append(f"✅ Internal Page Jumps Valid: {summary_stats['internal-page-jump-valid']}")
+    buf.append(f"✅ File Targets Valid: {summary_stats['file-target-valid']}")
     buf.append(f"✅ Web Addresses Valid: {summary_stats['web-ping-valid']}")
     buf.append(f"🌐 Web Addresses Not Checked (Ping: {check_external}): {summary_stats['unknown-web']}")
     buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['unknown-reasonableness']}")
     buf.append(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
     buf.append(f"❌ Broken Page Reference: {summary_stats['broken-page']}")
-    buf.append(f"❌ Broken File Reference: {summary_stats['broken-file']}")
+    buf.append(f"❌ Broken File Targets: {summary_stats['file-target-broken']}")
     buf.append(f"❌ No Destination Resolved: {summary_stats['no-destination-page']}")
     buf.append(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
     buf.append("=" * SEP_COUNT)
