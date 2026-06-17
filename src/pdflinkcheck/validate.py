@@ -35,7 +35,8 @@ def make_fresh_stats(total_found):
         "internal-page-jump-broken": 0,
         "file-target-broken": 0,
         "internal-jump-no-destination-page": 0,
-        "web-ping-fail": 0
+        "web-ping-fail": 0,
+        "telephone-number": 0
     }
     return stats_fresh
 
@@ -145,7 +146,10 @@ def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str
     # Handle known local/application protocols natively
     if url_lower.startswith("mailto:"):
         return _check_email_protocol(url_stripped)
-    
+
+    if url_lower.startswith("tel:"):
+        return "telephone-number", f"Phone number not checked."
+        
     if url_lower.startswith(("file:", "mhtml:")):
         return "file-target-broken", f"Forbidden local hardcoded reference: {url}"
 
