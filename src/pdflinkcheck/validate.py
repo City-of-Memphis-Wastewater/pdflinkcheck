@@ -24,6 +24,7 @@ def make_fresh_stats(total_found):
         "total-found": total_found,
         "internal-page-jump-valid": 0,
         "toc-jump-valid": 0,
+        "toc-jump-broken": 0,
         "file-target-valid": 0,
         "web-ping-valid": 0,
         "unknown-web": 0,
@@ -192,9 +193,10 @@ def run_validation(
         raw_page = entry.get("target_page", -1)
         status, reason = _check_internal_jump(raw_page, total_pages)
         
-        if status == "internal-page-jump-valid":
+        if status == "internal-page-jump-valid": # mutate
             status = "toc-jump-valid"
         elif status == "internal-page-jump-broken":
+            status = "toc-jump-broken"
             try:
                 human_label = PageRef.from_index(int(raw_page)).human
             except (ValueError, TypeError):
@@ -239,6 +241,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
     buf.append(f"❌ Broken Page Reference: {summary_stats['internal-page-jump-broken']}")
     buf.append(f"❌ Broken File Targets: {summary_stats['file-target-broken']}")
+    buf.append(f"❌ TOC Page Jumps Broken: {summary_stats['toc-jump-broken']}")
     buf.append(f"❌ No Destination Resolved: {summary_stats['internal-jump-no-destination-page']}")
     buf.append(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
     buf.append("=" * SEP_COUNT)
