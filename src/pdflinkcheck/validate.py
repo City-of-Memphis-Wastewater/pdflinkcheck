@@ -97,10 +97,7 @@ def _check_toc_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
             return "toc-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
             
         if page_ref.machine >= total_pages:
-            try:
-                human_label = PageRef.from_index(int(raw_page)).human
-            except (ValueError, TypeError):
-                human_label = str(raw_page)
+            human_label = PageRef.from_index(int(dest_page)).human
             reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
             #return "toc-jump-broken", f"Page {page_ref.human} out of range (1–{total_pages})"
             return "toc-jump-broken", reason
