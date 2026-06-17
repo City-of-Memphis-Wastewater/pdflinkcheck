@@ -6,6 +6,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, List, Tuple
 import re
+from enum import Enum
 
 from pdflinkcheck.io import get_friendly_path
 from pdflinkcheck.helpers import PageRef 
