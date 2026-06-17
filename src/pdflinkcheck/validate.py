@@ -29,6 +29,8 @@ def make_fresh_stats(total_found):
         "toc-jump-unknown-reasonableness": 0,
         "file-target-valid": 0,
         "web-ping-valid": 0,
+        "email-address-valid": 0,
+        "email-address-broken": 0,
         "unknown-web": 0,
         "internal-jump-unknown-reasonableness": 0,
         "unknown-link": 0,
@@ -128,12 +130,12 @@ def _check_email_protocol(url_str: str) -> Tuple[str, str]:
     email_part = url_str[7:].split('?')[0].strip()
     
     if not email_part:
-        return "web-ping-fail", "Malformed mailto link: Missing email address"
+        return "email-address-broken", "Malformed mailto link: Missing email address"
         
     if EMAIL_REGEX.match(email_part):
-        return "web-ping-valid", "Valid email address syntax"
+        return "email-address-valid", "Valid email address syntax"
         
-    return "web-ping-fail", f"Invalid email address formatting: '{email_part}'"
+    return "email-address-broken", f"Invalid email address formatting: '{email_part}'"
 
 def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str]:
     """Evaluates network URI structure and processes pings if allowed."""
