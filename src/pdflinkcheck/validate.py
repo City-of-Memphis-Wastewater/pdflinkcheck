@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 SEP_COUNT = 28
 START_INDEX = 0  
+ISSUES_SHOWN = 25
 
 # Standard RFC 5322 compliant lightweight email pattern
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
@@ -68,7 +69,20 @@ class ValidationCounter:
         if status in self.stats:
             self.stats[status] += 1
             
-        if status in ("internal-page-jump-broken", "file-target-broken", "internal-jump-no-destination-page", "web-ping-fail"):
+        if status in (
+            "internal-page-jump-broken",
+            "file-target-broken",
+            "internal-jump-no-destination-page",
+            "web-ping-fail",
+            "toc-jump-broken",
+            "toc-jump-no-destination-page",
+            "toc-jump-unknown-reasonableness",
+            "email-address-broken",
+            "unknown-web-url-missing",
+            "internal-jump-unknown-reasonableness",
+            "unknown-link",
+            "external-uri-forbidden"
+            ):
             self.issues.append(link_payload)
 
 
@@ -242,17 +256,7 @@ def run_validation(
 
         status, reason = _check_toc_jump(raw_page, total_pages)
         #status, reason = _check_internal_jump(raw_page, total_pages)
-        '''
-        if status == "internal-page-jump-valid": # mutate
-            status = "toc-jump-valid"
-        elif status == "internal-page-jump-broken":
-            status = "toc-jump-broken"
-            try:
-                human_label = PageRef.from_index(int(raw_page)).human
-            except (ValueError, TypeError):
-                human_label = str(raw_page)
-            reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
-        '''
+
         validated_toc = {
             "type": "TOC Entry",
             "title": entry.get("title", "Untitled"),
@@ -303,7 +307,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
         buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format("Idx", "Type", "Anchor Text", "Target / URL", "Problem"))
         buf.append("-" * (SEP_COUNT + 50)) # Extended divider line for width matching
         
-        for i, issue in enumerate(issues[:25], 1):
+        for i, issue in enumerate(issues[:ISSUES_SHOWN], 1):
             itype = issue.get("type", "Link")
             
             # Extract anchor visual text or fallback onto title
@@ -317,8 +321,8 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             ireason = issue["validation"]["reason"]
             buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format(i, itype, itext, itarget, ireason))
             
-        if len(issues) > 25:
-            buf.append(f"... and {len(issues) - 25} more issues")
+        if len(issues) > ISSUES_SHOWN:
+            buf.append(f"... and {len(issues) - ISSUES_SHOWN} more issues")
     elif summary_stats.get('total-found', 0) == 0:
         buf.append("\nStatus: No items were discovered to evaluate.")
     else:
