@@ -37,6 +37,7 @@ def make_fresh_stats(total_found):
         "unknown-link": 0,
         "internal-page-jump-broken": 0,
         "file-target-broken": 0,
+        "external-uri-forbidden": 0,
         "internal-jump-no-destination-page": 0,
         "web-ping-fail": 0,
         "telephone-number": 0
@@ -155,7 +156,8 @@ def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str
         
     if url_lower.startswith(("file:", "mhtml:")):
         #return "file-target-broken", f"Forbidden local hardcoded reference: {url}"
-        return "file-target-broken", f"Forbidden local hardcoded reference."
+        reason = f"Forbidden local hardcoded reference."
+        return "external-uri-forbidden",reason
         
     # Proceed to web link verification
     if not is_valid_web_url(url):
