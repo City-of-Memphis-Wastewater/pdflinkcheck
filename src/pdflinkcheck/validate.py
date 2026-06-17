@@ -19,6 +19,18 @@ START_INDEX = 0
 # Standard RFC 5322 compliant lightweight email pattern
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
+class ValidationStatus(Enum):
+    VALID = "valid"
+    BROKEN = "broken"
+    UNKNOWN = "unknown"
+
+class PageValidationResult(Enum):
+    NEGATIVE = "negative"
+    HIGH = "high"
+    ZERO = "zero"
+    UNKNOWN = "unknown"
+    REASONABLE = "reasonable"
+    
 def make_fresh_stats(total_found):
     stats_fresh = {
         "total-found": total_found,
