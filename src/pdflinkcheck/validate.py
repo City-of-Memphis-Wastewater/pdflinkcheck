@@ -51,7 +51,7 @@ def make_fresh_stats(total_found):
         "toc-jump-unknown-reasonableness": 0,
         "file-target-valid": 0,
         "web-ping-valid": 0,
-        "email-address-valid": 0,
+        "email-address-reasonable": 0,
         "email-address-broken": 0,
         "unknown-web-url-missing": 0,
         "unknown-web-not-pinged": 0,
@@ -167,7 +167,7 @@ def _check_email_protocol(url_str: str) -> Tuple[str, str]:
         return "email-address-broken", "Malformed mailto link: Missing email address"
         
     if EMAIL_REGEX.match(email_part):
-        return "email-address-valid", "Valid email address syntax"
+        return "email-address-reasonable", "Valid email address syntax"
         
     return "email-address-broken", f"Invalid email address formatting: '{email_part}'"
 
@@ -302,20 +302,18 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append(f"🌐 Web Addresses Not Checked: {summary_stats['unknown-web-not-pinged']}")
     buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['internal-jump-unknown-reasonableness']}")
     buf.append(f"⚠️ TOC Unknown Reasonableness: {summary_stats['toc-jump-unknown-reasonableness']}")
-    buf.append(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
+    buf.append(f"⚠️ Email Addresses Reasonable But Not Checked: {summary_stats['email-address-reasonable']}")
+    buf.append(f"⚠️ Unsupported URL File Links: {summary_stats['external-uri-forbidden']}")
+    buf.append(f"⚠️ Unsupported Telephone Numbers: {summary_stats['telephone-number']}")
+    buf.append(f"⚠️ Unsupported Other PDF Links: {summary_stats['unknown-link']}")
     buf.append(f"❌ Broken Page Reference: {summary_stats['internal-page-jump-broken']}")
     buf.append(f"❌ Broken File Targets: {summary_stats['file-target-broken']}")
     buf.append(f"❌ TOC Page Jumps Broken: {summary_stats['toc-jump-broken']}")
-    buf.append(f"❌ No Destination Resolved: {summary_stats['internal-jump-no-destination-page']}")
-    buf.append(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
-
-        "toc-jump-no-destination-page": 0,
-        "toc-jump-unknown-reasonableness": 0,
-        "email-address-valid": 0,
-        "email-address-broken": 0,
-        "unknown-web-url-missing": 0,
-        "external-uri-forbidden": 0,
-        "telephone-number": 0
+    buf.append(f"❌ TOC Page Jumps Not Resolved: {summary_stats['toc-jump-no-destination-page']}")
+    buf.append(f"❌ Internal Page Jumps Not Resolved: {summary_stats['internal-jump-no-destination-page']}")
+    buf.append(f"❌ Web Address Pings Failed: {summary_stats['web-ping-fail']}")
+    buf.append(f"❌ Email Addresses Broken: {summary_stats['email-address-broken']}")
+    buf.append(f"❌ Web Addresses Missing: {summary_stats['unknown-web-url-missing']}")
     
     buf.append("=" * SEP_COUNT)
 
