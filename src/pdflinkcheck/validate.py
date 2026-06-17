@@ -32,6 +32,14 @@ class PageValidationResult(Enum):
     ZERO = "zero"
     UNKNOWN = "unknown"
     REASONABLE = "reasonable"
+
+class LinkTypes(Enum):
+    INDEST = "Internal (GoTo/Dest)"
+    INRES = "Internal (Resolved Action)"
+    REMGOTO = "Remote (GoToR)"
+    EXT = "External (URI)"
+    OTH = "Other/unsupported link type"
+
     
 def make_fresh_stats(total_found):
     stats_fresh = {
@@ -293,12 +301,22 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append(f"✅ Web Addresses Valid: {summary_stats['web-ping-valid']}")
     buf.append(f"🌐 Web Addresses Not Checked: {summary_stats['unknown-web-not-pinged']}")
     buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['internal-jump-unknown-reasonableness']}")
+    buf.append(f"⚠️ TOC Unknown Reasonableness: {summary_stats['toc-jump-unknown-reasonableness']}")
     buf.append(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
     buf.append(f"❌ Broken Page Reference: {summary_stats['internal-page-jump-broken']}")
     buf.append(f"❌ Broken File Targets: {summary_stats['file-target-broken']}")
     buf.append(f"❌ TOC Page Jumps Broken: {summary_stats['toc-jump-broken']}")
     buf.append(f"❌ No Destination Resolved: {summary_stats['internal-jump-no-destination-page']}")
     buf.append(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
+
+        "toc-jump-no-destination-page": 0,
+        "toc-jump-unknown-reasonableness": 0,
+        "email-address-valid": 0,
+        "email-address-broken": 0,
+        "unknown-web-url-missing": 0,
+        "external-uri-forbidden": 0,
+        "telephone-number": 0
+    
     buf.append("=" * SEP_COUNT)
 
     if issues:
