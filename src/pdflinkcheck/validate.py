@@ -76,6 +76,32 @@ def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, 
     except (ValueError, TypeError):
         return "internal-page-jump-broken", f"Invalid page value: {dest_page}"
 
+def _check_toc_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
+    """Evaluates index targeting against document thresholds using PageRef translation."""
+    if dest_page is None:
+        return "toc-jump-no-destination-page", "No destination page resolved"
+    try:
+        page_ref = PageRef.from_index(int(dest_page))
+        
+        if page_ref.machine < START_INDEX:
+            return "toc-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
+            
+        if total_pages is None:
+            return "toc-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+            
+        if page_ref.machine >= total_pages:
+            try:
+                human_label = PageRef.from_index(int(raw_page)).human
+            except (ValueError, TypeError):
+                human_label = str(raw_page)
+            reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
+            #return "toc-jump-broken", f"Page {page_ref.human} out of range (1–{total_pages})"
+            return "toc-jump-broken", reason
+
+        return "toc-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
+    except (ValueError, TypeError):
+        return "toc-jump-broken", f"Invalid page value: {dest_page}"
+
 
 def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str]:
     """Evaluates OS filesystem presence for local cross-document references."""
@@ -191,8 +217,10 @@ def run_validation(
     # Dispatch Pass 2: Table of Contents Bookmarks
     for entry in toc:
         raw_page = entry.get("target_page", -1)
-        status, reason = _check_internal_jump(raw_page, total_pages)
-        
+
+        status, reason = _check_toc_jump(raw_page, total_pages)
+        #status, reason = _check_internal_jump(raw_page, total_pages)
+        '''
         if status == "internal-page-jump-valid": # mutate
             status = "toc-jump-valid"
         elif status == "internal-page-jump-broken":
@@ -202,7 +230,7 @@ def run_validation(
             except (ValueError, TypeError):
                 human_label = str(raw_page)
             reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
-
+        '''
         validated_toc = {
             "type": "TOC Entry",
             "title": entry.get("title", "Untitled"),
