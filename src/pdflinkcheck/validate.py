@@ -27,11 +27,11 @@ def make_fresh_stats(total_found):
         "file-target-valid": 0,
         "web-ping-valid": 0,
         "unknown-web": 0,
-        "unknown-reasonableness": 0,
+        "internal-jump-unknown-reasonableness": 0,
         "unknown-link": 0,
-        "broken-page": 0,
+        "internal-page-jump-broken": 0,
         "file-target-broken": 0,
-        "no-destination-page": 0,
+        "internal-jump-no-destination-page": 0,
         "web-ping-fail": 0
     }
     return stats_fresh
@@ -47,7 +47,7 @@ class ValidationCounter:
         if status in self.stats:
             self.stats[status] += 1
             
-        if status in ("broken-page", "file-target-broken", "no-destination-page", "web-ping-fail"):
+        if status in ("internal-page-jump-broken", "file-target-broken", "internal-jump-no-destination-page", "web-ping-fail"):
             self.issues.append(link_payload)
 
 
@@ -58,22 +58,22 @@ class ValidationCounter:
 def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
     """Evaluates index targeting against document thresholds using PageRef translation."""
     if dest_page is None:
-        return "no-destination-page", "No destination page resolved"
+        return "internal-jump-no-destination-page", "No destination page resolved"
     try:
         page_ref = PageRef.from_index(int(dest_page))
         
         if page_ref.machine < START_INDEX:
-            return "broken-page", f"Target page {page_ref.human} is invalid (negative index)."
+            return "internal-page-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
             
         if total_pages is None:
-            return "unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+            return "internal-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
             
         if page_ref.machine >= total_pages:
-            return "broken-page", f"Page {page_ref.human} out of range (1–{total_pages})"
+            return "internal-page-jump-broken", f"Page {page_ref.human} out of range (1–{total_pages})"
             
         return "internal-page-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
     except (ValueError, TypeError):
-        return "broken-page", f"Invalid page value: {dest_page}"
+        return "internal-page-jump-broken", f"Invalid page value: {dest_page}"
 
 
 def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str]:
@@ -194,7 +194,7 @@ def run_validation(
         
         if status == "internal-page-jump-valid":
             status = "toc-jump-valid"
-        elif status == "broken-page":
+        elif status == "internal-page-jump-broken":
             try:
                 human_label = PageRef.from_index(int(raw_page)).human
             except (ValueError, TypeError):
@@ -235,11 +235,11 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append(f"✅ File Targets Valid: {summary_stats['file-target-valid']}")
     buf.append(f"✅ Web Addresses Valid: {summary_stats['web-ping-valid']}")
     buf.append(f"🌐 Web Addresses Not Checked (Ping: {check_external}): {summary_stats['unknown-web']}")
-    buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['unknown-reasonableness']}")
+    buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['internal-jump-unknown-reasonableness']}")
     buf.append(f"⚠️ Unsupported PDF Links: {summary_stats['unknown-link']}")
-    buf.append(f"❌ Broken Page Reference: {summary_stats['broken-page']}")
+    buf.append(f"❌ Broken Page Reference: {summary_stats['internal-page-jump-broken']}")
     buf.append(f"❌ Broken File Targets: {summary_stats['file-target-broken']}")
-    buf.append(f"❌ No Destination Resolved: {summary_stats['no-destination-page']}")
+    buf.append(f"❌ No Destination Resolved: {summary_stats['internal-jump-no-destination-page']}")
     buf.append(f"❌ Web Addresses Broken: {summary_stats['web-ping-fail']}")
     buf.append("=" * SEP_COUNT)
 
