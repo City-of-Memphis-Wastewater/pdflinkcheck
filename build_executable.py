@@ -153,7 +153,10 @@ def run_pyinstaller(
         "--hidden-import", "typer",  
         "--hidden-import", "click",  
         "--hidden-import", "rich",  
-        
+        "--collect-all", "typer",
+        "--collect-all", "click",
+        "--collect-all", "rich",
+
         #'--log-level=DEBUG',
 
         #"--add-data", "pyproject.toml:pdflinkcheck/data",
