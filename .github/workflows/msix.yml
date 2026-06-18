@@ -49,6 +49,13 @@ jobs:
           $script = Join-Path $env:GITHUB_WORKSPACE "build_executable.py"
           $output = .\.venv\Scripts\python.exe $script 2>&1 | Tee-Object -Variable log
           Write-Host "$log"
+
+          # CRITICAL: Inspect the actual underlying executable exit code
+          Write-Host "Process execution completed with Exit Code: $LASTEXITCODE"
+          if ($LASTEXITCODE -ne 0) {
+              Write-Error "PyInstaller compilation failed! Aborting MSIX workflow."
+              exit $LASTEXITCODE
+          }
       
 
       - name: Debug, list dist folder, after PyInstaller

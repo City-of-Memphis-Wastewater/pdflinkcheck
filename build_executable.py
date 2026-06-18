@@ -284,8 +284,8 @@ if __name__ == "__main__":
             subprocess.run([str(path), "gui", "--auto-close", "1000"])
         print("Testing complete.")
         
-    except SystemExit:
-        pass
+    except SystemExit as e:
+        sys.exit(e.code)
     except Exception as e:
         print(f"An unhandled error occurred: {e}", file=sys.stderr)
         sys.exit(1)

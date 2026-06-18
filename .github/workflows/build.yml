@@ -51,12 +51,9 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          #python -m pip install --upgrade pip
-          #uv pip install --system .[pdfium] --group dev
           uv sync --extra pdfium --group dev
-          # pip install -e ".[pdfium]" # ,pymupdf]"  # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
+          uv pip install pyinstaller # assurance
 
-  
       - name: Build wheel & sdist
         if: matrix.os == 'ubuntu-latest' # ONLY build this once
         run: uv run python -m build --sdist
@@ -119,30 +116,6 @@ jobs:
           Write-Host "Contains onedir contents: $has_onedir"
           Write-Host "Contains onefile contents: $has_onefile"
 
-      - name: Diagnostic, List PyInstaller Output
-        shell: pwsh
-        if: false
-        run: |
-          Write-Host "--- DIST FOLDER OVERVIEW ---"
-          Get-ChildItem dist -Depth 1 | Select-Object Name, PSIsContainer, Length | Format-Table -AutoSize
-          
-          Write-Host "--- SEARCHING FOR ARTIFACTS ---"
-          # Look specifically in the new subdirectories
-          $items = Get-ChildItem "dist/onedir/pdflinkcheck-*", "dist/onefile/pdflinkcheck-*"
-          
-          if ($items) {
-              foreach ($item in $items) {
-                  Write-Host "Found target: $($item.FullName) (Type: $(if($item.PSIsContainer){"Folder"}else{"File"}))"
-                  
-                  if ($item.PSIsContainer) {
-                      Write-Host "--- DETAILED ONEDIR CONTENTS (Top 10) ---"
-                      Get-ChildItem $item.FullName | Select-Object Name, Length -First 10 | Format-Table -AutoSize
-                  }
-              }
-          } else {
-              Write-Error "No pdflinkcheck-* artifacts found in dist/onedir/ or dist/onefile/"
-          }
-      
       - name: Collect Windows artifacts
         if: runner.os == 'Windows'
         shell: pwsh
