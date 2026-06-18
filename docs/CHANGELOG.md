@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.7] - 2026-06-18
+### Fixed:
+- '--all-groups' ->  '--group dev' for 'uv pip install ...'
+
+---
+
 ## [1.5.5.6] - 2026-06-18
 ### Fixed:
 - Use 'astral-sh/setup-uv@v7' in all YML runners, rather than 'pip install uv'
