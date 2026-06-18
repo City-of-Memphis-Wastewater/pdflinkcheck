@@ -43,7 +43,7 @@ jobs:
 
       - name: Create isolated environment and install build dependencies
         # Use uv to install `build` and all dependencies specified in `pyproject.toml`
-        run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build ".[pdfium,pymupdf]"
+        run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build ".[pdfium]" #,pymupdf]" # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
         # NOTE: `uv pip install .` installs the package itself and its dependencies
         
       # --- PACKAGE BUILD AND TEST ---

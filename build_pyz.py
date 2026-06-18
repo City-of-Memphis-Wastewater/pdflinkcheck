@@ -169,7 +169,7 @@ def build_shiv_pyz():
 
     # Clarify if PyMuPDF should be included or not
     # this determines which extra go inside of the PYZ
-    whl_call = f"{str(wheel_path)}[pdfium]"  # include pdfium, not pymupdf
+    whl_call = f"{str(wheel_path)}[pdfium]"  # include pdfium, not pymupdf, which won't package well into PYZ
 
     cmd.append(whl_call)    
     #cmd.insert[1](whl_call)

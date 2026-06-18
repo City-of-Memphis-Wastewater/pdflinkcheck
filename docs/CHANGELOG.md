@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5] - 2026-06-18
+### Changed:
+- We now claim to be MIT licensed. See NOTICE file for details, but otherwise, the project contains no AGPL3+.
+- Adjust github YML runners accordingly.
+
+---
+
 ## [1.5.4] - 2026-06-17
 ### Changed:
 - Standardize LinkType enum class usage across all three PDF engines.

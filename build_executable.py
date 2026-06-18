@@ -185,7 +185,7 @@ def run_pyinstaller(
         base_command.append("--collect-all")
         base_command.append("fitz")
         base_command.append("--collect-all")
-        base_command.append("pymupdf")
+        base_command.append("pymupdf") # careful. if this line runs, your binary is subject to the AGPL3+
     
     if pdfium_is_available():
         base_command.append("--collect-all")
