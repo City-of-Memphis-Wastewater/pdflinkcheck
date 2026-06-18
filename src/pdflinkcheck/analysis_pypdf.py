@@ -143,11 +143,16 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             elif "/Dest" in obj or ("/A" in obj and "/D" in obj["/A"]):
                 dest = obj.get("/Dest") or obj["/A"].get("/D")
                 target_page = _resolve_pypdf_destination(reader, dest, obj_id_to_page)
-                # print(f"DEBUG: resolved target_page = {target_page} (type: {type(target_page)})")
+                # logger.debug(f"resolved target_page = {target_page} (type: {type(target_page)})")
                 if target_page is not None:
                     dest_page = PageRef.from_index(target_page)
+
+                    # Check if it came from a direct destination map or an action dictionary
+                    determined_type = LinkType.INTERNAL_GOTO.value if "/Dest" in obj else LinkType.INTERNAL_RESOLVED.value
+
+
                     link_dict.update({
-                        'type': LinkType.INTERNAL_GOTO.value,
+                        'type': determined_type,
                         'destination_page': dest_page.machine,
                     })
             
@@ -157,6 +162,13 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 link_dict.update({
                     'type': LinkType.REMOTE_GOTOR.value,
                     'remote_file': str(remote_file),
+                })
+
+            # Handle Launch Actions
+            elif "/A" in obj and obj["/A"].get("/S") == "/Launch":
+                link_dict.update({
+                    'type': LinkType.LAUNCH.value,
+                    'file': str(obj["/A"].get("/F") or ""),
                 })
 
             all_links.append(link_dict)

@@ -321,7 +321,7 @@ class LinkType(str, Enum):
     LAUNCH = "Launch"
     OTHER = "Other Action"
 
-class PageValidationResult(Enum):
+class PageValidationResult(str,Enum):
     NEGATIVE = "negative"
     HIGH = "high"
     ZERO = "zero"

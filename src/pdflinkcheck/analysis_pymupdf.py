@@ -271,6 +271,13 @@ def extract_links_pymupdf(doc):
                         'type': LinkType.REMOTE_GOTOR.value,
                         'remote_file': remote_file
                     })
+
+                elif kind == fitz.LINK_LAUNCH:  # Catch explicit launches
+                    link_dict.update({
+                        'type': LinkType.LAUNCH.value,
+                        'file': link.get('file', ''),
+                        'params': link.get('params', '')
+                    })
                 
                 # --- CASE 4: OTHERS ---
                 else:
