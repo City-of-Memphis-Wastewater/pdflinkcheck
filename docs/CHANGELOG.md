@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.3] - 2026-06-18
+### Fixed:
+- Windows builds are hanging; drop CI CLI checks for runners, in build_executable.py.
+
+---
+
 ## [1.5.5.2] - 2026-06-18
 ### Fixed:
 - Ensure the Docker build has a current extra reference and that it is MIT compliant.

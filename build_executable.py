@@ -253,13 +253,21 @@ if __name__ == "__main__":
             mode = args.mode,
             )
 
-        # ← Move test here, so it only runs on success
-        print("Testing the PyInstaller artifact...")
-        subprocess.run([str(path), "--help"])
-
         # Only test GUI if we aren't in a headless CI environment
         # GitHub Actions sets the GITHUB_ACTIONS environment variable to 'true'
         is_ci = os.environ.get('GITHUB_ACTIONS') == 'true'
+
+        # Only run text-based --help check if we aren't a hidden-window GUI binary
+        is_windowed_build = IS_WINDOWS_BUILD and (args.mode == "onedir") and pyhabitat.tkinter_is_available()
+
+        if is_ci:
+            print("[CI DETECTED] Skipping CLI help text check to prevent headless stream hangs.")
+        elif is_windowed_build:
+            print("Skipping CLI help text check because artifact was built with --windowed.")
+        else:
+            print("Testing the PyInstaller artifact...")
+            subprocess.run([str(path), "--help"], check=True)
+
         print(f"pyhabitat.tkinter_is_available() = {pyhabitat.tkinter_is_available()}")
         if pyhabitat.tkinter_is_available() and not is_ci:
             print(f"Testing GUI for {str(path)}...")
