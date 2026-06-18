@@ -20,7 +20,9 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
 # --- Configuration ---
 PROJECT_NAME = "pdflinkcheck"
-CLI_MAIN_FILE = Path(f'src/{PROJECT_NAME}/cli.py')
+#CLI_MAIN_FILE = Path(f'src/{PROJECT_NAME}/cli.py')
+#CLI_MAIN_FILE = Path.cwd() / 'src' / PROJECT_NAME / "cli.py"
+CLI_MAIN_FILE = Path.cwd() / 'src' / PROJECT_NAME / "__main__.py"
 DIST_DIR = Path("dist")
 DIST_DIR_ONEFILE = DIST_DIR / "onefile" 
 DIST_DIR_ONEDIR = DIST_DIR / "onedir" 
@@ -159,6 +161,7 @@ def run_pyinstaller(
         # PyMuPDF is a native library, ensure its dependencies are included if necessary
         # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
+
 
     # msix.yml and build.yml have been adjusted to expect either onefile or onedir
     if mode == "onefile": 
