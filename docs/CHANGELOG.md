@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.10] - 2026-06-18
+### Fixed:
+- 'build' should be called through uv
+- Improve runner diagnostics which are failing to find dest executable files.
+
+---
+
 ## [1.5.5.9] - 2026-06-18
 ### Fixed:
 - Dear lord. Don't touch pip or use the --system flag. 'uv sync --extra pdfium --group dev'

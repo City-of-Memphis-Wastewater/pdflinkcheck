@@ -59,7 +59,7 @@ jobs:
   
       - name: Build wheel & sdist
         if: matrix.os == 'ubuntu-latest' # ONLY build this once
-        run: python -m build --sdist
+        run: uv run python -m build --sdist
 
       - name: Build PYZ (shiv)
         if: runner.os != 'Windows'
@@ -93,9 +93,35 @@ jobs:
           rm -f dist/*.tar.gz dist/*.whl
           echo "Cleanup complete."
 
+      # --- DEEP VERBOSE DIAGNOSTIC DISCOVERY ---
+      - name: Diagnostic, List Every Single Output File
+        shell: pwsh
+        run: |
+          Write-Host "========================================="
+          Write-Host "     CRITICAL BUILD DIRECTORY TREE       "
+          Write-Host "========================================="
+          if (Test-Path dist) {
+              # Recursive file search to reveal exactly what PyInstaller named the outputs
+              Get-ChildItem dist -Recurse | Select-Object FullName, Length, PSIsContainer | Format-Table -AutoSize
+          } else {
+              Write-Error "CRITICAL: The dist/ folder doesn't even exist!"
+          }
+          Write-Host "========================================="
+
+      # --- 3. TEMPORARY SWAP-IN TO BYPASS BREAKING ACTIONS ---
+      - name: Safe Search and Collect Setup
+        shell: pwsh
+        run: |
+          Write-Host "Scanning for artifact targets..."
+          # Instead of throwing code 1 if missing, check soft-matching contents
+          $has_onedir = Test-Path "dist/onedir/*"
+          $has_onefile = Test-Path "dist/onefile/*"
+          Write-Host "Contains onedir contents: $has_onedir"
+          Write-Host "Contains onefile contents: $has_onefile"
 
       - name: Diagnostic, List PyInstaller Output
         shell: pwsh
+        if: false
         run: |
           Write-Host "--- DIST FOLDER OVERVIEW ---"
           Get-ChildItem dist -Depth 1 | Select-Object Name, PSIsContainer, Length | Format-Table -AutoSize
@@ -119,26 +145,25 @@ jobs:
       
       - name: Collect Windows artifacts
         if: runner.os == 'Windows'
+        shell: pwsh
         run: |
           New-Item -Path dist/upload -ItemType Directory -Force
-    
-          # Find all PyInstaller outputs (both the folder and the --onefile exe)
-          $items = Get-ChildItem "dist/onedir/pdflinkcheck-*", "dist/onefile/pdflinkcheck-*"
-
+          
+          # Grab all dynamic entries within onedir and onefile sub-directories directly
+          $items = Get-ChildItem "dist/onedir/*", "dist/onefile/*" -Exclude "upload"
+          
           foreach ($item in $items) {
               $destination = "dist/upload/$($item.Name).zip"
-              Write-Host "Archiving $($item.Name) to $destination"
+              Write-Host "Archiving $($item.FullName) to $destination"
               
               if ($item.PSIsContainer) {
-                  # It's the onedir folder - zip the contents
                   Compress-Archive -Path "$($item.FullName)\*" -DestinationPath $destination -Force
               } else {
-                  # It's the onefile executable - zip the file itself
                   Compress-Archive -Path $item.FullName -DestinationPath $destination -Force
               }
           }
 
-
+      # --- STRUCTURAL FIX: ROBUST UNIX ARTIFACT ZIPPER ---
       - name: Collect Unix artifacts
         if: runner.os != 'Windows'
         run: |
@@ -150,22 +175,21 @@ jobs:
           fi
 
           echo "Collecting platform-specific outputs..."
-          for item in dist/onedir/pdflinkcheck-* dist/onefile/pdflinkcheck-* dist/zipapp/pdflinkcheck-*; do
+          # Match files or directories inside mode folders generically
+          for item in dist/onedir/* dist/onefile/* dist/zipapp/*; do
             [ -e "$item" ] || continue
 
-            # Skip generic artifacts
+            # Skip tracking recursive uploads or build configuration artifacts
             case "$item" in
-              *.tar.gz|*.whl) continue ;;
+              *upload*|*.tar.gz|*.whl) continue ;;
             esac
 
             base=$(basename "$item")
-            parent=$(dirname "$item") # This will be dist/onedir, dist/onefile, or dist/zipapp
+            parent=$(dirname "$item")
 
             if [ -d "$item" ]; then
-              # Dynamic -C flag ensures we tar from the correct source folder
               tar -czf "dist/upload/${base}.tar.gz" -C "$parent" "$base"
             elif [ -f "$item" ]; then
-              # Directly copy .pyz or standalone ELFs
               cp "$item" dist/upload/
             fi
           done
