@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 license = "MIT"
-license-files = ["LICENSE", "LICENSE-MIT", "NOTICE"]
+license-files = ["LICENSE", "NOTICE"]
 
 classifiers=[
     "Programming Language :: Python :: 3",
@@ -27,6 +27,7 @@ classifiers=[
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: Developers", # library and documentation

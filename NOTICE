@@ -1,4 +1,38 @@
-pdflinkcheck optionally supports integration with PyMuPDF,
-which is licensed under the GNU AGPLv3.
-Users who install or distribute builds including PyMuPDF
-should review PyMuPDF's license terms.
+pdflinkcheck
+Copyright 2025 George Clayton Bennett
+
+========================================================================
+Core Software License
+========================================================================
+The source code of pdflinkcheck itself is permissively licensed under 
+the MIT License (see the accompanying LICENSE file).
+
+========================================================================
+Optional Third-Party Dependencies & Binary Distributions
+========================================================================
+pdflinkcheck supports multiple underlying PDF parsing engines. Depending 
+on how you install, invoke, or distribute the software, different third-party 
+license obligations may apply:
+
+1. Pure Python & PDFium Backends (MIT/BSD):
+   By default, installations utilizing the `pypdf` engine or the `pdfium` 
+   engine (via pypdfium2) contain exclusively permissive open-source 
+   dependencies (MIT and BSD-3-Clause). 
+
+2. PyMuPDF Backend (AGPL v3.0 or later):
+   Integration with PyMuPDF (fitz) is completely optional. PyMuPDF is 
+   licensed under the GNU Affero General Public License (AGPL v3.0 or later).
+   
+   - If you install pdflinkcheck with the optional PyMuPDF extra, or 
+     distribute binaries/pre-compiled executables that explicitly incorporate 
+     PyMuPDF, those specific distributed artifacts become subject to the 
+     terms of the AGPL v3.0.
+   - For AGPL-licensed binary distributions, the corresponding source code 
+     is continuously preserved and made available via the project's 
+     GitHub Releases page.
+
+Please inspect the respective licensing terms of any optional engine 
+dependencies you explicitly enable:
+- PyMuPDF (AGPLv3): https://github.com/pymupdf/PyMuPDF
+- pypdf (MIT): https://github.com/py-pdf/pypdf
+- pypdfium2/PDFium (MIT/Apache-2.0): https://github.com/pypdfium2-team/pypdfium2
