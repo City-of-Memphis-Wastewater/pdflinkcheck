@@ -6,6 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.4] - 2026-06-17
+### Changed:
+- Standardize LinkType enum class usage across all three PDF engines.
+- Add magic keys to validate.py to elucidate differentiable results. 
+- Allow only one --engine flag to be used in the CLI; remove list functionality.
+
+---
+
 ## [1.5.3] - 2026-06-16
 ### Changed:
 - helptree improved with typer-helptree 0.2.10.5
