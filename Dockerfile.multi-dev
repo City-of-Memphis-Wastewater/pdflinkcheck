@@ -12,7 +12,8 @@ RUN apt-get update \
 
 COPY . .
 
-RUN pip install --no-cache-dir -e ".[full]"
+RUN pip install --no-cache-dir -e ".[pdfium]"  # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
+#RUN pip install --no-cache-dir -e ".[pdfium,pymupdf]"
 #RUN pip install --no-cache-dir -e .
 
 EXPOSE 8000

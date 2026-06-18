@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.2] - 2026-06-18
+### Fixed:
+- Ensure the Docker build has a current extra reference and that it is MIT compliant.
+
+---
+
 ## [1.5.5] - 2026-06-18
 ### Changed:
 - We now claim to be MIT licensed. See NOTICE file for details, but otherwise, the project contains no AGPL3+.
