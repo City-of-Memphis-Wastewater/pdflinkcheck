@@ -165,7 +165,10 @@ def run_report_core(
 
     try:
         data = analyze_pdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
+        
         extracted_links = data.get("links", [])
+        print("delete me")
+        print(extracted_links)
         structural_toc = data.get("toc", [])
         total_pages = data.get("file_ov", {}).get("total_pages", 0)
 
@@ -181,7 +184,7 @@ def run_report_core(
         link_counts = _generate_report_text_layers(extracted_links, structural_toc, pdf_name, log)
         link_counts["toc_entry_count"] = len(structural_toc)
 
-        # each of these needs a GUID
+        # each of these needs a GUID and to be nested in a step further, with a details section, a validation section, and a risk section
         base_data_dict = {
             "external_links": [k for k in extracted_links if k.get('type') == LinkType.EXTERNAL.value], 
             "internal_links": [k for k in extracted_links if k.get('type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 

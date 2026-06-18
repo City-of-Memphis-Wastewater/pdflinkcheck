@@ -239,6 +239,8 @@ def create_link_dict(
     """
     Factory for consistent link dictionary structure.
     Matches PyMuPDF style as closely as possible.
+
+    Alright big money, we need to flesh out this structure.
     """
     base = {
         'page': source_ref.machine,
@@ -415,7 +417,9 @@ def _dispatch_action(
         if target_dest:
             dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, target_dest)
             links.append(create_link_dict(
-                source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+                source_ref=source_ref, 
+                rect_norm=rect_norm, 
+                anchor_text=anchor_text,
                 link_type=LinkType.INTERNAL_GOTO.value,
                 destination_page=PageRef.from_index(dest_idx).machine,
                 destination_view=extract_destination_view(target_dest),
@@ -426,21 +430,31 @@ def _dispatch_action(
         uri = get_uri_from_action(action, doc.raw)
         if uri:
             links.append(create_link_dict(
-                source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                link_type=LinkType.EXTERNAL.value, url=uri, source_kind=SourceKindPdfium.ANNOT_URI.value
+                source_ref=source_ref, 
+                rect_norm=rect_norm, 
+                anchor_text=anchor_text,
+                link_type=LinkType.EXTERNAL.value, 
+                url=uri, 
+                source_kind=SourceKindPdfium.ANNOT_URI.value
             ))
         else:
             links.append(create_link_dict(
-                source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                link_type=LinkType.OTHER.value, source_kind=SourceKindPdfium.ANNOT_URI.value
+                source_ref=source_ref, 
+                rect_norm=rect_norm, 
+                anchor_text=anchor_text,
+                link_type=LinkType.OTHER.value, 
+                source_kind=SourceKindPdfium.ANNOT_URI.value
             ))
 
     elif action_type == PdfActionType.GOTOR:
         remote_file = get_remote_file_from_action(action, doc.raw)
         r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
         links.append(create_link_dict(
-            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-            link_type=LinkType.REMOTE_GOTOR.value, remote_file=remote_file,
+            source_ref=source_ref, 
+            rect_norm=rect_norm, 
+            anchor_text=anchor_text,
+            link_type=LinkType.REMOTE_GOTOR.value, 
+            remote_file=remote_file,
             destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None,
             source_kind=SourceKindPdfium.ANNOT_GOTOR.value
         ))
@@ -449,15 +463,20 @@ def _dispatch_action(
         # Extract underlying target path string from the Launch action spec
         launch_file = get_remote_file_from_action(action, doc.raw)
         links.append(create_link_dict(
-            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-            link_type=LinkType.LAUNCH.value, file=launch_file or "",
+            source_ref=source_ref, 
+            rect_norm=rect_norm, 
+            anchor_text=anchor_text,
+            link_type=LinkType.LAUNCH.value, 
+            file=launch_file or "",
             source_kind=SourceKindPdfium.ANNOT_LAUNCH.value
         ))
 
     else:
         # Captures exotic macros (VJS, SUBMIT, NAMED) cleanly into the unknown dictionary structure
         links.append(create_link_dict(
-            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+            source_ref=source_ref, 
+            rect_norm=rect_norm, 
+            anchor_text=anchor_text,
             link_type=LinkType.OTHER.value,
             action_kind=int(action_type),
             source_kind=SourceKindPdfium.ANNOT_OTHER.value
@@ -474,7 +493,9 @@ def _dispatch_direct_dest(
     """Handles direct layout map links that lack an explicit action wrapper."""
     dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
     links.append(create_link_dict(
-        source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+        source_ref=source_ref, 
+        rect_norm=rect_norm, 
+        anchor_text=anchor_text,
         link_type=LinkType.INTERNAL_RESOLVED.value,
         destination_page=PageRef.from_index(dest_idx).machine,
         destination_view=extract_destination_view(dest),
