@@ -6,9 +6,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.4] - 2026-06-18
+### Changed:
+- Pull Dependabot commit for updating runners, to local main branch. Merge with dev branch.
+
+---
+
 ## [1.5.5.3] - 2026-06-18
 ### Fixed:
-- Windows builds are hanging; drop CI CLI checks for runners, in build_executable.py.
+- Windows builds are hanging; drop CI CLI checks for runners, in build_executable.py. (This worked).
 
 ---
 
