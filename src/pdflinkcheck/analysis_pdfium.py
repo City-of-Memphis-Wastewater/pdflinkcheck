@@ -432,6 +432,15 @@ def _dispatch_action(
             source_kind=SourceKindPdfium.ANNOT_GOTOR
         ))
 
+    elif action_type == PdfActionType.LAUNCH:
+        # Extract underlying target path string from the Launch action spec
+        launch_file = get_remote_file_from_action(action, doc.raw)
+        links.append(create_link_dict(
+            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+            link_type=LinkType.LAUNCH.value, file=launch_file,
+            source_kind=SourceKindPdfium.ANNOT_LAUNCH
+        ))
+
 def _dispatch_direct_dest(
     doc: Any,
     dest: Any,
