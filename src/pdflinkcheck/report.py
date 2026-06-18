@@ -187,7 +187,7 @@ def run_report_core(
             "internal_links": [k for k in extracted_links if k.get('type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 
             "toc": structural_toc,
             "validation": EMPTY_VALIDATION.copy()
-        }s
+        }
 
         intermediate_results = {
             "data": base_data_dict,
