@@ -26,9 +26,13 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install uv and run tests
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+
+      - name: Run tests
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
           cd pdflinkcheck
           uv sync --extra pymupdf --extra pdfium
           uv run pytest -v
