@@ -78,7 +78,6 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 [project.optional-dependencies]
 pymupdf = ["pymupdf>=1.24.0,<2.0.0"] # fails on termux # If you choose to include PyMuPDF, you must comply with the AGPL3
 pdfium = ["pypdfium2>=5.2.0,<6.0.0"]
-#full = ["pdlinkcheck[pymupdf,pdfium]"]
 
 # add with `uv sync --group dev`, plus other extras, like `--extra pdfium`
 [dependency-groups]
