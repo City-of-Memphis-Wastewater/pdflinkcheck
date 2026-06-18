@@ -360,6 +360,7 @@ def assess_action(doc, page, links, page_index, text_page, source_ref):
                 pdfium_c.FPDFPage_CloseAnnot(annot_raw)
         
         pos += 1
+
 def _process_link_annotation(
     doc: Any,
     page: Any,
@@ -388,6 +389,13 @@ def _process_link_annotation(
     elif dest:
         # --- CASE 2: NO ACTION, BUT DIRECT DESTINATION ---
         _dispatch_direct_dest(doc, dest, source_ref, rect_norm, anchor_text, links)
+    else:
+        # Fail-safe catch for unhandled, blank, or broken structural link markers
+        links.append(create_link_dict(
+            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+            link_type=LinkType.OTHER.value,
+            source_kind=SourceKindPdfium.ANNOT_OTHER.value
+        ))
 
 def _dispatch_action(
     doc: Any,
@@ -411,7 +419,7 @@ def _dispatch_action(
                 link_type=LinkType.INTERNAL_GOTO.value,
                 destination_page=PageRef.from_index(dest_idx).machine,
                 destination_view=extract_destination_view(target_dest),
-                source_kind=SourceKindPdfium.ANNOT_GOTO
+                source_kind=SourceKindPdfium.ANNOT_GOTO.value
             ))
     
     elif action_type == PdfActionType.URI:
@@ -419,7 +427,12 @@ def _dispatch_action(
         if uri:
             links.append(create_link_dict(
                 source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                link_type=LinkType.EXTERNAL.value, url=uri, source_kind=SourceKindPdfium.ANNOT_URI
+                link_type=LinkType.EXTERNAL.value, url=uri, source_kind=SourceKindPdfium.ANNOT_URI.value
+            ))
+        else:
+            links.append(create_link_dict(
+                source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+                link_type=LinkType.OTHER.value, source_kind=SourceKindPdfium.ANNOT_URI.value
             ))
 
     elif action_type == PdfActionType.GOTOR:
@@ -429,7 +442,7 @@ def _dispatch_action(
             source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
             link_type=LinkType.REMOTE_GOTOR.value, remote_file=remote_file,
             destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None,
-            source_kind=SourceKindPdfium.ANNOT_GOTOR
+            source_kind=SourceKindPdfium.ANNOT_GOTOR.value
         ))
 
     elif action_type == PdfActionType.LAUNCH:
@@ -437,8 +450,17 @@ def _dispatch_action(
         launch_file = get_remote_file_from_action(action, doc.raw)
         links.append(create_link_dict(
             source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-            link_type=LinkType.LAUNCH.value, file=launch_file,
-            source_kind=SourceKindPdfium.ANNOT_LAUNCH
+            link_type=LinkType.LAUNCH.value, file=launch_file or "",
+            source_kind=SourceKindPdfium.ANNOT_LAUNCH.value
+        ))
+
+    else:
+        # Captures exotic macros (VJS, SUBMIT, NAMED) cleanly into the unknown dictionary structure
+        links.append(create_link_dict(
+            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+            link_type=LinkType.OTHER.value,
+            action_kind=int(action_type),
+            source_kind=SourceKindPdfium.ANNOT_OTHER.value
         ))
 
 def _dispatch_direct_dest(
@@ -453,10 +475,10 @@ def _dispatch_direct_dest(
     dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
     links.append(create_link_dict(
         source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-        link_type=LinkType.INTERNAL_GOTO.value,
+        link_type=LinkType.INTERNAL_RESOLVED.value,
         destination_page=PageRef.from_index(dest_idx).machine,
         destination_view=extract_destination_view(dest),
-        source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST
+        source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST.value
     ))
 
 def demo():
