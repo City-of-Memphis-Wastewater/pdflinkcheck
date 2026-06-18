@@ -11,6 +11,8 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Standardize LinkType enum class usage across all three PDF engines.
 - Add magic keys to validate.py to elucidate differentiable results. 
 - Allow only one --engine flag to be used in the CLI; remove list functionality.
+- Ping machination improved.
+- PageValidationResult implemented in validate.py.
 
 ---
 
