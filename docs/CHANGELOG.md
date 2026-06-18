@@ -8,6 +8,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.5.5.10] - 2026-06-18
 ### Fixed:
+- msix.yml runner should fail if the windows build from build.yml / build_executable.py fails.
+- 'uv pip install pyinstaller' added to build.yml, for peace of mind; this command also works on termux, which 'uv add pyinstaller' does not, strange.
+---
+
+## [1.5.5.10] - 2026-06-18
+### Fixed:
 - 'build' should be called through uv
 - Improve runner diagnostics which are failing to find dest executable files.
 
