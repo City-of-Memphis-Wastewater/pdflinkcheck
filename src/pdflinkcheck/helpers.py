@@ -293,4 +293,6 @@ class PageValidationResult(str,Enum):
     HIGH = "high"
     ZERO = "zero"
     UNKNOWN = "unknown"
-    REASONABLE = "reasonable"
+    INVALID = "invalid"
+    VALID = "valid"
+    #REASONABLE = "reasonable"

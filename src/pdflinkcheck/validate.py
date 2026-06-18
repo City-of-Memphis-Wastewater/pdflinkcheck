@@ -9,7 +9,7 @@ import re
 from enum import Enum
 
 from pdflinkcheck.io import get_friendly_path
-from pdflinkcheck.helpers import PageRef, LinkType
+from pdflinkcheck.helpers import PageRef, LinkType, PageValidationResult
 from .ping import is_valid_web_url, ping_url
 
 
@@ -48,7 +48,10 @@ def make_fresh_stats(total_found):
         "external-uri-forbidden": 0,
         "internal-jump-no-destination-page": 0,
         "web-ping-fail": 0,
-        "telephone-number": 0
+        "telephone-number": 0,
+        "launch-target-valid": 0,
+        "launch-target-broken": 0,
+        "launch-target-executable": 0
     }
     return stats_fresh
 
@@ -75,7 +78,9 @@ class ValidationCounter:
             "unknown-web-url-missing",
             "internal-jump-unknown-reasonableness",
             "unknown-link",
-            "external-uri-forbidden"
+            "external-uri-forbidden",
+            "launch-target-broken",
+            "launch-target-executable"
             ):
             self.issues.append(link_payload)
 
@@ -88,44 +93,66 @@ def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, 
     """Evaluates index targeting against document thresholds using PageRef translation."""
     if dest_page is None:
         return "internal-jump-no-destination-page", "No destination page resolved"
+
+    # 1. Determine the structural classification
     try:
         page_ref = PageRef.from_index(int(dest_page))
-        
         if page_ref.machine < START_INDEX:
-            return "internal-page-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
-            
-        if total_pages is None:
-            return "internal-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
-            
-        if page_ref.machine >= total_pages:
-            return "internal-page-jump-broken", f"Page {page_ref.human} out of range (1–{total_pages})"
-            
-        return "internal-page-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
+            result_status = PageValidationResult.NEGATIVE
+        elif total_pages is None:
+            result_status = PageValidationResult.UNKNOWN
+        elif page_ref.machine >= total_pages:
+            result_status = PageValidationResult.HIGH
+        else:
+            result_status = PageValidationResult.VALID
     except (ValueError, TypeError):
+        result_status = PageValidationResult.INVALID
+
+    # 2. Map structural state cleanly to the reporting payload
+    if result_status == PageValidationResult.NEGATIVE:
+        return "internal-page-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
+    elif result_status == PageValidationResult.UNKNOWN:
+        return "internal-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+    elif result_status == PageValidationResult.HIGH:
+        return "internal-page-jump-broken", f"Page {page_ref.human} out of range (1–{total_pages})"
+    elif result_status == PageValidationResult.INVALID:
         return "internal-page-jump-broken", f"Invalid page value: {dest_page}"
+    
+    return "internal-page-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
+
 
 def _check_toc_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
     """Evaluates index targeting against document thresholds using PageRef translation."""
     if dest_page is None:
         return "toc-jump-no-destination-page", "No destination page resolved"
+
+    # 1. Determine the structural classification
     try:
         page_ref = PageRef.from_index(int(dest_page))
-        
         if page_ref.machine < START_INDEX:
-            return "toc-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
-            
-        if total_pages is None:
-            return "toc-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
-            
-        if page_ref.machine >= total_pages:
-            human_label = PageRef.from_index(int(dest_page)).human
-            reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
-            #return "toc-jump-broken", f"Page {page_ref.human} out of range (1–{total_pages})"
-            return "toc-jump-broken", reason
-
-        return "toc-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
+            result_status = PageValidationResult.NEGATIVE
+        elif total_pages is None:
+            result_status = PageValidationResult.UNKNOWN
+        elif page_ref.machine >= total_pages:
+            result_status = PageValidationResult.HIGH
+        else:
+            result_status = PageValidationResult.VALID
     except (ValueError, TypeError):
+        result_status = PageValidationResult.INVALID
+
+    # 2. Map structural state cleanly to the reporting payload
+    if result_status == PageValidationResult.NEGATIVE:
+        return "toc-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
+    elif result_status == PageValidationResult.UNKNOWN:
+        return "toc-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+    elif result_status == PageValidationResult.HIGH:
+        human_label = page_ref.human
+        reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
+        return "toc-jump-broken", reason
+    elif result_status == PageValidationResult.INVALID:
         return "toc-jump-broken", f"Invalid page value: {dest_page}"
+
+    return "toc-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
 
 
 def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str]:
@@ -133,7 +160,8 @@ def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str
     if not remote_file:
         return "file-target-broken", "Missing remote file name"
     
-    target_path = (pdf_dir / remote_file).resolve()
+    target_path = (pdf_dir / remote_file).resolve() # assumes that the remote files has a relative path
+    # we should possibly address the case where the remote_file is deemde to be a complete full filepath, if this is within the bounds of expectation. 
     if target_path.exists() and target_path.is_file():
         return "file-target-valid", f"Found: {target_path.name}"
     return "file-target-broken", f"File not found: {remote_file}"
@@ -193,6 +221,34 @@ def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str
     reason = f"HTTP {ping_res.status_code}: {ping_res.reason}" if ping_res.status_code else ping_res.reason
     return "web-ping-fail", reason
 
+def _check_launch_link(launch_target: str | None) -> Tuple[str, str]:
+    """
+    Evaluates PDF Launch actions for structural safety and path validity.
+    
+    """
+    if not launch_target:
+        return "launch-target-broken", "Malformed Launch link: Missing executable or file target"
+
+    target_clean = launch_target.strip()
+    target_lower = target_clean.lower()
+
+    # 1. Guard against high-risk executable or script types immediately
+    dangerous_extensions = (
+        ".exe", ".bat", ".cmd", ".sh", ".bash", ".vbs", 
+        ".js", ".scr", ".pif", ".msi", ".com", ".ps1"
+    )
+    if target_lower.endswith(dangerous_extensions) or any(f" {ext}" in target_lower for ext in dangerous_extensions):
+        return "launch-target-executable", f"High-risk executable Launch path blocked: {target_clean}"
+
+    # 3. Path verification (Treating the target as an explicit local file asset dependency)
+    try:
+        target_path = Path(target_clean)
+        # Note: Launch paths can be absolute or relative. Adjust base resolution as required by engine context
+        if target_path.exists() and target_path.is_file():
+            return "launch-target-valid", f"Verified local target: {target_path.name}"
+        return "launch-target-broken", f"Launch target file not found: {target_clean}"
+    except Exception as e:
+        return "launch-target-broken", f"Unparseable Launch path sequence: {str(e)}"
 
 # =====================================================================
 # Main Coordinator & Orchestration Boundary
@@ -231,12 +287,14 @@ def run_validation(
     for link in all_links:
         link_type = link.get("type")
         
-        if link_type in ("Internal (GoTo/Dest)", "Internal (Resolved Action)"):
+        if link_type in (LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value): 
             status, reason = _check_internal_jump(link.get("destination_page"), total_pages)
-        elif link_type == "Remote (GoToR)":
+        elif link_type == LinkType.REMOTE_GOTOR.value:
             status, reason = _check_remote_file(link.get("remote_file"), pdf_dir)
-        elif link_type == "External (URI)":
+        elif link_type == LinkType.EXTERNAL.value:
             status, reason = _check_external_uri(link.get("url"), check_external)
+        elif link_type == LinkType.LAUNCH.value:
+            status, reason = _check_launch_link(link.get("file"))
         else:
             status, reason = "unknown-link", "Other/unsupported link type"
 
@@ -284,16 +342,19 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append(f"✅ TOC Page Jumps Valid: {summary_stats['toc-jump-valid']}")
     buf.append(f"✅ Internal Page Jumps Valid: {summary_stats['internal-page-jump-valid']}")
     buf.append(f"✅ File Targets Valid: {summary_stats['file-target-valid']}")
+    buf.append(f"✅ Launch Targets Valid: {summary_stats['launch-target-valid']}")
     buf.append(f"✅ Web Addresses Valid: {summary_stats['web-ping-valid']}")
     buf.append(f"🌐 Web Addresses Not Checked: {summary_stats['unknown-web-not-pinged']}")
     buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['internal-jump-unknown-reasonableness']}")
     buf.append(f"⚠️ TOC Unknown Reasonableness: {summary_stats['toc-jump-unknown-reasonableness']}")
     buf.append(f"⚠️ Email Addresses Reasonable But Not Checked: {summary_stats['email-address-reasonable']}")
+    buf.append(f"⚠️ Forbidden Local Executable Launches: {summary_stats['launch-target-executable']}")
     buf.append(f"⚠️ Unsupported URL File Links: {summary_stats['external-uri-forbidden']}")
     buf.append(f"⚠️ Unsupported Telephone Numbers: {summary_stats['telephone-number']}")
     buf.append(f"⚠️ Unsupported Other PDF Links: {summary_stats['unknown-link']}")
     buf.append(f"❌ Broken Page Reference: {summary_stats['internal-page-jump-broken']}")
     buf.append(f"❌ Broken File Targets: {summary_stats['file-target-broken']}")
+    buf.append(f"❌ Broken Launch Targets: {summary_stats['launch-target-broken']}")
     buf.append(f"❌ TOC Page Jumps Broken: {summary_stats['toc-jump-broken']}")
     buf.append(f"❌ TOC Page Jumps Not Resolved: {summary_stats['toc-jump-no-destination-page']}")
     buf.append(f"❌ Internal Page Jumps Not Resolved: {summary_stats['internal-jump-no-destination-page']}")
