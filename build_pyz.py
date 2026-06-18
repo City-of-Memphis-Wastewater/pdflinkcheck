@@ -119,11 +119,12 @@ def ensure_dependencies_and_shiv():
     # 2b. INSTALL/SYNC ALL PROJECT DEPENDENCIES (The Fix)
     print("Installing all project dependencies via uv pip install -e .")
     #run_command([sys.executable, "-m", "pip", "install", "-e", "."]) # will this install extras?
-    run_command([sys.executable, "-m", "pip", "install", "-e", ".[pdfium]"])
-    
+    #run_command([sys.executable, "-m", "pip", "install", "-e", ".[pdfium]"])
+    run_command(["uv", "sync", "--extra", "pdfium", "--group", "dev"])
+
     # 2c. Ensure shiv is installed
     try:
-        run_command(["shiv", "--version"], check=True) 
+        run_command(["uv", "run", "shiv", "--version"], check=True) 
     except subprocess.CalledProcessError:
         print("Installing 'shiv' ...")
         #run_command(["uv", "pip", "install", "shiv"])

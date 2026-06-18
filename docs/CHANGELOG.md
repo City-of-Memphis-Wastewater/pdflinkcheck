@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.9] - 2026-06-18
+### Fixed:
+- Dear lord. Don't touch pip or use the --system flag. 'uv sync --extra pdfium --group dev'
+- Leverage uv more in build_pyz.py.
+
+---
+
 ## [1.5.5.8] - 2026-06-18
 ### Fixed:
 - 'pyinstaller' -> 'sys.executable, "-m", "PyInstaller"' in build_executable.py.

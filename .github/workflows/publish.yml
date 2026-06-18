@@ -43,9 +43,10 @@ jobs:
 
       - name: Create isolated environment and install build dependencies
         # Use uv to install `build` and all dependencies specified in `pyproject.toml`
-        run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build ".[pdfium]" #,pymupdf]" # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
+        #run: uv venv && source .venv/bin/activate && uv pip install --upgrade pip build ".[pdfium]" #,pymupdf]" # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
         # NOTE: `uv pip install .` installs the package itself and its dependencies
-        
+        run: uv sync --extra pdfium --group dev
+
       # --- PACKAGE BUILD AND TEST ---
 
       - name: Build S-Dist and Wheel
@@ -57,16 +58,16 @@ jobs:
         # Use the global `uv run` if you don't want to activate, but since we activated above:
         run: |
           source .venv/bin/activate
-          pip uninstall -y pdflinkcheck || true
-          pip install dist/pdflinkcheck-*.whl
+          uv pip uninstall -y pdflinkcheck || true
+          uv pip install dist/pdflinkcheck-*.whl
           # Use project's installed CLI command
           pdflinkcheck analyze --help
       # Optional: Also test the sdist (extra safety)
       - name: Sanity check the built sdist
         run: |
           source .venv/bin/activate
-          pip uninstall -y pdflinkcheck || true
-          pip install dist/pdflinkcheck-*.tar.gz
+          uv pip uninstall -y pdflinkcheck || true
+          uv pip install dist/pdflinkcheck-*.tar.gz
           pdflinkcheck analyze --help
       # --- PUBLISH ---
       - name: Publish package distributions to PyPI
