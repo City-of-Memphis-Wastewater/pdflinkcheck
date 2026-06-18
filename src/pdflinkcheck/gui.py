@@ -12,8 +12,6 @@ from importlib.resources import files
 import pyhabitat
 import ctypes
 import threading
-import subprocess
-import os
 import logging
 logger = logging.getLogger(__name__)
 # --- Core Imports ---

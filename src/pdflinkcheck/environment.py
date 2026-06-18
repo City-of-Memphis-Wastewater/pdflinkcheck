@@ -3,7 +3,6 @@
 # pdflinkcheck/environment.py
 from __future__ import annotations
 from functools import cache
-import subprocess
 import os
 import pyhabitat
 """

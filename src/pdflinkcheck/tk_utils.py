@@ -4,8 +4,6 @@ import subprocess
 import re
 import platform
 
-
-
 def get_primary_monitor_geometry():
     """ 
     Queries xrandr to find the actual primary monitor's dimensions and offsets.
