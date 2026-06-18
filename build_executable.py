@@ -153,17 +153,11 @@ def run_pyinstaller(
         "--hidden-import", "typer.main", 
         "--hidden-import", "typer",  
         "--hidden-import", "click",  
-        "--hidden-import", "rich",  
-        #"--collect-all", "typer",
-        #"--collect-all", "click",
-        #"--collect-all", "rich",
+        "--hidden-import", "rich",
 
         #'--log-level=DEBUG',
 
         #"--add-data", "pyproject.toml:pdflinkcheck/data",
-        
-        # PyMuPDF is a native library, ensure its dependencies are included if necessary
-        # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     ]
 
 
@@ -191,6 +185,8 @@ def run_pyinstaller(
         #base_command.append(f'--version-file={RC_FILE.name}')
         base_command.append(f'--version-file={RC_FILE.resolve()}')
 
+    # PyMuPDF is a native library, ensure its dependencies are included if necessary
+    # PyInstaller often handles this automatically, but if it fails, 'collect-all' is needed.
     if pymupdf_is_available():
         base_command.append("--collect-all")
         base_command.append("fitz")
