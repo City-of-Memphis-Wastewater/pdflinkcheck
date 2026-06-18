@@ -196,7 +196,7 @@ jobs:
           find artifacts -type f -not -path '*/.*' -printf "%f\n" | sort | uniq -c | sort -nr
 
       - name: Attach artifacts to GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: artifacts/**/*
           #overwrite: true
