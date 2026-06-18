@@ -9,6 +9,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.5.5.2] - 2026-06-18
 ### Fixed:
 - Ensure the Docker build has a current extra reference and that it is MIT compliant.
+- Remove references to [full] in favor of explicit [pdfium,pymupdf].
 
 ---
 
