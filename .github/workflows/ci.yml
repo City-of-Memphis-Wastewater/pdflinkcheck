@@ -31,9 +31,10 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install UV (The modern Python package manager)
-      # UV is significantly faster than pip/poetry for CI builds
-      run: pip install uv
+    - name: Set up uv
+        uses: astral-sh/setup-uv-action@v5
+        with:
+          version: "latest"
 
     - name: Sync/Install Dependencies
       # --all-extras: ensures PyMuPDF [pdfium,pymupdf] is installed for testing

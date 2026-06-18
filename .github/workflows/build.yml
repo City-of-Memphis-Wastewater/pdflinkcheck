@@ -44,11 +44,14 @@ jobs:
           # This ensures the created venv is activated implicitly
           cache: pip
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv-action@v5
+        with:
+          version: "latest"
+
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          # pip install uv
-          # pip install shiv  pyinstaller build uv
           uv pip install --system .[pdfium] --all-groups
           # pip install -e ".[pdfium]" # ,pymupdf]"  # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
 

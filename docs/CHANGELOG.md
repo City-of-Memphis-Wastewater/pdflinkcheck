@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.6] - 2026-06-18
+### Fixed:
+- Use 'astral-sh/setup-uv-action@v5' in all YML runners, rather than 'pip install uv'
+
+---
+
 ## [1.5.5.5] - 2026-06-18
 ### Fixed:
 - Fix cli.py reference, as __main__, in build_executable.py, so that relative refs are allows in the source code

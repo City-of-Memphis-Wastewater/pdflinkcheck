@@ -33,10 +33,10 @@ jobs:
         with:
           python-version: '3.x'
 
-      # --- UV-BASED INSTALLATION AND SETUP ---
-      - name: Install uv
-        # Install globally (or add it to the path)
-        run: pip install uv
+      - name: Set up uv
+        uses: astral-sh/setup-uv-action@v5
+        with:
+          version: "latest"
 
       - name: Ensure updated copies of packaged data files
         run: python src/pdflinkcheck/datacopy.py
