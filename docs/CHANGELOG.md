@@ -9,7 +9,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.5.5] - 2026-06-18
 ### Changed:
 - We now claim to be MIT licensed. See NOTICE file for details, but otherwise, the project contains no AGPL3+.
-- Adjust github YML runners accordingly.
+- Adjust github YML runners accordingly, to not include PyMuPDF in the builds that will be attached to releases.
+
+### Internal:
+- Create a separate repository for AGPL3+ licensing. The Microsoft Store Version should ultimately be AGPL3+.
 
 ---
 
