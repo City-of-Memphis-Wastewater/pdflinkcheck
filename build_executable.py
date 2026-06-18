@@ -269,9 +269,9 @@ if __name__ == "__main__":
         # Only run text-based --help check if we aren't a hidden-window GUI binary
         is_windowed_build = IS_WINDOWS_BUILD and (args.mode == "onedir") and pyhabitat.tkinter_is_available()
 
-        if is_ci:
-            print("[CI DETECTED] Skipping CLI help text check to prevent headless stream hangs.")
-        elif is_windowed_build:
+        #if is_ci:
+        #    print("[CI DETECTED] Skipping CLI help text check to prevent headless stream hangs.")
+        if is_windowed_build:
             print("Skipping CLI help text check because artifact was built with --windowed.")
         else:
             print("Testing the PyInstaller artifact...")

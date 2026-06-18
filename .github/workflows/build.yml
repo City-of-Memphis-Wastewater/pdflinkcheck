@@ -47,8 +47,10 @@ jobs:
       - name: Install build dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install shiv  pyinstaller build uv
-          pip install -e ".[pdfium]" # ,pymupdf]"  # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
+          # pip install uv
+          # pip install shiv  pyinstaller build uv
+          uv pip install --system .[pdfium] --all-groups
+          # pip install -e ".[pdfium]" # ,pymupdf]"  # pymupdf cannot be included here if you want to license as MIT and not the AGPL3+
 
   
       - name: Build wheel & sdist
@@ -58,16 +60,16 @@ jobs:
       - name: Build PYZ (shiv)
         if: runner.os != 'Windows'
         run: |
-          python build_pyz.py
+          uv run python build_pyz.py
 
       - name: Build executable (PyInstaller)
         run: |
-          python build_executable.py --mode onedir
+          uv run python build_executable.py --mode onedir
 
       - name: Build onefile executable for Windows (PyInstaller)
         if: runner.os == 'Windows'
         run: |
-          python build_executable.py --mode onefile
+          uv run python build_executable.py --mode onefile
       
       - name: Post-Build Cleanup (Windows)
         if: runner.os == 'Windows'
