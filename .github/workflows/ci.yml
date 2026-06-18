@@ -36,7 +36,7 @@ jobs:
       run: pip install uv
 
     - name: Sync/Install Dependencies
-      # --all-extras: ensures PyMuPDF [full] is installed for testing
+      # --all-extras: ensures PyMuPDF [pdfium,pymupdf] is installed for testing
       # --dev: ensures ruff and pytest are available from [dependency-groups]
       run: uv sync --all-extras --dev
       #run: uv sync

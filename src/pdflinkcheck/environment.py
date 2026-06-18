@@ -28,8 +28,8 @@ def pymupdf_is_available() -> bool:
         import fitz
         return True
     except Exception as e:
-        # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
-        # Use: `pipx install pdflinkcheck[full]` or alternative.
+        # Fails if: the [pdfium,pymupdf] group from [project.optional-dependencies] in pyproject.toml was not used when installing pdflink check. Like 
+        # Use: `pipx install pdflinkcheck[pdfium,pymupdf]` or alternative.
         #print(f"DEBUG: pymupdf check failed with error: {e}")
         return False
 
@@ -41,7 +41,7 @@ def pdfium_is_available() -> bool:
         import pypdfium2
         return True
     except Exception as e:
-        # Fails if: the [full] group from [project.optional-dependencies] in pyrpoject.toml was not used when installing pdflink check. Like 
+        # Fails if: the [pdfium,pymupdf] group from [project.optional-dependencies] in pyproject.toml was not used when installing pdflink check. Like 
         # Use: `pipx install pdflinkcheck[pdfium]` or alternative.
         #print(f"DEBUG: pdfium check failed with error: {e}")
         return False

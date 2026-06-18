@@ -31,7 +31,7 @@ For an isolated environment where you can access `pdflinkcheck` from any termina
 
 ```bash
 # Ensure you have pipx installed first (if not, run: pip install pipx)
-pipx install pdflinkcheck[full]
+pipx install pdflinkcheck[pdfium,pymupdf]
 
 # On Termux
 pipx install pdflinkcheck
