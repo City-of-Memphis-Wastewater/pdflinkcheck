@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.5] - 2026-06-18
+### Fixed:
+- Fix cli.py reference, as __main__, in build_executable.py, so that relative refs are allows in the source code
+
+---
+
 ## [1.5.5.4] - 2026-06-18
 ### Changed:
 - Pull Dependabot commit for updating runners, to local main branch. Merge with dev branch.
