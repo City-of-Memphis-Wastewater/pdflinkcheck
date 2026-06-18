@@ -130,7 +130,8 @@ def run_pyinstaller(
     
     # PyInstaller Command Construction
     base_command = [
-        'pyinstaller',
+        #'pyinstaller',
+        sys.executable, "-m", "PyInstaller",
         '--noconfirm',
         '--clean',
         f'--name={dynamic_exe_name}',

@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.5.8] - 2026-06-18
+### Fixed:
+- 'pyinstaller' -> 'sys.executable, "-m", "PyInstaller"' in build_executable.py.
+
+---
+
 ## [1.5.5.7] - 2026-06-18
 ### Fixed:
 - '--all-groups' ->  '--group dev' for 'uv pip install ...'
