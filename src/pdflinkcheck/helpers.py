@@ -143,42 +143,27 @@ class ExportFormat(Flag):
 
         return result
 
-
 class PdfEngine(Flag):
     PYPDF = auto()    # 1
     PYMUPDF = auto()  # 2
     PDFIUM = auto()   # 4
     AUTO = auto()     # 8
     
-    # Combined option for running differential matrix checks
-    ALL = PYPDF | PYMUPDF | PDFIUM
-
     @classmethod
     def from_str(cls, value: Optional[str]) -> "PdfEngine":
         """Parses a raw string engine request into an explicit flag choice."""
-        # Since NONE is removed, fallback cleanly to AUTO if string is dead or empty
-        if not value or value.strip().lower() in ("none", ""):
+        if not value or value.strip().lower() in ("none", "", "auto"):
             return cls.AUTO
         
-        normalized = value.strip().lower()
-        if normalized == "auto":
-            return cls.AUTO
-        if normalized == "all":
-            return cls.ALL
-
-        # Start with an empty combined mask state
-        result = cls.AUTO
-        for token in normalized.split(","):
-            token_clean = token.strip()
-            if token_clean == "pypdf":
-                result |= cls.PYPDF
-            elif token_clean in ("pymupdf", "fitz"):
-                result |= cls.PYMUPDF
-            elif token_clean in ("pdfium", "pypdfium2"):
-                result |= cls.PDFIUM
+        token_clean = value.strip().lower()
+        if token_clean == "pypdf":
+            return cls.PYPDF
+        elif token_clean in ("pymupdf", "fitz"):
+            return cls.PYMUPDF
+        elif token_clean in ("pdfium", "pypdfium2"):
+            return cls.PDFIUM
                 
-        # If string was invalid tokens and result flag remains 0, fallback to AUTO
-        return result if result.value != 0 else cls.AUTO
+        return cls.AUTO
 
     @classmethod
     def resolve_auto_flag(cls) -> "PdfEngine":
@@ -205,22 +190,6 @@ class PdfEngine(Flag):
         return PdfEngine(remaining)
 
     @classmethod
-    def from_choices(
-        cls,
-        choices: Optional[Iterable["PdfEngineChoice"]]
-    ) -> "PdfEngine":
-
-        if not choices:
-            return cls.resolve_auto_flag()
-
-        result = cls.AUTO
-
-        for choice in choices:
-            result |= cls[choice.name]
-
-        return result.resolve_if_auto()
-    
-    @classmethod
     def from_gui(cls, value: str) -> "PdfEngine":
         return cls.from_str(value)
 
@@ -243,8 +212,6 @@ class PdfEngineChoice(str, Enum):
     PYMUPDF = "pymupdf"
     PDFIUM = "pdfium"
     AUTO = "auto"
-    ALL = "all"
-
 
 # =================
 # Formalized request structure

@@ -189,8 +189,10 @@ def analyze_pdf(
         help="Export formats (repeatable). Use '--format none' to suppress all exports."
     ),
 
-    pdf_library: List[PdfEngineChoice] = typer.Option(
-        [PdfEngine.resolve_auto_flag().name.lower()],
+    #pdf_library: List[PdfEngineChoice] = typer.Option(
+    pdf_library: PdfEngineChoice = typer.Option(
+        #[PdfEngine.resolve_auto_flag().name.lower()],
+        PdfEngine.resolve_auto_flag().name.lower(),
         "--engine","-e",
         envvar="PDF_ENGINE",
         help=f"PDF parsing library backend choice.",
@@ -227,7 +229,8 @@ def analyze_pdf(
         console.print(f"[dim]No file specified — using: {Path(pdf_path).name}[/dim]")
 
     resolved_format = ExportFormat.from_choices(export_format)
-    resolved_engine = PdfEngine.from_choices(pdf_library)
+    #resolved_engine = PdfEngine.from_choices(pdf_library)
+    resolved_engine = pdf_library
 
     # The meat and potatoes
     request = ReportRequest(
