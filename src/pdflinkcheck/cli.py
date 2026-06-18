@@ -15,16 +15,16 @@ from importlib.resources import files
 from typer_helptree import add_typer_helptree
 import logging
 
-from pdflinkcheck.report import run_report_request
-from pdflinkcheck._version import __version__
-from pdflinkcheck.io import get_first_pdf_in_cwd
-from pdflinkcheck.environment import (
+from .report import run_report_request
+from ._version import __version__
+from .io import get_first_pdf_in_cwd
+from .environment import (
     is_in_dev_environment,
     pymupdf_is_available, 
     pdfium_is_available
 )
-from pdflinkcheck.helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoice, ReportRequest
-from pdflinkcheck.logging_setup import configure_logging_for_application
+from .helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoice, ReportRequest
+from .logging_setup import configure_logging_for_application
 
 logger = logging.getLogger(__name__)
 console = Console() # to be above the tkinter check, in case of console.print
@@ -103,7 +103,7 @@ def docs_command(
     # We use your new check to see if we are in a dev context.
     # If so, we trigger the data copy to ensure we aren't viewing stale docs.
     if is_in_dev_environment():
-        from pdflinkcheck.datacopy import ensure_data_files_for_build
+        from .datacopy import ensure_data_files_for_build
         ensure_data_files_for_build()
         console.print("[dim italic]Dev mode detected: Synced data files.[/dim italic]")
 
@@ -150,7 +150,7 @@ app.add_typer(
         ) 
 def tools_clear_cache():
     """Recheck the PDF library availability."""
-    from pdflinkcheck.environment import clear_pdf_library_caches
+    from .environment import clear_pdf_library_caches
     clear_pdf_library_caches()
     console.print("[green]PDF library availabilty rechecked.[/green]")
     console.print(f"pymupdf_is_available: {pymupdf_is_available()}")
@@ -160,7 +160,7 @@ def tools_clear_cache():
 @tools_app.command(name="browse-exports")
 def tools_browse_exports():
     """Open the system file explorer at the report output directory."""
-    from pdflinkcheck.helpers import get_export_path
+    from .helpers import get_export_path
     
     target_dir = get_export_path()
     logging.debug(f"Opening: {target_dir}")
@@ -265,7 +265,7 @@ def serve(
         console.print("   → [yellow]Reload mode enabled[/yellow]")
 
     # Import here to avoid slow imports on other commands
-    from pdflinkcheck.stdlib_server import main as stdlib_server_main# ThreadedHTTPServer, PDFLinkCheckHandler
+    from .stdlib_server import main as stdlib_server_main# ThreadedHTTPServer, PDFLinkCheckHandler
     import socketserver
 
     try:
@@ -311,7 +311,7 @@ def gui_command(
         _gui_failure_msg()
         return
     
-    from pdflinkcheck.gui import start_gui
+    from .gui import start_gui
     start_gui(time_auto_close = assured_auto_close_value)
 
 # --- Helper, consistent gui failure message. --- 
