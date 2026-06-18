@@ -132,6 +132,9 @@ def run_pyinstaller(
         '--noconfirm',
         '--clean',
         f'--name={dynamic_exe_name}',
+
+        # --- Crucial for resolving package structure and relative imports ---
+        f'--paths={PROJECT_ROOT / "src"}',
         
         # Output paths
         f'--distpath={mode_dist_path}', # <--
