@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional, List
 
 from pdflinkcheck.logging_setup import error_logger
 from pdflinkcheck.environment import pymupdf_is_available
-from pdflinkcheck.helpers import PageRef
+from pdflinkcheck.helpers import PageRef, LinkType
 
 try:
     if pymupdf_is_available():
@@ -251,16 +251,16 @@ def extract_links_pymupdf(doc):
                     })
 
                     if kind == fitz.LINK_GOTO:
-                        link_dict['type'] = 'Internal (GoTo/Dest)'
+                        link_dict['type'] = LinkType.INTERNAL_GOTO.value
                     else:
-                        link_dict['type'] = 'Internal (Resolved Action)'
+                        link_dict['type'] = LinkType.INTERNAL_RESOLVED.value
                         link_dict['source_kind'] = kind
                 
                 # --- CASE 2: EXTERNAL URIs ---
                 elif kind == fitz.LINK_URI:
                     uri = link.get('uri', 'URI (Unknown Target)')
                     link_dict.update({
-                        'type': 'External (URI)',
+                        'type': LinkType.EXTERNAL.value,
                         'url': uri,
                     })
                 
@@ -268,14 +268,14 @@ def extract_links_pymupdf(doc):
                 elif kind == fitz.LINK_GOTOR:
                     remote_file = link.get('file', 'Remote File')
                     link_dict.update({
-                        'type': 'Remote (GoToR)',
+                        'type': LinkType.REMOTE_GOTOR.value,
                         'remote_file': remote_file
                     })
                 
                 # --- CASE 4: OTHERS ---
                 else:
                     link_dict.update({
-                        'type': 'Other Action',
+                        'type': LinkType.OTHER.value,
                         'action_kind': kind,
                     })
 

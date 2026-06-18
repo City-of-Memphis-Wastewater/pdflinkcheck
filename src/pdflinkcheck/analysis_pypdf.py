@@ -7,7 +7,7 @@ from pathlib import Path
 import logging
 from typing import Dict, Any, Optional, List
 
-from pdflinkcheck.helpers import PageRef
+from pdflinkcheck.helpers import PageRef, LinkType
 
 from pypdf import PdfReader
 from pypdf.generic import (
@@ -128,14 +128,14 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 'page': page_source.machine,
                 'rect': list(rect) if rect else None,
                 'link_text': anchor_text,
-                'type': 'Other Action',
+                'type': LinkType.OTHER.value,
             }
             
             # Handle URI (External)
             if "/A" in obj and "/URI" in obj["/A"]:
                 uri = obj["/A"]["/URI"]
                 link_dict.update({
-                    'type': 'External (URI)',
+                    'type': LinkType.EXTERNAL.value,
                     'url': uri,
                 })
             
@@ -147,7 +147,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 if target_page is not None:
                     dest_page = PageRef.from_index(target_page)
                     link_dict.update({
-                        'type': 'Internal (GoTo/Dest)',
+                        'type': LinkType.INTERNAL_GOTO.value,
                         'destination_page': dest_page.machine,
                     })
             
@@ -155,7 +155,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             elif "/A" in obj and obj["/A"].get("/S") == "/GoToR":
                 remote_file = obj["/A"].get("/F")
                 link_dict.update({
-                    'type': 'Remote (GoToR)',
+                    'type': LinkType.REMOTE_GOTOR.value,
                     'remote_file': str(remote_file),
                 })
 

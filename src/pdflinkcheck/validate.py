@@ -9,8 +9,9 @@ import re
 from enum import Enum
 
 from pdflinkcheck.io import get_friendly_path
-from pdflinkcheck.helpers import PageRef 
+from pdflinkcheck.helpers import PageRef, LinkType
 from .ping import is_valid_web_url, ping_url
+
 
 logger = logging.getLogger(__name__)
 

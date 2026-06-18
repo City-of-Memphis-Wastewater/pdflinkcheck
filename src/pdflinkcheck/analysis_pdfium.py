@@ -408,7 +408,7 @@ def _dispatch_action(
             dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, target_dest)
             links.append(create_link_dict(
                 source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-                link_type=LinkType.INTERNAL,
+                link_type=LinkType.INTERNAL_GOTO,
                 destination_page=PageRef.from_index(dest_idx).machine,
                 destination_view=extract_destination_view(target_dest),
                 source_kind=SourceKindPdfium.ANNOT_GOTO
@@ -427,7 +427,7 @@ def _dispatch_action(
         r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
         links.append(create_link_dict(
             source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-            link_type=LinkType.REMOTE, remote_file=remote_file,
+            link_type=LinkType.REMOTE_GOTOR, remote_file=remote_file,
             destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None,
             source_kind=SourceKindPdfium.ANNOT_GOTOR
         ))
@@ -444,7 +444,7 @@ def _dispatch_direct_dest(
     dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
     links.append(create_link_dict(
         source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
-        link_type=LinkType.INTERNAL,
+        link_type=LinkType.INTERNAL_GOTO,
         destination_page=PageRef.from_index(dest_idx).machine,
         destination_view=extract_destination_view(dest),
         source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST
