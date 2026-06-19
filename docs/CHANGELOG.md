@@ -6,6 +6,14 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.6] - 2026-06-19
+### Changed:
+- create_link_dict() standardized for all three engines.
+- SourceKindPyPDF class implemented for clear documentation.
+- JSON data structure altered to include GUID, details, validation, and risk sections.
+
+---
+
 ## [1.5.5.11] - 2026-06-18
 ### Fixed:
 - msix.yml runner should fail if the windows build from build.yml / build_executable.py fails.
