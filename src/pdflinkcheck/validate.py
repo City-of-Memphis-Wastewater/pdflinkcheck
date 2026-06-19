@@ -89,43 +89,43 @@ ISSUE_METRICS = {
 def make_fresh_stats(total_found):
     # do i want these to use value or the raw LinkValidationResult?
     stats_fresh = {
-        MetricKey.TOTAL_FOUND.value: total_found,
-        MetricKey.INTERNAL_PAGE_JUMP_VALID.value: 0,
-        MetricKey.TOC_JUMP_VALID.value: 0,
-        MetricKey.TOC_JUMP_BROKEN.value: 0,
-        MetricKey.TOC_JUMP_NO_DESTINATION_PAGE.value: 0,
-        MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS.value: 0,
-        MetricKey.FILE_TARGET_VALID.value: 0,
-        MetricKey.WEB_PING_VALID.value: 0,
-        MetricKey.EMAIL_ADDRESS_REASONABLE.value: 0,
-        MetricKey.EMAIL_ADDRESS_BROKEN.value: 0,
-        MetricKey.UNKNOWN_WEB_URL_MISSING.value: 0,
-        MetricKey.UNKNOWN_WEB_NOT_PINGED.value: 0,
-        MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS.value: 0,
-        MetricKey.UNKNOWN_LINK.value: 0,
-        MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value: 0,
-        MetricKey.FILE_TARGET_BROKEN.value: 0,
-        MetricKey.EXTERNAL_URI_FORBIDDEN.value: 0,
-        MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE.value: 0,
-        MetricKey.WEB_PING_FAIL.value: 0,
-        MetricKey.TELEPHONE_NUMBER.value: 0,
-        MetricKey.LAUNCH_TARGET_VALID.value: 0,
-        MetricKey.LAUNCH_TARGET_BROKEN.value: 0,
-        MetricKey.LAUNCH_TARGET_EXECUTABLE.value: 0
+        MetricKey.TOTAL_FOUND: total_found,
+        MetricKey.INTERNAL_PAGE_JUMP_VALID: 0,
+        MetricKey.TOC_JUMP_VALID: 0,
+        MetricKey.TOC_JUMP_BROKEN: 0,
+        MetricKey.TOC_JUMP_NO_DESTINATION_PAGE: 0,
+        MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS: 0,
+        MetricKey.FILE_TARGET_VALID: 0,
+        MetricKey.WEB_PING_VALID: 0,
+        MetricKey.EMAIL_ADDRESS_REASONABLE: 0,
+        MetricKey.EMAIL_ADDRESS_BROKEN: 0,
+        MetricKey.UNKNOWN_WEB_URL_MISSING: 0,
+        MetricKey.UNKNOWN_WEB_NOT_PINGED: 0,
+        MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS: 0,
+        MetricKey.UNKNOWN_LINK: 0,
+        MetricKey.INTERNAL_PAGE_JUMP_BROKEN: 0,
+        MetricKey.FILE_TARGET_BROKEN: 0,
+        MetricKey.EXTERNAL_URI_FORBIDDEN: 0,
+        MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE: 0,
+        MetricKey.WEB_PING_FAIL: 0,
+        MetricKey.TELEPHONE_NUMBER: 0,
+        MetricKey.LAUNCH_TARGET_VALID: 0,
+        MetricKey.LAUNCH_TARGET_BROKEN: 0,
+        MetricKey.LAUNCH_TARGET_EXECUTABLE: 0
     }
     return stats_fresh
 
 class ValidationCounter:
     """Manages validation metric accumulation and categorization safely."""
     def __init__(self, total_found: int):
-        self.stats = make_fresh_stats(total_found)
+        self.stats = make_fresh_stats(total_found) # ultimately plain text, does get passed into generate_validation_summary_txt_buffer()
         self.issues: List[Dict[str, Any]] = []
 
     def record(self, linkvalres: LinkValidationResult, link_payload: Dict[str, Any]):
         """Increments stats and tracks failures in the issues registry."""
         status = linkvalres.status
         if status.value in self.stats:
-            self.stats[status.value] += 1
+            self.stats[status] += 1
             
         if status in ISSUE_METRICS:
             self.issues.append(link_payload)
@@ -386,6 +386,11 @@ def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
             reason = f"Unparseable Launch path sequence: {str(e)}"
         )
 
+def _check_unknown_link() -> LinkValidationResult:
+    return LinkValidationResult(
+        status = MetricKey.UNKNOWN_LINK.value, 
+        reason = "Other/unsupported link type"
+    )
 # =====================================================================
 # Main Coordinator & Orchestration Boundary
 # =====================================================================
@@ -437,7 +442,7 @@ def run_validation(
         elif link_type == LinkType.LAUNCH.value:
             linkvalres = _check_launch_link(details.get("file"))
         else:
-            linkvalres = MetricKey.UNKNOWN_LINK.value, "Other/unsupported link type"
+            linkvalres = _check_unknown_link()
         
         # Update the original dict context in place for JSON reporting
         print(f"{linkvalres=}")
@@ -479,7 +484,8 @@ def run_validation(
 
     return {
         "pdf_path": pdf_path,
-        "summary-stats": tracker.stats,
+        #"summary-stats": tracker.stats,
+        "summary-stats": {k.value: v for k, v in tracker.stats.items()},
         "issues": tracker.issues,
         "summary-lines": report_buffer["validation_summary_lines"],
         "total_pages": total_pages
@@ -495,29 +501,29 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append("=" * SEP_COUNT)
     buf.append(f"PDF Path = {get_friendly_path(pdf_path)}")
     buf.append(f"Ping: {check_external}")
-    buf.append(f"Total items found: {summary_stats[MetricKey.TOTAL_FOUND.value]}")
-    buf.append(f"✅ TOC Page Jumps Valid: {summary_stats[MetricKey.TOC_JUMP_VALID.value]}")
-    buf.append(f"✅ Internal Page Jumps Valid: {summary_stats[MetricKey.INTERNAL_PAGE_JUMP_VALID.value]}")
-    buf.append(f"✅ File Targets Valid: {summary_stats[MetricKey.FILE_TARGET_VALID.value]}")
-    buf.append(f"✅ Launch Targets Valid: {summary_stats[MetricKey.LAUNCH_TARGET_VALID.value]}")
-    buf.append(f"✅ Web Addresses Valid: {summary_stats[MetricKey.WEB_PING_VALID.value]}")
-    buf.append(f"🌐 Web Addresses Not Checked: {summary_stats[MetricKey.UNKNOWN_WEB_NOT_PINGED.value]}")
-    buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats[MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS.value]}")
-    buf.append(f"⚠️ TOC Unknown Reasonableness: {summary_stats[MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS.value]}")
-    buf.append(f"⚠️ Email Addresses Reasonable But Not Checked: {summary_stats[MetricKey.EMAIL_ADDRESS_REASONABLE.value]}")
-    buf.append(f"⚠️ Forbidden Local Executable Launches: {summary_stats[MetricKey.LAUNCH_TARGET_EXECUTABLE.value]}")
-    buf.append(f"⚠️ Unsupported URL File Links: {summary_stats[MetricKey.EXTERNAL_URI_FORBIDDEN.value]}")
-    buf.append(f"⚠️ Unsupported Telephone Numbers: {summary_stats[MetricKey.TELEPHONE_NUMBER.value]}")
-    buf.append(f"⚠️ Unsupported Other PDF Links: {summary_stats[MetricKey.UNKNOWN_LINK.value]}")
-    buf.append(f"❌ Broken Page Reference: {summary_stats[MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value]}")
-    buf.append(f"❌ Broken File Targets: {summary_stats[MetricKey.FILE_TARGET_BROKEN.value]}")
-    buf.append(f"❌ Broken Launch Targets: {summary_stats[MetricKey.LAUNCH_TARGET_BROKEN.value]}")
-    buf.append(f"❌ TOC Page Jumps Broken: {summary_stats[MetricKey.TOC_JUMP_BROKEN.value]}")
-    buf.append(f"❌ TOC Page Jumps Not Resolved: {summary_stats[MetricKey.TOC_JUMP_NO_DESTINATION_PAGE.value]}")
-    buf.append(f"❌ Internal Page Jumps Not Resolved: {summary_stats[MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE.value]}")
-    buf.append(f"❌ Web Address Pings Failed: {summary_stats[MetricKey.WEB_PING_FAIL.value]}")
-    buf.append(f"❌ Web Addresses Missing: {summary_stats[MetricKey.UNKNOWN_WEB_URL_MISSING.value]}")
-    buf.append(f"❌ Email Addresses Broken: {summary_stats[MetricKey.EMAIL_ADDRESS_BROKEN.value]}")
+    buf.append(f"Total items found: {summary_stats[MetricKey.TOTAL_FOUND]}")
+    buf.append(f"✅ TOC Page Jumps Valid: {summary_stats[MetricKey.TOC_JUMP_VALID]}")
+    buf.append(f"✅ Internal Page Jumps Valid: {summary_stats[MetricKey.INTERNAL_PAGE_JUMP_VALID]}")
+    buf.append(f"✅ File Targets Valid: {summary_stats[MetricKey.FILE_TARGET_VALID]}")
+    buf.append(f"✅ Launch Targets Valid: {summary_stats[MetricKey.LAUNCH_TARGET_VALID]}")
+    buf.append(f"✅ Web Addresses Valid: {summary_stats[MetricKey.WEB_PING_VALID]}")
+    buf.append(f"🌐 Web Addresses Not Checked: {summary_stats[MetricKey.UNKNOWN_WEB_NOT_PINGED]}")
+    buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats[MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS]}")
+    buf.append(f"⚠️ TOC Unknown Reasonableness: {summary_stats[MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS]}")
+    buf.append(f"⚠️ Email Addresses Reasonable But Not Checked: {summary_stats[MetricKey.EMAIL_ADDRESS_REASONABLE]}")
+    buf.append(f"⚠️ Forbidden Local Executable Launches: {summary_stats[MetricKey.LAUNCH_TARGET_EXECUTABLE]}")
+    buf.append(f"⚠️ Unsupported URL File Links: {summary_stats[MetricKey.EXTERNAL_URI_FORBIDDEN]}")
+    buf.append(f"⚠️ Unsupported Telephone Numbers: {summary_stats[MetricKey.TELEPHONE_NUMBER]}")
+    buf.append(f"⚠️ Unsupported Other PDF Links: {summary_stats[MetricKey.UNKNOWN_LINK]}")
+    buf.append(f"❌ Broken Page Reference: {summary_stats[MetricKey.INTERNAL_PAGE_JUMP_BROKEN]}")
+    buf.append(f"❌ Broken File Targets: {summary_stats[MetricKey.FILE_TARGET_BROKEN]}")
+    buf.append(f"❌ Broken Launch Targets: {summary_stats[MetricKey.LAUNCH_TARGET_BROKEN]}")
+    buf.append(f"❌ TOC Page Jumps Broken: {summary_stats[MetricKey.TOC_JUMP_BROKEN]}")
+    buf.append(f"❌ TOC Page Jumps Not Resolved: {summary_stats[MetricKey.TOC_JUMP_NO_DESTINATION_PAGE]}")
+    buf.append(f"❌ Internal Page Jumps Not Resolved: {summary_stats[MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE]}")
+    buf.append(f"❌ Web Address Pings Failed: {summary_stats[MetricKey.WEB_PING_FAIL]}")
+    buf.append(f"❌ Web Addresses Missing: {summary_stats[MetricKey.UNKNOWN_WEB_URL_MISSING]}")
+    buf.append(f"❌ Email Addresses Broken: {summary_stats[MetricKey.EMAIL_ADDRESS_BROKEN]}")
     
     buf.append("=" * SEP_COUNT)
 
