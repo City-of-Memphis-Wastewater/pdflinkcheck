@@ -17,15 +17,15 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 Helper functions
 """
 def create_toc_dict(
-        item,
+        level,
         title,
-        page_idx
+        target_page
 )->Dict[str,Any]:
     return {
-        "GUID":uuid.str(uuid.uuid4()),
-        "level": item.level + 1, 
+        "GUID":str(uuid.uuid4()),
+        "level": level, 
         "title": title, 
-        "target_page": page_idx
+        "target_page": target_page
         }
 
 def create_link_dict(

@@ -445,8 +445,8 @@ def run_validation(
             linkvalres = _check_unknown_link()
         
         # Update the original dict context in place for JSON reporting
-        print(f"{linkvalres=}")
-        print(f"{linkvalres.status=}")
+        #print(f"{linkvalres=}")
+        #print(f"{linkvalres.status=}")
         #link = link.copy()
         link["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 

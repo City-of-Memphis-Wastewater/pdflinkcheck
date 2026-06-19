@@ -214,9 +214,9 @@ def _extract_toc_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                         page_num = "N/A"
 
                     toc_item_dict = create_toc_dict(
-                    level = level, 
-                    title = item.title, 
-                    target_page =  page_num
+                        level = level, 
+                        title = item.title, 
+                        target_page =  page_num
                     )
                     toc_data.append(toc_item_dict)
                     
