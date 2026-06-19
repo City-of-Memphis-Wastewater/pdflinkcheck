@@ -526,7 +526,8 @@ def run_validation(
         tracker.record(linkvalres, issue_payload) # NOTDONE
     # ---'''
 
-    report_buffer = generate_validation_summary_txt_buffer(tracker.stats, tracker.issues, pdf_path, check_external)
+    report_buffer = generate_validation_summary_txt_buffer(data,tracker.stats, tracker.issues, pdf_path, check_external)
+    # you actually don't want to pass self.issues here.
 
     return {
         "pdf_path": pdf_path,
@@ -537,8 +538,24 @@ def run_validation(
         "total_pages": total_pages
     }
 
+def build_flat_guid_registry(data):
+    # Build a flat, O(1) lookup map of the nested data structures by GUID
+    guid_registry = {}
+    
+    for item in data.get("external_links", []):
+        if "GUID" in item:
+            guid_registry[item["GUID"]] = item
+            
+    for item in data.get("internal_links", []):
+        if "GUID" in item:
+            guid_registry[item["GUID"]] = item
+            
+    for item in data.get("toc", []):
+        if "GUID" in item:
+            guid_registry[item["GUID"]] = item
+    return guid_registry
 
-def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, check_external):
+def generate_validation_summary_txt_buffer(data,summary_stats, issues, pdf_path, check_external):
     """Generates structural text layers from state engine snapshots."""
     buf = []
     
@@ -574,25 +591,38 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append("=" * SEP_COUNT)
 
     if issues:
+
+        guid_registry = build_flat_guid_registry(data)
+
         buf.append("\n## Issues Found")
         # Added explicit "Target/URL" column asset header
         buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format("Idx", "Type", "Anchor Text", "Target / URL", "Problem"))
         buf.append("-" * (SEP_COUNT + 50)) # Extended divider line for width matching
-        
+            
         for i, issue in enumerate(issues[:ISSUES_SHOWN], 1):
-            itype = issue.get('link_type', "Link")
+            
+            guid = issue.get("GUID")
+            itype = issue.get("link_type", "Link")
+            
+            # Resolve the original reference object from our flat map
+            source_item = guid_registry.get(guid, {})
+            details = source_item.get("details", {})
+            
+            #referenced_link_or_toc = cross_reference_guid_to_get_instance(data,issue) # what if instead we just feed inthe complete data structure into this function. it is currenly unknown to this function
+            # the reference problem with checking the GUID is you also have to use the linktype to check the nested 'toc' or the 'external_links' or the 'internal_links' structures.
+            itype = issue.get('link_type', "Link") # check the GUID, i think, not the issue dict, so that the issue doesn't need to carry redundant information
             
             # Extract anchor visual text or fallback onto title
-            itext = issue.get("anchor_text", "—")
+            itext = issue.get("anchor_text", "—") # check the GUID, i think, not the issue dict
             itext = (itext[:22] + "...") if len(itext) > 25 else itext
             
             # Extract actual underlying execution target string
             #itarget = (issue.get("url") or issue.get("remote_file") or f"Page {issue.get('target_page', 'N/A')}")
-            itarget = issue.get("target", "N/A")
+            itarget = issue.get("target", "N/A") # check the GUID, i think, not the issue dict
             itarget = (itarget[:27] + "...") if len(itarget) > 30 else itarget
             
             #ireason = issue["target_validation"]["reason"]
-            ireason = issue.get("target_validation", {}).get("reason", "Unknown issue")
+            ireason = issue.get("target_validation", {}).get("reason", "Unknown issue") # check the GUID, i think, not the issue dict
             ireason = ireason.encode('utf-8').decode('utf-8')
             buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format(i, itype, itext, itarget, ireason))
             
@@ -607,3 +637,4 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
         "validation_summary_str": "\n".join(buf),
         "validation_summary_lines": buf
     }
+
