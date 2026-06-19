@@ -403,7 +403,7 @@ def _dispatch_action(
                 anchor_text=anchor_text,
                 link_type=LinkType.INTERNAL_GOTO.value,
                 source_kind=SourceKindPdfium.ANNOT_GOTO.value,
-                destination_page = PageRef.from_index(dest_idx).machine
+                destination_page = PageRef.from_index(dest_idx).machine,
                 destination_view = extract_destination_view(target_dest)
             )
             link_dict['destination_page'] = PageRef.from_index(dest_idx).machine

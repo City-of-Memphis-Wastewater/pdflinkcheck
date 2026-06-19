@@ -18,10 +18,22 @@ logger = logging.getLogger(__name__)
 
 from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
 
+
 """
 Inspect target PDF for both URI links and for GoTo links, using only pypdf, not Fitz
 """
 
+from enum import Enum
+
+class SourceKindPyPDF(str, Enum):
+    """Tracks exactly which internal low-level PDF dictionary pattern exposed the target link in pypdf."""
+    ANNOT_URI = "pypdf_annot_action_uri"           # /A with /URI
+    ANNOT_DIRECT_DEST = "pypdf_annot_direct_dest"   # Direct /Dest on Annotation
+    ANNOT_ACTION_DEST = "pypdf_annot_action_dest"   # /A with /D (GoTo Action)
+    ANNOT_GOTOR = "pypdf_annot_gotor"               # /A with /S -> /GoToR
+    ANNOT_LAUNCH = "pypdf_annot_launch"             # /A with /S -> /Launch
+    ANNOT_OTHER = "pypdf_annot_other"               # Fallback
+    
 def analyze_pdf(pdf_path: str):
     data = {}
     data["links"] = []
@@ -95,8 +107,94 @@ def _resolve_pypdf_destination(reader: PdfReader, dest, obj_id_to_page: dict) ->
     except Exception:
         return None
         
-
 def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
+    """
+    Termux-compatible link extraction using pure-Python pypdf.
+    Matches the reporting schema of the PyMuPDF version.
+    """
+    
+    # Pre-map Object IDs to Page Numbers for fast internal link resolution
+    obj_id_to_page = {
+        page.indirect_reference.idnum: i
+        for i, page in enumerate(reader.pages)
+    }
+
+    all_links = []
+    
+    for i, page in enumerate(reader.pages):
+        page_source = PageRef.from_index(i)
+        if "/Annots" not in page:
+            continue
+            
+        for annot in page["/Annots"]:
+            obj = annot.get_object()
+            if obj.get("/Subtype") != "/Link":
+                continue
+
+            rect = obj.get("/Rect")
+            anchor_text = _get_anchor_text_pypdf(page, rect)
+
+            # Initialize local variables for conditional assignment
+            determined_type = LinkType.OTHER.value
+            url = None
+            destination_page = None
+            remote_file = None
+            file = None
+            source_kind = SourceKindPyPDF.ANNOT_OTHER.value
+
+            # 1. Handle URI (External)
+            if "/A" in obj and "/URI" in obj["/A"]:
+                determined_type = LinkType.EXTERNAL.value
+                source_kind = SourceKindPyPDF.ANNOT_URI.value
+                url = obj["/A"]["/URI"]
+            
+            # 2. Handle GoTo (Internal)
+            elif "/Dest" in obj or ("/A" in obj and "/D" in obj["/A"]):
+                dest = obj.get("/Dest") or obj["/A"].get("/D")
+                target_page = _resolve_pypdf_destination(reader, dest, obj_id_to_page)
+                
+                if target_page is not None:
+                    dest_page = PageRef.from_index(target_page)
+                    destination_page = dest_page.machine
+                    
+                    if "/Dest" in obj:
+                        determined_type = LinkType.INTERNAL_RESOLVED.value
+                        source_kind = SourceKindPyPDF.ANNOT_DIRECT_DEST.value
+                    else:
+                        determined_type = LinkType.INTERNAL_GOTO.value
+                        source_kind = SourceKindPyPDF.ANNOT_ACTION_DEST.value
+
+            # 3. Handle Remote GoTo (GoToR)
+            elif "/A" in obj and obj["/A"].get("/S") == "/GoToR":
+                determined_type = LinkType.REMOTE_GOTOR.value
+                source_kind = SourceKindPyPDF.ANNOT_GOTOR.value
+                remote_file = str(obj["/A"].get("/F"))
+
+            # 4. Handle Launch Actions
+            elif "/A" in obj and obj["/A"].get("/S") == "/Launch":
+                determined_type = LinkType.LAUNCH.value
+                source_kind = SourceKindPyPDF.ANNOT_LAUNCH.value
+                file = str(obj["/A"].get("/F") or "")
+
+            # Pass everything directly into the dictionary factory initialization
+            link_dict = create_link_dict(
+                source_page_ref=page_source, 
+                rect_norm=list(rect) if rect else None,
+                anchor_text=anchor_text,
+                link_type=determined_type,
+                source_kind=source_kind,
+                destination_page=destination_page,
+                url=url,
+                remote_file=remote_file,
+                file=file,
+                xref=None # pypdf does not track direct xref metrics identical to PyMuPDF
+            )
+
+            all_links.append(link_dict)
+                        
+    return all_links
+
+def _extract_links_pypdf_stable(reader: PdfReader) -> List[Dict[str, Any]]:
     """
     Termux-compatible link extraction using pure-Python pypdf.
     Matches the reporting schema of the PyMuPDF version.
@@ -125,22 +223,12 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             rect = obj.get("/Rect")
             anchor_text = _get_anchor_text_pypdf(page, rect)
 
-            #logger.debug(f"{anchor_text=}")
-
-            """link_dict = {
-                'page': page_source.machine,
-                'rect': list(rect) if rect else None,
-                'anchor_text': anchor_text,
-                'link_type': ''
-                #'link_type': LinkType.OTHER.value
-            }"""
             
             link_dict = create_link_dict(
                 source_page_ref=page_source, 
                 rect_norm=list(rect) if rect else None,
                 anchor_text=anchor_text,
                 link_type=LinkType.OTHER.value, # default
-                #link_type='',
                 source_kind=''
             )
             
