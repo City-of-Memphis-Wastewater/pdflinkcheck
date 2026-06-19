@@ -402,7 +402,9 @@ def _dispatch_action(
                 rect_norm=rect_norm, 
                 anchor_text=anchor_text,
                 link_type=LinkType.INTERNAL_GOTO.value,
-                source_kind=SourceKindPdfium.ANNOT_GOTO.value
+                source_kind=SourceKindPdfium.ANNOT_GOTO.value,
+                destination_page = PageRef.from_index(dest_idx).machine
+                destination_view = extract_destination_view(target_dest)
             )
             link_dict['destination_page'] = PageRef.from_index(dest_idx).machine
             link_dict['destination_view'] = extract_destination_view(target_dest)
@@ -439,9 +441,9 @@ def _dispatch_action(
             anchor_text=anchor_text,
             link_type=LinkType.REMOTE_GOTOR.value, 
             remote_file=remote_file,
-            source_kind=SourceKindPdfium.ANNOT_GOTOR.value
+            source_kind=SourceKindPdfium.ANNOT_GOTOR.value,
+            destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
         )
-        link_dict['destination_page']=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
         links.append(link_dict)
 
     elif action_type == PdfActionType.LAUNCH:
@@ -484,10 +486,10 @@ def _dispatch_direct_dest(
         rect_norm=rect_norm, 
         anchor_text=anchor_text,
         link_type=LinkType.INTERNAL_RESOLVED.value,
-        source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST.value
+        source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST.value,
+        destination_page = PageRef.from_index(dest_idx).machine,
+        destination_view = extract_destination_view(dest)
     )
-    link_dict['destination_page'] = PageRef.from_index(dest_idx).machine
-    link_dict['destination_view'] = extract_destination_view(dest)
     links.append(link_dict)
 
 def demo():
