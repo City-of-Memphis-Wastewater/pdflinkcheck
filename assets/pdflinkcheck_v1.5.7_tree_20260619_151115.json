@@ -1,6 +1,6 @@
 {
     "name": "pdflinkcheck",
-    "help": "A command-line tool for comprehensive PDF link analysis and reporting. (v1.4.1)",
+    "help": "A command-line tool for comprehensive PDF link analysis and reporting. (v1.5.7)",
     "kind": "app",
     "is_group": true,
     "parameters": [
@@ -12,8 +12,8 @@
             "secondary_opts": [],
             "type": "BOOL",
             "required": false,
-            "default": null,
-            "help": "Show the version.",
+            "default": false,
+            "help": "",
             "hidden": false,
             "is_flag": true,
             "envvar": null
@@ -21,27 +21,29 @@
         {
             "name": "debug",
             "opts": [
-                "--debug"
+                "--debug",
+                "-d"
             ],
             "secondary_opts": [],
             "type": "BOOL",
             "required": false,
             "default": false,
-            "help": "Enable verbose debug logging and echo the full command string.",
+            "help": "",
             "hidden": false,
             "is_flag": true,
             "envvar": null
         },
         {
-            "name": "show_command",
+            "name": "verbose",
             "opts": [
-                "--show-command"
+                "--verbose",
+                "-v"
             ],
             "secondary_opts": [],
             "type": "BOOL",
             "required": false,
             "default": false,
-            "help": "Echo the full command string to the console before execution.",
+            "help": "",
             "hidden": false,
             "is_flag": true,
             "envvar": null
@@ -60,7 +62,7 @@
                         "pdf_path"
                     ],
                     "secondary_opts": [],
-                    "type": "<typer.models.TyperPath object at 0x7137e55e50>",
+                    "type": "<typer.models.TyperPath object at 0x77c55fb27920>",
                     "required": false,
                     "default": null,
                     "help": "Path to the PDF file to analyze. If omitted, searches current directory.",
@@ -94,11 +96,9 @@
                         "-e"
                     ],
                     "secondary_opts": [],
-                    "type": "Choice(['pypdf', 'pymupdf', 'pdfium', 'auto', 'all'])",
+                    "type": "Choice(['pypdf', 'pymupdf', 'pdfium', 'auto'])",
                     "required": false,
-                    "default": [
-                        "pdfium"
-                    ],
+                    "default": "pymupdf",
                     "help": "PDF parsing library backend choice.",
                     "hidden": false,
                     "is_flag": false,
@@ -116,6 +116,20 @@
                     "required": false,
                     "default": true,
                     "help": "Print or do not print the analysis and validation report to console.",
+                    "hidden": false,
+                    "is_flag": true,
+                    "envvar": null
+                },
+                {
+                    "name": "check_external",
+                    "opts": [
+                        "--ping"
+                    ],
+                    "secondary_opts": [],
+                    "type": "BOOL",
+                    "required": false,
+                    "default": false,
+                    "help": "Ping URI / external links",
                     "hidden": false,
                     "is_flag": true,
                     "envvar": null
@@ -250,5 +264,5 @@
             ]
         }
     ],
-    "version": "1.4.1"
+    "version": "1.5.7"
 }

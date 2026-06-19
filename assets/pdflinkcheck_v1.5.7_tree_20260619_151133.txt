@@ -1,0 +1,26 @@
+pdflinkcheck (v1.5.7)
+├── Parameters
+│   ├── --version:  (default: False)
+│   ├── --debug / -d:  (default: False)
+│   └── --verbose / -v:  (default: False)
+├── analyze - Analyzes the specified PDF file for all internal, external, and unlinked references.
+│   └── Parameters
+│       ├── ARG: PDF_PATH: Path to the PDF file to analyze. If omitted, searches current directory.
+│       ├── --format / -f: Export formats (repeatable). Use '--format none' to suppress all exports. (default: ['json', 'txt', 'xlsx'])
+│       ├── --engine / -e: PDF parsing library backend choice. (default: pymupdf)
+│       ├── --print: Print or do not print the analysis and validation report to console. (default: True)
+│       └── --ping: Ping URI / external links (default: False)
+├── docs - Show the docs for this software.
+│   └── Parameters
+│       ├── --license / -l: Show the LICENSE text.
+│       └── --readme / -r: Show the README.md content.
+├── gui - Launch tkinter-based GUI.
+│   └── Parameters
+│       └── --auto-close / -c: Delay in milliseconds after which the GUI window will close (for automated testing). Use 0 to disable auto-closing. (default: 0)
+├── serve - Start the built-in web server for uploading and analyzing PDFs in the browser.
+│   └── Parameters
+│       ├── --port / -p: Port to listen on (default: 8000)
+│       └── --reload: Auto-reload on code changes (dev only) (default: False)
+└── tools (app) - Additional utility features and maintenance tools.
+    ├── browse-exports - Open the system file explorer at the report output directory.
+    └── check-libs - Recheck the PDF library availability and cache the results.
