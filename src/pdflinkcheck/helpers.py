@@ -8,6 +8,7 @@ import functools
 import operator
 from typing import Optional, Iterable, Any, Set
 from dataclasses import dataclass, field
+import uuid
 
 from .paths import PDFLINKCHECK_HOME
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
@@ -29,7 +30,7 @@ def create_link_dict(
 
     Alright big money, we need to flesh out this structure, share it across the other engines, and modularize it into helpers.py or another central file. 
 
-    This kwarg based update is kind of gross.
+    This kwarg based update is kind of gross. This is for standardization, not chaos.
     """
     base = {
         'page': source_page_ref.machine, # possibly not worth the signature confusion of PageRef type in, but nice to see a definitive standard 
@@ -39,12 +40,13 @@ def create_link_dict(
     }
     base.update(kwargs)
     structure = {
-        "GUID": hex(),
+        "GUID": uuid.uuid4(),
         "details": base,
         "validation":{},
         "risk":{}
     }
-    return base
+    #return base
+    return structure
 
 def get_source_pdf_path(report: Dict) -> Path:
     return Path(report["metadata"]["file_overview"]["source_path"])

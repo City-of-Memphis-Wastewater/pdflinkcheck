@@ -48,7 +48,7 @@ def analyze_pdf(pdf_path: str):
     
     return data
 # Helper function: Prioritize 'from'
-def _get_link_rect(link_dict):
+def _get_link_rect(link):
     """
     Retrieves the bounding box for the link using the reliable 'from' key
     provided by PyMuPDF's link dictionary.
@@ -63,7 +63,7 @@ def _get_link_rect(link_dict):
         bounding box data is missing.
     """
     # 1. Use the 'from' key, which returns a fitz.Rect object or None
-    rect_obj = link_dict.get('from') 
+    rect_obj = link.get('from') 
     
     if rect_obj:
         # 2. Extract the coordinates using the standard Rect properties 
@@ -238,9 +238,9 @@ def extract_links_pymupdf(doc):
                     source_kind=''
                 )
 
-                link_dict['xref'] = link.get("xref")
+                link_dict['details']['xref'] = link.get("xref")
 
-                kind = link.get('source_kind')
+                source_kind = link.get('source_kind')
                 destination_view = serialize_fitz_object(link.get('to'))
                 p_index = link.get('page') # excpeted to be human facing, per PyMuPDF's known quirks
                 
@@ -257,35 +257,35 @@ def extract_links_pymupdf(doc):
                     #print(f"[DEBUG] idx: {idx}")
                     dest_ref = PageRef.from_index(idx) # does not impact the value
 
-                    link_dict.update({
+                    link_dict['details'].update({
                         'destination_page': dest_ref.machine,
                         'destination_view': destination_view,
                     })
 
-                    if kind == fitz.LINK_GOTO:
-                        link_dict['link_type'] = LinkType.INTERNAL_GOTO.value
+                    if source_kind == fitz.LINK_GOTO:
+                        link_dict['details']['link_type'] = LinkType.INTERNAL_GOTO.value
                     else:
-                        link_dict['link_type'] = LinkType.INTERNAL_RESOLVED.value
-                        link_dict['source_kind'] = kind
+                        link_dict['details']['link_type'] = LinkType.INTERNAL_RESOLVED.value
+                        link_dict['details']['source_kind'] = source_kind
                 
                 # --- CASE 2: EXTERNAL URIs ---
-                elif kind == fitz.LINK_URI:
+                elif source_kind == fitz.LINK_URI:
                     uri = link.get('uri', 'URI (Unknown Target)')
-                    link_dict.update({
+                    link_dict['details'].update({
                         'link_type': LinkType.EXTERNAL.value,
                         'url': uri,
                     })
                 
                 # --- CASE 3: REMOTE PDF REFERENCES ---
-                elif kind == fitz.LINK_GOTOR:
+                elif source_kind == fitz.LINK_GOTOR:
                     remote_file = link.get('file', 'Remote File')
-                    link_dict.update({
+                    link_dict['details'].update({
                         'link_type': LinkType.REMOTE_GOTOR.value,
                         'remote_file': remote_file
                     })
 
-                elif kind == fitz.LINK_LAUNCH:  # Catch explicit launches
-                    link_dict.update({
+                elif source_kind == fitz.LINK_LAUNCH:  # Catch explicit launches
+                    link_dict['details'].update({
                         'link_type': LinkType.LAUNCH.value,
                         'file': link.get('file', ''),
                         'params': link.get('params', '')
@@ -293,9 +293,9 @@ def extract_links_pymupdf(doc):
                 
                 # --- CASE 4: OTHERS ---
                 else:
-                    link_dict.update({
+                    link_dict['details'].update({
                         'link_type': LinkType.OTHER.value,
-                        'action_kind': kind,
+                        'action_kind': source_kind,
                     })
 
                 links_data.append(link_dict)
