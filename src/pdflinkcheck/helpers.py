@@ -17,42 +17,7 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 Helper functions
 """
 
-def create_link_dict_kwarged(
-    source_page_ref: PageRef,
-    rect_norm: List[float],
-    anchor_text: str,
-    link_type: str,
-    **kwargs
-) -> Dict[str, Any]:
-    """
-    Factory for consistent link dictionary structure.
-    Matches style as closely as possible, between pdfium, pypdf, and pymupdf structures.
-
-    Alright big money, we need to flesh out this structure, share it across the other engines, and modularize it into helpers.py or another central file. 
-
-    This kwarg based update is kind of gross. This is for standardization, not chaos.
-    """
-    kwargs.pop('link_type', None)
-    kwargs.pop('page', None)
-    kwargs.pop('rect', None)
-    kwargs.pop('anchor_text', None)
-    base = {
-        'page': int(source_page_ref.machine), # possibly not worth the signature confusion of PageRef type in, but nice to see a definitive standard 
-        'rect': rect_norm,
-        'anchor_text': anchor_text.strip() or "Link (No Text)",
-        'link_type': link_type,
-    }
-    base.update(kwargs)
-    structure = {
-        "GUID": str(uuid.uuid4()),
-        "details": base,
-        "validation":{},
-        "risk":{}
-    }
-    return base
-    #return structure
-
-def create_link_dict(
+def create_link_dict_stable(
     source_page_ref: PageRef,
     rect_norm: Optional[list],
     anchor_text: str,
@@ -71,7 +36,6 @@ def create_link_dict(
         "rect": rect_norm,
         "anchor_text": anchor_text,
         "link_type": link_type,
-        "type": link_type,  # <--- Backwards compatibility mirror key!
         "source_kind": str(source_kind) if source_kind is not None else "",
         "url": url,
         "destination_page": None,
@@ -80,6 +44,49 @@ def create_link_dict(
         "file": file,
         "params": None,
         "xref": None
+    }
+    structure = {
+        "GUID": str(uuid.uuid4()),
+        "details": base,
+        "validation":{},
+        "risk":{}
+    }
+    return base
+    #return structure
+
+def create_link_dict(
+    source_page_ref: PageRef,
+    rect_norm: Optional[tuple],
+    anchor_text: str,
+    link_type: str,
+    source_kind: Any,
+    # Explicitly define target payload options with defaults
+    destination_page: Optional[Any] = None,
+    destination_view: Optional[Any] = None,
+    url: Optional[str] = None,
+    remote_file: Optional[str] = None,
+    file: Optional[str] = None,
+    params: Optional[str] = None,
+    xref: Optional[int] = None,
+) -> Dict[str, Any]:
+    """
+    Central factory method ensuring all keys are populated with 
+    standard defaults, preventing schema drift across PDF engines.
+    """
+    base =  {
+        "page": source_page_ref.machine, # Always normalized machine index (int)
+        "rect": rect_norm,
+        "anchor_text": anchor_text,
+        "link_type": link_type,
+        "source_kind": str(source_kind) if source_kind is not None else "",
+        # --- Inconsistent terms ---
+        "xref": xref,
+        "destination_page": destination_page,
+        "destination_view": destination_view,
+        "url": url,
+        "remote_file": remote_file,
+        "file": file,
+        "params": params,
     }
     structure = {
         "GUID": str(uuid.uuid4()),

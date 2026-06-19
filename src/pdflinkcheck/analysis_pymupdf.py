@@ -324,29 +324,22 @@ def extract_links_pymupdf(doc):
                 else:
                     determined_type = LinkType.OTHER.value
 
-                # Pass everything into create_link_dict simultaneously
+                # Pass everything straight to the factory method cleanly
                 link_dict = create_link_dict(
                     source_page_ref=source_page_ref, 
                     rect_norm=link_rect, 
                     anchor_text=anchor_text,
                     link_type=determined_type,
-                    source_kind=source_kind
+                    source_kind=source_kind,
+                    # --- Non standard terms ---
+                    xref=link.get("xref"),
+                    destination_page=destination_page,
+                    destination_view=destination_view,
+                    url=link.get('uri') if determined_type == LinkType.EXTERNAL.value else None,
+                    remote_file=link.get('file') if determined_type == LinkType.REMOTE_GOTOR.value else None,
+                    file=link.get('file') if determined_type == LinkType.LAUNCH.value else None,
+                    params=link.get('params') if determined_type == LinkType.LAUNCH.value else None,
                 )
-
-                # Inject fields explicitly matching your backend requirements
-                link_dict['xref'] = link.get("xref")
-                
-                # Safely populate payload keys matching the stable schema
-                if p_index is not None:
-                    link_dict['destination_page'] = destination_page
-                    link_dict['destination_view'] = destination_view
-                elif determined_type == LinkType.EXTERNAL.value:
-                    link_dict['url'] = link.get('uri', 'URI (Unknown Target)')
-                elif determined_type == LinkType.REMOTE_GOTOR.value:
-                    link_dict['remote_file'] = link.get('file', 'Remote File')
-                elif determined_type == LinkType.LAUNCH.value:
-                    link_dict['file'] = link.get('file', '')
-                    link_dict['params'] = link.get('params', '')
 
                 links_data.append(link_dict)
     except Exception as e:
