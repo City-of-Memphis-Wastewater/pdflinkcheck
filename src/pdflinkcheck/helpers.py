@@ -1,7 +1,7 @@
 # src/pdflinkcheck/helpers.py
 from __future__ import annotations
 from pprint import pprint
-from typing import Any, Dict
+from typing import Any, Dict, List
 from pathlib import Path
 from enum import Flag, auto, Enum
 import functools
@@ -15,6 +15,36 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 """
 Helper functions
 """
+
+def create_link_dict(
+    source_page_ref: PageRef,
+    rect_norm: List[float],
+    anchor_text: str,
+    link_type: str,
+    **kwargs
+) -> Dict[str, Any]:
+    """
+    Factory for consistent link dictionary structure.
+    Matches style as closely as possible, between pdfium, pypdf, and pymupdf structures.
+
+    Alright big money, we need to flesh out this structure, share it across the other engines, and modularize it into helpers.py or another central file. 
+
+    This kwarg based update is kind of gross.
+    """
+    base = {
+        'page': source_page_ref.machine, # possibly not worth the signature confusion of PageRef type in, but nice to see a definitive standard 
+        'rect': rect_norm,
+        'link_text': anchor_text.strip() or "Link (No Text)",
+        'type': link_type,
+    }
+    base.update(kwargs)
+    structure = {
+        "GUID": hex(),
+        "details": base,
+        "validation":{},
+        "risk":{}
+    }
+    return base
 
 def get_source_pdf_path(report: Dict) -> Path:
     return Path(report["metadata"]["file_overview"]["source_path"])

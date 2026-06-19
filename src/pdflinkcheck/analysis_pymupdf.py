@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional, List
 
 from pdflinkcheck.logging_setup import error_logger
 from pdflinkcheck.environment import pymupdf_is_available
-from pdflinkcheck.helpers import PageRef, LinkType
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
 
 try:
     if pymupdf_is_available():
@@ -215,20 +215,32 @@ def extract_links_pymupdf(doc):
 
         for page_num in range(doc.page_count):
             page = doc.load_page(page_num)
-            source_ref = PageRef.from_index(page_num)
+            source_page_ref = PageRef.from_index(page_num)
 
             for link in page.get_links():
                 link_rect = _get_link_rect(link)
                 anchor_text = get_anchor_text(page, link_rect)
                 
-                link_dict = {
-                    'page': source_ref.machine,
+                """link_dict = {
+                    'page': source_page_ref.machine,
                     'rect': link_rect,
-                    'link_text': anchor_text,
-                    'xref': link.get("xref")
-                }
-                
-                kind = link.get('kind')
+                    'anchor_text': anchor_text,
+                    'xref': link.get("xref"),
+                    'link_type':'',
+                    'source_kind':''
+                }"""
+
+                link_dict = create_link_dict(
+                    source_page_ref=source_page_ref, 
+                    rect_norm=link_rect, 
+                    anchor_text=anchor_text,
+                    link_type=LinkType.OTHER.value,
+                    source_kind=''
+                )
+
+                link_dict['xref'] = link.get("xref")
+
+                kind = link.get('source_kind')
                 destination_view = serialize_fitz_object(link.get('to'))
                 p_index = link.get('page') # excpeted to be human facing, per PyMuPDF's known quirks
                 
@@ -251,16 +263,16 @@ def extract_links_pymupdf(doc):
                     })
 
                     if kind == fitz.LINK_GOTO:
-                        link_dict['type'] = LinkType.INTERNAL_GOTO.value
+                        link_dict['link_type'] = LinkType.INTERNAL_GOTO.value
                     else:
-                        link_dict['type'] = LinkType.INTERNAL_RESOLVED.value
+                        link_dict['link_type'] = LinkType.INTERNAL_RESOLVED.value
                         link_dict['source_kind'] = kind
                 
                 # --- CASE 2: EXTERNAL URIs ---
                 elif kind == fitz.LINK_URI:
                     uri = link.get('uri', 'URI (Unknown Target)')
                     link_dict.update({
-                        'type': LinkType.EXTERNAL.value,
+                        'link_type': LinkType.EXTERNAL.value,
                         'url': uri,
                     })
                 
@@ -268,13 +280,13 @@ def extract_links_pymupdf(doc):
                 elif kind == fitz.LINK_GOTOR:
                     remote_file = link.get('file', 'Remote File')
                     link_dict.update({
-                        'type': LinkType.REMOTE_GOTOR.value,
+                        'link_type': LinkType.REMOTE_GOTOR.value,
                         'remote_file': remote_file
                     })
 
                 elif kind == fitz.LINK_LAUNCH:  # Catch explicit launches
                     link_dict.update({
-                        'type': LinkType.LAUNCH.value,
+                        'link_type': LinkType.LAUNCH.value,
                         'file': link.get('file', ''),
                         'params': link.get('params', '')
                     })
@@ -282,7 +294,7 @@ def extract_links_pymupdf(doc):
                 # --- CASE 4: OTHERS ---
                 else:
                     link_dict.update({
-                        'type': LinkType.OTHER.value,
+                        'link_type': LinkType.OTHER.value,
                         'action_kind': kind,
                     })
 

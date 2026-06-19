@@ -13,7 +13,7 @@ import ctypes
 from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
-from pdflinkcheck.helpers import PageRef, LinkType
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
 from pdflinkcheck.environment import pdfium_is_available
 
 try:
@@ -97,10 +97,10 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
         try:
             text_page = page.get_textpage()
             try:
-                source_ref = PageRef.from_index(page_index)
+                source_page_ref = PageRef.from_index(page_index)
                 # --- LINKS (Standard Annotations) Internal & External ---
                 # We iterate through standard link annotations for GoTo actions
-                assess_action(doc, page, links, page_index, text_page, source_ref)
+                assess_action(doc, page, links, page_index, text_page, source_page_ref)
                 
             finally:
                 text_page.close()
@@ -229,28 +229,6 @@ def get_remote_file_from_action(action: Any, doc_raw: Any) -> Optional[str]:
     except Exception:
         return None
 
-def create_link_dict(
-    source_ref: PageRef,
-    rect_norm: List[float],
-    anchor_text: str,
-    link_type: str,
-    **kwargs
-) -> Dict[str, Any]:
-    """
-    Factory for consistent link dictionary structure.
-    Matches PyMuPDF style as closely as possible.
-
-    Alright big money, we need to flesh out this structure.
-    """
-    base = {
-        'page': source_ref.machine,
-        'rect': rect_norm,
-        'link_text': anchor_text.strip() or "Link (No Text)",
-        'type': link_type,
-    }
-    base.update(kwargs)
-    return base
-
 def get_pdfium_text_safe(text_page, fs_rect, tolerance=2.0):
     # Ensure min/max logic so we don't pass an inverted rect to PDFium
     l = min(fs_rect.left, fs_rect.right) - tolerance
@@ -347,7 +325,7 @@ def parse_view(dest):
 
     return page_index, view_type, params
 
-def assess_action(doc, page, links, page_index, text_page, source_ref):
+def assess_action(doc, page, links, page_index, text_page, source_page_ref):
     pos = 0
     while True:
         annot_raw = pdfium_c.FPDFPage_GetAnnot(page.raw, pos)
@@ -356,7 +334,7 @@ def assess_action(doc, page, links, page_index, text_page, source_ref):
         try:
             subtype = pdfium_c.FPDFAnnot_GetSubtype(annot_raw)
             if subtype == pdfium_c.FPDF_ANNOT_LINK:
-                _process_link_annotation(doc, page, annot_raw, text_page, source_ref, links)
+                _process_link_annotation(doc, page, annot_raw, text_page, source_page_ref, links)
         finally:
             if annot_raw:
                 pdfium_c.FPDFPage_CloseAnnot(annot_raw)
@@ -368,7 +346,7 @@ def _process_link_annotation(
     page: Any,
     annot_raw: Any,
     text_page: Any,
-    source_ref: PageRef,
+    source_page_ref: PageRef,
     links: List[Dict[str, Any]]
 ) -> None:
     """Extracts bounding box, anchor text, and targets for a single link annotation."""
@@ -387,14 +365,16 @@ def _process_link_annotation(
 
     if action:
         # --- CASE 1: ACTION EXISTS ---
-        _dispatch_action(doc, action, dest, source_ref, rect_norm, anchor_text, links)
+        _dispatch_action(doc, action, dest, source_page_ref, rect_norm, anchor_text, links)
     elif dest:
         # --- CASE 2: NO ACTION, BUT DIRECT DESTINATION ---
-        _dispatch_direct_dest(doc, dest, source_ref, rect_norm, anchor_text, links)
+        _dispatch_direct_dest(doc, dest, source_page_ref, rect_norm, anchor_text, links)
     else:
         # Fail-safe catch for unhandled, blank, or broken structural link markers
         links.append(create_link_dict(
-            source_ref=source_ref, rect_norm=rect_norm, anchor_text=anchor_text,
+            source_page_ref=source_page_ref, 
+            rect_norm=rect_norm, 
+            anchor_text=anchor_text,
             link_type=LinkType.OTHER.value,
             source_kind=SourceKindPdfium.ANNOT_OTHER.value
         ))
@@ -403,7 +383,7 @@ def _dispatch_action(
     doc: Any,
     action: Any,
     dest: Any,
-    source_ref: PageRef,
+    source_page_ref: PageRef,
     rect_norm: List[float],
     anchor_text: str,
     links: List[Dict[str, Any]]
@@ -417,7 +397,7 @@ def _dispatch_action(
         if target_dest:
             dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, target_dest)
             links.append(create_link_dict(
-                source_ref=source_ref, 
+                source_page_ref=source_page_ref, 
                 rect_norm=rect_norm, 
                 anchor_text=anchor_text,
                 link_type=LinkType.INTERNAL_GOTO.value,
@@ -430,7 +410,7 @@ def _dispatch_action(
         uri = get_uri_from_action(action, doc.raw)
         if uri:
             links.append(create_link_dict(
-                source_ref=source_ref, 
+                source_page_ref=source_page_ref, 
                 rect_norm=rect_norm, 
                 anchor_text=anchor_text,
                 link_type=LinkType.EXTERNAL.value, 
@@ -439,7 +419,7 @@ def _dispatch_action(
             ))
         else:
             links.append(create_link_dict(
-                source_ref=source_ref, 
+                source_page_ref=source_page_ref, 
                 rect_norm=rect_norm, 
                 anchor_text=anchor_text,
                 link_type=LinkType.OTHER.value, 
@@ -450,7 +430,7 @@ def _dispatch_action(
         remote_file = get_remote_file_from_action(action, doc.raw)
         r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
         links.append(create_link_dict(
-            source_ref=source_ref, 
+            source_page_ref=source_page_ref, 
             rect_norm=rect_norm, 
             anchor_text=anchor_text,
             link_type=LinkType.REMOTE_GOTOR.value, 
@@ -463,7 +443,7 @@ def _dispatch_action(
         # Extract underlying target path string from the Launch action spec
         launch_file = get_remote_file_from_action(action, doc.raw)
         links.append(create_link_dict(
-            source_ref=source_ref, 
+            source_page_ref=source_page_ref, 
             rect_norm=rect_norm, 
             anchor_text=anchor_text,
             link_type=LinkType.LAUNCH.value, 
@@ -474,7 +454,7 @@ def _dispatch_action(
     else:
         # Captures exotic macros (VJS, SUBMIT, NAMED) cleanly into the unknown dictionary structure
         links.append(create_link_dict(
-            source_ref=source_ref, 
+            source_page_ref=source_page_ref, 
             rect_norm=rect_norm, 
             anchor_text=anchor_text,
             link_type=LinkType.OTHER.value,
@@ -485,7 +465,7 @@ def _dispatch_action(
 def _dispatch_direct_dest(
     doc: Any,
     dest: Any,
-    source_ref: PageRef,
+    source_page_ref: PageRef,
     rect_norm: List[float],
     anchor_text: str,
     links: List[Dict[str, Any]]
@@ -493,7 +473,7 @@ def _dispatch_direct_dest(
     """Handles direct layout map links that lack an explicit action wrapper."""
     dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, dest)
     links.append(create_link_dict(
-        source_ref=source_ref, 
+        source_page_ref=source_page_ref, 
         rect_norm=rect_norm, 
         anchor_text=anchor_text,
         link_type=LinkType.INTERNAL_RESOLVED.value,

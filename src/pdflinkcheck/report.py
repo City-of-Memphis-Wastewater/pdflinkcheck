@@ -167,8 +167,10 @@ def run_report_core(
         data = analyze_pdf(pdf_path) or {"links": [], "toc": [], "file_ov": []}
         
         extracted_links = data.get("links", [])
-        print("delete me")
-        print(extracted_links)
+
+        logger.debug("delete me")
+        logger.debug(extracted_links)
+        
         structural_toc = data.get("toc", [])
         total_pages = data.get("file_ov", {}).get("total_pages", 0)
 
