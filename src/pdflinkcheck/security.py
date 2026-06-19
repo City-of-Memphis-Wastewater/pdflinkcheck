@@ -15,6 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 from urllib.parse import urlparse, parse_qs
 import ipaddress
+from enum import Enum
 from typing import List, Dict, Optional
 import logging 
 
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # Top level domain (tld)
-SUSPICIOUS_TLDS = {
+SUSPICIOUS_TLDS_LIST = {
     "xyz", "top", "click", "link", "rest", "gq", "ml", "cf", "tk"
 }
 
@@ -72,16 +73,30 @@ HOMOGLYPHS = {
 # Data structures
 # ---------------------------------------------------------------------------
 
+
+class RiskReasonEnum(str, Enum):
+    SUSPICIOUS_TLDS_RISK = "risk_suspicious_tld"
+    NONSTANDARD_PORT = "risk_nonstandard_port"
+    LONG_URL = "risk_long_url"
+    TRACKING_PARAMS = "risk_tracking_params"
+    HOMOGLYPH_SUSPECTED = "risk_homoglyph_suspected"
+    IP_HOST = "risk_ip_host"
+
 @dataclass
 class RiskReason:
     rule_id: str
     description: str
     weight: int
 
+class RiskLevel(str, Enum):
+    ZERO = "zero"
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+
 
 @dataclass
 class LinkRiskResult:
-    url: str
     score: int
     level: str
     reasons: List[RiskReason]
@@ -103,7 +118,6 @@ def _is_ip(host: str) -> bool:
     except Exception:
         return False
 
-
 def _contains_homoglyphs(s: str) -> bool:
     return any(ch in HOMOGLYPHS for ch in s)
 
@@ -112,73 +126,95 @@ def _contains_homoglyphs(s: str) -> bool:
 # Core scoring function (URL‑structure‑based only)
 # ---------------------------------------------------------------------------
 
-def score_link(url: str) -> LinkRiskResult:
+def score_link_security_risk(url: str) -> LinkRiskResult:
     reasons: List[RiskReason] = []
     score = 0
 
-    parsed = urlparse(url)
-    host = parsed.hostname or ""
-    query = parsed.query or ""
+    #parsed = urlparse(url)
+    #host = parsed.hostname or ""
+    #query = parsed.query or ""
+
+    def parse_url_helper(url):
+        # Fallback to prevent absolute paths without schemes from throwing off urlparse
+        if "://" not in url and not url.startswith(("//", "mailto:", "tel:")):
+            parsed = urlparse(f"http://{url}")
+        else:
+            parsed = urlparse(url)
+
+        host = parsed.hostname or ""
+        query = parsed.query or ""
+        result = {"parsed":parsed,"host":host,"query":query}
+        return parsed,host,query
+        #return result
+
+    parsed,host,query = parse_url_helper(url)
+
+    #parsed_url_result = parse_url_helper(url)
+    #parsed = parsed_url_result["parsed"]
+    #host = parsed_url_result["host"] 
+    #query = parsed_url_result["query"] 
 
     # IP‑based URL
     if _is_ip(host):
-        reasons.append(RiskReason("ip_host", "URL uses a raw IP address.", 3))
+        reasons.append(RiskReason(RiskReasonEnum.IP_HOST.value, "URL uses a raw IP address.", 3))
         score += 3
 
     # Suspicious TLD
     if "." in host:
         tld = host.rsplit(".", 1)[-1].lower()
-        if tld in SUSPICIOUS_TLDS:
-            reasons.append(RiskReason("suspicious_tld", f"TLD '.{tld}' is commonly abused.", 2))
+        if tld in SUSPICIOUS_TLDS_LIST:
+            reasons.append(RiskReason(RiskReasonEnum.SUSPICIOUS_TLDS_RISK.value, f"TLD '.{tld}' is commonly abused.", 2))
             score += 2
 
     # Non‑standard port
     if parsed.port not in (None, 80, 443):
-        reasons.append(RiskReason("nonstandard_port", f"Non‑standard port {parsed.port}.", 2))
+        reasons.append(RiskReason(RiskReasonEnum.NONSTANDARD_PORT.value, f"Non‑standard port {parsed.port}.", 2))
         score += 2
 
     # Long URL
     if len(url) > 200:
-        reasons.append(RiskReason("long_url", "URL is unusually long.", 1))
+        reasons.append(RiskReason(RiskReasonEnum.LONG_URL.value, "URL is unusually long.", 1))
         score += 1
 
     # Tracking parameters
     params = parse_qs(query)
     tracking_hits = sum(1 for p in params if p.lower() in TRACKING_PARAMS)
     if tracking_hits:
-        reasons.append(RiskReason("tracking_params", f"{tracking_hits} tracking parameters found.", 1))
+        reasons.append(RiskReason(RiskReasonEnum.TRACKING_PARAMS.value, f"{tracking_hits} tracking parameters found.", 1))
         score += 1
 
     # Homoglyph detection
     if _contains_homoglyphs(host + parsed.path):
-        reasons.append(RiskReason("homoglyph_suspected", "URL contains homoglyph characters.", 3))
+        reasons.append(RiskReason(RiskReasonEnum.HOMOGLYPH_SUSPECTED.value, "URL contains homoglyph characters.", 3))
         score += 3
+
+
     # Risk level mapping
     if score == 0:
-        level = "zero"
+        level = RiskLevel.ZERO.value
     elif score <= 2:
-        level = "low"
+        level = RiskLevel.LOW.value
     elif score <= 6:
-        level = "medium"
+        level = RiskLevel.MEDIUM.value
     else:
-        level = "high"
+        level = RiskLevel.HIGH.value
 
 
-    return LinkRiskResult(url, score, level, reasons)
+    return LinkRiskResult(score, level, reasons)
 
 # ---------------------------------------------------------------------------
 # Report‑level risk computation (mirrors validate.py)
 # ---------------------------------------------------------------------------
 
 def compute_risk(report: Dict[str, object]) -> Dict[str, object]:
-    logger.debug
+    logger.debug("security.compute_risk()")
     external_links = report.get("data", {}).get("external_links", [])
     results = []
 
     for link in external_links:
         url = link.get("details",{}).get("url") or link.get("details",{}).get("remote_file") or link.get("details",{}).get("target")
         if url:
-            result_link = score_link(url).to_dict()
+            result_link = score_link_security_risk(url).to_dict()
             results.append(result_link)
             link["security_risk"] = result_link # mutate that junt, originally empty from helpers.create_link_dict()
 
@@ -186,10 +222,10 @@ def compute_risk(report: Dict[str, object]) -> Dict[str, object]:
         "risk_summary": {
             "total_external": len(external_links),
             "scored": len(results),
-            "high_risk": sum(1 for r in results if r["level"] == "high"),
-            "medium_risk": sum(1 for r in results if r["level"] == "medium"),
-            "low_risk": sum(1 for r in results if r["level"] == "low"),
-            "zero_risk": sum(1 for r in results if r["level"] == "zero"),
+            "high_risk": sum(1 for r in results if r["level"] == RiskLevel.HIGH.value),
+            "medium_risk": sum(1 for r in results if r["level"] == RiskLevel.MEDIUM.value),
+            "low_risk": sum(1 for r in results if r["level"] == RiskLevel.LOW.value),
+            "zero_risk": sum(1 for r in results if r["level"] == RiskLevel.ZERO.value),
         }
         #"risk_details": results
     }

@@ -196,7 +196,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
 
 def _extract_toc_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
     try:
-        # Note: outline is a property, not a method.
+        # Note: outline is a property of pypdf, not a method.
         toc_tree = reader.outline 
         toc_data = []
         
