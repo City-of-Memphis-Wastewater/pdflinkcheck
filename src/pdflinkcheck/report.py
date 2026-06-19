@@ -267,10 +267,10 @@ def _generate_report_text_layers(extracted_links: list, structural_toc: list, pd
     # Fallback Other Category Block
     log_fn(f"\n" + "=" * SEP_COUNT + f"\n## Other Links  - {len(other_links)} found\n" + "{:<5} | {:<5} | {:<40} | {}\n".format("Idx", "Page", "Anchor Text", "Target Action") + "=" * SEP_COUNT)
     for i, link in enumerate(other_links, 1):
-        logger.debug(f"{link.keys()=}")
+        #logger.debug(f"{link.keys()=}")
         #logger.debug(f"{link["details"].keys()=}")
-        #log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, link.get('page'), link.get('anchor_text', 'N/A')[:40], link.get('url') or link.get('remote_file')))
-        log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, "PAGE", "ANCHOR_TEXT", "NO MAS"))
+        log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, link.get('page'), link.get('anchor_text', 'N/A')[:40], link.get('url') or link.get('remote_file')))
+        #log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, "PAGE", "ANCHOR_TEXT", "NO MAS"))
 
     return {
         "internal_goto_links_count": len(goto_links),
