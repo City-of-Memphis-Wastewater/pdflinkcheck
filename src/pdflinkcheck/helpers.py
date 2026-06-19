@@ -18,7 +18,7 @@ Helper functions
 """
 def create_toc_dict(
         level,
-        title,
+        title:str,
         target_page
 )->Dict[str,Any]:
     return {

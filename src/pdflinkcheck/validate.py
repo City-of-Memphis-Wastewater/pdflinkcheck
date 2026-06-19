@@ -445,22 +445,15 @@ def run_validation(
             linkvalres = _check_unknown_link()
         
         # Update the original dict context in place for JSON reporting
-        #print(f"{linkvalres=}")
-        #print(f"{linkvalres.status=}")
         #link = link.copy()
         link["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
         # Construct a clean, normalized payload flat at the top level
         issue_payload = {
+            "GUID": link.get("GUID"),
             "link_type": link_type or "Link",
             "anchor_text": details.get("anchor_text") or link.get("anchor_text") or "—",
-            "target": (
-                details.get("url") or 
-                details.get("remote_file") or 
-                (f"Page {details.get('destination_page')}" if details.get('destination_page') is not None else None) or
-                "N/A"
-            ),
-            "target_validation": {"status": linkvalres.status.value, "reason": linkvalres.reason}
+            "validation_issue": link["target_validation"] 
         }
         tracker.record(linkvalres, issue_payload) # NOTDONE
 
@@ -470,13 +463,15 @@ def run_validation(
 
         linkvalres = _check_toc_jump(raw_page, total_pages) # NOTDONE
 
+        # Update the original dict context in place for JSON reporting
         entry["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
         issue_payload = {
+            "GUID": entry.get("GUID"),
             "link_type": "TOC Entry",
             "anchor_text": entry.get("title", "Untitled"),
             "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
-            "target_validation": {"status": linkvalres.status.value, "reason": linkvalres.reason}
+            "validation_issue": entry["target_validation"] 
         }
         tracker.record(linkvalres, issue_payload) # NOTDONE
 
