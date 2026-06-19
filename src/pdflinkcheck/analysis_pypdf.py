@@ -4,11 +4,7 @@
 from __future__ import annotations
 import sys
 from pathlib import Path
-import logging
 from typing import Dict, Any, Optional, List
-
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
-
 from pypdf import PdfReader
 from pypdf.generic import (
     Destination,
@@ -16,6 +12,11 @@ from pypdf.generic import (
     ArrayObject,
     IndirectObject,
 )
+import logging
+
+logger = logging.getLogger(__name__)
+
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
 
 """
 Inspect target PDF for both URI links and for GoTo links, using only pypdf, not Fitz
@@ -123,24 +124,25 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
 
             rect = obj.get("/Rect")
             anchor_text = _get_anchor_text_pypdf(page, rect)
-            
+
+            logger.debug(f"{anchor_text=}")
+
             link_dict = {
                 'page': page_source.machine,
                 'rect': list(rect) if rect else None,
                 'anchor_text': anchor_text,
-                'link_type': LinkType.OTHER.value,
+                'link_type': ''
+                #'link_type': LinkType.OTHER.value
             }
-
-
             
-            """link_dict = create_link_dict(
+            link_dict = create_link_dict(
                 source_page_ref=page_source, 
                 rect_norm=list(rect) if rect else None,
                 anchor_text=anchor_text,
-                link_type=LinkType.OTHER.value, # default
+                #link_type=LinkType.OTHER.value, # default
+                link_type='',
                 source_kind=''
             )
-            """
             
             # Handle URI (External)
             if "/A" in obj and "/URI" in obj["/A"]:
