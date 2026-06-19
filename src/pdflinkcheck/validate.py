@@ -4,9 +4,10 @@
 from __future__ import annotations
 import logging
 from pathlib import Path
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, NamedTuple
 import re
 from enum import Enum
+
 
 from pdflinkcheck.io import get_friendly_path
 from pdflinkcheck.helpers import PageRef, LinkType, PageValidationResult
@@ -22,12 +23,20 @@ ISSUES_SHOWN = 25
 # Standard RFC 5322 compliant lightweight email pattern
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
 
-class ValidationStatus(Enum):
-    VALID = "valid"
-    BROKEN = "broken"
-    UNKNOWN = "unknown"
+class LinkValidationResult(NamedTuple):
+    status: MetricKey
+    reason: str
 
-from enum import Enum
+class ValidationStatus(Enum):
+    VALID = 'valid'
+    BROKEN = 'broken'
+    UNKNOWN = 'unknown' 
+    REASONABLE = 'reasonable'
+    FORBIDDEN = 'forbidden'
+    MISSING = 'missing'
+
+#class LinkSource(Enum):
+#    redundant for the helpers.LinkType class
 
 class MetricKey(str, Enum):
     # Valid categories
@@ -121,13 +130,16 @@ class ValidationCounter:
 
 
 # =====================================================================
-# Pure Validation Sub-Engines
+# Validation Sub-Engines, with LinkValidationResult returns
 # =====================================================================
 
-def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
+def _check_internal_jump(dest_page: Any, total_pages: int | None) -> LinkValidationResult:
     """Evaluates index targeting against document thresholds using PageRef translation."""
     if dest_page is None:
-        return MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE.value, "No destination page resolved"
+        return LinkValidationResult(
+            status=MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE, 
+            reason="No destination page resolved"
+        )
 
     # 1. Determine the structural classification
     try:
@@ -145,21 +157,38 @@ def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, 
 
     # 2. Map structural state cleanly to the reporting payload
     if result_status == PageValidationResult.NEGATIVE:
-        return MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value, f"Target page {page_ref.human} is invalid (negative index)."
+        return LinkValidationResult(
+            status=MetricKey.INTERNAL_PAGE_JUMP_BROKEN, 
+            reason=f"Target page {page_ref.human} is invalid (negative index)."
+        )
     elif result_status == PageValidationResult.UNKNOWN:
-        return MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS.value, f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+        return LinkValidationResult(
+            status=MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS, 
+            reason=f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+        )
     elif result_status == PageValidationResult.HIGH:
-        return MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value, f"Page {page_ref.human} out of range (1–{total_pages})"
+        return LinkValidationResult(
+            status=MetricKey.INTERNAL_PAGE_JUMP_BROKEN, 
+            reason=f"Page {page_ref.human} out of range (1–{total_pages})"
+        )
     elif result_status == PageValidationResult.INVALID:
-        return MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value, f"Invalid page value: {dest_page}"
+        return LinkValidationResult(
+            status=MetricKey.INTERNAL_PAGE_JUMP_BROKEN, 
+            reason=f"Invalid page value: {dest_page}"
+        )
     
-    return MetricKey.INTERNAL_PAGE_JUMP_VALID.value, f"Page {page_ref.human} within range (1–{total_pages})"
+    return LinkValidationResult(
+        status=MetricKey.INTERNAL_PAGE_JUMP_VALID, 
+        reason=f"Page {page_ref.human} within range (1–{total_pages})"
+    )
 
-
-def _check_toc_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
+def _check_toc_jump(dest_page: Any, total_pages: int | None) -> LinkValidationResult:
     """Evaluates index targeting against document thresholds using PageRef translation."""
     if dest_page is None:
-        return MetricKey.TOC_JUMP_NO_DESTINATION_PAGE.value, "No destination page resolved"
+        return LinkValidationResult(
+            status = MetricKey.TOC_JUMP_NO_DESTINATION_PAGE, 
+            reason = "No destination page resolved"
+        )
 
     # 1. Determine the structural classification
     try:
@@ -177,32 +206,57 @@ def _check_toc_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
 
     # 2. Map structural state cleanly to the reporting payload
     if result_status == PageValidationResult.NEGATIVE:
-        return MetricKey.TOC_JUMP_BROKEN.value, f"Target page {page_ref.human} is invalid (negative index)."
+        return LinkValidationResult(
+            status = MetricKey.TOC_JUMP_BROKEN, 
+            reason = f"Target page {page_ref.human} is invalid (negative index)."
+        )
     elif result_status == PageValidationResult.UNKNOWN:
-        return MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS.value, f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+        return LinkValidationResult(
+            status = MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS, 
+            reason = f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+        )
     elif result_status == PageValidationResult.HIGH:
         human_label = page_ref.human
         reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
-        return MetricKey.TOC_JUMP_BROKEN.value, reason
+        return LinkValidationResult(
+            status = MetricKey.TOC_JUMP_BROKEN, 
+            reason = reason
+        )
     elif result_status == PageValidationResult.INVALID:
-        return MetricKey.TOC_JUMP_BROKEN.value, f"Invalid page value: {dest_page}"
+        return LinkValidationResult(
+            status = MetricKey.TOC_JUMP_BROKEN, 
+            reason = f"Invalid page value: {dest_page}"
+        )
 
-    return MetricKey.TOC_JUMP_VALID.value, f"Page {page_ref.human} within range (1–{total_pages})"
+    return LinkValidationResult(
+        status = MetricKey.TOC_JUMP_VALID, 
+        reason = f"Page {page_ref.human} within range (1–{total_pages})"
+    )
 
 
-def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str]:
+def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> LinkValidationResult:
     """Evaluates OS filesystem presence for local cross-document references."""
     if not remote_file:
-        return MetricKey.FILE_TARGET_BROKEN.value, "Missing remote file name"
+        return LinkValidationResult(
+            status = MetricKey.FILE_TARGET_BROKEN.value, 
+            reason = "Missing remote file name"
+        )
     
     target_path = (pdf_dir / remote_file).resolve() # assumes that the remote files has a relative path
     # we should possibly address the case where the remote_file is deemde to be a complete full filepath, if this is within the bounds of expectation. 
     if target_path.exists() and target_path.is_file():
-        return MetricKey.FILE_TARGET_VALID.value, f"Found: {target_path.name}"
-    return MetricKey.FILE_TARGET_BROKEN.value, f"File not found: {remote_file}"
+        return LinkValidationResult(
+            status = MetricKey.FILE_TARGET_VALID.value, 
+            reason = f"Found: {target_path.name}"
+        )
+    
+    return LinkValidationResult(
+        status = MetricKey.FILE_TARGET_BROKEN.value, 
+        reason = f"File not found: {remote_file}"
+    )
 
 
-def _check_email_protocol(url_str: str) -> Tuple[str, str]:
+def _check_email_protocol(url_str: str) -> LinkValidationResult:
     """
     Parses and validates mailto protocol strings for syntax correctness.
     
@@ -213,56 +267,89 @@ def _check_email_protocol(url_str: str) -> Tuple[str, str]:
     email_part = url_str[7:].split('?')[0].strip()
     
     if not email_part:
-        return MetricKey.EMAIL_ADDRESS_BROKEN.value, "Malformed mailto link: Missing email address"
+        return LinkValidationResult(
+            status = MetricKey.EMAIL_ADDRESS_BROKEN.value, 
+            reason = "Malformed mailto link: Missing email address"
+        )
         
     if EMAIL_REGEX.match(email_part):
-        return MetricKey.EMAIL_ADDRESS_REASONABLE.value, "Valid email address syntax"
+        return LinkValidationResult(
+            status = MetricKey.EMAIL_ADDRESS_REASONABLE.value, 
+            reason = "Valid email address syntax"
+        )
         
-    return MetricKey.EMAIL_ADDRESS_BROKEN.value, f"Invalid email address formatting: '{email_part}'"
+    return LinkValidationResult(
+        status = MetricKey.EMAIL_ADDRESS_BROKEN.value, 
+        reason = f"Invalid email address formatting: '{email_part}'"
+    )
 
-def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str]:
+def _check_external_uri(url: str | None, check_external: bool) -> LinkValidationResult:
     """Evaluates network URI structure and processes pings if allowed."""
     if not url:
-        return MetricKey.UNKNOWN_WEB_URL_MISSING.value, "External link (no URL provided)"
+        return LinkValidationResult(
+            status = MetricKey.UNKNOWN_WEB_URL_MISSING.value, 
+            reason = "External link (no URL provided)"
+        )
         
     url_stripped = url.strip()
     url_lower = url_stripped.lower()
     
-    # Handle known local/application protocols natively
+    # Handle known local/application protocols natively, probably in a nested way, rather than this flat way
     if url_lower.startswith("mailto:"):
         return _check_email_protocol(url_stripped)
 
     if url_lower.startswith("tel:"):
-        return MetricKey.TELEPHONE_NUMBER.value, f"Phone number not checked."
+        return LinkValidationResult(
+            status = MetricKey.TELEPHONE_NUMBER.value, 
+            reason = f"Phone number not checked."
+        )
         
     if url_lower.startswith(("file:", "mhtml:")):
         #return MetricKey.FILE_TARGET_BROKEN.value, f"Forbidden local hardcoded reference: {url}"
         reason = f"Forbidden local hardcoded reference."
-        return MetricKey.EXTERNAL_URI_FORBIDDEN.value,reason
+        return LinkValidationResult(
+            status = MetricKey.EXTERNAL_URI_FORBIDDEN.value,
+            reason = reason
+        )
         
     # Proceed to web link verification
     if not is_valid_web_url(url):
-        return MetricKey.WEB_PING_FAIL.value, "Malformed or unparseable URL syntax"
+        return LinkValidationResult(
+            status = MetricKey.WEB_PING_FAIL.value, 
+            reason = "Malformed or unparseable URL syntax"
+        )
 
     if not check_external:
-        return MetricKey.UNKNOWN_WEB_NOT_PINGED.value, "External link (no network check)"
+        return LinkValidationResult(
+            status = MetricKey.UNKNOWN_WEB_NOT_PINGED.value, 
+            reason = "External link (no network check)"
+        )
 
     ping_res = ping_url(url)
     logger.debug(f"Ping result: {ping_res}")
     
     if ping_res.success:
-        return MetricKey.WEB_PING_VALID.value, f"HTTP {ping_res.status_code}: {ping_res.reason}"
+        return LinkValidationResult(
+            status = MetricKey.WEB_PING_VALID.value, 
+            reason = f"HTTP {ping_res.status_code}: {ping_res.reason}"
+        )
     
     reason = f"HTTP {ping_res.status_code}: {ping_res.reason}" if ping_res.status_code else ping_res.reason
-    return MetricKey.WEB_PING_FAIL.value, reason
+    return LinkValidationResult(
+        status = MetricKey.WEB_PING_FAIL.value, 
+        reason = reason
+    )
 
-def _check_launch_link(launch_target: str | None) -> Tuple[str, str]:
+def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
     """
     Evaluates PDF Launch actions for structural safety and path validity.
     
     """
     if not launch_target:
-        return MetricKey.LAUNCH_TARGET_BROKEN.value, "Malformed Launch link: Missing executable or file target"
+        return LinkValidationResult(
+            status = MetricKey.LAUNCH_TARGET_BROKEN.value, 
+            reason = "Malformed Launch link: Missing executable or file target"
+        )
 
     target_clean = launch_target.strip()
     target_lower = target_clean.lower()
@@ -273,17 +360,29 @@ def _check_launch_link(launch_target: str | None) -> Tuple[str, str]:
         ".js", ".scr", ".pif", ".msi", ".com", ".ps1"
     )
     if target_lower.endswith(dangerous_extensions) or any(f" {ext}" in target_lower for ext in dangerous_extensions):
-        return MetricKey.LAUNCH_TARGET_EXECUTABLE.value, f"High-risk executable Launch path blocked: {target_clean}"
+        return LinkValidationResult(
+            status = MetricKey.LAUNCH_TARGET_EXECUTABLE.value, 
+            reason = f"High-risk executable Launch path blocked: {target_clean}"
+        )
 
     # 3. Path verification (Treating the target as an explicit local file asset dependency)
     try:
         target_path = Path(target_clean)
         # Note: Launch paths can be absolute or relative. Adjust base resolution as required by engine context
         if target_path.exists() and target_path.is_file():
-            return MetricKey.LAUNCH_TARGET_VALID.value, f"Verified local target: {target_path.name}"
-        return MetricKey.LAUNCH_TARGET_BROKEN.value, f"Launch target file not found: {target_clean}"
+            return LinkValidationResult(
+                status = MetricKey.LAUNCH_TARGET_VALID.value, 
+                reason = f"Verified local target: {target_path.name}"
+            )
+        return LinkValidationResult(
+            status = MetricKey.LAUNCH_TARGET_BROKEN.value, 
+            reason = f"Launch target file not found: {target_clean}"
+        )
     except Exception as e:
-        return MetricKey.LAUNCH_TARGET_BROKEN.value, f"Unparseable Launch path sequence: {str(e)}"
+        return LinkValidationResult(
+            status = MetricKey.LAUNCH_TARGET_BROKEN.value, 
+            reason = f"Unparseable Launch path sequence: {str(e)}"
+        )
 
 # =====================================================================
 # Main Coordinator & Orchestration Boundary
@@ -328,18 +427,18 @@ def run_validation(
         details =  link.get('details',{})
         link_type = details.get('link_type')
         if link_type in (LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value): 
-            status, reason = _check_internal_jump(details.get("destination_page"), total_pages)
+            linkvalres = _check_internal_jump(details.get("destination_page"), total_pages)
         elif link_type == LinkType.REMOTE_GOTOR.value:
-            status, reason = _check_remote_file(details.get("remote_file"), pdf_dir)
+            linkvalres = _check_remote_file(details.get("remote_file"), pdf_dir) # NOTDONE
         elif link_type == LinkType.EXTERNAL.value:
-            status, reason = _check_external_uri(details.get("url"), check_external)
+            linkvalres = _check_external_uri(details.get("url"), check_external) # NOTDONE
         elif link_type == LinkType.LAUNCH.value:
-            status, reason = _check_launch_link(details.get("file"))
+            linkvalres = _check_launch_link(details.get("file")) # NOTDONE
         else:
-            status, reason = MetricKey.UNKNOWN_LINK.value, "Other/unsupported link type"
+            linkvalres = MetricKey.UNKNOWN_LINK.value, "Other/unsupported link type"
         
         # Update the original dict context in place for JSON reporting
-        link["target_validation"] = {"status": status, "reason": reason}
+        link["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
         #validated_link = link.copy()
         #validated_link["target_validation"] = {"status": status, "reason": reason}
@@ -355,15 +454,15 @@ def run_validation(
                 (f"Page {details.get('destination_page')}" if details.get('destination_page') is not None else None) or
                 "N/A"
             ),
-            "target_validation": {"status": status, "reason": reason}
+            "target_validation": {"status": linkvalres.status.value, "reason": linkvalres.reason}
         }
-        tracker.record(status, issue_payload)
+        tracker.record(linkvalres, issue_payload) # NOTDONE
 
     # Dispatch Pass 2: Table of Contents Bookmarks
     for entry in toc:
         raw_page = entry.get("target_page", -1)
 
-        status, reason = _check_toc_jump(raw_page, total_pages)
+        status, reason = _check_toc_jump(raw_page, total_pages) # NOTDONE
         #status, reason = _check_internal_jump(raw_page, total_pages)
 
         entry["target_validation"] = {"status": status, "reason": reason}
@@ -374,7 +473,7 @@ def run_validation(
             "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
             "target_validation": {"status": status, "reason": reason}
         }
-        tracker.record(status, issue_payload)
+        tracker.record(linkvalres, issue_payload) # NOTDONE
 
     report_buffer = generate_validation_summary_txt_buffer(tracker.stats, tracker.issues, pdf_path, check_external)
 
