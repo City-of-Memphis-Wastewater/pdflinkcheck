@@ -13,7 +13,7 @@ Stable, low‑maintenance, and fully offline.
 
 from __future__ import annotations
 from dataclasses import dataclass, asdict
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import parse_qs
 import ipaddress
 from enum import Enum
 from typing import List, Dict, Optional

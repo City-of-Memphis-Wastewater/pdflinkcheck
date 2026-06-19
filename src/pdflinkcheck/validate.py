@@ -26,32 +26,82 @@ class ValidationStatus(Enum):
     VALID = "valid"
     BROKEN = "broken"
     UNKNOWN = "unknown"
+
+from enum import Enum
+
+class MetricKey(str, Enum):
+    # Valid categories
+    TOTAL_FOUND = 'total-found'
+    INTERNAL_PAGE_JUMP_VALID = 'internal-page-jump-valid'
+    TOC_JUMP_VALID = 'toc-jump-valid'
+    FILE_TARGET_VALID = 'file-target-valid'
+    WEB_PING_VALID = 'web-ping-valid'
+    LAUNCH_TARGET_VALID = 'launch-target-valid'
     
+    # Unknowns/Warnings
+    UNKNOWN_WEB_NOT_PINGED = 'unknown-web-not-pinged'
+    INTERNAL_JUMP_UNKNOWN_REASONABLENESS = 'internal-jump-unknown-reasonableness'
+    TOC_JUMP_UNKNOWN_REASONABLENESS = 'toc-jump-unknown-reasonableness'
+    EMAIL_ADDRESS_REASONABLE = 'email-address-reasonable'
+    LAUNCH_TARGET_EXECUTABLE = 'launch-target-executable'
+    EXTERNAL_URI_FORBIDDEN = 'external-uri-forbidden'
+    TELEPHONE_NUMBER = 'telephone-number'
+    UNKNOWN_LINK = 'unknown-link'
+    
+    # Broken categories
+    INTERNAL_PAGE_JUMP_BROKEN = 'internal-page-jump-broken'
+    FILE_TARGET_BROKEN = 'file-target-broken'
+    LAUNCH_TARGET_BROKEN = 'launch-target-broken'
+    TOC_JUMP_BROKEN = 'toc-jump-broken'
+    TOC_JUMP_NO_DESTINATION_PAGE = 'toc-jump-no-destination-page'
+    INTERNAL_JUMP_NO_DESTINATION_PAGE = 'internal-jump-no-destination-page'
+    WEB_PING_FAIL = 'web-ping-fail'
+    UNKNOWN_WEB_URL_MISSING = 'unknown-web-url-missing'
+    EMAIL_ADDRESS_BROKEN = 'email-address-broken'
+
+# A simple, centralized set of all Enum members that constitute structural failures
+ISSUE_METRICS = {
+    MetricKey.INTERNAL_PAGE_JUMP_BROKEN, 
+    MetricKey.FILE_TARGET_BROKEN,
+    MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE, 
+    MetricKey.WEB_PING_FAIL,
+    MetricKey.TOC_JUMP_BROKEN, 
+    MetricKey.TOC_JUMP_NO_DESTINATION_PAGE,
+    MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS, 
+    MetricKey.EMAIL_ADDRESS_BROKEN,
+    MetricKey.UNKNOWN_WEB_URL_MISSING, 
+    MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS,
+    MetricKey.UNKNOWN_LINK, 
+    MetricKey.EXTERNAL_URI_FORBIDDEN,
+    MetricKey.LAUNCH_TARGET_BROKEN, 
+    MetricKey.LAUNCH_TARGET_EXECUTABLE
+}
+
 def make_fresh_stats(total_found):
     stats_fresh = {
-        "total-found": total_found,
-        "internal-page-jump-valid": 0,
-        "toc-jump-valid": 0,
-        "toc-jump-broken": 0,
-        "toc-jump-no-destination-page": 0,
-        "toc-jump-unknown-reasonableness": 0,
-        "file-target-valid": 0,
-        "web-ping-valid": 0,
-        "email-address-reasonable": 0,
-        "email-address-broken": 0,
-        "unknown-web-url-missing": 0,
-        "unknown-web-not-pinged": 0,
-        "internal-jump-unknown-reasonableness": 0,
-        "unknown-link": 0,
-        "internal-page-jump-broken": 0,
-        "file-target-broken": 0,
-        "external-uri-forbidden": 0,
-        "internal-jump-no-destination-page": 0,
-        "web-ping-fail": 0,
-        "telephone-number": 0,
-        "launch-target-valid": 0,
-        "launch-target-broken": 0,
-        "launch-target-executable": 0
+        MetricKey.TOTAL_FOUND.value: total_found,
+        MetricKey.INTERNAL_PAGE_JUMP_VALID.value: 0,
+        MetricKey.TOC_JUMP_VALID.value: 0,
+        MetricKey.TOC_JUMP_BROKEN.value: 0,
+        MetricKey.TOC_JUMP_NO_DESTINATION_PAGE.value: 0,
+        MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS.value: 0,
+        MetricKey.FILE_TARGET_VALID.value: 0,
+        MetricKey.WEB_PING_VALID.value: 0,
+        MetricKey.EMAIL_ADDRESS_REASONABLE.value: 0,
+        MetricKey.EMAIL_ADDRESS_BROKEN.value: 0,
+        MetricKey.UNKNOWN_WEB_URL_MISSING.value: 0,
+        MetricKey.UNKNOWN_WEB_NOT_PINGED.value: 0,
+        MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS.value: 0,
+        MetricKey.UNKNOWN_LINK.value: 0,
+        MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value: 0,
+        MetricKey.FILE_TARGET_BROKEN.value: 0,
+        MetricKey.EXTERNAL_URI_FORBIDDEN.value: 0,
+        MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE.value: 0,
+        MetricKey.WEB_PING_FAIL.value: 0,
+        MetricKey.TELEPHONE_NUMBER.value: 0,
+        MetricKey.LAUNCH_TARGET_VALID.value: 0,
+        MetricKey.LAUNCH_TARGET_BROKEN.value: 0,
+        MetricKey.LAUNCH_TARGET_EXECUTABLE.value: 0
     }
     return stats_fresh
 
@@ -66,22 +116,7 @@ class ValidationCounter:
         if status in self.stats:
             self.stats[status] += 1
             
-        if status in (
-            "internal-page-jump-broken",
-            "file-target-broken",
-            "internal-jump-no-destination-page",
-            "web-ping-fail",
-            "toc-jump-broken",
-            "toc-jump-no-destination-page",
-            "toc-jump-unknown-reasonableness",
-            "email-address-broken",
-            "unknown-web-url-missing",
-            "internal-jump-unknown-reasonableness",
-            "unknown-link",
-            "external-uri-forbidden",
-            "launch-target-broken",
-            "launch-target-executable"
-            ):
+        if status in ISSUE_METRICS:
             self.issues.append(link_payload)
 
 
@@ -92,7 +127,7 @@ class ValidationCounter:
 def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
     """Evaluates index targeting against document thresholds using PageRef translation."""
     if dest_page is None:
-        return "internal-jump-no-destination-page", "No destination page resolved"
+        return MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE.value, "No destination page resolved"
 
     # 1. Determine the structural classification
     try:
@@ -110,21 +145,21 @@ def _check_internal_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, 
 
     # 2. Map structural state cleanly to the reporting payload
     if result_status == PageValidationResult.NEGATIVE:
-        return "internal-page-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
+        return MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value, f"Target page {page_ref.human} is invalid (negative index)."
     elif result_status == PageValidationResult.UNKNOWN:
-        return "internal-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+        return MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS.value, f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
     elif result_status == PageValidationResult.HIGH:
-        return "internal-page-jump-broken", f"Page {page_ref.human} out of range (1–{total_pages})"
+        return MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value, f"Page {page_ref.human} out of range (1–{total_pages})"
     elif result_status == PageValidationResult.INVALID:
-        return "internal-page-jump-broken", f"Invalid page value: {dest_page}"
+        return MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value, f"Invalid page value: {dest_page}"
     
-    return "internal-page-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
+    return MetricKey.INTERNAL_PAGE_JUMP_VALID.value, f"Page {page_ref.human} within range (1–{total_pages})"
 
 
 def _check_toc_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
     """Evaluates index targeting against document thresholds using PageRef translation."""
     if dest_page is None:
-        return "toc-jump-no-destination-page", "No destination page resolved"
+        return MetricKey.TOC_JUMP_NO_DESTINATION_PAGE.value, "No destination page resolved"
 
     # 1. Determine the structural classification
     try:
@@ -142,29 +177,29 @@ def _check_toc_jump(dest_page: Any, total_pages: int | None) -> Tuple[str, str]:
 
     # 2. Map structural state cleanly to the reporting payload
     if result_status == PageValidationResult.NEGATIVE:
-        return "toc-jump-broken", f"Target page {page_ref.human} is invalid (negative index)."
+        return MetricKey.TOC_JUMP_BROKEN.value, f"Target page {page_ref.human} is invalid (negative index)."
     elif result_status == PageValidationResult.UNKNOWN:
-        return "toc-jump-unknown-reasonableness", f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
+        return MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS.value, f"Page {page_ref.human} seems reasonable, but total page count is unavailable."
     elif result_status == PageValidationResult.HIGH:
         human_label = page_ref.human
         reason = f"TOC targets page {human_label} (out of 1–{total_pages if total_pages else 'Unknown'})"
-        return "toc-jump-broken", reason
+        return MetricKey.TOC_JUMP_BROKEN.value, reason
     elif result_status == PageValidationResult.INVALID:
-        return "toc-jump-broken", f"Invalid page value: {dest_page}"
+        return MetricKey.TOC_JUMP_BROKEN.value, f"Invalid page value: {dest_page}"
 
-    return "toc-jump-valid", f"Page {page_ref.human} within range (1–{total_pages})"
+    return MetricKey.TOC_JUMP_VALID.value, f"Page {page_ref.human} within range (1–{total_pages})"
 
 
 def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> Tuple[str, str]:
     """Evaluates OS filesystem presence for local cross-document references."""
     if not remote_file:
-        return "file-target-broken", "Missing remote file name"
+        return MetricKey.FILE_TARGET_BROKEN.value, "Missing remote file name"
     
     target_path = (pdf_dir / remote_file).resolve() # assumes that the remote files has a relative path
     # we should possibly address the case where the remote_file is deemde to be a complete full filepath, if this is within the bounds of expectation. 
     if target_path.exists() and target_path.is_file():
-        return "file-target-valid", f"Found: {target_path.name}"
-    return "file-target-broken", f"File not found: {remote_file}"
+        return MetricKey.FILE_TARGET_VALID.value, f"Found: {target_path.name}"
+    return MetricKey.FILE_TARGET_BROKEN.value, f"File not found: {remote_file}"
 
 
 def _check_email_protocol(url_str: str) -> Tuple[str, str]:
@@ -178,17 +213,17 @@ def _check_email_protocol(url_str: str) -> Tuple[str, str]:
     email_part = url_str[7:].split('?')[0].strip()
     
     if not email_part:
-        return "email-address-broken", "Malformed mailto link: Missing email address"
+        return MetricKey.EMAIL_ADDRESS_BROKEN.value, "Malformed mailto link: Missing email address"
         
     if EMAIL_REGEX.match(email_part):
-        return "email-address-reasonable", "Valid email address syntax"
+        return MetricKey.EMAIL_ADDRESS_REASONABLE.value, "Valid email address syntax"
         
-    return "email-address-broken", f"Invalid email address formatting: '{email_part}'"
+    return MetricKey.EMAIL_ADDRESS_BROKEN.value, f"Invalid email address formatting: '{email_part}'"
 
 def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str]:
     """Evaluates network URI structure and processes pings if allowed."""
     if not url:
-        return "unknown-web-url-missing", "External link (no URL provided)"
+        return MetricKey.UNKNOWN_WEB_URL_MISSING.value, "External link (no URL provided)"
         
     url_stripped = url.strip()
     url_lower = url_stripped.lower()
@@ -198,28 +233,28 @@ def _check_external_uri(url: str | None, check_external: bool) -> Tuple[str, str
         return _check_email_protocol(url_stripped)
 
     if url_lower.startswith("tel:"):
-        return "telephone-number", f"Phone number not checked."
+        return MetricKey.TELEPHONE_NUMBER.value, f"Phone number not checked."
         
     if url_lower.startswith(("file:", "mhtml:")):
-        #return "file-target-broken", f"Forbidden local hardcoded reference: {url}"
+        #return MetricKey.FILE_TARGET_BROKEN.value, f"Forbidden local hardcoded reference: {url}"
         reason = f"Forbidden local hardcoded reference."
-        return "external-uri-forbidden",reason
+        return MetricKey.EXTERNAL_URI_FORBIDDEN.value,reason
         
     # Proceed to web link verification
     if not is_valid_web_url(url):
-        return "web-ping-fail", "Malformed or unparseable URL syntax"
+        return MetricKey.WEB_PING_FAIL.value, "Malformed or unparseable URL syntax"
 
     if not check_external:
-        return "unknown-web-not-pinged", "External link (no network check)"
+        return MetricKey.UNKNOWN_WEB_NOT_PINGED.value, "External link (no network check)"
 
     ping_res = ping_url(url)
     logger.debug(f"Ping result: {ping_res}")
     
     if ping_res.success:
-        return "web-ping-valid", f"HTTP {ping_res.status_code}: {ping_res.reason}"
+        return MetricKey.WEB_PING_VALID.value, f"HTTP {ping_res.status_code}: {ping_res.reason}"
     
     reason = f"HTTP {ping_res.status_code}: {ping_res.reason}" if ping_res.status_code else ping_res.reason
-    return "web-ping-fail", reason
+    return MetricKey.WEB_PING_FAIL.value, reason
 
 def _check_launch_link(launch_target: str | None) -> Tuple[str, str]:
     """
@@ -227,7 +262,7 @@ def _check_launch_link(launch_target: str | None) -> Tuple[str, str]:
     
     """
     if not launch_target:
-        return "launch-target-broken", "Malformed Launch link: Missing executable or file target"
+        return MetricKey.LAUNCH_TARGET_BROKEN.value, "Malformed Launch link: Missing executable or file target"
 
     target_clean = launch_target.strip()
     target_lower = target_clean.lower()
@@ -238,17 +273,17 @@ def _check_launch_link(launch_target: str | None) -> Tuple[str, str]:
         ".js", ".scr", ".pif", ".msi", ".com", ".ps1"
     )
     if target_lower.endswith(dangerous_extensions) or any(f" {ext}" in target_lower for ext in dangerous_extensions):
-        return "launch-target-executable", f"High-risk executable Launch path blocked: {target_clean}"
+        return MetricKey.LAUNCH_TARGET_EXECUTABLE.value, f"High-risk executable Launch path blocked: {target_clean}"
 
     # 3. Path verification (Treating the target as an explicit local file asset dependency)
     try:
         target_path = Path(target_clean)
         # Note: Launch paths can be absolute or relative. Adjust base resolution as required by engine context
         if target_path.exists() and target_path.is_file():
-            return "launch-target-valid", f"Verified local target: {target_path.name}"
-        return "launch-target-broken", f"Launch target file not found: {target_clean}"
+            return MetricKey.LAUNCH_TARGET_VALID.value, f"Verified local target: {target_path.name}"
+        return MetricKey.LAUNCH_TARGET_BROKEN.value, f"Launch target file not found: {target_clean}"
     except Exception as e:
-        return "launch-target-broken", f"Unparseable Launch path sequence: {str(e)}"
+        return MetricKey.LAUNCH_TARGET_BROKEN.value, f"Unparseable Launch path sequence: {str(e)}"
 
 # =====================================================================
 # Main Coordinator & Orchestration Boundary
@@ -279,7 +314,7 @@ def run_validation(
     if not all_links and not toc:
         return {
             "pdf_path": pdf_path,
-            "summary-stats": {"total-found": 0}, 
+            "summary-stats": {MetricKey.TOTAL_FOUND.value: 0}, 
             "issues": [], 
             "summary-lines": [],
             "total_pages": total_pages
@@ -301,7 +336,7 @@ def run_validation(
         elif link_type == LinkType.LAUNCH.value:
             status, reason = _check_launch_link(details.get("file"))
         else:
-            status, reason = "unknown-link", "Other/unsupported link type"
+            status, reason = MetricKey.UNKNOWN_LINK.value, "Other/unsupported link type"
         
         # Update the original dict context in place for JSON reporting
         link["target_validation"] = {"status": status, "reason": reason}
@@ -361,29 +396,29 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
     buf.append("=" * SEP_COUNT)
     buf.append(f"PDF Path = {get_friendly_path(pdf_path)}")
     buf.append(f"Ping: {check_external}")
-    buf.append(f"Total items found: {summary_stats['total-found']}")
-    buf.append(f"✅ TOC Page Jumps Valid: {summary_stats['toc-jump-valid']}")
-    buf.append(f"✅ Internal Page Jumps Valid: {summary_stats['internal-page-jump-valid']}")
-    buf.append(f"✅ File Targets Valid: {summary_stats['file-target-valid']}")
-    buf.append(f"✅ Launch Targets Valid: {summary_stats['launch-target-valid']}")
-    buf.append(f"✅ Web Addresses Valid: {summary_stats['web-ping-valid']}")
-    buf.append(f"🌐 Web Addresses Not Checked: {summary_stats['unknown-web-not-pinged']}")
-    buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats['internal-jump-unknown-reasonableness']}")
-    buf.append(f"⚠️ TOC Unknown Reasonableness: {summary_stats['toc-jump-unknown-reasonableness']}")
-    buf.append(f"⚠️ Email Addresses Reasonable But Not Checked: {summary_stats['email-address-reasonable']}")
-    buf.append(f"⚠️ Forbidden Local Executable Launches: {summary_stats['launch-target-executable']}")
-    buf.append(f"⚠️ Unsupported URL File Links: {summary_stats['external-uri-forbidden']}")
-    buf.append(f"⚠️ Unsupported Telephone Numbers: {summary_stats['telephone-number']}")
-    buf.append(f"⚠️ Unsupported Other PDF Links: {summary_stats['unknown-link']}")
-    buf.append(f"❌ Broken Page Reference: {summary_stats['internal-page-jump-broken']}")
-    buf.append(f"❌ Broken File Targets: {summary_stats['file-target-broken']}")
-    buf.append(f"❌ Broken Launch Targets: {summary_stats['launch-target-broken']}")
-    buf.append(f"❌ TOC Page Jumps Broken: {summary_stats['toc-jump-broken']}")
-    buf.append(f"❌ TOC Page Jumps Not Resolved: {summary_stats['toc-jump-no-destination-page']}")
-    buf.append(f"❌ Internal Page Jumps Not Resolved: {summary_stats['internal-jump-no-destination-page']}")
-    buf.append(f"❌ Web Address Pings Failed: {summary_stats['web-ping-fail']}")
-    buf.append(f"❌ Web Addresses Missing: {summary_stats['unknown-web-url-missing']}")
-    buf.append(f"❌ Email Addresses Broken: {summary_stats['email-address-broken']}")
+    buf.append(f"Total items found: {summary_stats[MetricKey.TOTAL_FOUND.value]}")
+    buf.append(f"✅ TOC Page Jumps Valid: {summary_stats[MetricKey.TOC_JUMP_VALID.value]}")
+    buf.append(f"✅ Internal Page Jumps Valid: {summary_stats[MetricKey.INTERNAL_PAGE_JUMP_VALID.value]}")
+    buf.append(f"✅ File Targets Valid: {summary_stats[MetricKey.FILE_TARGET_VALID.value]}")
+    buf.append(f"✅ Launch Targets Valid: {summary_stats[MetricKey.LAUNCH_TARGET_VALID.value]}")
+    buf.append(f"✅ Web Addresses Valid: {summary_stats[MetricKey.WEB_PING_VALID.value]}")
+    buf.append(f"🌐 Web Addresses Not Checked: {summary_stats[MetricKey.UNKNOWN_WEB_NOT_PINGED.value]}")
+    buf.append(f"⚠️ Unknown Page Reasonableness: {summary_stats[MetricKey.INTERNAL_JUMP_UNKNOWN_REASONABLENESS.value]}")
+    buf.append(f"⚠️ TOC Unknown Reasonableness: {summary_stats[MetricKey.TOC_JUMP_UNKNOWN_REASONABLENESS.value]}")
+    buf.append(f"⚠️ Email Addresses Reasonable But Not Checked: {summary_stats[MetricKey.EMAIL_ADDRESS_REASONABLE.value]}")
+    buf.append(f"⚠️ Forbidden Local Executable Launches: {summary_stats[MetricKey.LAUNCH_TARGET_EXECUTABLE.value]}")
+    buf.append(f"⚠️ Unsupported URL File Links: {summary_stats[MetricKey.EXTERNAL_URI_FORBIDDEN.value]}")
+    buf.append(f"⚠️ Unsupported Telephone Numbers: {summary_stats[MetricKey.TELEPHONE_NUMBER.value]}")
+    buf.append(f"⚠️ Unsupported Other PDF Links: {summary_stats[MetricKey.UNKNOWN_LINK.value]}")
+    buf.append(f"❌ Broken Page Reference: {summary_stats[MetricKey.INTERNAL_PAGE_JUMP_BROKEN.value]}")
+    buf.append(f"❌ Broken File Targets: {summary_stats[MetricKey.FILE_TARGET_BROKEN.value]}")
+    buf.append(f"❌ Broken Launch Targets: {summary_stats[MetricKey.LAUNCH_TARGET_BROKEN.value]}")
+    buf.append(f"❌ TOC Page Jumps Broken: {summary_stats[MetricKey.TOC_JUMP_BROKEN.value]}")
+    buf.append(f"❌ TOC Page Jumps Not Resolved: {summary_stats[MetricKey.TOC_JUMP_NO_DESTINATION_PAGE.value]}")
+    buf.append(f"❌ Internal Page Jumps Not Resolved: {summary_stats[MetricKey.INTERNAL_JUMP_NO_DESTINATION_PAGE.value]}")
+    buf.append(f"❌ Web Address Pings Failed: {summary_stats[MetricKey.WEB_PING_FAIL.value]}")
+    buf.append(f"❌ Web Addresses Missing: {summary_stats[MetricKey.UNKNOWN_WEB_URL_MISSING.value]}")
+    buf.append(f"❌ Email Addresses Broken: {summary_stats[MetricKey.EMAIL_ADDRESS_BROKEN.value]}")
     
     buf.append("=" * SEP_COUNT)
 
@@ -412,7 +447,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             
         if len(issues) > ISSUES_SHOWN:
             buf.append(f"... and {len(issues) - ISSUES_SHOWN} more issues")
-    elif summary_stats.get('total-found', 0) == 0:
+    elif summary_stats.get(MetricKey.TOTAL_FOUND.value, 0) == 0:
         buf.append("\nStatus: No items were discovered to evaluate.")
     else:
         buf.append("\nSuccess: Document structural references verified perfectly!")
