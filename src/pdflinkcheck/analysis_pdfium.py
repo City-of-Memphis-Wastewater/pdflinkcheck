@@ -406,9 +406,7 @@ def _dispatch_action(
                 destination_page = PageRef.from_index(dest_idx).machine,
                 destination_view = extract_destination_view(target_dest)
             )
-            link_dict['destination_page'] = PageRef.from_index(dest_idx).machine
-            link_dict['destination_view'] = extract_destination_view(target_dest)
-            links.append(link_dict)
+            
     
     elif action_type == PdfActionType.URI:
         uri = get_uri_from_action(action, doc.raw)
@@ -421,7 +419,6 @@ def _dispatch_action(
                 url=uri, 
                 source_kind=SourceKindPdfium.ANNOT_URI.value
             )
-            links.append(link_dict)
         else:
             link_dict = create_link_dict(
                 source_page_ref=source_page_ref, 
@@ -430,7 +427,6 @@ def _dispatch_action(
                 link_type=LinkType.OTHER.value, 
                 source_kind=SourceKindPdfium.ANNOT_URI.value
             )
-            links.append(link_dict)
 
     elif action_type == PdfActionType.GOTOR:
         remote_file = get_remote_file_from_action(action, doc.raw)
@@ -444,7 +440,6 @@ def _dispatch_action(
             source_kind=SourceKindPdfium.ANNOT_GOTOR.value,
             destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
         )
-        links.append(link_dict)
 
     elif action_type == PdfActionType.LAUNCH:
         # Extract underlying target path string from the Launch action spec
@@ -457,8 +452,6 @@ def _dispatch_action(
             file=launch_file or "",
             source_kind=SourceKindPdfium.ANNOT_LAUNCH.value
         )
-        links.append(link_dict)
-
     else:
         # Captures exotic macros (VJS, SUBMIT, NAMED) cleanly into the unknown dictionary structure
         link_dict = create_link_dict(
@@ -469,7 +462,7 @@ def _dispatch_action(
             action_kind=int(action_type),
             source_kind=SourceKindPdfium.ANNOT_OTHER.value
         )
-        links.append(link_dict)
+    links.append(link_dict)
 
 def _dispatch_direct_dest(
     doc: Any,

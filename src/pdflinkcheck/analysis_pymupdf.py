@@ -281,7 +281,7 @@ def extract_links_pymupdf_stable(doc):
     return links_data
 
 def extract_links_pymupdf(doc):
-    links_data = []
+    links = []
     try:        
         last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count)
 
@@ -341,10 +341,10 @@ def extract_links_pymupdf(doc):
                     params=link.get('params') if determined_type == LinkType.LAUNCH.value else None,
                 )
 
-                links_data.append(link_dict)
+                links.append(link_dict)
     except Exception as e:
         print(f"An error occurred: {e}", file=sys.stderr)
-    return links_data
+    return links
 
 def demo():
     """

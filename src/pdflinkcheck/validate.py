@@ -285,22 +285,36 @@ def run_validation(
 
     # Dispatch Pass 1: Standard Document Annotations
     for link in all_links:
-        link_type = link.get('link_type')
-        
+        details =  link.get('details',{})
+        link_type = details.get('link_type')
         if link_type in (LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value): 
-            status, reason = _check_internal_jump(link.get("destination_page"), total_pages)
+            status, reason = _check_internal_jump(details.get("destination_page"), total_pages)
         elif link_type == LinkType.REMOTE_GOTOR.value:
-            status, reason = _check_remote_file(link.get("remote_file"), pdf_dir)
+            status, reason = _check_remote_file(details.get("remote_file"), pdf_dir)
         elif link_type == LinkType.EXTERNAL.value:
-            status, reason = _check_external_uri(link.get("url"), check_external)
+            status, reason = _check_external_uri(details.get("url"), check_external)
         elif link_type == LinkType.LAUNCH.value:
-            status, reason = _check_launch_link(link.get("file"))
+            status, reason = _check_launch_link(details.get("file"))
         else:
             status, reason = "unknown-link", "Other/unsupported link type"
 
-        validated_link = link.copy()
-        validated_link["validation"] = {"status": status, "reason": reason}
-        tracker.record(status, validated_link)
+        #validated_link = link.copy()
+        #validated_link["validation"] = {"status": status, "reason": reason}
+        #tracker.record(status, validated_link)
+
+        # Construct a clean, normalized payload flat at the top level
+        issue_payload = {
+            "type": link_type or "Link",
+            "anchor_text": details.get("anchor_text") or link.get("anchor_text") or "—",
+            "target": (
+                details.get("url") or 
+                details.get("remote_file") or 
+                (f"Page {details.get('destination_page')}" if details.get('destination_page') is not None else None) or
+                "N/A"
+            ),
+            "validation": {"status": status, "reason": reason}
+        }
+        tracker.record(status, issue_payload)
 
     # Dispatch Pass 2: Table of Contents Bookmarks
     for entry in toc:
@@ -309,14 +323,13 @@ def run_validation(
         status, reason = _check_toc_jump(raw_page, total_pages)
         #status, reason = _check_internal_jump(raw_page, total_pages)
 
-        validated_toc = {
+        issue_payload = {
             "type": "TOC Entry",
-            "title": entry.get("title", "Untitled"),
-            "level": entry.get("level", 0),
-            "target_page": raw_page,
+            "anchor_text": entry.get("title", "Untitled"),
+            "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
             "validation": {"status": status, "reason": reason}
         }
-        tracker.record(status, validated_toc)
+        tracker.record(status, issue_payload)
 
     report_buffer = generate_validation_summary_txt_buffer(tracker.stats, tracker.issues, pdf_path, check_external)
 
@@ -374,14 +387,16 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             itype = issue.get('link_type', "Link")
             
             # Extract anchor visual text or fallback onto title
-            itext = (issue.get("anchor_text") or issue.get("title") or "—")
+            itext = issue.get("anchor_text", "—")
             itext = (itext[:22] + "...") if len(itext) > 25 else itext
             
             # Extract actual underlying execution target string
-            itarget = (issue.get("url") or issue.get("remote_file") or f"Page {issue.get('target_page', 'N/A')}")
+            #itarget = (issue.get("url") or issue.get("remote_file") or f"Page {issue.get('target_page', 'N/A')}")
+            itarget = issue.get("target", "N/A")
             itarget = (itarget[:27] + "...") if len(itarget) > 30 else itarget
             
-            ireason = issue["validation"]["reason"]
+            #ireason = issue["validation"]["reason"]
+            ireason = issue.get("validation", {}).get("reason", "Unknown issue")
             buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format(i, itype, itext, itarget, ireason))
             
         if len(issues) > ISSUES_SHOWN:

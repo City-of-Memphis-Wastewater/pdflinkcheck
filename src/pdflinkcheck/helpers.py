@@ -17,43 +17,6 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 Helper functions
 """
 
-def create_link_dict_stable(
-    source_page_ref: PageRef,
-    rect_norm: Optional[list],
-    anchor_text: str,
-    link_type: str = "",
-    source_kind: Any = "",
-    url: Optional[str] = None,
-    remote_file: Optional[str] = None,
-    file: Optional[str] = None
-) -> Dict[str, Any]:
-    """
-    Standardized flat factory abstraction for link dictionaries across 
-    pdfium, pypdf, and pymupdf backends.
-    """
-    base = {
-        "page": source_page_ref.machine,  # Always normalized machine index (int)
-        "rect": rect_norm,
-        "anchor_text": anchor_text,
-        "link_type": link_type,
-        "source_kind": str(source_kind) if source_kind is not None else "",
-        "url": url,
-        "destination_page": None,
-        "destination_view": None,
-        "remote_file": remote_file,
-        "file": file,
-        "params": None,
-        "xref": None
-    }
-    structure = {
-        "GUID": str(uuid.uuid4()),
-        "details": base,
-        "validation":{},
-        "risk":{}
-    }
-    return base
-    #return structure
-
 def create_link_dict(
     source_page_ref: PageRef,
     rect_norm: Optional[tuple],
@@ -91,11 +54,14 @@ def create_link_dict(
     structure = {
         "GUID": str(uuid.uuid4()),
         "details": base,
-        "validation":{},
+        "validation":{
+            "status":"unverified",
+            "reason": None,
+        },
         "risk":{}
     }
-    return base
-    #return structure
+    #return base
+    return structure
 
 def get_source_pdf_path(report: Dict) -> Path:
     return Path(report["metadata"]["file_overview"]["source_path"])
