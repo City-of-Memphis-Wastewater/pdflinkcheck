@@ -449,11 +449,14 @@ def run_validation(
         link["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
         # Construct a clean, normalized payload flat at the top level
+        #issue_payload = {
+        #    "GUID": link.get("GUID"),
+        #    "link_type": link_type or "Link",
+        #    "anchor_text": details.get("anchor_text") or link.get("anchor_text") or "—",
+        #    "validation_issue": link["target_validation"] 
+        #}
         issue_payload = {
-            "GUID": link.get("GUID"),
-            "link_type": link_type or "Link",
-            "anchor_text": details.get("anchor_text") or link.get("anchor_text") or "—",
-            "validation_issue": link["target_validation"] 
+            "GUID": link.get("GUID")
         }
         tracker.record(linkvalres, issue_payload) # NOTDONE
 
@@ -466,12 +469,15 @@ def run_validation(
         # Update the original dict context in place for JSON reporting
         entry["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
+        #issue_payload = {
+        #    "GUID": entry.get("GUID"),
+        #    "link_type": "TOC Entry",
+        #    "anchor_text": entry.get("title", "Untitled"),
+        #    "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
+        #    "validation_issue": entry["target_validation"] 
+        #}
         issue_payload = {
             "GUID": entry.get("GUID"),
-            "link_type": "TOC Entry",
-            "anchor_text": entry.get("title", "Untitled"),
-            "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
-            "validation_issue": entry["target_validation"] 
         }
         tracker.record(linkvalres, issue_payload) # NOTDONE
 
