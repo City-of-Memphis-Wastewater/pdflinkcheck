@@ -124,7 +124,7 @@ class ValidationCounter:
     def record(self, linkvalres: LinkValidationResult, link_payload: Dict[str, Any]):
         """Increments stats and tracks failures in the issues registry."""
         status = linkvalres.status
-        if status.value in self.stats:
+        if status in self.stats:
             self.stats[status] += 1
             
         if status in ISSUE_METRICS:
@@ -388,7 +388,7 @@ def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
 
 def _check_unknown_link() -> LinkValidationResult:
     return LinkValidationResult(
-        status = MetricKey.UNKNOWN_LINK.value, 
+        status = MetricKey.UNKNOWN_LINK, 
         reason = "Other/unsupported link type"
     )
 # =====================================================================
@@ -552,7 +552,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             
         if len(issues) > ISSUES_SHOWN:
             buf.append(f"... and {len(issues) - ISSUES_SHOWN} more issues")
-    elif summary_stats.get(MetricKey.TOTAL_FOUND.value, 0) == 0:
+    elif summary_stats.get(MetricKey.TOTAL_FOUND, 0) == 0:
         buf.append("\nStatus: No items were discovered to evaluate.")
     else:
         buf.append("\nSuccess: Document structural references verified perfectly!")
