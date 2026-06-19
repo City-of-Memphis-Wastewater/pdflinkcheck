@@ -87,6 +87,7 @@ ISSUE_METRICS = {
 }
 
 def make_fresh_stats(total_found):
+    # do i want these to use value or the raw LinkValidationResult?
     stats_fresh = {
         MetricKey.TOTAL_FOUND.value: total_found,
         MetricKey.INTERNAL_PAGE_JUMP_VALID.value: 0,
@@ -120,10 +121,11 @@ class ValidationCounter:
         self.stats = make_fresh_stats(total_found)
         self.issues: List[Dict[str, Any]] = []
 
-    def record(self, status: str, link_payload: Dict[str, Any]):
+    def record(self, linkvalres: LinkValidationResult, link_payload: Dict[str, Any]):
         """Increments stats and tracks failures in the issues registry."""
-        if status in self.stats:
-            self.stats[status] += 1
+        status = linkvalres.status
+        if status.value in self.stats:
+            self.stats[status.value] += 1
             
         if status in ISSUE_METRICS:
             self.issues.append(link_payload)
@@ -429,22 +431,19 @@ def run_validation(
         if link_type in (LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value): 
             linkvalres = _check_internal_jump(details.get("destination_page"), total_pages)
         elif link_type == LinkType.REMOTE_GOTOR.value:
-            linkvalres = _check_remote_file(details.get("remote_file"), pdf_dir) # NOTDONE
+            linkvalres = _check_remote_file(details.get("remote_file"), pdf_dir) 
         elif link_type == LinkType.EXTERNAL.value:
-            linkvalres = _check_external_uri(details.get("url"), check_external) # NOTDONE
+            linkvalres = _check_external_uri(details.get("url"), check_external) 
         elif link_type == LinkType.LAUNCH.value:
-            linkvalres = _check_launch_link(details.get("file")) # NOTDONE
+            linkvalres = _check_launch_link(details.get("file"))
         else:
             linkvalres = MetricKey.UNKNOWN_LINK.value, "Other/unsupported link type"
         
         # Update the original dict context in place for JSON reporting
         print(f"{linkvalres=}")
         print(f"{linkvalres.status=}")
+        #link = link.copy()
         link["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
-
-        #validated_link = link.copy()
-        #validated_link["target_validation"] = {"status": status, "reason": reason}
-        #tracker.record(status, validated_link)
 
         # Construct a clean, normalized payload flat at the top level
         issue_payload = {
@@ -464,16 +463,15 @@ def run_validation(
     for entry in toc:
         raw_page = entry.get("target_page", -1)
 
-        status, reason = _check_toc_jump(raw_page, total_pages) # NOTDONE
-        #status, reason = _check_internal_jump(raw_page, total_pages)
+        linkvalres = _check_toc_jump(raw_page, total_pages) # NOTDONE
 
-        entry["target_validation"] = {"status": status, "reason": reason}
+        entry["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
         issue_payload = {
             "link_type": "TOC Entry",
             "anchor_text": entry.get("title", "Untitled"),
             "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
-            "target_validation": {"status": status, "reason": reason}
+            "target_validation": {"status": linkvalres.status.value, "reason": linkvalres.reason}
         }
         tracker.record(linkvalres, issue_payload) # NOTDONE
 
