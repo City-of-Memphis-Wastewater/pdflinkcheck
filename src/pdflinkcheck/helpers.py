@@ -54,17 +54,17 @@ def create_link_dict(
     structure = {
         "GUID": str(uuid.uuid4()),
         "details": base,
-        "validation":{
+        "target_validation":{
             "status":"unverified",
             "reason": None,
         },
-        "risk":{}
+        "security_risk":{}
     }
     #return base
     return structure
 
 def get_source_pdf_path(report: Dict) -> Path:
-    return Path(report["metadata"]["file_overview"]["source_path"])
+    return Path(report["summary_metadata"]["file_overview"]["source_path"])
 
 def debug_head(label: str, data: Any, n: int = 3):
     """Helper to cleanly print the first N items of a list or dict."""

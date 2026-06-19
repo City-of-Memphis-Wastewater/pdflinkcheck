@@ -317,9 +317,9 @@ class PDFLinkCheckApp:
             self.current_report_text = report_results.get("text-lines", "")
             self.current_report_data = report_results.get("data", {})
 
-            self.last_json_path = report_results.get("files", {}).get("export_path_json")
-            self.last_txt_path = report_results.get("files", {}).get("export_path_txt")
-            self.last_xlsx_path = report_results.get("files", {}).get("export_path_xlsx")
+            self.last_json_path = report_results.get("export_files", {}).get("export_path_json")
+            self.last_txt_path = report_results.get("export_files", {}).get("export_path_txt")
+            self.last_xlsx_path = report_results.get("export_files", {}).get("export_path_xlsx")
             
         except Exception as e:
             messagebox.showinfo(

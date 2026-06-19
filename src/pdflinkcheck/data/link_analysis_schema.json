@@ -49,7 +49,7 @@
           "source_kind": { "type": "string", "description": "Engine-specific (e.g., 'pypdfium2_weblink')" },
           "xref": { "type": "integer", "description": "PDF xref ID (optional)" },
           "action_kind": { "type": "integer", "description": "Raw action code if 'Other Action'" },
-          "validation": {
+          "target_validation": {
             "type": "object",
             "description": "Per-link validation status (defaults to empty if no issues)",
             "properties": {
@@ -61,7 +61,7 @@
             },
             "additionalProperties": false
           },
-          "risk": {
+          "security_risk": {
             "type": "object",
             "description": "Per-link security risk (empty for non-external links)",
             "properties": {
@@ -85,7 +85,7 @@
           "level": { "type": "integer", "minimum": 1 },
           "title": { "type": "string" },
           "target_page": { "type": "integer", "minimum": 0 },
-          "validation": {
+          "target_validation": {
             "type": "object",
             "description": "Per-entry validation (e.g., invalid target_page)",
             "properties": {

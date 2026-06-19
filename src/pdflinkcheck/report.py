@@ -28,7 +28,7 @@ from pdflinkcheck.spreadsheet import export_report_links_to_xlsx
 
 SEP_COUNT=28
 # Define a safe "empty" validation state
-EMPTY_VALIDATION = {
+EMPTY_VALIDATION_SUMMARY = {
         "summary-stats": {
             "total_checked": 0,
             "valid": 0,
@@ -46,6 +46,17 @@ EMPTY_VALIDATION = {
         "total_pages": 0
     }
 
+class Report:
+    def __init__(self):
+        self.links = []
+        self.toc = []
+        self.validation_summary = EMPTY_VALIDATION_SUMMARY.copy()
+        self.risk_block = {}
+        self.summary_metadata = {}
+        self.export_files = {}
+
+    def to_dict(self):
+        pass
 
 def run_report_request(request: ReportRequest) -> dict:
     return run_report_and_call_exports(
@@ -106,7 +117,7 @@ def run_report_and_call_exports(
             output_path_xlsx = export_report_links_to_xlsx(report_results,pdf_path, pdf_library_name = pdf_library.name.lower(),output_dir=output_dir)
 
     # 4. Inject the file info into the results dictionary
-    report_results["files"] = {
+    report_results["export_files"] = {
         "export_path_json": str(output_path_json) if output_path_json else None, 
         "export_path_txt": str(output_path_txt) if output_path_txt else None,
         "export_path_xlsx": str(output_path_xlsx) if output_path_xlsx else None
@@ -188,13 +199,13 @@ def run_report_core(
             "external_links": [k for k in extracted_links if k.get('details', {}).get('link_type') == LinkType.EXTERNAL.value], 
             "internal_links": [k for k in extracted_links if k.get('details', {}).get('link_type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 
             "toc": structural_toc,
-            "validation": EMPTY_VALIDATION.copy()
+            "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()
         }
 
         intermediate_results = {
             "data": base_data_dict,
             "text-lines": "",
-            "metadata": {
+            "summary_metadata": {
                 "file_overview": {
                     "pdf_name": pdf_name, "total_pages": total_pages,
                     "source_path": resolved_path, "processing_path": resolved_path
@@ -214,8 +225,8 @@ def run_report_core(
             log(line, overview=True)
 
         # Assemble finalized payload architecture
-        report_results["data"]["risk"] = compute_risk(report_results)
-        report_results["data"]["validation"].update(validation_results)
+        report_results["data"]["risk_block"] = compute_risk(report_results)
+        report_results["data"]["validation_summary"].update(validation_results)
         report_results["text-lines"] = report_buffer
 
         _print_report_algorithm(report_buffer, report_buffer_overview, print_bool, concise_print)
@@ -290,9 +301,9 @@ def _print_report_algorithm(report_buffer: list, report_buffer_overview: list, p
 def _build_empty_report_dict(name: str, pages: int, path: str, engine_name: str, buffer: list) -> dict:
     """Factory helper providing fully structured empty states safely."""
     return {
-        "data": {"external_links": [], "internal_links": [], "toc": [], "validation": EMPTY_VALIDATION.copy()},
+        "data": {"external_links": [], "internal_links": [], "toc": [], "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()},
         "text-lines": buffer,
-        "metadata": {
+        "summary_metadata": {
             "file_overview": {"pdf_name": name, "total_pages": pages, "source_path": path, "processing_path": path},
             "library_used": engine_name,
             "link_counts": {

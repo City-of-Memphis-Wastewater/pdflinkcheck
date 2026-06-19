@@ -268,7 +268,7 @@ OPENAPI_SPEC = {
                         "type": "object",
                         "description": "Structured analysis data"
                     },
-                    "metadata": {
+                    "summary_metadata": {
                         "type": "object",
                         "description": "Report metadata including library used and link counts",
                         "properties": {
@@ -304,7 +304,7 @@ OPENAPI_SPEC = {
                         "description": "Human-readable text report (string or array of lines)"
                     }
                 },
-                "required": ["filename", "pdf_library_used", "total_links_count", "data", "text_report", "metadata"]
+                "required": ["filename", "pdf_library_used", "total_links_count", "data", "text_report", "summary_metadata"]
             }
         }
     }
@@ -549,19 +549,19 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             )
             result = run_report_request(request)
     
-            result_metadata = result.get("metadata", {})
+            result_metadata = result.get("summary_metadata", {})
             if "file_overview" in result_metadata:
-                result["metadata"]["file_overview"]["source_path"] = upload.filename
-                result["metadata"]["file_overview"]["processing_path"] = tmp_path
+                result["summary_metadata"]["file_overview"]["source_path"] = upload.filename
+                result["summary_metadata"]["file_overview"]["processing_path"] = tmp_path
             
             return {
                 "filename": upload.filename,
-                "pdf_library_used": result.get("metadata", {}).get("library_used",upload.pdf_library),
+                "pdf_library_used": result.get("summary_metadata", {}).get("library_used",upload.pdf_library),
                 "total_links_count": (
-                    result.get("metadata", {}).get("link_counts", {}).get("total_links_count", 0)
+                    result.get("summary_metadata", {}).get("link_counts", {}).get("total_links_count", 0)
                 ),
                 "data": result.get("data", {}),
-                "metadata": result_metadata, 
+                "summary_metadata": result_metadata, 
                 "text_report": result.get("text-lines", ""),
             }
 
@@ -573,7 +573,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 "pdf_library_used": upload.pdf_library,
                 "total_links_count": 0,
                 "data": {},
-                "metadata": {}, 
+                "summary_metadata": {}, 
                 "text_report": f"Error: {e}",
             }
 

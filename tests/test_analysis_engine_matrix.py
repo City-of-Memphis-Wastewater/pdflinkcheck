@@ -37,7 +37,7 @@ def test_pdf_differential_engine_parity(pdf_path):
             check_external=False
         )
         
-        stats = report_results["data"]["validation"]["summary-stats"]
+        stats = report_results["data"]["validation_summary"]["summary-stats"]
         engine_telemetry[backend.name] = stats.get("total_checked", 0)
 
     # Verify structural integrity across all backends

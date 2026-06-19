@@ -16,6 +16,9 @@ from dataclasses import dataclass, asdict
 from urllib.parse import urlparse, parse_qs
 import ipaddress
 from typing import List, Dict, Optional
+import logging 
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -152,7 +155,7 @@ def score_link(url: str) -> LinkRiskResult:
         score += 3
     # Risk level mapping
     if score == 0:
-        level = "none"
+        level = "zero"
     elif score <= 2:
         level = "low"
     elif score <= 6:
@@ -163,19 +166,21 @@ def score_link(url: str) -> LinkRiskResult:
 
     return LinkRiskResult(url, score, level, reasons)
 
-
 # ---------------------------------------------------------------------------
 # Report‑level risk computation (mirrors validate.py)
 # ---------------------------------------------------------------------------
 
 def compute_risk(report: Dict[str, object]) -> Dict[str, object]:
+    logger.debug
     external_links = report.get("data", {}).get("external_links", [])
     results = []
 
     for link in external_links:
-        url = link.get("url") or link.get("remote_file") or link.get("target")
+        url = link.get("details",{}).get("url") or link.get("details",{}).get("remote_file") or link.get("details",{}).get("target")
         if url:
-            results.append(score_link(url).to_dict())
+            result_link = score_link(url).to_dict()
+            results.append(result_link)
+            link["security_risk"] = result_link # mutate that junt, originally empty from helpers.create_link_dict()
 
     return {
         "risk_summary": {
@@ -184,6 +189,7 @@ def compute_risk(report: Dict[str, object]) -> Dict[str, object]:
             "high_risk": sum(1 for r in results if r["level"] == "high"),
             "medium_risk": sum(1 for r in results if r["level"] == "medium"),
             "low_risk": sum(1 for r in results if r["level"] == "low"),
-        },
-        "risk_details": results
+            "zero_risk": sum(1 for r in results if r["level"] == "zero"),
+        }
+        #"risk_details": results
     }

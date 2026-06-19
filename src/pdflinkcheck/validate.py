@@ -261,7 +261,7 @@ def run_validation(
 ) -> Dict[str, Any]:
     """Coordinates deep asset testing across document boundaries."""
     data = report_results.get("data", {})
-    metadata = report_results.get("metadata", {})
+    metadata = report_results.get("summary_metadata", {})
     
     external_links = data.get("external_links", [])
     internal_links = data.get("internal_links", [])
@@ -304,10 +304,10 @@ def run_validation(
             status, reason = "unknown-link", "Other/unsupported link type"
         
         # Update the original dict context in place for JSON reporting
-        link["validation"] = {"status": status, "reason": reason}
+        link["target_validation"] = {"status": status, "reason": reason}
 
         #validated_link = link.copy()
-        #validated_link["validation"] = {"status": status, "reason": reason}
+        #validated_link["target_validation"] = {"status": status, "reason": reason}
         #tracker.record(status, validated_link)
 
         # Construct a clean, normalized payload flat at the top level
@@ -320,7 +320,7 @@ def run_validation(
                 (f"Page {details.get('destination_page')}" if details.get('destination_page') is not None else None) or
                 "N/A"
             ),
-            "validation": {"status": status, "reason": reason}
+            "target_validation": {"status": status, "reason": reason}
         }
         tracker.record(status, issue_payload)
 
@@ -331,13 +331,13 @@ def run_validation(
         status, reason = _check_toc_jump(raw_page, total_pages)
         #status, reason = _check_internal_jump(raw_page, total_pages)
 
-        entry["validation"] = {"status": status, "reason": reason}
+        entry["target_validation"] = {"status": status, "reason": reason}
 
         issue_payload = {
             "link_type": "TOC Entry",
             "anchor_text": entry.get("title", "Untitled"),
             "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
-            "validation": {"status": status, "reason": reason}
+            "target_validation": {"status": status, "reason": reason}
         }
         tracker.record(status, issue_payload)
 
@@ -405,8 +405,8 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             itarget = issue.get("target", "N/A")
             itarget = (itarget[:27] + "...") if len(itarget) > 30 else itarget
             
-            #ireason = issue["validation"]["reason"]
-            ireason = issue.get("validation", {}).get("reason", "Unknown issue")
+            #ireason = issue["target_validation"]["reason"]
+            ireason = issue.get("target_validation", {}).get("reason", "Unknown issue")
             ireason = ireason.encode('utf-8').decode('utf-8')
             buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format(i, itype, itext, itarget, ireason))
             

@@ -173,7 +173,7 @@ def export_report_links_to_xlsx(results: Dict, pdf_path: Optional[Union[str, Pat
     output_dir = Path(output_dir) if output_dir else PDFLINKCHECK_HOME
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    metadata = results.get("metadata", {}) or {}
+    metadata = results.get("summary_metadata", {}) or {}
     file_ov = metadata.get("file_overview", {}) or {}
     
     pdf_path = (
