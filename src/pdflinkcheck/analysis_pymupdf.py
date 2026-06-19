@@ -148,7 +148,7 @@ def analyze_toc_fitz(doc):
         ref = PageRef.from_human(page_num)
 
         toc_item_dict = create_toc_dict(
-                    level = level
+                    level = level,
                     title = title, 
                     target_page =  ref.machine
                     )
