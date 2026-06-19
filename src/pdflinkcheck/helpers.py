@@ -17,7 +17,7 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 Helper functions
 """
 
-def create_link_dict(
+def create_link_dict_kwarged(
     source_page_ref: PageRef,
     rect_norm: List[float],
     anchor_text: str,
@@ -32,15 +32,57 @@ def create_link_dict(
 
     This kwarg based update is kind of gross. This is for standardization, not chaos.
     """
+    kwargs.pop('link_type', None)
+    kwargs.pop('page', None)
+    kwargs.pop('rect', None)
+    kwargs.pop('anchor_text', None)
     base = {
         'page': int(source_page_ref.machine), # possibly not worth the signature confusion of PageRef type in, but nice to see a definitive standard 
         'rect': rect_norm,
         'anchor_text': anchor_text.strip() or "Link (No Text)",
-        'type': link_type,
+        'link_type': link_type,
     }
     base.update(kwargs)
     structure = {
-        "GUID": uuid.uuid4(),
+        "GUID": str(uuid.uuid4()),
+        "details": base,
+        "validation":{},
+        "risk":{}
+    }
+    return base
+    #return structure
+
+def create_link_dict(
+    source_page_ref: PageRef,
+    rect_norm: Optional[list],
+    anchor_text: str,
+    link_type: str = "",
+    source_kind: Any = "",
+    url: Optional[str] = None,
+    remote_file: Optional[str] = None,
+    file: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Standardized flat factory abstraction for link dictionaries across 
+    pdfium, pypdf, and pymupdf backends.
+    """
+    base = {
+        "page": source_page_ref.machine,  # Always normalized machine index (int)
+        "rect": rect_norm,
+        "anchor_text": anchor_text,
+        "link_type": link_type,
+        "type": link_type,  # <--- Backwards compatibility mirror key!
+        "source_kind": str(source_kind) if source_kind is not None else "",
+        "url": url,
+        "destination_page": None,
+        "destination_view": None,
+        "remote_file": remote_file,
+        "file": file,
+        "params": None,
+        "xref": None
+    }
+    structure = {
+        "GUID": str(uuid.uuid4()),
         "details": base,
         "validation":{},
         "risk":{}

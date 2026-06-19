@@ -285,7 +285,7 @@ def run_validation(
 
     # Dispatch Pass 1: Standard Document Annotations
     for link in all_links:
-        link_type = link.get("type")
+        link_type = link.get('link_type')
         
         if link_type in (LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value): 
             status, reason = _check_internal_jump(link.get("destination_page"), total_pages)
@@ -371,7 +371,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
         buf.append("-" * (SEP_COUNT + 50)) # Extended divider line for width matching
         
         for i, issue in enumerate(issues[:ISSUES_SHOWN], 1):
-            itype = issue.get("type", "Link")
+            itype = issue.get('link_type', "Link")
             
             # Extract anchor visual text or fallback onto title
             itext = (issue.get("anchor_text") or issue.get("title") or "—")

@@ -185,10 +185,14 @@ def run_report_core(
         link_counts = _generate_report_text_layers(extracted_links, structural_toc, pdf_name, log)
         link_counts["toc_entry_count"] = len(structural_toc)
 
+        for link in extracted_links:
+            if "type" not in link or not link["type"]:
+                link["type"] = link.get("link_type", "")
+
         # each of these needs a GUID and to be nested in a step further, with a details section, a validation section, and a risk section
         base_data_dict = {
-            "external_links": [k for k in extracted_links if k.get('type') == LinkType.EXTERNAL.value], 
-            "internal_links": [k for k in extracted_links if k.get('type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 
+            "external_links": [k for k in extracted_links if k.get('link_type') == LinkType.EXTERNAL.value], 
+            "internal_links": [k for k in extracted_links if k.get('link_type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 
             "toc": structural_toc,
             "validation": EMPTY_VALIDATION.copy()
         }
@@ -235,10 +239,10 @@ def run_report_core(
 def _generate_report_text_layers(extracted_links: list, structural_toc: list, pdf_name: str, log_fn: Any) -> Dict[str, int]:
     """Generates the console logs and splits the raw metrics safely."""
     #extracted_links = extracted_links["details"]
-    external_uri = [l for l in extracted_links if l.get('type') == LinkType.EXTERNAL.value]
-    goto_links = [l for l in extracted_links if l.get('type') ==  LinkType.INTERNAL_GOTO.value]
-    resolved_action = [l for l in extracted_links if l.get('type') == LinkType.INTERNAL_RESOLVED.value]
-    other_links = [l for l in extracted_links if l.get('type') not in [LinkType.EXTERNAL.value, LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]]
+    external_uri = [l for l in extracted_links if l.get('link_type') == LinkType.EXTERNAL.value]
+    goto_links = [l for l in extracted_links if l.get('link_type') ==  LinkType.INTERNAL_GOTO.value]
+    resolved_action = [l for l in extracted_links if l.get('link_type') == LinkType.INTERNAL_RESOLVED.value]
+    other_links = [l for l in extracted_links if l.get('link_type') not in [LinkType.EXTERNAL.value, LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]]
 
     total_internal = len(goto_links) + len(resolved_action)
 

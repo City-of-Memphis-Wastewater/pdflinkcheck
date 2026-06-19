@@ -204,7 +204,83 @@ def serialize_fitz_object(obj):
     return obj
 
 
-def extract_links_pymupdf(doc):
+def extract_links_pymupdf_stable(doc):
+    links_data = []
+    try:        
+        last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count)
+
+        for page_num in range(doc.page_count):
+            page = doc.load_page(page_num)
+            source_ref = PageRef.from_index(page_num)
+
+            for link in page.get_links():
+                link_rect = _get_link_rect(link)
+                anchor_text = get_anchor_text(page, link_rect)
+                
+                link_dict = {
+                    'page': source_ref.machine,
+                    'rect': link_rect,
+                    'anchor_text': anchor_text,
+                    'xref': link.get("xref")
+                }
+                
+                source_kind = link.get('kind')
+                destination_view = serialize_fitz_object(link.get('to'))
+                p_index = link.get('page')
+                
+                # --- CASE 1: INTERNAL JUMPS (GoTo) ---
+                if p_index is not None:
+                    raw_pymupdf_idx = int(p_index)
+                    corrected_machine_idx = PageRef.corrected_down(raw_pymupdf_idx).index
+                    
+                    idx = min(corrected_machine_idx, int(last_page_ref))
+                    dest_ref = PageRef.from_index(idx)
+
+                    link_dict.update({
+                        'destination_page': dest_ref.machine,
+                        'destination_view': destination_view,
+                    })
+
+                    if source_kind == fitz.LINK_GOTO:
+                        link_dict['link_type'] = LinkType.INTERNAL_GOTO.value
+                    else:
+                        link_dict['link_type'] = LinkType.INTERNAL_RESOLVED.value
+                
+                # --- CASE 2: EXTERNAL URIs ---
+                elif source_kind == fitz.LINK_URI:
+                    uri = link.get('uri', 'URI (Unknown Target)')
+                    link_dict.update({
+                        'link_type': LinkType.EXTERNAL.value,
+                        'url': uri,
+                    })
+                
+                # --- CASE 3: REMOTE PDF REFERENCES ---
+                elif source_kind == fitz.LINK_GOTOR:
+                    remote_file = link.get('file', 'Remote File')
+                    link_dict.update({
+                        'link_type': LinkType.REMOTE_GOTOR.value,
+                        'remote_file': remote_file
+                    })
+
+                elif source_kind == fitz.LINK_LAUNCH:  
+                    link_dict.update({
+                        'link_type': LinkType.LAUNCH.value,
+                        'file': link.get('file', ''),
+                        'params': link.get('params', '')
+                    })
+                
+                # --- CASE 4: OTHERS ---
+                else:
+                    link_dict.update({
+                        'link_type': LinkType.OTHER.value,
+                    })
+
+                links_data.append(link_dict)
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+    return links_data
+
+def extract_links_pymupdf_shakey(doc):
     links_data = []
     try:        
         # This represents the maximum valid 0-index in the doc
@@ -220,83 +296,147 @@ def extract_links_pymupdf(doc):
             for link in page.get_links():
                 link_rect = _get_link_rect(link)
                 anchor_text = get_anchor_text(page, link_rect)
+                source_kind = link.get('kind')
+                '''
+                # 1. Determine the unified link type first
+                determined_type = LinkType.OTHER.value
+                if source_kind == fitz.LINK_URI:
+                    determined_type = LinkType.EXTERNAL.value
+                elif link.get('page') is not None:
+                    if source_kind == fitz.LINK_GOTO:
+                        determined_type = LinkType.INTERNAL_GOTO.value
+                    else:
+                        determined_type = LinkType.INTERNAL_RESOLVED.value
+                elif source_kind == fitz.LINK_GOTOR:
+                    determined_type = LinkType.REMOTE_GOTOR.value
+                elif source_kind == fitz.LINK_LAUNCH:
+                    determined_type = LinkType.LAUNCH.value
+                '''
+                # 1. Determine the unified link type strictly by structural payload keys
+                if link.get('uri'):
+                    determined_type = LinkType.EXTERNAL.value
+                elif link.get('page') is not None and source_kind in [fitz.LINK_GOTO, 2]: # 2 is standard internal jump mapping
+                    if source_kind == fitz.LINK_GOTO:
+                        determined_type = LinkType.INTERNAL_GOTO.value
+                    else:
+                        determined_type = LinkType.INTERNAL_RESOLVED.value
+                elif link.get('file') and source_kind == fitz.LINK_GOTOR:
+                    determined_type = LinkType.REMOTE_GOTOR.value
+                elif link.get('file') and source_kind == fitz.LINK_LAUNCH:
+                    determined_type = LinkType.LAUNCH.value
+                else:
+                    determined_type = LinkType.OTHER.value
                 
                 """link_dict = {
                     'page': source_page_ref.machine,
                     'rect': link_rect,
-                    'anchor_text': anchor_text,
                     'xref': link.get("xref"),
                     'link_type':'',
                     'source_kind':''
                 }"""
 
+
                 link_dict = create_link_dict(
                     source_page_ref=source_page_ref, 
                     rect_norm=link_rect, 
                     anchor_text=anchor_text,
-                    link_type=LinkType.OTHER.value,
-                    source_kind=''
+                    link_type=determined_type,
+                    source_kind=source_kind
                 )
 
-                link_dict['details']['xref'] = link.get("xref")
-
-                source_kind = link.get('source_kind')
-                destination_view = serialize_fitz_object(link.get('to'))
-                p_index = link.get('page') # excpeted to be human facing, per PyMuPDF's known quirks
+                #link_dict = link_dict['details']
                 
-                # --- CASE 1: INTERNAL JUMPS (GoTo) ---
-                if p_index is not None:
 
-                    # Ensure we are working with an integer
+                link_dict['xref'] = link.get("xref")
+
+                if determined_type == LinkType.EXTERNAL.value:
+                    link_dict['url'] = link.get('uri', 'URI (Unknown Target)')
+                    
+                elif determined_type in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]:
+                    raw_pymupdf_idx = int(link.get('page'))
+                    corrected_machine_idx = PageRef.corrected_down(raw_pymupdf_idx).index
+                    idx = min(corrected_machine_idx, int(last_page_ref))
+                    link_dict['destination_page'] = PageRef.from_index(idx).machine
+                    link_dict['destination_view'] = serialize_fitz_object(link.get('to'))
+                    
+                elif determined_type == LinkType.REMOTE_GOTOR.value:
+                    link_dict['remote_file'] = link.get('file', 'Remote File')
+                    
+                elif determined_type == LinkType.LAUNCH.value:
+                    link_dict['file'] = link.get('file', '')
+                    link_dict['params'] = link.get('params', '')
+                
+                links_data.append(link_dict)
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+    return links_data
+def extract_links_pymupdf(doc):
+    links_data = []
+    try:        
+        last_page_ref = PageRef.from_pymupdf_total_page_count(doc.page_count)
+
+        for page_num in range(doc.page_count):
+            page = doc.load_page(page_num)
+            source_page_ref = PageRef.from_index(page_num)
+
+            for link in page.get_links():
+                link_rect = _get_link_rect(link)
+                anchor_text = get_anchor_text(page, link_rect)
+                source_kind = link.get('kind')
+                p_index = link.get('page')
+                
+                # Pre-calculate internal targets to ensure create_link_dict maps them correctly
+                destination_page = None
+                destination_view = None
+                
+                # --- Match the exact type & payload matching of the stable logic ---
+                if p_index is not None:
                     raw_pymupdf_idx = int(p_index)
                     corrected_machine_idx = PageRef.corrected_down(raw_pymupdf_idx).index
-                    
-                    # Logic: Normalize to 0-index and store as int
                     idx = min(corrected_machine_idx, int(last_page_ref))
-                    #print(f"DEBUG: Link Text: {anchor_text} | Raw p_index: {p_index}")
-                    #print(f"[DEBUG] idx: {idx}")
-                    dest_ref = PageRef.from_index(idx) # does not impact the value
-
-                    link_dict['details'].update({
-                        'destination_page': dest_ref.machine,
-                        'destination_view': destination_view,
-                    })
-
+                    destination_page = PageRef.from_index(idx).machine
+                    destination_view = serialize_fitz_object(link.get('to'))
+                    
                     if source_kind == fitz.LINK_GOTO:
-                        link_dict['details']['link_type'] = LinkType.INTERNAL_GOTO.value
+                        determined_type = LinkType.INTERNAL_GOTO.value
                     else:
-                        link_dict['details']['link_type'] = LinkType.INTERNAL_RESOLVED.value
-                        link_dict['details']['source_kind'] = source_kind
-                
-                # --- CASE 2: EXTERNAL URIs ---
+                        determined_type = LinkType.INTERNAL_RESOLVED.value
+                        
                 elif source_kind == fitz.LINK_URI:
-                    uri = link.get('uri', 'URI (Unknown Target)')
-                    link_dict['details'].update({
-                        'link_type': LinkType.EXTERNAL.value,
-                        'url': uri,
-                    })
-                
-                # --- CASE 3: REMOTE PDF REFERENCES ---
+                    determined_type = LinkType.EXTERNAL.value
+                    
                 elif source_kind == fitz.LINK_GOTOR:
-                    remote_file = link.get('file', 'Remote File')
-                    link_dict['details'].update({
-                        'link_type': LinkType.REMOTE_GOTOR.value,
-                        'remote_file': remote_file
-                    })
-
-                elif source_kind == fitz.LINK_LAUNCH:  # Catch explicit launches
-                    link_dict['details'].update({
-                        'link_type': LinkType.LAUNCH.value,
-                        'file': link.get('file', ''),
-                        'params': link.get('params', '')
-                    })
-                
-                # --- CASE 4: OTHERS ---
+                    determined_type = LinkType.REMOTE_GOTOR.value
+                    
+                elif source_kind == fitz.LINK_LAUNCH:
+                    determined_type = LinkType.LAUNCH.value
+                    
                 else:
-                    link_dict['details'].update({
-                        'link_type': LinkType.OTHER.value,
-                        'action_kind': source_kind,
-                    })
+                    determined_type = LinkType.OTHER.value
+
+                # Pass everything into create_link_dict simultaneously
+                link_dict = create_link_dict(
+                    source_page_ref=source_page_ref, 
+                    rect_norm=link_rect, 
+                    anchor_text=anchor_text,
+                    link_type=determined_type,
+                    source_kind=source_kind
+                )
+
+                # Inject fields explicitly matching your backend requirements
+                link_dict['xref'] = link.get("xref")
+                
+                # Safely populate payload keys matching the stable schema
+                if p_index is not None:
+                    link_dict['destination_page'] = destination_page
+                    link_dict['destination_view'] = destination_view
+                elif determined_type == LinkType.EXTERNAL.value:
+                    link_dict['url'] = link.get('uri', 'URI (Unknown Target)')
+                elif determined_type == LinkType.REMOTE_GOTOR.value:
+                    link_dict['remote_file'] = link.get('file', 'Remote File')
+                elif determined_type == LinkType.LAUNCH.value:
+                    link_dict['file'] = link.get('file', '')
+                    link_dict['params'] = link.get('params', '')
 
                 links_data.append(link_dict)
     except Exception as e:

@@ -10,7 +10,7 @@
       "description": "List of all detected hyperlinks/actions (external, internal, remote)",
       "items": {
         "type": "object",
-        "required": ["page", "rect", "anchor_text", "type"],
+        "required": ["page", "rect", "anchor_text", "link_type"],
         "properties": {
           "page": {
             "type": "integer",

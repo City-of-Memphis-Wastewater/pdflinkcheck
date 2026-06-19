@@ -125,22 +125,22 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             rect = obj.get("/Rect")
             anchor_text = _get_anchor_text_pypdf(page, rect)
 
-            logger.debug(f"{anchor_text=}")
+            #logger.debug(f"{anchor_text=}")
 
-            link_dict = {
+            """link_dict = {
                 'page': page_source.machine,
                 'rect': list(rect) if rect else None,
                 'anchor_text': anchor_text,
                 'link_type': ''
                 #'link_type': LinkType.OTHER.value
-            }
+            }"""
             
             link_dict = create_link_dict(
                 source_page_ref=page_source, 
                 rect_norm=list(rect) if rect else None,
                 anchor_text=anchor_text,
-                #link_type=LinkType.OTHER.value, # default
-                link_type='',
+                link_type=LinkType.OTHER.value, # default
+                #link_type='',
                 source_kind=''
             )
             

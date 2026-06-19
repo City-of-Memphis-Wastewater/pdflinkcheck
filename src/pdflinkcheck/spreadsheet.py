@@ -90,7 +90,7 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
         pg_src = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
         
         url = link.get('url') or ''
-        l_type = str(link.get('type', '')).lower()
+        l_type = str(link.get('link_type', '')).lower()
         
         if "external" in l_type or "uri" in l_type:
             grouped['External Links'].append({
