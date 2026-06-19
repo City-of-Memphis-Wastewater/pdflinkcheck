@@ -22,6 +22,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+from .url_parse import parse_url_helper
+
 # ---------------------------------------------------------------------------
 # Static rule tables (embedded; no external files)
 # ---------------------------------------------------------------------------
@@ -130,29 +132,7 @@ def score_link_security_risk(url: str) -> LinkRiskResult:
     reasons: List[RiskReason] = []
     score = 0
 
-    #parsed = urlparse(url)
-    #host = parsed.hostname or ""
-    #query = parsed.query or ""
-
-    def parse_url_helper(url):
-        # Fallback to prevent absolute paths without schemes from throwing off urlparse
-        if "://" not in url and not url.startswith(("//", "mailto:", "tel:")):
-            parsed = urlparse(f"http://{url}")
-        else:
-            parsed = urlparse(url)
-
-        host = parsed.hostname or ""
-        query = parsed.query or ""
-        result = {"parsed":parsed,"host":host,"query":query}
-        return parsed,host,query
-        #return result
-
     parsed,host,query = parse_url_helper(url)
-
-    #parsed_url_result = parse_url_helper(url)
-    #parsed = parsed_url_result["parsed"]
-    #host = parsed_url_result["host"] 
-    #query = parsed_url_result["query"] 
 
     # IP‑based URL
     if _is_ip(host):
