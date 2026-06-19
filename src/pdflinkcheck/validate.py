@@ -606,23 +606,24 @@ def generate_validation_summary_txt_buffer(data,summary_stats, issues, pdf_path,
             
             # Resolve the original reference object from our flat map
             source_item = guid_registry.get(guid, {})
-            details = source_item.get("details", {})
+            item_details = source_item.get("details", {})
+            item_validation = source_item.get("target_validation", {})
             
             #referenced_link_or_toc = cross_reference_guid_to_get_instance(data,issue) # what if instead we just feed inthe complete data structure into this function. it is currenly unknown to this function
             # the reference problem with checking the GUID is you also have to use the linktype to check the nested 'toc' or the 'external_links' or the 'internal_links' structures.
-            itype = issue.get('link_type', "Link") # check the GUID, i think, not the issue dict, so that the issue doesn't need to carry redundant information
+            itype = item_details.get('link_type', "Link") # check the GUID, i think, not the issue dict, so that the issue doesn't need to carry redundant information
             
             # Extract anchor visual text or fallback onto title
-            itext = issue.get("anchor_text", "—") # check the GUID, i think, not the issue dict
+            itext = item_details.get("anchor_text", "—") 
             itext = (itext[:22] + "...") if len(itext) > 25 else itext
             
             # Extract actual underlying execution target string
-            #itarget = (issue.get("url") or issue.get("remote_file") or f"Page {issue.get('target_page', 'N/A')}")
-            itarget = issue.get("target", "N/A") # check the GUID, i think, not the issue dict
+            #itarget = (item_details.get("url") or item_details.get("target", "N/A") or item_details.get("remote_file") or f"Page {item_details.get('target_page', 'N/A')}") f"Page {item_details.get('destination_page', 'N/A')}")
+            itarget = issue.get("target", "N/A") 
             itarget = (itarget[:27] + "...") if len(itarget) > 30 else itarget
             
             #ireason = issue["target_validation"]["reason"]
-            ireason = issue.get("target_validation", {}).get("reason", "Unknown issue") # check the GUID, i think, not the issue dict
+            ireason = item_validation.get("reason", "Unknown issue") 
             ireason = ireason.encode('utf-8').decode('utf-8')
             buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format(i, itype, itext, itarget, ireason))
             
