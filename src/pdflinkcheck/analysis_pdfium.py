@@ -13,7 +13,7 @@ import ctypes
 from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict
 from pdflinkcheck.environment import pdfium_is_available
 
 try:
@@ -88,7 +88,12 @@ def analyze_pdf(pdf_path: str) -> Dict[str, Any]:
         if title or page_idx > 0:
             key = (item.level, title, page_idx)
             if key not in seen_toc:
-                toc_list.append({"level": item.level + 1, "title": title, "target_page": page_idx})
+                toc_item_dict = create_toc_dict(
+                    level = item.level + 1, 
+                    title = title, 
+                    target_page =  page_idx
+                    )
+                toc_list.append(toc_item_dict)
                 seen_toc.add(key)
 
     # 2. Link Enumeration

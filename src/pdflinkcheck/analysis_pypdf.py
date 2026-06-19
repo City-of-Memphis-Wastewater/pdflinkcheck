@@ -16,7 +16,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict
 
 
 """
@@ -213,11 +213,13 @@ def _extract_toc_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                     except:
                         page_num = "N/A"
 
-                    toc_data.append({
-                        "level": level,
-                        "title": item.title,
-                        "target_page": page_num
-                    })
+                    toc_item_dict = create_toc_dict(
+                    level = level, 
+                    title = item.title, 
+                    target_page =  page_num
+                    )
+                    toc_data.append(toc_item_dict)
+                    
                 elif isinstance(item, list):
                     # pypdf nests children in a list immediately following the parent
                     flatten_outline(item, level + 1)

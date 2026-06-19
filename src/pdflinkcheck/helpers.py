@@ -16,6 +16,17 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 """
 Helper functions
 """
+def create_toc_dict(
+        item,
+        title,
+        page_idx
+)->Dict[str,Any]:
+    return {
+        "GUID":uuid.str(uuid.uuid4()),
+        "level": item.level + 1, 
+        "title": title, 
+        "target_page": page_idx
+        }
 
 def create_link_dict(
     source_page_ref: PageRef,

@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional, List
 
 from pdflinkcheck.logging_setup import error_logger
 from pdflinkcheck.environment import pymupdf_is_available
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict
 
 try:
     if pymupdf_is_available():
@@ -146,12 +146,13 @@ def analyze_toc_fitz(doc):
         # We convert it to a physical index for our internal storage.
         # page_num is 1 (Human). We normalize to 0 (Physical).
         ref = PageRef.from_human(page_num)
-        toc_data.append({
-            'level': level,
-            'title': title,
-            #'target_page': ref.index
-            'target_page': ref.machine
-        })
+
+        toc_item_dict = create_toc_dict(
+                    level = level
+                    title = title, 
+                    target_page =  ref.machine
+                    )
+        toc_data.append(toc_item_dict)
         
     return toc_data
 
