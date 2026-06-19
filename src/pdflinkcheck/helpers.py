@@ -33,9 +33,9 @@ def create_link_dict(
     This kwarg based update is kind of gross. This is for standardization, not chaos.
     """
     base = {
-        'page': source_page_ref.machine, # possibly not worth the signature confusion of PageRef type in, but nice to see a definitive standard 
+        'page': int(source_page_ref.machine), # possibly not worth the signature confusion of PageRef type in, but nice to see a definitive standard 
         'rect': rect_norm,
-        'link_text': anchor_text.strip() or "Link (No Text)",
+        'anchor_text': anchor_text.strip() or "Link (No Text)",
         'type': link_type,
     }
     base.update(kwargs)
@@ -45,8 +45,8 @@ def create_link_dict(
         "validation":{},
         "risk":{}
     }
-    #return base
-    return structure
+    return base
+    #return structure
 
 def get_source_pdf_path(report: Dict) -> Path:
     return Path(report["metadata"]["file_overview"]["source_path"])

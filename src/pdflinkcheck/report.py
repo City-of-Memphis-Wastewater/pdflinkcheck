@@ -168,8 +168,7 @@ def run_report_core(
         
         extracted_links = data.get("links", [])
 
-        logger.debug("delete me")
-        logger.debug(extracted_links)
+        #### logger.debug(extracted_links)
         
         structural_toc = data.get("toc", [])
         total_pages = data.get("file_ov", {}).get("total_pages", 0)
@@ -235,6 +234,7 @@ def run_report_core(
 
 def _generate_report_text_layers(extracted_links: list, structural_toc: list, pdf_name: str, log_fn: Any) -> Dict[str, int]:
     """Generates the console logs and splits the raw metrics safely."""
+    #extracted_links = extracted_links["details"]
     external_uri = [l for l in extracted_links if l.get('type') == LinkType.EXTERNAL.value]
     goto_links = [l for l in extracted_links if l.get('type') ==  LinkType.INTERNAL_GOTO.value]
     resolved_action = [l for l in extracted_links if l.get('type') == LinkType.INTERNAL_RESOLVED.value]
@@ -256,18 +256,21 @@ def _generate_report_text_layers(extracted_links: list, structural_toc: list, pd
     log_fn("-" * SEP_COUNT)
     for i, link in enumerate(goto_links + resolved_action, 1):
         log_fn("{:<5} | {:<5} | {:<40} | {}".format(
-            i, PageRef.from_index(link['page']).human, link.get('link_text', 'N/A')[:40], PageRef.from_index(link['destination_page']).human
+            i, PageRef.from_index(link['page']).human, link.get('anchor_text', 'N/A')[:40], PageRef.from_index(link['destination_page']).human
         ))
 
     # External URI Block
     log_fn(f"\n" + "=" * SEP_COUNT + f"\n## Active URI Links (External) - {len(external_uri)} found\n" + "{:<5} | {:<5} | {:<40} | {}\n".format("Idx", "Page", "Anchor Text", "Target URI/Action") + "=" * SEP_COUNT)
     for i, link in enumerate(external_uri, 1):
-        log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link.get('link_text', 'N/A')[:40], link.get('url') or link.get('remote_file')))
+        log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, link.get('page'), link.get('anchor_text', 'N/A')[:40], link.get('url') or link.get('remote_file')))
 
     # Fallback Other Category Block
     log_fn(f"\n" + "=" * SEP_COUNT + f"\n## Other Links  - {len(other_links)} found\n" + "{:<5} | {:<5} | {:<40} | {}\n".format("Idx", "Page", "Anchor Text", "Target Action") + "=" * SEP_COUNT)
     for i, link in enumerate(other_links, 1):
-        log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, link['page'], link.get('link_text', 'N/A')[:40], link.get('url') or link.get('remote_file')))
+        logger.debug(f"{link.keys()=}")
+        #logger.debug(f"{link["details"].keys()=}")
+        #log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, link.get('page'), link.get('anchor_text', 'N/A')[:40], link.get('url') or link.get('remote_file')))
+        log_fn("{:<5} | {:<5} | {:<40} | {}".format(i, "PAGE", "ANCHOR_TEXT", "NO MAS"))
 
     return {
         "internal_goto_links_count": len(goto_links),

@@ -10,7 +10,7 @@
       "description": "List of all detected hyperlinks/actions (external, internal, remote)",
       "items": {
         "type": "object",
-        "required": ["page", "rect", "link_text", "type"],
+        "required": ["page", "rect", "anchor_text", "type"],
         "properties": {
           "page": {
             "type": "integer",
@@ -24,7 +24,7 @@
             ],
             "description": "[x0, y0, x1, y1] bounding box; null if missing"
           },
-          "link_text": {
+          "anchor_text": {
             "type": "string",
             "description": "Anchor text or fallback (e.g., 'N/A: No Visible Text')"
           },

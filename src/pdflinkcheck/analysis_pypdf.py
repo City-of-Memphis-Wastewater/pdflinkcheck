@@ -7,7 +7,7 @@ from pathlib import Path
 import logging
 from typing import Dict, Any, Optional, List
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict
+from pdflinkcheck.helpers import PageRef, LinkType
 
 from pypdf import PdfReader
 from pypdf.generic import (
@@ -124,28 +124,18 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             rect = obj.get("/Rect")
             anchor_text = _get_anchor_text_pypdf(page, rect)
             
-            
             link_dict = {
                 'page': page_source.machine,
                 'rect': list(rect) if rect else None,
-                'anchor_text': anchor_text,
-                'link_type': LinkType.OTHER.value # default
+                'link_text': anchor_text,
+                'type': LinkType.OTHER.value,
             }
-
-            """    
-            link_dict = create_link_dict(
-                source_page_ref=page_source, 
-                rect_norm=list(rect) if rect else None,
-                anchor_text=anchor_text,
-                link_type=LinkType.OTHER.value, # default
-                source_kind=''
-            )"""
             
             # Handle URI (External)
             if "/A" in obj and "/URI" in obj["/A"]:
                 uri = obj["/A"]["/URI"]
                 link_dict.update({
-                    'link_type': LinkType.EXTERNAL.value,
+                    'type': LinkType.EXTERNAL.value,
                     'url': uri,
                 })
             
@@ -162,7 +152,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                     determined_type = LinkType.INTERNAL_RESOLVED.value if "/Dest" in obj else LinkType.INTERNAL_GOTO.value  
 
                     link_dict.update({
-                        'link_type': determined_type,
+                        'type': determined_type,
                         'destination_page': dest_page.machine,
                     })
             
@@ -170,14 +160,14 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             elif "/A" in obj and obj["/A"].get("/S") == "/GoToR":
                 remote_file = obj["/A"].get("/F")
                 link_dict.update({
-                    'link_type': LinkType.REMOTE_GOTOR.value,
+                    'type': LinkType.REMOTE_GOTOR.value,
                     'remote_file': str(remote_file),
                 })
 
             # Handle Launch Actions
             elif "/A" in obj and obj["/A"].get("/S") == "/Launch":
                 link_dict.update({
-                    'link_type': LinkType.LAUNCH.value,
+                    'type': LinkType.LAUNCH.value,
                     'file': str(obj["/A"].get("/F") or ""),
                 })
 

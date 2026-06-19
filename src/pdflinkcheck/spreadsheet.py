@@ -67,7 +67,7 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
 
     # 2. Process Internal Links
     for link in int_links:
-        anchor = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
+        anchor = sanitize_excel_text(link.get('anchor_text', 'Link (No Text)'))
         raw_src = link.get('page')
         pg_src = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
         
@@ -85,7 +85,7 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
 
     # 3. Process External Links
     for link in ext_links:
-        anchor = sanitize_excel_text(link.get('link_text', 'Link (No Text)'))
+        anchor = sanitize_excel_text(link.get('anchor_text', 'Link (No Text)'))
         raw_src = link.get('page')
         pg_src = PageRef.from_index(int(raw_src)).human if isinstance(raw_src, (int, float)) else "N/A"
         

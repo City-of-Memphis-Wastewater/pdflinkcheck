@@ -374,7 +374,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             itype = issue.get("type", "Link")
             
             # Extract anchor visual text or fallback onto title
-            itext = (issue.get("link_text") or issue.get("title") or "—")
+            itext = (issue.get("anchor_text") or issue.get("title") or "—")
             itext = (itext[:22] + "...") if len(itext) > 25 else itext
             
             # Extract actual underlying execution target string
