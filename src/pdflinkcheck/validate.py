@@ -262,8 +262,13 @@ def run_validation(
     """Coordinates deep asset testing across document boundaries."""
     data = report_results.get("data", {})
     metadata = report_results.get("metadata", {})
-    all_links = data.get("external_links", []) + data.get("internal_links", [])
+    
+    external_links = data.get("external_links", [])
+    internal_links = data.get("internal_links", [])
+    all_links = external_links + internal_links
+    
     toc = data.get("toc", [])
+
     total_pages = metadata.get("file_overview", {}).get("total_pages", None)
 
     total_found = (
@@ -297,6 +302,9 @@ def run_validation(
             status, reason = _check_launch_link(details.get("file"))
         else:
             status, reason = "unknown-link", "Other/unsupported link type"
+        
+        # Update the original dict context in place for JSON reporting
+        link["validation"] = {"status": status, "reason": reason}
 
         #validated_link = link.copy()
         #validated_link["validation"] = {"status": status, "reason": reason}
@@ -304,7 +312,7 @@ def run_validation(
 
         # Construct a clean, normalized payload flat at the top level
         issue_payload = {
-            "type": link_type or "Link",
+            "link_type": link_type or "Link",
             "anchor_text": details.get("anchor_text") or link.get("anchor_text") or "—",
             "target": (
                 details.get("url") or 
@@ -323,8 +331,10 @@ def run_validation(
         status, reason = _check_toc_jump(raw_page, total_pages)
         #status, reason = _check_internal_jump(raw_page, total_pages)
 
+        entry["validation"] = {"status": status, "reason": reason}
+
         issue_payload = {
-            "type": "TOC Entry",
+            "link_type": "TOC Entry",
             "anchor_text": entry.get("title", "Untitled"),
             "target": f"Page {raw_page}" if raw_page != -1 else "N/A",
             "validation": {"status": status, "reason": reason}
@@ -397,6 +407,7 @@ def generate_validation_summary_txt_buffer(summary_stats, issues, pdf_path, chec
             
             #ireason = issue["validation"]["reason"]
             ireason = issue.get("validation", {}).get("reason", "Unknown issue")
+            ireason = ireason.encode('utf-8').decode('utf-8')
             buf.append("{:<5} | {:<12} | {:<25} | {:<30} | {}".format(i, itype, itext, itarget, ireason))
             
         if len(issues) > ISSUES_SHOWN:

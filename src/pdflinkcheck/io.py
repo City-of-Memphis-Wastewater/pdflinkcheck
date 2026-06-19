@@ -51,7 +51,8 @@ def export_report_json(
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             safe_payload = make_json_safe(report_data)
-            json.dump(safe_payload, f, indent=4)
+            json.dump(safe_payload, f, indent=4, ensure_ascii=False)
+            #json.dump(safe_payload, f, indent=4)
         print(f"JSON report exported: {get_friendly_path(output_path)}")
         return output_path
     except Exception as e:
