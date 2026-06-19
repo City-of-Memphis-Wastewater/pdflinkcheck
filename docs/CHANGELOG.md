@@ -6,6 +6,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+### Internal:
+
+- I need to add a TargetDescription enum, for target_description in the JSON structure
+- So that I can have 'target' be consistent key rather than some that say: destination_page or url or filename or whatever kind of target
+
+---
+
 ## [1.5.7] - 2026-06-19
 ### Changed:
 - Implement LinkValidationResult and MetricKey classes in validate.py.
