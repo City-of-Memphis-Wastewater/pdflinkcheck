@@ -238,7 +238,7 @@ def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> LinkValidation
     """Evaluates OS filesystem presence for local cross-document references."""
     if not remote_file:
         return LinkValidationResult(
-            status = MetricKey.FILE_TARGET_BROKEN.value, 
+            status = MetricKey.FILE_TARGET_BROKEN, 
             reason = "Missing remote file name"
         )
     
@@ -246,12 +246,12 @@ def _check_remote_file(remote_file: str | None, pdf_dir: Path) -> LinkValidation
     # we should possibly address the case where the remote_file is deemde to be a complete full filepath, if this is within the bounds of expectation. 
     if target_path.exists() and target_path.is_file():
         return LinkValidationResult(
-            status = MetricKey.FILE_TARGET_VALID.value, 
+            status = MetricKey.FILE_TARGET_VALID, 
             reason = f"Found: {target_path.name}"
         )
     
     return LinkValidationResult(
-        status = MetricKey.FILE_TARGET_BROKEN.value, 
+        status = MetricKey.FILE_TARGET_BROKEN, 
         reason = f"File not found: {remote_file}"
     )
 
@@ -268,18 +268,18 @@ def _check_email_protocol(url_str: str) -> LinkValidationResult:
     
     if not email_part:
         return LinkValidationResult(
-            status = MetricKey.EMAIL_ADDRESS_BROKEN.value, 
+            status = MetricKey.EMAIL_ADDRESS_BROKEN, 
             reason = "Malformed mailto link: Missing email address"
         )
         
     if EMAIL_REGEX.match(email_part):
         return LinkValidationResult(
-            status = MetricKey.EMAIL_ADDRESS_REASONABLE.value, 
+            status = MetricKey.EMAIL_ADDRESS_REASONABLE, 
             reason = "Valid email address syntax"
         )
         
     return LinkValidationResult(
-        status = MetricKey.EMAIL_ADDRESS_BROKEN.value, 
+        status = MetricKey.EMAIL_ADDRESS_BROKEN, 
         reason = f"Invalid email address formatting: '{email_part}'"
     )
 
@@ -287,7 +287,7 @@ def _check_external_uri(url: str | None, check_external: bool) -> LinkValidation
     """Evaluates network URI structure and processes pings if allowed."""
     if not url:
         return LinkValidationResult(
-            status = MetricKey.UNKNOWN_WEB_URL_MISSING.value, 
+            status = MetricKey.UNKNOWN_WEB_URL_MISSING, 
             reason = "External link (no URL provided)"
         )
         
@@ -300,28 +300,28 @@ def _check_external_uri(url: str | None, check_external: bool) -> LinkValidation
 
     if url_lower.startswith("tel:"):
         return LinkValidationResult(
-            status = MetricKey.TELEPHONE_NUMBER.value, 
+            status = MetricKey.TELEPHONE_NUMBER, 
             reason = f"Phone number not checked."
         )
         
     if url_lower.startswith(("file:", "mhtml:")):
-        #return MetricKey.FILE_TARGET_BROKEN.value, f"Forbidden local hardcoded reference: {url}"
+        #return MetricKey.FILE_TARGET_BROKEN, f"Forbidden local hardcoded reference: {url}"
         reason = f"Forbidden local hardcoded reference."
         return LinkValidationResult(
-            status = MetricKey.EXTERNAL_URI_FORBIDDEN.value,
+            status = MetricKey.EXTERNAL_URI_FORBIDDEN,
             reason = reason
         )
         
     # Proceed to web link verification
     if not is_valid_web_url(url):
         return LinkValidationResult(
-            status = MetricKey.WEB_PING_FAIL.value, 
+            status = MetricKey.WEB_PING_FAIL, 
             reason = "Malformed or unparseable URL syntax"
         )
 
     if not check_external:
         return LinkValidationResult(
-            status = MetricKey.UNKNOWN_WEB_NOT_PINGED.value, 
+            status = MetricKey.UNKNOWN_WEB_NOT_PINGED, 
             reason = "External link (no network check)"
         )
 
@@ -330,13 +330,13 @@ def _check_external_uri(url: str | None, check_external: bool) -> LinkValidation
     
     if ping_res.success:
         return LinkValidationResult(
-            status = MetricKey.WEB_PING_VALID.value, 
+            status = MetricKey.WEB_PING_VALID, 
             reason = f"HTTP {ping_res.status_code}: {ping_res.reason}"
         )
     
     reason = f"HTTP {ping_res.status_code}: {ping_res.reason}" if ping_res.status_code else ping_res.reason
     return LinkValidationResult(
-        status = MetricKey.WEB_PING_FAIL.value, 
+        status = MetricKey.WEB_PING_FAIL, 
         reason = reason
     )
 
@@ -347,7 +347,7 @@ def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
     """
     if not launch_target:
         return LinkValidationResult(
-            status = MetricKey.LAUNCH_TARGET_BROKEN.value, 
+            status = MetricKey.LAUNCH_TARGET_BROKEN, 
             reason = "Malformed Launch link: Missing executable or file target"
         )
 
@@ -361,7 +361,7 @@ def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
     )
     if target_lower.endswith(dangerous_extensions) or any(f" {ext}" in target_lower for ext in dangerous_extensions):
         return LinkValidationResult(
-            status = MetricKey.LAUNCH_TARGET_EXECUTABLE.value, 
+            status = MetricKey.LAUNCH_TARGET_EXECUTABLE, 
             reason = f"High-risk executable Launch path blocked: {target_clean}"
         )
 
@@ -371,16 +371,16 @@ def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
         # Note: Launch paths can be absolute or relative. Adjust base resolution as required by engine context
         if target_path.exists() and target_path.is_file():
             return LinkValidationResult(
-                status = MetricKey.LAUNCH_TARGET_VALID.value, 
+                status = MetricKey.LAUNCH_TARGET_VALID, 
                 reason = f"Verified local target: {target_path.name}"
             )
         return LinkValidationResult(
-            status = MetricKey.LAUNCH_TARGET_BROKEN.value, 
+            status = MetricKey.LAUNCH_TARGET_BROKEN, 
             reason = f"Launch target file not found: {target_clean}"
         )
     except Exception as e:
         return LinkValidationResult(
-            status = MetricKey.LAUNCH_TARGET_BROKEN.value, 
+            status = MetricKey.LAUNCH_TARGET_BROKEN, 
             reason = f"Unparseable Launch path sequence: {str(e)}"
         )
 
@@ -438,6 +438,8 @@ def run_validation(
             linkvalres = MetricKey.UNKNOWN_LINK.value, "Other/unsupported link type"
         
         # Update the original dict context in place for JSON reporting
+        print(f"{linkvalres=}")
+        print(f"{linkvalres.status=}")
         link["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
         #validated_link = link.copy()
