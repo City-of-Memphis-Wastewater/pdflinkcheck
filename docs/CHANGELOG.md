@@ -6,6 +6,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.7] - 2026-06-19
+### Changed:
+- Implement LinkValidationResult and MetricKey classes in validate.py.
+
+---
+
 ## [1.5.6] - 2026-06-19
 ### Changed:
 - create_link_dict() standardized for all three engines.
