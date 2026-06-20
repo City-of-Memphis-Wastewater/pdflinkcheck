@@ -7,7 +7,8 @@ from typing import Dict, Any, Optional, NamedTuple, List
 
 class TargetType(str,enum.Enum):
     URL = "url"
-    FILE = "file"                                                                      REMOTE_FILE = "remote_file"
+    FILE = "file"
+    REMOTE_FILE = "remote_file"
     OTHER = "other"
     PAGE = "page"
     DESTINATION_PAGE = "destination_page" # link jargon, just means PAGE
