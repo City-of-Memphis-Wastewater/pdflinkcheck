@@ -16,7 +16,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory, TargetType
 
 
 """
@@ -148,6 +148,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 determined_type = LinkType.EXTERNAL.value
                 item_category=ItemCategory.EXTERNAL.value
                 source_kind = SourceKindPyPDF.ANNOT_URI.value
+                target_type = TargetType.URL.value
                 url = obj["/A"]["/URI"]
             
             # 2. Handle GoTo (Internal)
@@ -158,6 +159,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 if target_page is not None:
                     dest_page = PageRef.from_index(target_page)
                     destination_page = dest_page.machine
+                    target_type = TargetType.DESTINATION_PAGE.value
                     
                     if "/Dest" in obj:
                         determined_type = LinkType.INTERNAL_RESOLVED.value
@@ -174,6 +176,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 item_category=ItemCategory.EXTERNAL.value
                 source_kind = SourceKindPyPDF.ANNOT_GOTOR.value
                 remote_file = str(obj["/A"].get("/F"))
+                target_type = TargetType.REMOTE_FILE.value
 
             # 4. Handle Launch Actions
             elif "/A" in obj and obj["/A"].get("/S") == "/Launch":
@@ -181,6 +184,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 item_category=ItemCategory.EXTERNAL.value
                 source_kind = SourceKindPyPDF.ANNOT_LAUNCH.value
                 file = str(obj["/A"].get("/F") or "")
+                target_type = TargetType.FILE.value
 
             # Pass everything directly into the dictionary factory initialization
             link_dict = create_link_dict(
@@ -189,6 +193,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 anchor_text=anchor_text,
                 link_type=determined_type,
                 item_category=item_category,
+                target_type=target_type,
                 source_kind=source_kind,
                 destination_page=destination_page,
                 url=url,

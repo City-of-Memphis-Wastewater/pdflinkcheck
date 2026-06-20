@@ -13,7 +13,7 @@ import ctypes
 from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory, TargetType
 from pdflinkcheck.environment import pdfium_is_available
 
 try:
@@ -381,6 +381,7 @@ def _process_link_annotation(
             rect_norm=rect_norm, 
             anchor_text=anchor_text,
             link_type=LinkType.OTHER.value,
+            target_type=TargetType.OTHER.value,
             item_category=ItemCategory.OTHER.value,
             source_kind=SourceKindPdfium.ANNOT_OTHER.value
         )
@@ -414,7 +415,8 @@ def _dispatch_action(
             source_kind=SourceKindPdfium.ANNOT_GOTO.value,
             destination_page = PageRef.from_index(dest_idx).machine,
             destination_view = extract_destination_view(target_dest)        
-    
+            target_type = TargetType.DESTINATION_PAGE.value,
+            
     elif action_type == PdfActionType.URI:
         uri = get_uri_from_action(action, doc.raw)
         if uri:
@@ -422,22 +424,25 @@ def _dispatch_action(
             item_category=ItemCategory.EXTERNAL.value
             url=uri
             source_kind=SourceKindPdfium.ANNOT_URI.value
+            target_type = TargetType.URL.value,
             
         else:
             link_type=LinkType.OTHER.value, 
             # item_category=ItemCategory.EXTERNAL.value # tempting, but we should remain consistent with the assertion in PyMuPDF that 
             item_category=ItemCategory.OTHER.value
             source_kind=SourceKindPdfium.ANNOT_URI.value
+            target_type = TargetType.OTHER.value,
             
     elif action_type == PdfActionType.GOTOR:
         remote_file = get_remote_file_from_action(action, doc.raw)
         r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
         
-        link_type=LinkType.REMOTE_GOTOR.value, 
-        item_category=ItemCategory.INTERNAL.value,
+        link_type=LinkType.REMOTE_GOTOR.value
+        item_category=ItemCategory.INTERNAL.value
         remote_file=remote_file,
         source_kind=SourceKindPdfium.ANNOT_GOTOR.value,
         destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
+        target_type = TargetType.REMOTE_FILE.value
         
 
     elif action_type == PdfActionType.LAUNCH:
@@ -447,13 +452,15 @@ def _dispatch_action(
         item_category=ItemCategory.EXTERNAL.value
         file=launch_file
         source_kind=SourceKindPdfium.ANNOT_LAUNCH.value
-        
+        target_type = TargetType.FILE.value
+
     else:
         # Captures exotic macros (VJS, SUBMIT, NAMED) cleanly into the unknown dictionary structure
         link_type=LinkType.OTHER.value
         item_category=ItemCategory.OTHER.value
         action_kind=int(action_type)
         source_kind=SourceKindPdfium.ANNOT_OTHER.value
+        target_type = TargetType.OTHER.value
         
     link_dict = create_link_dict(
         source_page_ref=source_page_ref, 
@@ -461,6 +468,7 @@ def _dispatch_action(
         anchor_text=anchor_text,
         link_type=link_type, 
         item_category=item_category,
+        target_type=target_type,
         url=url,
         file=file,
         source_kind=source_kind,
@@ -488,7 +496,8 @@ def _dispatch_direct_dest(
         item_category=ItemCategory.INTERNAL.value,
         source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST.value,
         destination_page = PageRef.from_index(dest_idx).machine,
-        destination_view = extract_destination_view(dest)
+        destination_view = extract_destination_view(dest),
+        target_type=TargetType.DESTINATION_PAGE.value,
     )
     links.append(link_dict)
 

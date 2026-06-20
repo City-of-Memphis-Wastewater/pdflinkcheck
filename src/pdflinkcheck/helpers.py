@@ -21,6 +21,7 @@ class TargetType(str,Enum):
     FILE = "file"
     REMOTE_FILE = "remote_file"
     TARGET_PAGE = "target_page"
+    OTHER = "other"
 
 class LinkType(str, Enum):
     """Normalized categories of extracted document elements for reporting/filtering."""
@@ -58,6 +59,7 @@ def create_toc_dict(
             "title": title, 
             "target_page": target_page,
             "item_category":ItemCategory.TOC.value,
+            "target_type": TargetType.TARGET_PAGE.value,
         }
     }
 
@@ -69,6 +71,7 @@ def create_link_dict(
     item_category: str,
     source_kind: Any,
     # Explicitly define target payload options with defaults
+    target_type: Optional[Any] = None,
     destination_page: Optional[Any] = None,
     destination_view: Optional[Any] = None,
     url: Optional[str] = None,
@@ -90,6 +93,7 @@ def create_link_dict(
         "item_category": item_category, 
         "source_kind": str(source_kind) if source_kind is not None else "",
         # --- Inconsistent terms ---
+        "target_type": target_type,
         "xref": xref,
         "destination_page": destination_page,
         "destination_view": destination_view,
