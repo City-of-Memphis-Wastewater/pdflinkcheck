@@ -237,7 +237,7 @@ def extract_links_pymupdf(doc):
                     idx = min(corrected_machine_idx, int(last_page_ref))
                     destination_page = PageRef.from_index(idx).machine
                     destination_view = serialize_fitz_object(link.get('to'))
-                    target_type= TargetType.DESINTATION_PAGE.value
+                    target_type= TargetType.DESTINATION_PAGE.value
                     if source_kind == fitz.LINK_GOTO:
                         determined_type = LinkType.INTERNAL_GOTO.value
                         item_category = ItemCategory.INTERNAL.value
@@ -271,6 +271,7 @@ def extract_links_pymupdf(doc):
                     link_type=determined_type,
                     item_category=item_category,
                     source_kind=source_kind,
+                    target_type=target_type,
                     # --- Non standard terms ---
                     xref=link.get("xref"),
                     destination_page=destination_page,

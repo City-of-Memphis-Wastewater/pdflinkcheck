@@ -49,7 +49,7 @@ def analyze_pdf(pdf_path: str):
     try:
         reader = PdfReader(pdf_path)
     except Exception as e:
-        print(f"pypdf.PdfReader() failed: {e}")
+        logging.error(f"pypdf.PdfReader() failed: {e}")
         return data
     
     extracted_links = _extract_links_pypdf(reader)
