@@ -405,10 +405,6 @@ def _dispatch_action(
     url = None
     action_kind = None
 
-    print("ACTION TYPE", action_type)
-    print("ENUM", PdfActionType.GOTO)
-    print("EQUAL?", action_type == PdfActionType.GOTO)
-
     if action_type == PdfActionType.GOTO:
         # Reuse existing dest if present, or try to get from action
         target_dest = dest or pdfium_c.FPDFAction_GetDest(doc.raw, action)
