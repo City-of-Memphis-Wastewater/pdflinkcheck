@@ -23,10 +23,13 @@ def create_toc_dict(
 )->Dict[str,Any]:
     return {
         "GUID":str(uuid.uuid4()),
-        "level": level, 
-        "title": title, 
-        "target_page": target_page
+        "details":{
+            "level": level, 
+            "title": title, 
+            "target_page": target_page,
+            "item_type":"toc",
         }
+    }
 
 def create_link_dict(
     source_page_ref: PageRef,

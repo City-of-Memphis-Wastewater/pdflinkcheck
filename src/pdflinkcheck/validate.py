@@ -450,33 +450,22 @@ def run_validation(
         #link = link.copy()
         link["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
-        # Construct a clean, normalized payload flat at the top level
-        target = (
-                details.get("url") or 
-                details.get("remote_file") or 
-                (f"Page {details.get('destination_page')}" if details.get('destination_page') is not None else None) or
-                "N/A"
-            )
         issue_payload = {
             "GUID": link.get("GUID"),
             "link_type": link_type or "Link",
-            "target": target,
         }
         tracker.record(linkvalres, issue_payload) # NOTDONE
 
     # Dispatch Pass 2: Table of Contents Bookmarks
     for entry in toc:
-        raw_page = entry.get("target_page", -1)
-
+        raw_page = PageRef.from_index(entry.get("details",{}).get("target_page")).machine
         linkvalres = _check_toc_jump(raw_page, total_pages) # NOTDONE
 
         entry["target_validation"] = {"status": linkvalres.status.value, "reason": linkvalres.reason}
 
-        target = f"Page {raw_page}" if raw_page != -1 else "N/A",
         issue_payload = {
             "GUID": entry.get("GUID"),
             "link_type": "TOC Entry",
-            "target": target,
         }
         tracker.record(linkvalres, issue_payload) # NOTDONE
 
@@ -574,7 +563,18 @@ def generate_validation_summary_txt_buffer(data,summary_stats, issues, pdf_path,
             
             # Extract actual underlying execution target string
             #itarget = (item_details.get("url") or item_details.get("target", "N/A") or item_details.get("remote_file") or f"Page {item_details.get('target_page', 'N/A')}") f"Page {item_details.get('destination_page', 'N/A')}")
-            itarget = issue.get("target", "N/A") 
+            
+            if item_details.get("item_type") == "toc":
+                raw_page = PageRef.from_index(item_details.get("target_page")).machine
+                itarget = f"Page {raw_page}" if raw_page != -1 else "N/A",
+            else:
+                itarget = (
+                    item_details.get("url") or 
+                    item_details.get("remote_file") or 
+                    (f"Page {item_details.get('destination_page')}" if item_details.get('destination_page') is not None else None) or
+                    "N/A"
+                )
+
             itarget = (itarget[:27] + "...") if len(itarget) > 30 else itarget
             
             #ireason = issue["target_validation"]["reason"]

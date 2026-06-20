@@ -338,19 +338,19 @@ def get_structural_toc(structural_toc: list) -> str:
         return "\n".join(toc_buffer)
 
     # Determine max page width for consistent alignment
-    valid_pages = [item['target_page'] for item in structural_toc if isinstance(item['target_page'], int)]
+    valid_pages = [item['details']['target_page'] for item in structural_toc if isinstance(item['details']['target_page'], int)]
     max_page = max(valid_pages) if valid_pages else 1
     page_width = len(str(max_page))
     
     # Iterate and format
     for item in structural_toc:
-        indent = " " * 4 * (item['level'] - 1)
+        indent = " " * 4 * (item['details']['level'] - 1)
         # Handle cases where page might be N/A or None
-        target_page = item.get('target_page', "N/A")
+        target_page = item.get('details',{}).get('target_page', "N/A")
         # Determine the human-facing string
         display_val = PageRef.from_index(target_page).human if isinstance(target_page, int) else str(target_page)
         page_str = str(display_val).rjust(page_width)
-        log_toc(f"{indent}{item['title']} . . . page {page_str}")
+        log_toc(f"{indent}{item['details']['title']} . . . page {page_str}")
 
     log_toc("-" * SEP_COUNT)
     
