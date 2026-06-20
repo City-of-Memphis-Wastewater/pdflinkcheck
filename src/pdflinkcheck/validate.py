@@ -406,6 +406,7 @@ def run_validation(
     
     external_links = data.get("external_links", [])
     internal_links = data.get("internal_links", [])
+    #all_links = data.get("links", [])
     all_links = external_links + internal_links
     
     toc = data.get("toc", [])

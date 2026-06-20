@@ -198,6 +198,7 @@ def run_report_core(
         base_data_dict = {
             "external_links": [k for k in extracted_links if k.get('details', {}).get('link_type') == LinkType.EXTERNAL.value], 
             "internal_links": [k for k in extracted_links if k.get('details', {}).get('link_type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 
+            #"links": extracted_links,
             "toc": structural_toc,
             "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()
         }
@@ -244,6 +245,8 @@ def run_report_core(
 def _generate_report_text_layers(extracted_links: list, structural_toc: list, pdf_name: str, log_fn: Any) -> Dict[str, int]:
     """Generates the console logs and splits the raw metrics safely."""
     #extracted_links = extracted_links["details"]
+
+    # this is a massive implication point for how we sort shit.
     external_uri = [l for l in extracted_links if l.get('details', {}).get('link_type') == LinkType.EXTERNAL.value]
     goto_links = [l for l in extracted_links if l.get('details', {}).get('link_type') ==  LinkType.INTERNAL_GOTO.value]
     resolved_action = [l for l in extracted_links if l.get('details', {}).get('link_type') == LinkType.INTERNAL_RESOLVED.value]
@@ -302,6 +305,7 @@ def _build_empty_report_dict(name: str, pages: int, path: str, engine_name: str,
     """Factory helper providing fully structured empty states safely."""
     return {
         "data": {"external_links": [], "internal_links": [], "toc": [], "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()},
+        #"data": {"links": [], "toc": [], "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()},
         "text-lines": buffer,
         "summary_metadata": {
             "file_overview": {"pdf_name": name, "total_pages": pages, "source_path": path, "processing_path": path},

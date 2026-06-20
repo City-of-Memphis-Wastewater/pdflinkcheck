@@ -6,7 +6,7 @@ from pathlib import Path
 from enum import Flag, auto, Enum
 import functools
 import operator
-from typing import Optional, Iterable, Any, Set
+from typing import Optional, Iterable, Any, Set, NamedTuple
 from dataclasses import dataclass, field
 import uuid
 from xmlrpc.client import INTERNAL_ERROR
@@ -32,20 +32,35 @@ class LinkType(str, Enum):
     LAUNCH = "Launch"
     OTHER = "Other Action" # internal or external?
 
-class PageValidationResult(str,Enum):
-    NEGATIVE = "negative"
-    HIGH = "high"
-    ZERO = "zero"
-    UNKNOWN = "unknown"
-    INVALID = "invalid"
-    VALID = "valid"
-    #REASONABLE = "reasonable"
-
 class ItemCategory(str,Enum):
     INTERNAL = "internal"
     EXTERNAL = "external"
     OTHER = "other"
     TOC = "toc"
+
+class ElementRelationship(NamedTuple):
+    item_category: ItemCategory
+    link_type: Optional[LinkType]
+    target_type: TargetType
+
+# The Definitive Dichotomous Reference Matrix
+TAXONOMY_MATRIX: List[ElementRelationship] = [
+    # TOC Elements
+    ElementRelationship(ItemCategory.TOC, None, TargetType.TARGET_PAGE),
+    
+    # Internal Annotations
+    ElementRelationship(ItemCategory.INTERNAL, LinkType.INTERNAL_GOTO, TargetType.DESTINATION_PAGE),
+    ElementRelationship(ItemCategory.INTERNAL, LinkType.INTERNAL_RESOLVED, TargetType.DESTINATION_PAGE),
+    
+    # External Annotations
+    ElementRelationship(ItemCategory.EXTERNAL, LinkType.EXTERNAL, TargetType.URL),
+    ElementRelationship(ItemCategory.EXTERNAL, LinkType.REMOTE_GOTOR, TargetType.REMOTE_FILE),
+    ElementRelationship(ItemCategory.EXTERNAL, LinkType.LAUNCH, TargetType.FILE),
+    
+    # Fallback/Other Handlers
+    ElementRelationship(ItemCategory.OTHER, LinkType.OTHER, TargetType.OTHER),
+]
+
 
 def create_toc_dict(
         level,
@@ -130,6 +145,15 @@ def debug_head(label: str, data: Any, n: int = 3):
     else:
         print(data)
 
+
+class PageValidationResult(str,Enum):
+    NEGATIVE = "negative"
+    HIGH = "high"
+    ZERO = "zero"
+    UNKNOWN = "unknown"
+    INVALID = "invalid"
+    VALID = "valid"
+    #REASONABLE = "reasonable"
 
 class PageRef:
     """
