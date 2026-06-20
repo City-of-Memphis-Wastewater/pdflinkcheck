@@ -8,8 +8,15 @@ from typing import Dict, Any, Optional, List
 
 from pdflinkcheck.logging_setup import error_logger
 from pdflinkcheck.environment import pymupdf_is_available
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory
-
+from pdflinkcheck.helpers import PageRef
+from .taxonomy import (
+    LinkType,
+    create_link_dict,
+    create_toc_dict,
+    ItemCategory,
+    TargetType
+    )
+    
 try:
     if pymupdf_is_available():
         import fitz  # PyMuPDF
@@ -230,7 +237,7 @@ def extract_links_pymupdf(doc):
                     idx = min(corrected_machine_idx, int(last_page_ref))
                     destination_page = PageRef.from_index(idx).machine
                     destination_view = serialize_fitz_object(link.get('to'))
-                    
+                    target_type= TargetType.DESINTATION_PAGE.value
                     if source_kind == fitz.LINK_GOTO:
                         determined_type = LinkType.INTERNAL_GOTO.value
                         item_category = ItemCategory.INTERNAL.value
@@ -241,19 +248,21 @@ def extract_links_pymupdf(doc):
                 elif source_kind == fitz.LINK_URI:
                     determined_type = LinkType.EXTERNAL.value
                     item_category = ItemCategory.EXTERNAL.value
-                    
+                    target_type= TargetType.URL.value
+
                 elif source_kind == fitz.LINK_GOTOR:
                     determined_type = LinkType.REMOTE_GOTOR.value
                     item_category = ItemCategory.EXTERNAL.value
+                    target_type= TargetType.REMOTE_FILE.value
                     
                 elif source_kind == fitz.LINK_LAUNCH:
                     determined_type = LinkType.LAUNCH.value
                     item_category = ItemCategory.EXTERNAL.value
-                    
+                    target_type= TargetType.FILE.value
                 else:
                     determined_type = LinkType.OTHER.value
                     item_category = ItemCategory.OTHER.value
-
+                    target_type= TargetType.OTHER.value
                 # Pass everything straight to the factory method cleanly
                 link_dict = create_link_dict(
                     source_page_ref=source_page_ref, 

@@ -13,7 +13,14 @@ import ctypes
 from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory, TargetType
+from pdflinkcheck.helpers import PageRef
+from .taxonomy import (
+    LinkType, 
+    create_link_dict, 
+    create_toc_dict, 
+    ItemCategory, 
+    TargetType
+    )
 from pdflinkcheck.environment import pdfium_is_available
 
 try:
