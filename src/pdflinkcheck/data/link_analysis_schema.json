@@ -1,4 +1,4 @@
-{
+{ OUT OF DATE, SCHEMA IN FLUX
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/analysis_output_schema.json",
   "title": "PDF Link Analysis Output",
