@@ -117,7 +117,8 @@ def _is_ip(host: str) -> bool:
     try:
         ipaddress.ip_address(host)
         return True
-    except Exception:
+    except Exception as e:
+        logger.debug(e)
         return False
 
 def _contains_homoglyphs(s: str) -> bool:

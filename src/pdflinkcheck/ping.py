@@ -62,14 +62,17 @@ def ping_url(url: str | None) -> PingUrlResult:
             return PingUrlResult(status_code = response.status, reason = response.reason)
             
     except urllib.error.HTTPError as e:
+        logger.debug(e)
         # Server responded with an error code (e.g., 404, 403, 500)
         return PingUrlResult(status_code = e.code, reason = e.reason)
         
     except urllib.error.URLError as e:
+        logger.debug(e)
         # Connection failed entirely (e.g., DNS failure, network down)
         return PingUrlResult(status_code = 0, reason = f"Connection Failed: {e.reason}")
         
     except Exception as e:
+        logger.debug(e)
         # Catch-all for timeouts or unexpected errors
         return PingUrlResult(status_code = 0, reason = str(e))
 
@@ -79,5 +82,6 @@ def is_valid_web_url(url:str)->bool:
         parsed = urlparse(url)
         # Ensure it has a valid scheme and an actual destination host
         return parsed.scheme in ("http", "https") and bool(parsed.netloc)
-    except Exception:
+    except Exception as e:
+        logger.debug(e)
         return False

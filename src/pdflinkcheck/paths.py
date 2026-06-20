@@ -4,6 +4,9 @@
 from __future__ import annotations
 import sys
 from pathlib import Path
+import logging
+
+logger = logging.getLogger(__name__)
 
 # --- Configuration ---
 
@@ -11,7 +14,8 @@ from pathlib import Path
 try:
     # Use the home directory and append the tool's name
     PDFLINKCHECK_HOME = Path.home() / ".pdflinkcheck"
-except Exception:
+except Exception as e:
+    logger.debug(e)
     # Fallback if Path.home() fails in certain environments (e.g., some CI runners)
     PDFLINKCHECK_HOME = Path("/tmp/.pdflinkcheck_temp")
 

@@ -55,6 +55,10 @@ import signal
 import threading
 from dataclasses import dataclass
 from typing import Optional
+import sys
+import logging
+
+logger = logging.getLogger(__name__)
 
 from pdflinkcheck import environment as enviro
 from pdflinkcheck.helpers import ExportFormat, PdfEngine, ReportRequest
@@ -504,22 +508,24 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
                 pdf_library=fields.get("pdf_library", "auto"),
             )
 
-            print(f"[*] Request received: {upload.filename}. Waiting for slot...")
+            print(f"[*] Request received: {upload.filename}. Waiting for slot...", file=sys.stdlib)
             with REQUEST_SEMAPHORE:
-                print(f"[!] Slot acquired. Jobs in flight: {MAX_CONCURRENT_JOBS - REQUEST_SEMAPHORE._value}")
+                print(f"[!] Slot acquired. Jobs in flight: {MAX_CONCURRENT_JOBS - REQUEST_SEMAPHORE._value}", file=sys.stdlib)
                 response = self._process_pdf(upload)
 
             self._send_json(response)
-            print(f"[+] Request finished: {upload.filename}")
-            print(f"Content-Length: {content_length} bytes")
+            print(f"[+] Request finished: {upload.filename}", file=sys.stdlib)
+            print(f"Content-Length: {content_length} bytes", file=sys.stdlib)
 
         except ValidationError as e:
+            logger.debug(e)
             self._send_error_json(str(e), 400)
 
         except Exception as e:
+            logger.debug(e)
             import traceback
             tb = traceback.format_exc()
-            print(tb)
+            print(tb, file=sys.stdlib)
             self._send_error_json(f"Internal server error: {e}", 500)
     # -------- Business Logic --------
     def _process_pdf(self, upload: UploadRequest) -> dict:
@@ -527,7 +533,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
         Process an uploaded PDF and return analysis results.
         If the report fails, returns zero counts and the error message.
         """
-        print(f"Processing upload: {upload.filename} using {upload.pdf_library}")
+        print(f"Processing upload: {upload.filename} using {upload.pdf_library}",file=sys.stdlib)
         tmp_path: Optional[str] = None
 
         pdf_library = PdfEngine.from_str(upload.pdf_library) if isinstance(upload.pdf_library, str) else upload.pdf_library
@@ -567,7 +573,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
         except Exception as e:
             # Simple fallback on error
-            print(f"Error running report: {e}")
+            logger.error(f"Error running report: {e}")
             return {
                 "filename": upload.filename,
                 "pdf_library_used": upload.pdf_library,
@@ -579,7 +585,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
         finally:
             if tmp_path and os.path.exists(tmp_path):
-                print(f"Deleting temporary file: {tmp_path}")
+                logger.debug(f"Deleting temporary file: {tmp_path}")
                 os.unlink(tmp_path)
 
 # =========================
@@ -593,7 +599,7 @@ def main():
         def handle_exit():
             if not SHUTDOWN_EVENT.is_set():
                 SHUTDOWN_EVENT.set()
-                print("\n[Shutdown] Stopping server...")
+                print("\n[Shutdown] Stopping server...", file=sys.stdlib)
                 # This breaks the .serve_forever() loop
                 threading.Thread(target=httpd.shutdown, daemon=True).start()
 
@@ -601,9 +607,9 @@ def main():
         signal.signal(signal.SIGINT, lambda s, f: handle_exit())
         signal.signal(signal.SIGTERM, lambda s, f: handle_exit())
 
-        print(f"PDF Link Check Server running at http://{HOST}:{PORT}")
-        print(f"Public mode: {PUBLIC_MODE}")
-        print(f"Max concurrent jobs: {MAX_CONCURRENT_JOBS}")
+        print(f"PDF Link Check Server running at http://{HOST}:{PORT}", file=sys.stdlib)
+        print(f"Public mode: {PUBLIC_MODE}", file=sys.stdlib)
+        print(f"Max concurrent jobs: {MAX_CONCURRENT_JOBS}", file=sys.stdlib)
         
         try:
             # This is the line that hangs on Windows without an explicit .shutdown()

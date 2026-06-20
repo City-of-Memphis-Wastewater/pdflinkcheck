@@ -12,6 +12,9 @@ import time
 import pyhabitat
 import os
 from enum import Enum
+import logging
+
+logger = logging.getLogger(__name__)
 
 from .logging_setup import error_logger
 from .paths import PDFLINKCHECK_HOME, LOG_FILE_PATH
@@ -186,15 +189,17 @@ def get_first_pdf_in_cwd() -> Optional[str]:
         # Check for files in the current directory only
         # Iterating over the generator stops as soon as the first match is found.
         first_pdf_path = next(
-            p.resolve() for p in cwd.iterdir() 
-            if p.is_file() and p.suffix.lower() == '.pdf'
+            (p.resolve() for p in cwd.iterdir() 
+            if p.is_file() and p.suffix.lower() == '.pdf'),
         )
-        print(f"Fallback PDF found: {first_pdf_path.name}")
+        if first_pdf_path is None:
+            logger.debug("No PDF files found in the current working directory.")
+            return None
+        logger.info(f"Fallback PDF found: {first_pdf_path.name}")
         return str(first_pdf_path)
-    except StopIteration:
-        # If the generator runs out of items, no PDF was found
-        return None
+    
     except Exception as e:
+        logger.debug(e)
         # Handle potential permissions errors or other issues
         print(f"Error while searching for PDF in CWD: {e}", file=sys.stderr)
         return None
