@@ -23,7 +23,12 @@ from pdflinkcheck.io import (
 )
 from pdflinkcheck.validate import run_validation
 from pdflinkcheck.security import compute_risk
-from pdflinkcheck.helpers import PageRef, ExportFormat, PdfEngine, ReportRequest, LinkType
+from .page import PageRef
+from .taxonomy import LinkType
+from .helpers import (ExportFormat, 
+                      PdfEngine, 
+                      ReportRequest, 
+)
 from pdflinkcheck.spreadsheet import export_report_links_to_xlsx
 
 SEP_COUNT=28

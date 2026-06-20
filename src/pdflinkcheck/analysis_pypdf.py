@@ -16,7 +16,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory, TargetType
+from .page import PageRef 
+from .taxonomy import (LinkType, 
+                       create_link_dict, 
+                       create_toc_dict, 
+                       ItemCategory, 
+                       TargetType
+)
 
 
 """

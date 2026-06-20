@@ -3,6 +3,8 @@ import tkinter as tk
 import subprocess
 import re
 import platform
+import logging
+logger = logging.getLogger(__name__)
 
 def get_primary_monitor_geometry():
     """ 
@@ -41,7 +43,7 @@ def center_window_on_primary_stable(window: tk.Toplevel | tk.Tk, width: int, hei
     
     if geom:
         pw, ph, px, py = geom
-        print(f"[DEBUG] XRandR Primary: {pw}x{ph} at +{px}+{py}")
+        logger.debug(f"XRandR Primary: {pw}x{ph} at +{px}+{py}")
     else:
         # 2. Fallback: Center on Mouse Pointer (Best for Multi-monitor without XRandR)
         # Since we can't find 'Primary', we put it where the user's attention is.
@@ -64,7 +66,7 @@ def center_window_on_primary_stable(window: tk.Toplevel | tk.Tk, width: int, hei
     x = max(0, x)
     y = max(0, y)
     
-    print(f"[DEBUG] Final Positioning: x={x}, y={y}")
+    logger.debug(f"Final Positioning: x={x}, y={y}")
     window.geometry(f"{width}x{height}+{int(x)}+{int(y)}")
 
 
@@ -84,7 +86,7 @@ def get_monitor_geometries():
         try:
             # Run xrandr
             xrandr_result = subprocess.run(['xrandr', '--query'], capture_output=True, text=True, check=True)
-            #print(f"xrandr_result = {xrandr_result}")
+            logger.debug(f"xrandr_result = {xrandr_result}")
             # Regex to find: "1920x1080+1920+0" or "1920x1080+0+0"
             # We look for lines that contain 'connected' and a geometry string
             lines = xrandr_result.stdout.splitlines()
@@ -99,7 +101,7 @@ def get_monitor_geometries():
                             'is_primary': is_primary
                         })
         except Exception as e:
-            print(f"[DEBUG] xrandr query failed: {e}")
+            logger.debug(f"xrandr query failed: {e}")
     
     # --- WINDOWS Native Logic ---
     if os_name == "Windows":
@@ -138,9 +140,9 @@ def center_window_on_primary_goose(window: tk.Toplevel | tk.Tk, width: int, heig
         if not target_monitor:
             target_monitor = monitors[0]
             
-        print(f"[DEBUG] Assessed Monitor: {target_monitor['w']}x{target_monitor['h']} at +{target_monitor['x']}+{target_monitor['y']}")
+        logger.debug(f"Assessed Monitor: {target_monitor['w']}x{target_monitor['h']} at +{target_monitor['x']}+{target_monitor['y']}")
     else:
-        print("[DEBUG] No monitors found via xrandr. Falling back to screenwidth.")
+        logger.debug("No monitors found via xrandr. Falling back to screenwidth.")
         # Total fallback: use winfo_screenwidth but assume 1080p width 
         # to avoid the L-gap if it's clearly a massive span.
         sw = window.winfo_screenwidth()
@@ -155,7 +157,7 @@ def center_window_on_primary_goose(window: tk.Toplevel | tk.Tk, width: int, heig
     x = target_monitor['x'] + (target_monitor['w'] // 2) - (width // 2)
     y = target_monitor['y'] + (target_monitor['h'] // 2) - (height // 2)
 
-    print(f"[DEBUG] Final Positioning: x={x}, y={y}")
+    logger.debug(f"Final Positioning: x={x}, y={y}")
     window.geometry(f"{width}x{height}+{int(x)}+{int(y)}")
 
 def center_window_on_primary(window: tk.Toplevel | tk.Tk, width: int, height: int):

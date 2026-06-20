@@ -10,8 +10,8 @@ from openpyxl import Workbook
 from openpyxl.styles import Font
 
 from .paths import PDFLINKCHECK_HOME
-from pdflinkcheck.io import get_friendly_path, get_unique_human_time
-from pdflinkcheck.helpers import PageRef
+from .io import get_friendly_path, get_unique_human_time
+from .page import PageRef
 
 # ----------------- Helper Functions -----------------
 

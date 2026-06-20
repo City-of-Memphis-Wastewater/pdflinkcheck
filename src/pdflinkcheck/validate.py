@@ -10,9 +10,9 @@ from enum import Enum
 
 
 from pdflinkcheck.io import get_friendly_path
-from pdflinkcheck.helpers import PageRef, LinkType, PageValidationResult
+from .page import PageRef, PageValidationResult
+from .taxonomy import LinkType
 from .ping import is_valid_web_url, ping_url
-
 
 logger = logging.getLogger(__name__)
 
@@ -155,6 +155,7 @@ def _check_internal_jump(dest_page: Any, total_pages: int | None) -> LinkValidat
         else:
             result_status = PageValidationResult.VALID
     except (ValueError, TypeError):
+        logger.debug(PageValidationResult.INVALID)
         result_status = PageValidationResult.INVALID
 
     # 2. Map structural state cleanly to the reporting payload
@@ -204,6 +205,7 @@ def _check_toc_jump(dest_page: Any, total_pages: int | None) -> LinkValidationRe
         else:
             result_status = PageValidationResult.VALID
     except (ValueError, TypeError):
+        logger.debug(PageValidationResult.INVALID)
         result_status = PageValidationResult.INVALID
 
     # 2. Map structural state cleanly to the reporting payload
@@ -381,6 +383,7 @@ def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
             reason = f"Launch target file not found: {target_clean}"
         )
     except Exception as e:
+        logger.debug(e)
         return LinkValidationResult(
             status = MetricKey.LAUNCH_TARGET_BROKEN, 
             reason = f"Unparseable Launch path sequence: {str(e)}"

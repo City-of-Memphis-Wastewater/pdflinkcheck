@@ -6,9 +6,9 @@ import sys
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
-from pdflinkcheck.logging_setup import error_logger
-from pdflinkcheck.environment import pymupdf_is_available
-from pdflinkcheck.helpers import PageRef
+from .logging_setup import error_logger
+from .environment import pymupdf_is_available
+from .page import PageRef
 from .taxonomy import (
     LinkType,
     create_link_dict,

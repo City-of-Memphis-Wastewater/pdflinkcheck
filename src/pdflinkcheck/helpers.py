@@ -8,128 +8,9 @@ import functools
 import operator
 from typing import Optional, Iterable, Any, Set, NamedTuple
 from dataclasses import dataclass, field
-import uuid
-from xmlrpc.client import INTERNAL_ERROR
 
 from .paths import PDFLINKCHECK_HOME
-from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
-
-class TargetType(str,Enum):
-    URL = "url"
-    FILE = "file"
-    REMOTE_FILE = "remote_file"
-    OTHER = "other"
-    PAGE = "page"
-    DESTINATION_PAGE = "destination_page" # link jargon, just means PAGE
-    #TARGET_PAGE = "target_page" # TOC jargon, just means PAGE
-    
-class LinkType(str, Enum):
-    """Normalized categories of extracted document elements for reporting/filtering."""
-    INTERNAL_GOTO = "Internal (GoTo/Dest)"
-    INTERNAL_RESOLVED = "Internal (Resolved Action)"  # Standardize this variant
-    EXTERNAL = "External (URI)"
-    REMOTE_GOTOR = "Remote (GoToR)"
-    LAUNCH = "Launch"
-    OTHER = "Other Action" # internal or external?
-
-class ItemCategory(str,Enum):
-    INTERNAL = "internal"
-    EXTERNAL = "external"
-    OTHER = "other"
-    TOC = "toc"
-
-class ElementRelationship(NamedTuple):
-    item_category: ItemCategory
-    link_type: Optional[LinkType]
-    target_type: TargetType
-
-# The Definitive Dichotomous Reference Matrix
-TAXONOMY_MATRIX: List[ElementRelationship] = [
-    # TOC Elements
-    ElementRelationship(ItemCategory.TOC, None, TargetType.PAGE),
-    
-    # Internal Annotations
-    ElementRelationship(ItemCategory.INTERNAL, LinkType.INTERNAL_GOTO, TargetType.DESTINATION_PAGE),
-    ElementRelationship(ItemCategory.INTERNAL, LinkType.INTERNAL_RESOLVED, TargetType.DESTINATION_PAGE),
-    
-    # External Annotations
-    ElementRelationship(ItemCategory.EXTERNAL, LinkType.EXTERNAL, TargetType.URL),
-    ElementRelationship(ItemCategory.EXTERNAL, LinkType.REMOTE_GOTOR, TargetType.REMOTE_FILE),
-    ElementRelationship(ItemCategory.EXTERNAL, LinkType.LAUNCH, TargetType.FILE),
-    
-    # Fallback/Other Handlers
-    ElementRelationship(ItemCategory.OTHER, LinkType.OTHER, TargetType.OTHER),
-]
-
-
-def create_toc_dict(
-        level,
-        title:str,
-        target_page
-)->Dict[str,Any]:
-    return {
-        "GUID":str(uuid.uuid4()),
-        "details":{
-            "level": level, 
-            "title": title, 
-            "target_page": target_page,
-            "item_category":ItemCategory.TOC.value,
-            "target_type": TargetType.PAGE.value,
-        }
-    }
-
-def create_link_dict(
-    source_page_ref: PageRef,
-    rect_norm: Optional[tuple],
-    anchor_text: str,
-    link_type: str,
-    item_category: str,
-    source_kind: Any,
-    # Explicitly define target payload options with defaults
-    target_type: Optional[Any] = None,
-    destination_page: Optional[Any] = None,
-    destination_view: Optional[Any] = None,
-    url: Optional[str] = None,
-    remote_file: Optional[str] = None,
-    file: Optional[str] = None,
-    params: Optional[str] = None,
-    xref: Optional[int] = None,
-    action_kind: Optional[Any] = None,
-) -> Dict[str, Any]:
-    """
-    Central factory method ensuring all keys are populated with 
-    standard defaults, preventing schema drift across PDF engines.
-    """
-    base =  {
-        "page": source_page_ref.machine, # Always normalized machine index (int)
-        "rect": rect_norm,
-        "anchor_text": anchor_text,
-        "link_type": link_type,
-        "item_category": item_category, 
-        "source_kind": str(source_kind) if source_kind is not None else "",
-        # --- Inconsistent terms ---
-        "target_type": target_type,
-        "xref": xref,
-        "destination_page": destination_page,
-        "destination_view": destination_view,
-        "url": url,
-        "remote_file": remote_file,
-        "action_kind": action_kind,
-        "file": file,
-        "params": params,
-    }
-    structure = {
-        "GUID": str(uuid.uuid4()),
-        "details": base,
-        "target_validation":{
-            "status":"unverified",
-            "reason": None,
-        },
-        "security_risk":{}
-    }
-    #return base
-    return structure
 
 def get_source_pdf_path(report: Dict) -> Path:
     return Path(report["summary_metadata"]["file_overview"]["source_path"])
@@ -145,68 +26,6 @@ def debug_head(label: str, data: Any, n: int = 3):
         pprint(head_dict, indent=2, compact=True, width=100)
     else:
         print(data)
-
-
-class PageValidationResult(str,Enum):
-    NEGATIVE = "negative"
-    HIGH = "high"
-    ZERO = "zero"
-    UNKNOWN = "unknown"
-    INVALID = "invalid"
-    VALID = "valid"
-    #REASONABLE = "reasonable"
-
-class PageRef:
-    """
-    A simple translator to handle the 0-to-1 index conversion 
-    without the 'Double Bump' risk.
-    """
-    def __init__(self, index: int):
-        self.index = index  # The 0-based physical index
-
-    @property
-    def human(self) -> int:
-        """The 1-based page number for humans."""
-        return self.index + 1
-
-    @property
-    def machine(self) -> int:
-        """Alias for index. The 0-based page number for machines."""
-        return self.index
-
-    
-    @classmethod
-    def corrected_down(cls, human_num: int) -> "PageRef":
-        """Explicitly compensates for 1-based data (e.g., PyMuPDF TOC)."""
-        return cls.from_human(human_num)
-    
-    @classmethod
-    def from_pymupdf_total_page_count(cls, total_pages: int) -> "PageRef":
-        """
-        Converts PyMuPDF's doc.page_count into a PageRef 
-        representing the final valid machine-facing index.
-        """
-        return cls.from_human(total_pages)
-    
-    @classmethod
-    def from_human(cls, human_num: int) -> "PageRef":
-        """Creates a PageRef from a 1-based human page number (e.g., from TOC)."""
-        return cls(human_num - 1)
-
-    @classmethod
-    def from_index(cls, physical_index: int) -> "PageRef":
-        """Creates a PageRef from a 0-based physical index (e.g., from links)."""
-        return cls(physical_index)
-    
-    def __int__(self):
-        return self.index
-    
-    def __str__(self):
-        return str(self.human)
-
-    def __repr__(self):
-        return f"PageRef(index={self.index}, human={self.human})"
-    
 
     
 class ExportFormat(Flag):
@@ -361,25 +180,7 @@ class ReportRequest:
             self.export_format = ExportFormat.from_str(self.export_format)
 
         return self
-
-# ==========================================
-# Documentation
-# ==========================================
-
-"""
-## Using the PageRef class
-### Indexing Map: Physical (0) vs. Logical (1)
-
-| **File**              | **Context**      | **Index Rule**      | **Reasoning**                                                                                          |
-| --------------------- | ---------------- | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| `analysis_pypdf.py`   | Data Extraction  | **0-indexing only** | `pypdf` is 0-indexed. Your previous `+ 1` hacks have been removed.                                     |
-| `analysis_pymupdf.py` | Data Extraction  | **Mixed**           | **Internal:** 0-indexed. **TOC:** `get_toc()` is natively 1-indexed. Needs normalization.              |
-| `validate.py`         | Logic/Validation | **Mixed**           | **Logic:** Uses `START_INDEX=0` for boundary checks. **Strings:** Formats error messages as 1-indexed. |
-| `report.py`           | Output/Reporting | **Mixed**           | **Data:** Keeps dictionary values at 0. **Display:** Formats CLI tables as 1-indexed.                  |
-| `helpers.py`          | Translation      | **Mixed**           | The `PageRef` class acts as the "Border Control" between 0 and 1.                                      |
-| `__init__.py`         | API Surface      | **0-indexing only** | If exposing a library, users expect 0-indexed lists of pages/links.                                    |
-"""
-
+    
 # ---
 
 def get_export_path() -> Path:

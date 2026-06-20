@@ -49,7 +49,7 @@ def __getattr__(name: str):
         return PdfEngine
 
     if name == "PageRef":
-        from pdflinkcheck.helpers import PageRef
+        from pdflinkcheck.page import PageRef
         return PageRef
 
     if name == "analyze_pdf_pypdf":
