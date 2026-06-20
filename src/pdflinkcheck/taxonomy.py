@@ -5,14 +5,14 @@ import enum
 import uuid
 from typing import Dict, Any, Optional, NamedTuple, List
 
-class TargetType(str, enum.Enum):
-    DESTINATION_PAGE = "destination_page"
+class TargetType(str,enum.Enum):
     URL = "url"
-    FILE = "file"
-    REMOTE_FILE = "remote_file"
-    TARGET_PAGE = "target_page"
+    FILE = "file"                                                                      REMOTE_FILE = "remote_file"
     OTHER = "other"
-
+    PAGE = "page"
+    DESTINATION_PAGE = "destination_page" # link jargon, just means PAGE
+    #TARGET_PAGE = "target_page" # TOC jargon, just means PAGE
+    
 class LinkType(str, enum.Enum):
     """Normalized categories of extracted document elements for reporting/filtering."""
     INTERNAL_GOTO = "Internal (GoTo/Dest)"

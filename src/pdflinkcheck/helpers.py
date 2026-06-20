@@ -16,13 +16,14 @@ from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
 
 class TargetType(str,Enum):
-    DESTINATION_PAGE = "destination_page"
     URL = "url"
     FILE = "file"
     REMOTE_FILE = "remote_file"
-    TARGET_PAGE = "target_page"
     OTHER = "other"
-
+    PAGE = "page"
+    DESTINATION_PAGE = "destination_page" # link jargon, just means PAGE
+    #TARGET_PAGE = "target_page" # TOC jargon, just means PAGE
+    
 class LinkType(str, Enum):
     """Normalized categories of extracted document elements for reporting/filtering."""
     INTERNAL_GOTO = "Internal (GoTo/Dest)"
@@ -46,7 +47,7 @@ class ElementRelationship(NamedTuple):
 # The Definitive Dichotomous Reference Matrix
 TAXONOMY_MATRIX: List[ElementRelationship] = [
     # TOC Elements
-    ElementRelationship(ItemCategory.TOC, None, TargetType.TARGET_PAGE),
+    ElementRelationship(ItemCategory.TOC, None, TargetType.PAGE),
     
     # Internal Annotations
     ElementRelationship(ItemCategory.INTERNAL, LinkType.INTERNAL_GOTO, TargetType.DESTINATION_PAGE),
@@ -74,7 +75,7 @@ def create_toc_dict(
             "title": title, 
             "target_page": target_page,
             "item_category":ItemCategory.TOC.value,
-            "target_type": TargetType.TARGET_PAGE.value,
+            "target_type": TargetType.PAGE.value,
         }
     }
 
