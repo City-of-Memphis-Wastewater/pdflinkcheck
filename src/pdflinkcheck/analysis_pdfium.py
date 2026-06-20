@@ -427,11 +427,11 @@ def _dispatch_action(
             target_type = TargetType.URL.value,
             
         else:
-            link_type=LinkType.OTHER.value, 
-            # item_category=ItemCategory.EXTERNAL.value # tempting, but we should remain consistent with the assertion in PyMuPDF that 
-            item_category=ItemCategory.OTHER.value
+            link_type=LinkType.EXTERNAL.value, 
+            item_category=ItemCategory.EXTERNAL.value # tempting, but we should remain consistent with the assertion in PyMuPDF that 
             source_kind=SourceKindPdfium.ANNOT_URI.value
-            target_type = TargetType.OTHER.value,
+            target_type = TargetType.URL.value,
+            url=""
             
     elif action_type == PdfActionType.GOTOR:
         remote_file = get_remote_file_from_action(action, doc.raw)

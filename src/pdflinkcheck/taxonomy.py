@@ -71,7 +71,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_kind=3,       # PdfActionType.GOTOR
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.LAUNCH,
+        item_category=ItemCategory.EXTERNAL,
         link_type=LinkType.LAUNCH,
         target_type=TargetType.FILE,
         pymupdf_kind=5,      # fitz.LINK_LAUNCH
