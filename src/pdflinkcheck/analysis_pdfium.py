@@ -405,17 +405,21 @@ def _dispatch_action(
     url = None
     action_kind = None
 
+    print("ACTION TYPE", action_type)
+    print("ENUM", PdfActionType.GOTO)
+    print("EQUAL?", action_type == PdfActionType.GOTO)
+
     if action_type == PdfActionType.GOTO:
         # Reuse existing dest if present, or try to get from action
         target_dest = dest or pdfium_c.FPDFAction_GetDest(doc.raw, action)
         if target_dest:
             dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, target_dest)
-            link_type=LinkType.INTERNAL_GOTO.value,
-            item_category=ItemCategory.INTERNAL.value,
-            source_kind=SourceKindPdfium.ANNOT_GOTO.value,
-            destination_page = PageRef.from_index(dest_idx).machine,
+            link_type=LinkType.INTERNAL_GOTO.value
+            item_category=ItemCategory.INTERNAL.value
+            source_kind=SourceKindPdfium.ANNOT_GOTO.value
+            destination_page = PageRef.from_index(dest_idx).machine
             destination_view = extract_destination_view(target_dest)        
-            target_type = TargetType.DESTINATION_PAGE.value,
+            target_type = TargetType.DESTINATION_PAGE.value
             
     elif action_type == PdfActionType.URI:
         uri = get_uri_from_action(action, doc.raw)
@@ -424,13 +428,13 @@ def _dispatch_action(
             item_category=ItemCategory.EXTERNAL.value
             url=uri
             source_kind=SourceKindPdfium.ANNOT_URI.value
-            target_type = TargetType.URL.value,
+            target_type = TargetType.URL.value
             
         else:
             link_type=LinkType.EXTERNAL.value, 
             item_category=ItemCategory.EXTERNAL.value # tempting, but we should remain consistent with the assertion in PyMuPDF that 
             source_kind=SourceKindPdfium.ANNOT_URI.value
-            target_type = TargetType.URL.value,
+            target_type = TargetType.URL.value
             url=""
             
     elif action_type == PdfActionType.GOTOR:
@@ -439,8 +443,8 @@ def _dispatch_action(
         
         link_type=LinkType.REMOTE_GOTOR.value
         item_category=ItemCategory.INTERNAL.value
-        remote_file=remote_file,
-        source_kind=SourceKindPdfium.ANNOT_GOTOR.value,
+        remote_file=remote_file
+        source_kind=SourceKindPdfium.ANNOT_GOTOR.value
         destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
         target_type = TargetType.REMOTE_FILE.value
         
