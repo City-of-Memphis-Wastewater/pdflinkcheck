@@ -13,7 +13,7 @@ import ctypes
 from enum import IntEnum, Enum
 from typing import Optional, Dict, Any, Tuple, List
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory
 from pdflinkcheck.environment import pdfium_is_available
 
 try:
@@ -381,6 +381,7 @@ def _process_link_annotation(
             rect_norm=rect_norm, 
             anchor_text=anchor_text,
             link_type=LinkType.OTHER.value,
+            item_category=ItemCategory.OTHER.value,
             source_kind=SourceKindPdfium.ANNOT_OTHER.value
         )
         links.append(link_dict)
@@ -397,76 +398,76 @@ def _dispatch_action(
     """Routes an action object to its specific LinkType classification."""
     action_type = pdfium_c.FPDFAction_GetType(action)
 
+    destination_page = None
+    destination_view = None
+    file = None
+    url = None
+    action_kind = None
+
     if action_type == PdfActionType.GOTO:
         # Reuse existing dest if present, or try to get from action
         target_dest = dest or pdfium_c.FPDFAction_GetDest(doc.raw, action)
         if target_dest:
             dest_idx = pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, target_dest)
-            link_dict = create_link_dict(
-                source_page_ref=source_page_ref, 
-                rect_norm=rect_norm, 
-                anchor_text=anchor_text,
-                link_type=LinkType.INTERNAL_GOTO.value,
-                source_kind=SourceKindPdfium.ANNOT_GOTO.value,
-                destination_page = PageRef.from_index(dest_idx).machine,
-                destination_view = extract_destination_view(target_dest)
-            )
-            
+            link_type=LinkType.INTERNAL_GOTO.value,
+            item_category=ItemCategory.INTERNAL.value,
+            source_kind=SourceKindPdfium.ANNOT_GOTO.value,
+            destination_page = PageRef.from_index(dest_idx).machine,
+            destination_view = extract_destination_view(target_dest)        
     
     elif action_type == PdfActionType.URI:
         uri = get_uri_from_action(action, doc.raw)
         if uri:
-            link_dict = create_link_dict(
-                source_page_ref=source_page_ref, 
-                rect_norm=rect_norm, 
-                anchor_text=anchor_text,
-                link_type=LinkType.EXTERNAL.value, 
-                url=uri, 
-                source_kind=SourceKindPdfium.ANNOT_URI.value
-            )
+            link_type=LinkType.EXTERNAL.value
+            item_category=ItemCategory.EXTERNAL.value
+            url=uri
+            source_kind=SourceKindPdfium.ANNOT_URI.value
+            
         else:
-            link_dict = create_link_dict(
-                source_page_ref=source_page_ref, 
-                rect_norm=rect_norm, 
-                anchor_text=anchor_text,
-                link_type=LinkType.OTHER.value, 
-                source_kind=SourceKindPdfium.ANNOT_URI.value
-            )
-
+            link_type=LinkType.OTHER.value, 
+            # item_category=ItemCategory.EXTERNAL.value # tempting, but we should remain consistent with the assertion in PyMuPDF that 
+            item_category=ItemCategory.OTHER.value
+            source_kind=SourceKindPdfium.ANNOT_URI.value
+            
     elif action_type == PdfActionType.GOTOR:
         remote_file = get_remote_file_from_action(action, doc.raw)
         r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
-        link_dict = create_link_dict(
-            source_page_ref=source_page_ref, 
-            rect_norm=rect_norm, 
-            anchor_text=anchor_text,
-            link_type=LinkType.REMOTE_GOTOR.value, 
-            remote_file=remote_file,
-            source_kind=SourceKindPdfium.ANNOT_GOTOR.value,
-            destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
-        )
+        
+        link_type=LinkType.REMOTE_GOTOR.value, 
+        item_category=ItemCategory.INTERNAL.value,
+        remote_file=remote_file,
+        source_kind=SourceKindPdfium.ANNOT_GOTOR.value,
+        destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
+        
 
     elif action_type == PdfActionType.LAUNCH:
         # Extract underlying target path string from the Launch action spec
-        launch_file = get_remote_file_from_action(action, doc.raw)
-        link_dict = create_link_dict(
-            source_page_ref=source_page_ref, 
-            rect_norm=rect_norm, 
-            anchor_text=anchor_text,
-            link_type=LinkType.LAUNCH.value, 
-            file=launch_file or "",
-            source_kind=SourceKindPdfium.ANNOT_LAUNCH.value
-        )
+        launch_file = get_remote_file_from_action(action, doc.raw) or ""
+        link_type=LinkType.LAUNCH.value
+        item_category=ItemCategory.EXTERNAL.value
+        file=launch_file
+        source_kind=SourceKindPdfium.ANNOT_LAUNCH.value
+        
     else:
         # Captures exotic macros (VJS, SUBMIT, NAMED) cleanly into the unknown dictionary structure
-        link_dict = create_link_dict(
-            source_page_ref=source_page_ref, 
-            rect_norm=rect_norm, 
-            anchor_text=anchor_text,
-            link_type=LinkType.OTHER.value,
-            action_kind=int(action_type),
-            source_kind=SourceKindPdfium.ANNOT_OTHER.value
-        )
+        link_type=LinkType.OTHER.value
+        item_category=ItemCategory.OTHER.value
+        action_kind=int(action_type)
+        source_kind=SourceKindPdfium.ANNOT_OTHER.value
+        
+    link_dict = create_link_dict(
+        source_page_ref=source_page_ref, 
+        rect_norm=rect_norm, 
+        anchor_text=anchor_text,
+        link_type=link_type, 
+        item_category=item_category,
+        url=url,
+        file=file,
+        source_kind=source_kind,
+        destination_page = destination_page,
+        destination_view = destination_view,
+        action_kind=action_kind,
+    )
     links.append(link_dict)
 
 def _dispatch_direct_dest(
@@ -484,6 +485,7 @@ def _dispatch_direct_dest(
         rect_norm=rect_norm, 
         anchor_text=anchor_text,
         link_type=LinkType.INTERNAL_RESOLVED.value,
+        item_category=ItemCategory.INTERNAL.value,
         source_kind=SourceKindPdfium.ANNOT_DIRECT_DEST.value,
         destination_page = PageRef.from_index(dest_idx).machine,
         destination_view = extract_destination_view(dest)

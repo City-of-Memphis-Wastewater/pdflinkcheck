@@ -8,7 +8,7 @@ from typing import Dict, Any, Optional, List
 
 from pdflinkcheck.logging_setup import error_logger
 from pdflinkcheck.environment import pymupdf_is_available
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory
 
 try:
     if pymupdf_is_available():
@@ -233,20 +233,26 @@ def extract_links_pymupdf(doc):
                     
                     if source_kind == fitz.LINK_GOTO:
                         determined_type = LinkType.INTERNAL_GOTO.value
+                        item_category = ItemCategory.INTERNAL.value
                     else:
                         determined_type = LinkType.INTERNAL_RESOLVED.value
+                        item_category = ItemCategory.INTERNAL.value
                         
                 elif source_kind == fitz.LINK_URI:
                     determined_type = LinkType.EXTERNAL.value
+                    item_category = ItemCategory.EXTERNAL.value
                     
                 elif source_kind == fitz.LINK_GOTOR:
                     determined_type = LinkType.REMOTE_GOTOR.value
+                    item_category = ItemCategory.EXTERNAL.value
                     
                 elif source_kind == fitz.LINK_LAUNCH:
                     determined_type = LinkType.LAUNCH.value
+                    item_category = ItemCategory.EXTERNAL.value
                     
                 else:
                     determined_type = LinkType.OTHER.value
+                    item_category = ItemCategory.OTHER.value
 
                 # Pass everything straight to the factory method cleanly
                 link_dict = create_link_dict(
@@ -254,6 +260,7 @@ def extract_links_pymupdf(doc):
                     rect_norm=link_rect, 
                     anchor_text=anchor_text,
                     link_type=determined_type,
+                    item_category=item_category,
                     source_kind=source_kind,
                     # --- Non standard terms ---
                     xref=link.get("xref"),

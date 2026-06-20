@@ -9,13 +9,43 @@ import operator
 from typing import Optional, Iterable, Any, Set
 from dataclasses import dataclass, field
 import uuid
+from xmlrpc.client import INTERNAL_ERROR
 
 from .paths import PDFLINKCHECK_HOME
 from pdflinkcheck.environment import pymupdf_is_available, pdfium_is_available
 
-"""
-Helper functions
-"""
+
+class TargetType(str,Enum):
+    DESTINATION_PAGE = "destination_page"
+    URL = "url"
+    FILE = "file"
+    REMOTE_FILE = "remote_file"
+    TARGET_PAGE = "target_page"
+
+class LinkType(str, Enum):
+    """Normalized categories of extracted document elements for reporting/filtering."""
+    INTERNAL_GOTO = "Internal (GoTo/Dest)"
+    INTERNAL_RESOLVED = "Internal (Resolved Action)"  # Standardize this variant
+    EXTERNAL = "External (URI)"
+    REMOTE_GOTOR = "Remote (GoToR)"
+    LAUNCH = "Launch"
+    OTHER = "Other Action" # internal or external?
+
+class PageValidationResult(str,Enum):
+    NEGATIVE = "negative"
+    HIGH = "high"
+    ZERO = "zero"
+    UNKNOWN = "unknown"
+    INVALID = "invalid"
+    VALID = "valid"
+    #REASONABLE = "reasonable"
+
+class ItemCategory(str,Enum):
+    INTERNAL = "internal"
+    EXTERNAL = "external"
+    OTHER = "other"
+    TOC = "toc"
+
 def create_toc_dict(
         level,
         title:str,
@@ -27,7 +57,7 @@ def create_toc_dict(
             "level": level, 
             "title": title, 
             "target_page": target_page,
-            "item_type":"toc",
+            "item_category":ItemCategory.TOC.value,
         }
     }
 
@@ -36,6 +66,7 @@ def create_link_dict(
     rect_norm: Optional[tuple],
     anchor_text: str,
     link_type: str,
+    item_category: str,
     source_kind: Any,
     # Explicitly define target payload options with defaults
     destination_page: Optional[Any] = None,
@@ -45,6 +76,7 @@ def create_link_dict(
     file: Optional[str] = None,
     params: Optional[str] = None,
     xref: Optional[int] = None,
+    action_kind: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
     Central factory method ensuring all keys are populated with 
@@ -55,6 +87,7 @@ def create_link_dict(
         "rect": rect_norm,
         "anchor_text": anchor_text,
         "link_type": link_type,
+        "item_category": item_category, 
         "source_kind": str(source_kind) if source_kind is not None else "",
         # --- Inconsistent terms ---
         "xref": xref,
@@ -62,6 +95,7 @@ def create_link_dict(
         "destination_view": destination_view,
         "url": url,
         "remote_file": remote_file,
+        "action_kind": action_kind,
         "file": file,
         "params": params,
     }
@@ -339,21 +373,3 @@ class AnalysisError(PDFLinkCheckError):
 
 class ExportError(PDFLinkCheckError):
     """Raised when writing the final report (JSON/TXT/XLSX) fails."""
-
-class LinkType(str, Enum):
-    """Normalized categories of extracted document elements for reporting/filtering."""
-    INTERNAL_GOTO = "Internal (GoTo/Dest)"
-    INTERNAL_RESOLVED = "Internal (Resolved Action)"  # Standardize this variant
-    EXTERNAL = "External (URI)"
-    REMOTE_GOTOR = "Remote (GoToR)"
-    LAUNCH = "Launch"
-    OTHER = "Other Action"
-
-class PageValidationResult(str,Enum):
-    NEGATIVE = "negative"
-    HIGH = "high"
-    ZERO = "zero"
-    UNKNOWN = "unknown"
-    INVALID = "invalid"
-    VALID = "valid"
-    #REASONABLE = "reasonable"

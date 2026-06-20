@@ -16,7 +16,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict
+from pdflinkcheck.helpers import PageRef, LinkType, create_link_dict, create_toc_dict, ItemCategory
 
 
 """
@@ -136,6 +136,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
 
             # Initialize local variables for conditional assignment
             determined_type = LinkType.OTHER.value
+            item_category=ItemCategory.OTHER.value
             url = None
             destination_page = None
             remote_file = None
@@ -145,6 +146,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             # 1. Handle URI (External)
             if "/A" in obj and "/URI" in obj["/A"]:
                 determined_type = LinkType.EXTERNAL.value
+                item_category=ItemCategory.EXTERNAL.value
                 source_kind = SourceKindPyPDF.ANNOT_URI.value
                 url = obj["/A"]["/URI"]
             
@@ -159,20 +161,24 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                     
                     if "/Dest" in obj:
                         determined_type = LinkType.INTERNAL_RESOLVED.value
+                        item_category=ItemCategory.INTERNAL.value
                         source_kind = SourceKindPyPDF.ANNOT_DIRECT_DEST.value
                     else:
                         determined_type = LinkType.INTERNAL_GOTO.value
+                        item_category=ItemCategory.INTERNAL.value
                         source_kind = SourceKindPyPDF.ANNOT_ACTION_DEST.value
 
             # 3. Handle Remote GoTo (GoToR)
             elif "/A" in obj and obj["/A"].get("/S") == "/GoToR":
                 determined_type = LinkType.REMOTE_GOTOR.value
+                item_category=ItemCategory.EXTERNAL.value
                 source_kind = SourceKindPyPDF.ANNOT_GOTOR.value
                 remote_file = str(obj["/A"].get("/F"))
 
             # 4. Handle Launch Actions
             elif "/A" in obj and obj["/A"].get("/S") == "/Launch":
                 determined_type = LinkType.LAUNCH.value
+                item_category=ItemCategory.EXTERNAL.value
                 source_kind = SourceKindPyPDF.ANNOT_LAUNCH.value
                 file = str(obj["/A"].get("/F") or "")
 
@@ -182,6 +188,7 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 rect_norm=list(rect) if rect else None,
                 anchor_text=anchor_text,
                 link_type=determined_type,
+                item_category=item_category,
                 source_kind=source_kind,
                 destination_page=destination_page,
                 url=url,
