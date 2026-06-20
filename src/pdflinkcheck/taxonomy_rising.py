@@ -3,6 +3,15 @@
 By using nested dictionaries and specific token-matching logic inside the registry, the engine drivers no longer need to execute `if/elif` statements checking for things like `/A`, `/S`, `/F`, or `/Dist`. Instead, they pass the raw structural components directly to a centralized routing dispatcher.
 
 Here is the complete, non-truncated `src/pdflinkcheck/taxonomy.py` built to map every control sequence, slash token, and key inference pattern across all drivers.
+
+
+# DESIGN NOTE
+#
+# This module classifies and routes normalized PDF structures.
+# It MUST NOT call engine-specific APIs (PyPDF, PDFium, or PyMuPDF)
+# to extract data. Extraction belongs in the analysis modules;
+# taxonomy only determines the meaning of already-extracted structures.
+
 """
 # src/pdflinkcheck/taxonomy.py
 from __future__ import annotations
