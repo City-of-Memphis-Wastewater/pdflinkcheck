@@ -141,14 +141,12 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
             anchor_text = _get_anchor_text_pypdf(page, rect)
 
             # Initialize local variables for conditional assignment
-            determined_type = LinkType.OTHER.value
-            item_category=ItemCategory.OTHER.value
             url = None
             destination_page = None
             remote_file = None
             file = None
-            source_kind = SourceKindPyPDF.ANNOT_OTHER.value
-
+        
+            
             # 1. Handle URI (External)
             if "/A" in obj and "/URI" in obj["/A"]:
                 determined_type = LinkType.EXTERNAL.value
@@ -191,6 +189,12 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
                 source_kind = SourceKindPyPDF.ANNOT_LAUNCH.value
                 file = str(obj["/A"].get("/F") or "")
                 target_type = TargetType.FILE.value
+
+            else:
+                source_kind = SourceKindPyPDF.ANNOT_OTHER.value
+                target_type = target_type = TargetType.URL.value
+                determined_type = LinkType.OTHER.value
+                item_category=ItemCategory.OTHER.value
 
             # Pass everything directly into the dictionary factory initialization
             link_dict = create_link_dict(

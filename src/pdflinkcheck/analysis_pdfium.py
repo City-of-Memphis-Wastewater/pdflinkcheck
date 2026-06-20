@@ -377,10 +377,10 @@ def _process_link_annotation(
 
     if action:
         # --- CASE 1: ACTION EXISTS ---
-        _dispatch_action(doc, action, dest, source_page_ref, rect_norm, anchor_text, links)
+        _dispatch_action_pdfium(doc, action, dest, source_page_ref, rect_norm, anchor_text, links)
     elif dest:
         # --- CASE 2: NO ACTION, BUT DIRECT DESTINATION ---
-        _dispatch_direct_dest(doc, dest, source_page_ref, rect_norm, anchor_text, links)
+        _dispatch_direct_dest_pdfium(doc, dest, source_page_ref, rect_norm, anchor_text, links)
     else:
         # Fail-safe catch for unhandled, blank, or broken structural link markers
         link_dict = create_link_dict(
@@ -394,7 +394,7 @@ def _process_link_annotation(
         )
         links.append(link_dict)
 
-def _dispatch_action(
+def _dispatch_action_pdfium(
     doc: Any,
     action: Any,
     dest: Any,
@@ -434,7 +434,7 @@ def _dispatch_action(
             target_type = TargetType.URL.value
             
         else:
-            link_type=LinkType.EXTERNAL.value, 
+            link_type=LinkType.EXTERNAL.value
             item_category=ItemCategory.EXTERNAL.value # tempting, but we should remain consistent with the assertion in PyMuPDF that 
             source_kind=SourceKindPdfium.ANNOT_URI.value
             target_type = TargetType.URL.value
@@ -445,7 +445,7 @@ def _dispatch_action(
         r_dest = pdfium_c.FPDFAction_GetDest(doc.raw, action)
         
         link_type=LinkType.REMOTE_GOTOR.value
-        item_category=ItemCategory.INTERNAL.value
+        item_category=ItemCategory.EXTERNAL.value
         remote_file=remote_file
         source_kind=SourceKindPdfium.ANNOT_GOTOR.value
         destination_page=pdfium_c.FPDFDest_GetDestPageIndex(doc.raw, r_dest) if r_dest else None
@@ -485,7 +485,7 @@ def _dispatch_action(
     )
     links.append(link_dict)
 
-def _dispatch_direct_dest(
+def _dispatch_direct_dest_pdfium(
     doc: Any,
     dest: Any,
     source_page_ref: PageRef,
