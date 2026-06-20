@@ -383,7 +383,7 @@ def _check_launch_link(launch_target: str | None) -> LinkValidationResult:
             reason = f"Launch target file not found: {target_clean}"
         )
     except Exception as e:
-        logger.debug(e)
+        logger.debug(f"Unparseable Launch path sequence: {str(e)}")
         return LinkValidationResult(
             status = MetricKey.LAUNCH_TARGET_BROKEN, 
             reason = f"Unparseable Launch path sequence: {str(e)}"

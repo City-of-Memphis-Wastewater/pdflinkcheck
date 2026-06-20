@@ -15,7 +15,7 @@ try:
     # Use the home directory and append the tool's name
     PDFLINKCHECK_HOME = Path.home() / ".pdflinkcheck"
 except Exception as e:
-    logger.debug(e)
+    logger.debug(f"Falling back to tmp dir: {e}")
     # Fallback if Path.home() fails in certain environments (e.g., some CI runners)
     PDFLINKCHECK_HOME = Path("/tmp/.pdflinkcheck_temp")
 

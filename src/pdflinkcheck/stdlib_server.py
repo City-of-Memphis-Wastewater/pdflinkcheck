@@ -518,11 +518,11 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
             print(f"Content-Length: {content_length} bytes", file=sys.stdlib)
 
         except ValidationError as e:
-            logger.debug(e)
+            logger.debug(f"Error code 400, sent manually: {e}")
             self._send_error_json(str(e), 400)
 
         except Exception as e:
-            logger.debug(e)
+            logger.debug(f"Error code 500, sent manually: {e}")
             import traceback
             tb = traceback.format_exc()
             print(tb, file=sys.stdlib)

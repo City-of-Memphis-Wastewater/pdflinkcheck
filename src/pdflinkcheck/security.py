@@ -118,7 +118,8 @@ def _is_ip(host: str) -> bool:
         ipaddress.ip_address(host)
         return True
     except Exception as e:
-        logger.debug(e)
+        # this is a good thing, don't yell - IP addresses are a security risk
+        #logger.debug(f"Issue with IP address assessment: {e}") 
         return False
 
 def _contains_homoglyphs(s: str) -> bool:

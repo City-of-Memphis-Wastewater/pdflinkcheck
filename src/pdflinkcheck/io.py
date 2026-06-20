@@ -199,7 +199,6 @@ def get_first_pdf_in_cwd() -> Optional[str]:
         return str(first_pdf_path)
     
     except Exception as e:
-        logger.debug(e)
+        logger.error(f"Error while searching for PDF in CWD: {e}")
         # Handle potential permissions errors or other issues
-        print(f"Error while searching for PDF in CWD: {e}", file=sys.stderr)
         return None
