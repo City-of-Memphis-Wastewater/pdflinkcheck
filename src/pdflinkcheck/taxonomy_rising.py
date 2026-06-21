@@ -42,12 +42,13 @@ class LinkType(str, Enum):
     LAUNCH = "Launch"
     OTHER = "Other Action"
 
-class ItemCategory(str, Enum):
+class ItemCoarseCategory(str, Enum):
     """High-level bucket separating internal document routes from external infrastructure routes."""
     INTERNAL = "internal"
     EXTERNAL = "external"
     OTHER = "other"
     TOC = "toc"
+
 
 # ==============================================================================
 # --- Centralized Engine Source Identifiers ---
@@ -61,6 +62,7 @@ class SourceKindPdfium(str, Enum):
     ANNOT_GOTOR = "pypdfium2_annot_gotor"
     ANNOT_LAUNCH = "pypdfium2_annot_launch"
     ANNOT_OTHER = "pypdfium2_annot_other"
+    ANNOT_UNKNOWN = "pypdfium2_annot_unknown"
 
 class SourceKindPyPDF(str, Enum):
     """Tracks exactly which internal low-level PDF dictionary pattern exposed the target link in pypdf."""
@@ -70,6 +72,7 @@ class SourceKindPyPDF(str, Enum):
     ANNOT_GOTOR = "pypdf_annot_gotor"               # /A with /S -> /GoToR
     ANNOT_LAUNCH = "pypdf_annot_launch"             # /A with /S -> /Launch
     ANNOT_OTHER = "pypdf_annot_other"               # Fallback structural block
+    ANNOT_UNKNOWN = "pypdf_annot_unknown"       # Alt fallback structural block
 
 class SourceKindPyMuPDF(str, Enum):
     """Tracks exactly which internal link type exposed the target link in PyMuPDF (fitz)."""
@@ -80,6 +83,7 @@ class SourceKindPyMuPDF(str, Enum):
     LINK_LAUNCH = "pymupdf_link_launch"             # 5: External application/file execution action
     LINK_NAMED = "pymupdf_link_named"               # 4: Named internal pipeline action
     LINK_OTHER = "pymupdf_link_other"               # Fallback identifier string
+    LINK_UNKNOWN = "pymupdf_link_unknown"           # Alt fallback structural block
 
 # ==============================================================================
 # --- Centralized Structural Registry Matrix ---
@@ -90,7 +94,7 @@ class EngineTaxonomy(NamedTuple):
     Polymorphic lookup tuple aligning human classifications with the specific internal keys,
     integers, and system source identifiers used by each parsing driver engine.
     """
-    item_category: ItemCategory
+    item_category: ItemCoarseCategory
     link_type: LinkType
     target_type: TargetType
     
@@ -109,7 +113,7 @@ class EngineTaxonomy(NamedTuple):
 
 TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
     EngineTaxonomy(
-        item_category=ItemCategory.INTERNAL,
+        item_category=ItemCoarseCategory.INTERNAL,
         link_type=LinkType.INTERNAL_GOTO,
         target_type=TargetType.DESTINATION_PAGE,
         pymupdf_kind=1,               # fitz.LINK_GOTO
@@ -121,7 +125,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_GOTO,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.INTERNAL,
+        item_category=ItemCoarseCategory.INTERNAL,
         link_type=LinkType.INTERNAL_RESOLVED,
         target_type=TargetType.DESTINATION_PAGE,
         pymupdf_kind=0,               # fitz.LINK_NONE context (layout map link with a target page reference)
@@ -133,7 +137,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_DIRECT_DEST,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.EXTERNAL,
         target_type=TargetType.URL,
         pymupdf_kind=2,               # fitz.LINK_URI
@@ -145,7 +149,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_URI,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.REMOTE_GOTOR,
         target_type=TargetType.REMOTE_FILE,
         pymupdf_kind=3,               # fitz.LINK_GOTOR
@@ -157,7 +161,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_GOTOR,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.LAUNCH,
         target_type=TargetType.FILE,
         pymupdf_kind=5,               # fitz.LINK_LAUNCH
@@ -169,7 +173,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_LAUNCH,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.OTHER,
+        item_category=ItemCoarseCategory.OTHER,
         link_type=LinkType.OTHER,
         target_type=TargetType.OTHER,
         pymupdf_kind=None,             # Captures fitz.LINK_NAMED (4) or out-of-bounds metrics cleanly
@@ -252,7 +256,7 @@ def create_toc_dict(
             "level": level, 
             "title": title, 
             "target_page": target_page,
-            "item_category": ItemCategory.TOC.value,
+            "item_category": ItemCoarseCategory.TOC.value,
             "target_type": TargetType.PAGE.value,
         }
     }
@@ -328,44 +332,6 @@ logger = logging.getLogger(__name__)
 
 from .page import PageRef
 
-class TargetType(str, Enum):
-    """Normalized low-level validation targets indicating the underlying destination payload form."""
-    URL = "url"
-    FILE = "file"
-    REMOTE_FILE = "remote_file"
-    OTHER = "other"
-    PAGE = "page"
-    DESTINATION_PAGE = "destination_page"
-
-class LinkType(str, Enum):
-    """Human-readable reporting classifications describing how the link interactive region behaves."""
-    INTERNAL_GOTO = "Internal (GoTo/Dest)"
-    INTERNAL_RESOLVED = "Internal (Resolved Action)"
-    EXTERNAL = "External (URI)"
-    REMOTE_GOTOR = "Remote (GoToR)"
-    LAUNCH = "Launch"
-    OTHER = "Other Action"
-
-class ItemCategory(str, Enum):
-    """High-level bucket separating internal document routes from external infrastructure routes."""
-    INTERNAL = "internal"
-    EXTERNAL = "external"
-    OTHER = "other"
-    TOC = "toc"
-
-class PdfToken(str, Enum):
-    """
-    Strict ISO 32000 structural keys and action subtypes.
-    Serves as the primitive structural bedrock for all cross-engine dictionary lookups.
-    """
-    ACTION_KEY = "/A"
-    DEST_KEY = "/Dest"
-    PARAM_D = "/D"
-    PARAM_URI = "/URI"
-    SUBTYPE_KEY = "/S"
-    SUBTYPE_GOTOR = "/GoToR"
-    SUBTYPE_LAUNCH = "/Launch"
-    FALLBACK_OTHER = "/Other"
 
 class PdfToken(str, Enum):
     """
@@ -387,39 +353,8 @@ class PdfToken(str, Enum):
     ACTION_SUBTYPE_KEY = "/S"
     SUBTYPE_GOTOR = "/GoToR"
     SUBTYPE_LAUNCH = "/Launch"
-    FALLBACK_OTHER = "/Other"
+    FALLBACK_OTHER = "/Other" # is this a pre predefined primitive? i need to know what they mean by this, when it is assigned, and how it might differ from "unknown" 
 
-# ==============================================================================
-# --- Centralized Engine Source Identifiers ---
-# ==============================================================================
-
-class SourceKindPdfium(str, Enum):
-    """Tracks exactly which internal PDF pipeline or object type exposed the target link in pdfium."""
-    ANNOT_DIRECT_DEST = "pypdfium2_annot_direct_dest"
-    ANNOT_GOTO = "pypdfium2_annot_goto"
-    ANNOT_URI = "pypdfium2_annot_uri"
-    ANNOT_GOTOR = "pypdfium2_annot_gotor"
-    ANNOT_LAUNCH = "pypdfium2_annot_launch"
-    ANNOT_OTHER = "pypdfium2_annot_other"
-
-class SourceKindPyPDF(str, Enum):
-    """Tracks exactly which internal low-level PDF dictionary pattern exposed the target link in pypdf."""
-    ANNOT_URI = "pypdf_annot_action_uri"           # /A with /URI
-    ANNOT_DIRECT_DEST = "pypdf_annot_direct_dest"   # Direct /Dest on Annotation dictionary
-    ANNOT_ACTION_DEST = "pypdf_annot_action_dest"   # /A with /D (GoTo Action dictionary)
-    ANNOT_GOTOR = "pypdf_annot_gotor"               # /A with /S -> /GoToR
-    ANNOT_LAUNCH = "pypdf_annot_launch"             # /A with /S -> /Launch
-    ANNOT_OTHER = "pypdf_annot_other"               # Fallback structural block
-
-class SourceKindPyMuPDF(str, Enum):
-    """Tracks exactly which internal link type exposed the target link in PyMuPDF (fitz)."""
-    LINK_NONE = "pymupdf_link_none"                 # 0: Direct layout map or unclassified target
-    LINK_GOTO = "pymupdf_link_goto"                 # 1: Destination inside this PDF document
-    LINK_URI = "pymupdf_link_uri"                   # 2: Resource identifier string target (Web URL)
-    LINK_GOTOR = "pymupdf_link_gotor"               # 3: Destination inside another remote PDF document
-    LINK_LAUNCH = "pymupdf_link_launch"             # 5: External application/file execution action
-    LINK_NAMED = "pymupdf_link_named"               # 4: Named internal pipeline action
-    LINK_OTHER = "pymupdf_link_other"               # Fallback identifier string
 
 # ==============================================================================
 # --- Centralized Structural Registry Matrix ---
@@ -430,7 +365,7 @@ class EngineTaxonomy(NamedTuple):
     Polymorphic lookup tuple aligning human classifications with the specific internal keys,
     integers, and system source identifiers used by each parsing driver engine.
     """
-    item_category: ItemCategory
+    item_category: ItemCoarseCategory
     link_type: LinkType
     target_type: TargetType
     
@@ -449,7 +384,7 @@ class EngineTaxonomy(NamedTuple):
 
 TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
     EngineTaxonomy(
-        item_category=ItemCategory.INTERNAL,
+        item_category=ItemCoarseCategory.INTERNAL,
         link_type=LinkType.INTERNAL_GOTO,
         target_type=TargetType.DESTINATION_PAGE,
         pymupdf_kind=1,               # fitz.LINK_GOTO
@@ -461,7 +396,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_GOTO,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.INTERNAL,
+        item_category=ItemCoarseCategory.INTERNAL,
         link_type=LinkType.INTERNAL_RESOLVED,
         target_type=TargetType.DESTINATION_PAGE,
         pymupdf_kind=0,               # fitz.LINK_NONE context (layout map link with a target page reference)
@@ -473,7 +408,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_DIRECT_DEST,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.EXTERNAL,
         target_type=TargetType.URL,
         pymupdf_kind=2,               # fitz.LINK_URI
@@ -485,7 +420,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_URI,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.REMOTE_GOTOR,
         target_type=TargetType.REMOTE_FILE,
         pymupdf_kind=3,               # fitz.LINK_GOTOR
@@ -497,7 +432,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_GOTOR,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.LAUNCH,
         target_type=TargetType.FILE,
         pymupdf_kind=5,               # fitz.LINK_LAUNCH
@@ -509,7 +444,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_source=SourceKindPdfium.ANNOT_LAUNCH,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.OTHER,
+        item_category=ItemCoarseCategory.OTHER,
         link_type=LinkType.OTHER,
         target_type=TargetType.OTHER,
         pymupdf_kind=None,             # Captures fitz.LINK_NAMED (4) or out-of-bounds metrics cleanly
@@ -606,7 +541,7 @@ def create_toc_dict(
             "level": level, 
             "title": title, 
             "target_page": target_page,
-            "item_category": ItemCategory.TOC.value,
+            "item_category": ItemCoarseCategory.TOC.value,
             "target_type": TargetType.PAGE.value,
         }
     }

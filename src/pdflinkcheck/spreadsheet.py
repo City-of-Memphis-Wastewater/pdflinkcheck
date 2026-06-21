@@ -44,7 +44,7 @@ def prepare_links_by_type(results: Dict, pdf_path: str = "") -> Dict[str, List[D
     """Groups links and TOC items into categories."""
     payload = results.get("data", {}) if results else {}
     
-    # pull from item_category(ItemCategory), not dictionary sub set
+    # pull from item_category(ItemCoarseCategory), not dictionary sub set
     ext_links = payload.get('external_links', []) or []
     int_links = payload.get('internal_links', []) or []
     

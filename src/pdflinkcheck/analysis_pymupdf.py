@@ -13,7 +13,7 @@ from .taxonomy import (
     LinkType,
     create_link_dict,
     create_toc_dict,
-    ItemCategory,
+    ItemCoarseCategory,
     TargetType
     )
     
@@ -240,28 +240,28 @@ def extract_links_pymupdf(doc):
                     target_type= TargetType.DESTINATION_PAGE.value
                     if source_kind == fitz.LINK_GOTO:
                         determined_type = LinkType.INTERNAL_GOTO.value
-                        item_category = ItemCategory.INTERNAL.value
+                        item_category = ItemCoarseCategory.INTERNAL.value
                     else:
                         determined_type = LinkType.INTERNAL_RESOLVED.value
-                        item_category = ItemCategory.INTERNAL.value
+                        item_category = ItemCoarseCategory.INTERNAL.value
                         
                 elif source_kind == fitz.LINK_URI:
                     determined_type = LinkType.EXTERNAL.value
-                    item_category = ItemCategory.EXTERNAL.value
+                    item_category = ItemCoarseCategory.EXTERNAL.value
                     target_type= TargetType.URL.value
 
                 elif source_kind == fitz.LINK_GOTOR:
                     determined_type = LinkType.REMOTE_GOTOR.value
-                    item_category = ItemCategory.EXTERNAL.value
+                    item_category = ItemCoarseCategory.EXTERNAL.value
                     target_type= TargetType.REMOTE_FILE.value
                     
                 elif source_kind == fitz.LINK_LAUNCH:
                     determined_type = LinkType.LAUNCH.value
-                    item_category = ItemCategory.EXTERNAL.value
+                    item_category = ItemCoarseCategory.EXTERNAL.value
                     target_type= TargetType.FILE.value
                 else:
                     determined_type = LinkType.OTHER.value
-                    item_category = ItemCategory.OTHER.value
+                    item_category = ItemCoarseCategory.OTHER.value
                     target_type= TargetType.OTHER.value
                 # Pass everything straight to the factory method cleanly
                 link_dict = create_link_dict(

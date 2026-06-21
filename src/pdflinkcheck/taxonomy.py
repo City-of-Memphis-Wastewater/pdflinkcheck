@@ -28,15 +28,16 @@ class LinkType(str, Enum):
     REMOTE_GOTOR = "Remote (GoToR)"
     LAUNCH = "Launch"
     OTHER = "Other Action"
+    UNKNOWN = "unknown"
 
-class ItemCategory(str, Enum):
+class ItemCoarseCategory(str, Enum):
     INTERNAL = "internal"
     EXTERNAL = "external"
     OTHER = "other"
     TOC = "toc"
 
 class EngineTaxonomy(NamedTuple):
-    item_category: ItemCategory
+    item_category: ItemCoarseCategory
     link_type: LinkType
     target_type: TargetType
     pymupdf_kind: Optional[int]
@@ -46,7 +47,7 @@ class EngineTaxonomy(NamedTuple):
 # The Unified Single Source of Truth Table
 TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
     EngineTaxonomy(
-        item_category=ItemCategory.INTERNAL,
+        item_category=ItemCoarseCategory.INTERNAL,
         link_type=LinkType.INTERNAL_GOTO,
         target_type=TargetType.DESTINATION_PAGE,
         pymupdf_kind=1,      # fitz.LINK_GOTO
@@ -54,7 +55,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_kind=1,       # PdfActionType.GOTO
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.INTERNAL,
+        item_category=ItemCoarseCategory.INTERNAL,
         link_type=LinkType.INTERNAL_RESOLVED,
         target_type=TargetType.DESTINATION_PAGE,
         pymupdf_kind=None,   # Resolved contextually via p_index presence
@@ -62,7 +63,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_kind=None,
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.EXTERNAL,
         target_type=TargetType.URL,
         pymupdf_kind=2,      # fitz.LINK_URI
@@ -70,7 +71,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_kind=2,       # PdfActionType.URI
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.REMOTE_GOTOR,
         target_type=TargetType.REMOTE_FILE,
         pymupdf_kind=3,      # fitz.LINK_GOTOR
@@ -78,7 +79,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_kind=3,       # PdfActionType.GOTOR
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.EXTERNAL,
+        item_category=ItemCoarseCategory.EXTERNAL,
         link_type=LinkType.LAUNCH,
         target_type=TargetType.FILE,
         pymupdf_kind=5,      # fitz.LINK_LAUNCH
@@ -86,7 +87,7 @@ TAXONOMY_REGISTRY: List[EngineTaxonomy] = [
         pdfium_kind=4,       # PdfActionType.LAUNCH
     ),
     EngineTaxonomy(
-        item_category=ItemCategory.OTHER,
+        item_category=ItemCoarseCategory.OTHER,
         link_type=LinkType.OTHER,
         target_type=TargetType.OTHER,
         pymupdf_kind=None,   # Fallback capture
@@ -108,7 +109,6 @@ PDFIUM_LOOKUP: Dict[int, EngineTaxonomy] = {
 
 # ---
 
-
 def create_toc_dict(
         level,
         title:str,
@@ -120,7 +120,7 @@ def create_toc_dict(
             "level": level, 
             "title": title, 
             "target_page": target_page,
-            "item_category":ItemCategory.TOC.value,
+            "item_category":ItemCoarseCategory.TOC.value,
             "target_type": TargetType.PAGE.value,
         }
     }
@@ -181,24 +181,24 @@ def create_link_dict(
 # ---- EXPERIMENTAL, DETRITIS ----
 
 class ElementRelationship(NamedTuple):
-    item_category: ItemCategory
+    item_category: ItemCoarseCategory
     link_type: Optional[LinkType]
     target_type: TargetType
 
 # The OUTDATED Dichotomous Reference Matrix, ALSO handled by TAXONOMY_REGISTRY and EngineTaxonomy
 TAXONOMY_MATRIX: List[ElementRelationship] = [
     # TOC Elements
-    ElementRelationship(ItemCategory.TOC, None, TargetType.PAGE),
+    ElementRelationship(ItemCoarseCategory.TOC, None, TargetType.PAGE),
     
     # Internal Annotations
-    ElementRelationship(ItemCategory.INTERNAL, LinkType.INTERNAL_GOTO, TargetType.DESTINATION_PAGE),
-    ElementRelationship(ItemCategory.INTERNAL, LinkType.INTERNAL_RESOLVED, TargetType.DESTINATION_PAGE),
+    ElementRelationship(ItemCoarseCategory.INTERNAL, LinkType.INTERNAL_GOTO, TargetType.DESTINATION_PAGE),
+    ElementRelationship(ItemCoarseCategory.INTERNAL, LinkType.INTERNAL_RESOLVED, TargetType.DESTINATION_PAGE),
     
     # External Annotations
-    ElementRelationship(ItemCategory.EXTERNAL, LinkType.EXTERNAL, TargetType.URL),
-    ElementRelationship(ItemCategory.EXTERNAL, LinkType.REMOTE_GOTOR, TargetType.REMOTE_FILE),
-    ElementRelationship(ItemCategory.EXTERNAL, LinkType.LAUNCH, TargetType.FILE),
+    ElementRelationship(ItemCoarseCategory.EXTERNAL, LinkType.EXTERNAL, TargetType.URL),
+    ElementRelationship(ItemCoarseCategory.EXTERNAL, LinkType.REMOTE_GOTOR, TargetType.REMOTE_FILE),
+    ElementRelationship(ItemCoarseCategory.EXTERNAL, LinkType.LAUNCH, TargetType.FILE),
     
     # Fallback/Other Handlers
-    ElementRelationship(ItemCategory.OTHER, LinkType.OTHER, TargetType.OTHER),
+    ElementRelationship(ItemCoarseCategory.OTHER, LinkType.OTHER, TargetType.OTHER),
 ]
