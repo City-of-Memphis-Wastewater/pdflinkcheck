@@ -117,6 +117,19 @@ def _extract_links_pypdf(reader: PdfReader) -> List[Dict[str, Any]]:
     """
     Termux-compatible link extraction using pure-Python pypdf.
     Matches the reporting schema of the PyMuPDF version.
+    
+    The future goal:
+    taxonomy = TaxonomyRouter.from_pypdf_annotation(
+        annotation=obj
+    )
+
+    link_dict = create_link_dict(
+        ...
+        link_type=taxonomy.link_type.value,
+        item_category=taxonomy.item_category.value,
+        target_type=taxonomy.target_type,
+        source_kind=taxonomy.source_kind.value,
+    )
     """
     
     # Pre-map Object IDs to Page Numbers for fast internal link resolution

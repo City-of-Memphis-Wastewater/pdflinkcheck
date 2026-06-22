@@ -24,14 +24,21 @@ logger = logging.getLogger(__name__)
 
 from .page import PageRef
 
+
+class ClassificationStatus(str, Enum):
+    SUPPORTED = "supported"
+    UNSUPPORTED = "unsupported"
+    UNKNOWN = "unknown"
+
 class TargetType(str, Enum):
     """Normalized low-level validation targets indicating the underlying destination payload form."""
     URL = "url"
     FILE = "file"
     REMOTE_FILE = "remote_file"
-    OTHER = "other"
     PAGE = "page"
     DESTINATION_PAGE = "destination_page"
+    OTHER = "other"
+    UNKNOWN = "unknown"
 
 class LinkType(str, Enum):
     """Human-readable reporting classifications describing how the link interactive region behaves."""
@@ -41,6 +48,7 @@ class LinkType(str, Enum):
     REMOTE_GOTOR = "Remote (GoToR)"
     LAUNCH = "Launch"
     OTHER = "Other Action"
+    UNKNOWN = "unknown"
 
 class ItemCoarseCategory(str, Enum):
     """High-level bucket separating internal document routes from external infrastructure routes."""
@@ -54,6 +62,9 @@ class ItemCoarseCategory(str, Enum):
 # --- Centralized Engine Source Identifiers ---
 # ==============================================================================
 
+# Fallbacks should not be necessary, because we should be representing everything we expect in the ways we hope to expect it. We don't expect a type from theses libs calls "other" or "unknown"
+# We should choose ANNOT_* or LINK_* phrasing ....maybe.
+
 class SourceKindPdfium(str, Enum):
     """Tracks exactly which internal PDF pipeline or object type exposed the target link in pdfium."""
     ANNOT_DIRECT_DEST = "pypdfium2_annot_direct_dest"
@@ -61,8 +72,8 @@ class SourceKindPdfium(str, Enum):
     ANNOT_URI = "pypdfium2_annot_uri"
     ANNOT_GOTOR = "pypdfium2_annot_gotor"
     ANNOT_LAUNCH = "pypdfium2_annot_launch"
-    ANNOT_OTHER = "pypdfium2_annot_other"
-    ANNOT_UNKNOWN = "pypdfium2_annot_unknown"
+    #ANNOT_OTHER = "pypdfium2_annot_other"
+    #ANNOT_UNKNOWN = "pypdfium2_annot_unknown"
 
 class SourceKindPyPDF(str, Enum):
     """Tracks exactly which internal low-level PDF dictionary pattern exposed the target link in pypdf."""
@@ -71,8 +82,8 @@ class SourceKindPyPDF(str, Enum):
     ANNOT_ACTION_DEST = "pypdf_annot_action_dest"   # /A with /D (GoTo Action dictionary)
     ANNOT_GOTOR = "pypdf_annot_gotor"               # /A with /S -> /GoToR
     ANNOT_LAUNCH = "pypdf_annot_launch"             # /A with /S -> /Launch
-    ANNOT_OTHER = "pypdf_annot_other"               # Fallback structural block
-    ANNOT_UNKNOWN = "pypdf_annot_unknown"       # Alt fallback structural block
+    #ANNOT_OTHER = "pypdf_annot_other"               # Fallback structural block
+    #ANNOT_UNKNOWN = "pypdf_annot_unknown"       # Alt fallback structural block
 
 class SourceKindPyMuPDF(str, Enum):
     """Tracks exactly which internal link type exposed the target link in PyMuPDF (fitz)."""
@@ -82,9 +93,11 @@ class SourceKindPyMuPDF(str, Enum):
     LINK_GOTOR = "pymupdf_link_gotor"               # 3: Destination inside another remote PDF document
     LINK_LAUNCH = "pymupdf_link_launch"             # 5: External application/file execution action
     LINK_NAMED = "pymupdf_link_named"               # 4: Named internal pipeline action
-    LINK_OTHER = "pymupdf_link_other"               # Fallback identifier string
-    LINK_UNKNOWN = "pymupdf_link_unknown"           # Alt fallback structural block
+    #LINK_OTHER = "pymupdf_link_other"               # Fallback identifier string
+    #LINK_UNKNOWN = "pymupdf_link_unknown"           # Alt fallback structural block
 
+class PDFISOSpec(str,Enum):
+    A
 # ==============================================================================
 # --- Centralized Structural Registry Matrix ---
 # ==============================================================================
@@ -543,7 +556,11 @@ def create_toc_dict(
             "target_page": target_page,
             "item_category": ItemCoarseCategory.TOC.value,
             "target_type": TargetType.PAGE.value,
-        }
+        },
+        "target_validation": {
+            "status": "unverified",
+            "reason": None,
+        },
     }
 
 def create_link_dict(
