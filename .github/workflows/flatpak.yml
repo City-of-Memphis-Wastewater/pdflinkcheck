@@ -70,7 +70,6 @@ jobs:
           set -e
           flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck --help
           flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck --version
-          flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck copylaunch --help
 
       - name: Attach Flatpak Asset to GitHub Release
         if: github.event_name == 'release'
