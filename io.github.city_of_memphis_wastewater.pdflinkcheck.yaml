@@ -1,0 +1,22 @@
+id: io.github.city_of_memphis_wastewater.pdflinkcheck
+runtime: org.freedesktop.Platform
+runtime-version: '24.08' # Stable Freedesktop baseline
+sdk: org.freedesktop.Sdk
+command: pdflinkcheck
+modules:
+  - name: pdflinkcheck
+    buildsystem: simple
+    build-commands:
+      - pwd
+      - ls -R
+      - ls vendor-wheels
+      # 1. Force a standard offline/sandboxed pip wheel installation to app environment path
+      # - pip3 install --no-index --find-links="file://${PWD}/vendor-wheels" --no-build-isolation --prefix=/app dist/*.whl
+      - pip3 install --ignore-installed --no-index --find-links=vendor-wheels --prefix=/app dist/*.whl
+      - python3 -m pip show pygments
+      - find /app -name 'pygments*'
+      - python3 -c "import pygments; print(pygments.__file__)"
+      - install -Dm644 LICENSE /app/share/licenses/pdflinkcheck/LICENSE
+    sources:
+      - type: dir
+        path: .

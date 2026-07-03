@@ -1,0 +1,85 @@
+# .github/workflows/flatpak.yml
+name: Build Flatpak Bundle
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  flatpak:
+    name: Build Flatpak Application
+    runs-on: ubuntu-latest
+    # Run inside the official Flathub builder container environment
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:freedesktop-24.08
+      options: --privileged
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+
+      - name: Vendor Python Dependencies for Sandbox Environment
+        run: |
+          mkdir -p vendor-wheels
+
+          uv build
+
+          uv run pip download \
+            dist/*.whl \
+            -d vendor-wheels
+
+      - name: Check wheels
+        run: |
+          echo "Vendor wheels:"
+          ls -lah vendor-wheels
+
+          echo
+          echo "Downloaded packages:"
+          find vendor-wheels -name '*.whl'
+          echo "Contents of vendor-wheels:"
+          find vendor-wheels -maxdepth 1 -name '*.whl' | sort
+
+          echo
+          echo "Wheel count:"
+          find vendor-wheels -name '*.whl' | wc -l
+
+      - name: Build and Package Flatpak Bundle
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: io.github.city_of_memphis_wastewater.pdflinkcheck.yaml
+          bundle: pdflinkcheck.flatpak
+          run-tests: false
+          cache-key: flatpak-builder-${{ github.sha }}
+
+      - name: Install for Smoke test
+        run: |
+          flatpak install --user --bundle --noninteractive ./pdflinkcheck.flatpak
+          flatpak list
+          flatpak info io.github.city_of_memphis_wastewater.pdflinkcheck
+
+      - name: Assert CLI works, smoke test
+        run: |
+          set -e
+          flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck --help
+          flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck --version
+          flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck copylaunch --help
+
+      - name: Attach Flatpak Asset to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v3
+        with:
+          files: pdflinkcheck.flatpak
+          overwrite_files: true
+          # Use the release tag if available, otherwise default to a test tag or draft
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.0.0-draft' }}
+          draft: ${{ github.event_name == 'workflow_dispatch' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
