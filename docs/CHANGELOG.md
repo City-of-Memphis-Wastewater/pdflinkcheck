@@ -13,6 +13,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.8] - 2026-07-02
+### Added:
+- flatpak manifest YAML in root and related github runner .github/workflows/flatpak.yml
+- flatpak theory brought in from copy-n-launch-xlsx
+
+---
+
 ## [1.5.7] - 2026-06-19
 ### Changed:
 - Implement LinkValidationResult and MetricKey classes in validate.py.
