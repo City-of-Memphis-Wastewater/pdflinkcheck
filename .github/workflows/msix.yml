@@ -15,7 +15,7 @@ jobs:
     if: true # whether or not if: github.event.release.prerelease == false, because that MSIX currently is being released manually, and we want to test the whole thing.
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

@@ -8,13 +8,13 @@ jobs:
     steps:
       # Step 1: Check out the actual application code
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: pdflinkcheck
 
       # Step 2: Check out the assets repository exactly where the test suite expects it
       - name: Checkout Public Documents Assets
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: City-of-Memphis-Wastewater/public-documents
           ref: dev # or main, depending on your target stability branch
