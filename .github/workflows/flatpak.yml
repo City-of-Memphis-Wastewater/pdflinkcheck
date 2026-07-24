@@ -16,10 +16,21 @@ jobs:
       options: --privileged
     permissions:
       contents: write
+    env:
+      VERSION_TAG: ${{ github.event.release.tag_name || github.ref_name }}               #MSIX_NAME: pdflinkcheck-${{ github.ref_name }}.msix
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+
+      - name: Set artifact names
+        run: |
+          "FLATPAK_NAME=pdflinkcheck-$env:VERSION_TAG.flatpak" >> $env:GITHUB_ENV
+
+      - name: Show artifact names
+        shell: pwsh
+        run: |
+          Write-Host "FLATPAK_NAME=$env:FLATPAK_NAME"
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
