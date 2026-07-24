@@ -71,9 +71,11 @@ jobs:
 
       - name: Install for Smoke test
         run: |
-          flatpak install --user --bundle --noninteractive "./$FLATPAK_NAME"
+          flatpak install --user --bundle --noninteractive pdflinkcheck-*.flatpak
           flatpak list
           flatpak info io.github.city_of_memphis_wastewater.pdflinkcheck
+          flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck --help
+
 
       - name: Assert CLI works, smoke test
         run: |
@@ -92,3 +94,4 @@ jobs:
           draft: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
