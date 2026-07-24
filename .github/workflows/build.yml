@@ -116,8 +116,33 @@ jobs:
           Write-Host "Contains onedir contents: $has_onedir"
           Write-Host "Contains onefile contents: $has_onefile"
 
+      # --- WINDOWS COLLECTOR ---
       - name: Collect Windows artifacts
         if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -Path dist/upload -ItemType Directory -Force
+
+          # Safely look for whatever this specific matrix runner actually generated
+          if (Test-Path "dist/onedir") {
+              Get-ChildItem "dist/onedir" -Directory | ForEach-Object {
+                  $destination = "dist/upload/$($_.Name).zip"
+                  Write-Host "Archiving directory $($_.FullName) to $destination"
+                  Compress-Archive -Path "$($_.FullName)\*" -DestinationPath $destination -Force
+              }
+          }
+          if (Test-Path "dist/onefile") {
+              Get-ChildItem "dist/onefile" -File | ForEach-Object {
+                  # Strip the .exe out of the archive base name so you don't get .exe.zip
+                  $baseName = $_.BaseName
+                  $destination = "dist/upload/$baseName.zip"
+                  Write-Host "Archiving binary $($_.FullName) to $destination"
+                  Compress-Archive -Path $_.FullName -DestinationPath $destination -Force
+              }
+          }
+
+      - name: Collect Windows artifacts, defunct
+        if: false #runner.os == 'Windows'
         shell: pwsh
         run: |
           New-Item -Path dist/upload -ItemType Directory -Force
