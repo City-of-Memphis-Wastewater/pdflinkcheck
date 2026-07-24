@@ -75,6 +75,7 @@ class PDFLinkCheckApp:
         # --- 2. Widget Construction ---
         self._create_widgets()
         self._initialize_menubar()
+        self._apply_menu_theme()
 
     def _initialize_vars(self):
         """Logic that takes time but doesn't need a UI yet."""
