@@ -86,7 +86,7 @@ def get_monitor_geometries():
         try:
             # Run xrandr
             xrandr_result = subprocess.run(['xrandr', '--query'], capture_output=True, text=True, check=True)
-            logger.debug(f"xrandr_result = {xrandr_result}")
+            #logger.debug(f"xrandr_result = {xrandr_result}")
             # Regex to find: "1920x1080+1920+0" or "1920x1080+0+0"
             # We look for lines that contain 'connected' and a geometry string
             lines = xrandr_result.stdout.splitlines()

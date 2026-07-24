@@ -120,12 +120,14 @@ class PDFLinkCheckApp:
         bg = style.lookup("TFrame", "background")
         fg = style.lookup("TLabel", "foreground")
 
+        #logger.debug(self.output_text.keys())
+
         self.output_text.configure(
             background=bg,
             foreground=fg,
             insertbackground=fg,
-            disabledbackground=bg,
-            disabledforeground=fg
+            selectbackground=bg,
+            selectforeground=fg
         )
 
     def _set_icon(self):
