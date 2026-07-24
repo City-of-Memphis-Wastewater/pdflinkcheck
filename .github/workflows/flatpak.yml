@@ -25,7 +25,7 @@ jobs:
 
       - name: Set artifact names
         run: |
-          "FLATPAK_NAME=pdflinkcheck-$env:VERSION_TAG.flatpak" >> $env:GITHUB_ENV
+          echo "FLATPAK_NAME=pdflinkcheck-$env:VERSION_TAG.flatpak" >> $env:GITHUB_ENV
 
       - name: Show artifact names
         run: |
