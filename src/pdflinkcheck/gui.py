@@ -171,8 +171,8 @@ class PDFLinkCheckApp:
 
         self.tools_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Tools", menu=self.tools_menu)
-        logger.debug(f"{self.tools_menu=}")
-        logger.debug(f"{self.menubar=}")
+        #logger.debug(f"{self.tools_menu=}")
+        #logger.debug(f"{self.menubar=}")
 
         self.tools_menu.add_command(label="Toggle Theme", command=self._toggle_theme)
         self.tools_menu.add_command(label="Clear Output Window", command=self._clear_output_window)
