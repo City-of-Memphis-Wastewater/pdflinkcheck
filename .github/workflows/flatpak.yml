@@ -28,9 +28,8 @@ jobs:
           "FLATPAK_NAME=pdflinkcheck-$env:VERSION_TAG.flatpak" >> $env:GITHUB_ENV
 
       - name: Show artifact names
-        shell: pwsh
         run: |
-          Write-Host "FLATPAK_NAME=$env:FLATPAK_NAME"
+          echo "FLATPAK_NAME=$env:FLATPAK_NAME"
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v7
@@ -66,13 +65,13 @@ jobs:
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           manifest-path: io.github.city_of_memphis_wastewater.pdflinkcheck.yaml
-          bundle: pdflinkcheck.flatpak
+          bundle: ${{ env.FLATPAK_NAME }}
           run-tests: false
           cache-key: flatpak-builder-${{ github.sha }}
 
       - name: Install for Smoke test
         run: |
-          flatpak install --user --bundle --noninteractive ./pdflinkcheck.flatpak
+          flatpak install --user --bundle --noninteractive "./$FLATPAK_NAME"
           flatpak list
           flatpak info io.github.city_of_memphis_wastewater.pdflinkcheck
 
@@ -86,7 +85,7 @@ jobs:
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v3
         with:
-          files: pdflinkcheck.flatpak
+          files: ${{ env.FLATPAK_NAME }}
           overwrite_files: true
           # Use the release tag if available, otherwise default to a test tag or draft
           tag_name: ${{ github.ref_type == 'tag' && github.ref_name || 'v0.0.0-draft' }}
