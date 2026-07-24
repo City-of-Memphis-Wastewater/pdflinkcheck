@@ -16,6 +16,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.5.9] - 2026-07-24
 ### Added:
 - Fix placement of ondir _internal in build.yml
+- Attach .cer to msix release
 
 ---
 
