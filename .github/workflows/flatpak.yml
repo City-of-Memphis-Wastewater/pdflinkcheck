@@ -17,7 +17,7 @@ jobs:
     permissions:
       contents: write
     env:
-      VERSION_TAG: ${{ github.event.release.tag_name || github.ref_name }}               #MSIX_NAME: pdflinkcheck-${{ github.ref_name }}.msix
+      VERSION_TAG: ${{ github.event.release.tag_name || github.ref_name }}
 
     steps:
       - name: Checkout repository
