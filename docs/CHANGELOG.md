@@ -13,6 +13,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.11] - 2026-07-24
+### Fixed:
+- Flatpak env reference
+- CER password usage
+
+---
+
 ## [1.5.10] - 2026-07-24
 ### Added:
 - Flatpak versioned naming.
