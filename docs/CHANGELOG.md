@@ -15,7 +15,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ## [1.5.10] - 2026-07-24
 ### Added:
-- Flatpak versioned naming
+- Flatpak versioned naming.
 - No interactive password usage for CER file
 - Versioned naming for CER and MSIX
 
