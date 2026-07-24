@@ -13,10 +13,24 @@ jobs:
     permissions:
       contents: write
     env:
-      MSIX_NAME: pdflinkcheck-${{ github.ref_name }}.msix
-      CER_NAME: pdflinkcheck-${{ github.ref_name }}.cer
-    if: true # whether or not if: github.event.release.prerelease == false, because that MSIX currently is being released manually, and we want to test the whole thing.
+      VERSION_TAG: ${{ github.event.release.tag_name || github.ref_name }}
+      #MSIX_NAME: pdflinkcheck-${{ github.ref_name }}.msix
+      #CER_NAME: pdflinkcheck-${{ github.ref_name }}.cer
+    if: true 
+
     steps:
+      - name: Set artifact names
+        shell: pwsh
+        run: |
+          "MSIX_NAME=pdflinkcheck-$env:VERSION_TAG.msix" >> $env:GITHUB_ENV
+          "CER_NAME=pdflinkcheck-$env:VERSION_TAG.cer" >> $env:GITHUB_ENV
+
+      - name: Show artifact names
+        shell: pwsh
+        run: |
+          Write-Host "MSIX_NAME=$env:MSIX_NAME"
+          Write-Host "CER_NAME=$env:CER_NAME"
+
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
