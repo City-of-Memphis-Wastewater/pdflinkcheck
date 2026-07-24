@@ -13,6 +13,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.12] - 2026-07-24
+### Fixed:
+- CER password ref for MSIX
+
+---
+
 ## [1.5.11] - 2026-07-24
 ### Fixed:
 - Flatpak env reference
