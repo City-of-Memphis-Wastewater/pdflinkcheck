@@ -25,7 +25,7 @@ jobs:
 
       - name: Set artifact names
         run: |
-          echo "FLATPAK_NAME=pdflinkcheck-$env:VERSION_TAG.flatpak" >> $env:GITHUB_ENV
+          echo "FLATPAK_NAME=pdflinkcheck-${{ env.VERSION_TAG }}.flatpak" >> "$GITHUB_ENV"
 
       - name: Show artifact names
         run: |
@@ -71,11 +71,9 @@ jobs:
 
       - name: Install for Smoke test
         run: |
-          flatpak install --user --bundle --noninteractive pdflinkcheck-*.flatpak
+          flatpak install --user --bundle --noninteractive "./$FLATPAK_NAME"
           flatpak list
           flatpak info io.github.city_of_memphis_wastewater.pdflinkcheck
-          flatpak run io.github.city_of_memphis_wastewater.pdflinkcheck --help
-
 
       - name: Assert CLI works, smoke test
         run: |
