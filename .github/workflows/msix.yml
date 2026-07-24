@@ -12,6 +12,9 @@ jobs:
     runs-on: windows-latest
     permissions:
       contents: write
+    env:
+      MSIX_NAME: pdflinkcheck-${{ github.ref_name }}.msix
+      CER_NAME: pdflinkcheck-${{ github.ref_name }}.cer
     if: true # whether or not if: github.event.release.prerelease == false, because that MSIX currently is being released manually, and we want to test the whole thing.
     steps:
       - name: Checkout repository
@@ -142,16 +145,6 @@ jobs:
           $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX_PC }}")
           [IO.File]::WriteAllBytes("cert.pfx", $bytes)
 
-      - name: Export public certificate, defunct
-        shell: pwsh
-        if: false
-        run: |
-          $cert = Get-PfxCertificate cert.pfx
-          Export-Certificate `
-            -Cert $cert `
-            -FilePath pdflinkcheck.cer `
-            -Force
-
       - name: Export public certificate
         shell: pwsh
         run: |
@@ -164,7 +157,7 @@ jobs:
 
           Export-Certificate `
             -Cert $cert `
-            -FilePath pdflinkcheck.cer `
+            -FilePath $env:CER_NAME `
             -Force
 
       - name: Remove unversioned manifest file
@@ -281,7 +274,7 @@ jobs:
       - name: Create MSIX package
         shell: pwsh
         run: |
-          & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck*.msix
+          & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p $env:MSIX_NAME
 
 
       - name: Sign MSIX package
@@ -294,20 +287,20 @@ jobs:
             /tr http://timestamp.digicert.com `
             /f cert.pfx `
             /p "${{ secrets.CERT_PASSWORD_PC }}" `
-            pdflinkcheck*.msix
+            $env:MSIX_NAME
 
       - name: Upload MSIX and CER artifacts
         uses: actions/upload-artifact@v7
         with:
           name: release-assets
           path: |
-            pdflinkcheck*.msix
-            pdflinkcheck*.cer
+            $env:MSIX_NAME
+            $env:CER_NAME
 
       - name: Calculate SHA-256 Checksum
         shell: pwsh
         run: |
-          $sha = (Get-FileHash "pdflinkcheck*.msix" -Algorithm SHA256).Hash
+          $sha = (Get-FileHash $env:MSIX_NAME -Algorithm SHA256).Hash
           echo "MSIX_SHA=$sha" >> $env:GITHUB_ENV
           Write-Host "MSIX SHA256: $sha"
 
@@ -316,8 +309,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            pdflinkcheck*.msix
-            pdflinkcheck*.cer
+            $env:MSIX_NAME
+            $enc:CER_NAME
 
           # This appends the hash to the release notes body
           body: |
