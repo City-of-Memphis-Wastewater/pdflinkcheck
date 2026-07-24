@@ -112,6 +112,22 @@ class PDFLinkCheckApp:
         elif style.theme_use() == "forest-dark":
             style.theme_use("forest-light")
 
+        self._apply_output_theme()
+
+    def _apply_output_theme(self):
+        style = ttk.Style(self.root)
+
+        bg = style.lookup("TFrame", "background")
+        fg = style.lookup("TLabel", "foreground")
+
+        self.output_text.configure(
+            background=bg,
+            foreground=fg,
+            insertbackground=fg,
+            disabledbackground=bg,
+            disabledforeground=fg
+        )
+
     def _set_icon(self):
         icon_dir = files("pdflinkcheck.data.icons")
         try:
