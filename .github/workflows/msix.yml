@@ -142,10 +142,19 @@ jobs:
           $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX_PC }}")
           [IO.File]::WriteAllBytes("cert.pfx", $bytes)
 
+      - name: Export public certificate
+        shell: pwsh
+        run: |
+          $cert = Get-PfxCertificate cert.pfx
+          Export-Certificate `
+            -Cert $cert `
+            -FilePath pdflinkcheck*.cer `
+            -Force
+
       - name: Remove unversioned manifest file
         shell: pwsh
         run: Remove-Item msix\AppxManifest_unversioned.xml -ErrorAction Ignore
-      
+
       - name: Find makeappx
         id: find_makeappx
         shell: pwsh
@@ -256,7 +265,7 @@ jobs:
       - name: Create MSIX package
         shell: pwsh
         run: |
-          & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck.msix
+          & "${{ steps.find_makeappx.outputs.MAKEAPPX }}" pack /d msix /p pdflinkcheck*.msix
 
 
       - name: Sign MSIX package
@@ -269,18 +278,20 @@ jobs:
             /tr http://timestamp.digicert.com `
             /f cert.pfx `
             /p "${{ secrets.CERT_PASSWORD_PC }}" `
-            pdflinkcheck.msix
+            pdflinkcheck*.msix
 
-      - name: Upload MSIX artifact
+      - name: Upload MSIX and CER artifacts
         uses: actions/upload-artifact@v7
         with:
-          name: msix
-          path: pdflinkcheck.msix
+          name: release-assets
+          path: |
+            pdflinkcheck*.msix
+            pdflinkcheck*.cer
 
       - name: Calculate SHA-256 Checksum
         shell: pwsh
         run: |
-          $sha = (Get-FileHash "pdflinkcheck.msix" -Algorithm SHA256).Hash
+          $sha = (Get-FileHash "pdflinkcheck*.msix" -Algorithm SHA256).Hash
           echo "MSIX_SHA=$sha" >> $env:GITHUB_ENV
           Write-Host "MSIX SHA256: $sha"
 
@@ -288,7 +299,10 @@ jobs:
         if: github.event_name == 'release' # Only run when a release is actually published
         uses: softprops/action-gh-release@v3
         with:
-          files: pdflinkcheck.msix
+          files: |
+            pdflinkcheck*.msix
+            pdflinkcheck*.cer
+
           # This appends the hash to the release notes body
           body: |
             ### Checksums
@@ -400,7 +414,7 @@ jobs:
         if: false
         run: |
           $uploadUrl = "${{ steps.create_submission.outputs.UPLOAD_URL }}"
-          $file = "pdflinkcheck.msix"
+          $file = "pdflinkcheck*.msix"
 
           Write-Host "Uploading MSIX to Azure Blob..."
           Invoke-RestMethod -Method PUT -Uri $uploadUrl -InFile $file -ContentType "application/octet-stream"
