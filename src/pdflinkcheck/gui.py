@@ -113,6 +113,7 @@ class PDFLinkCheckApp:
             style.theme_use("forest-light")
 
         self._apply_output_window_theme()
+        self._apply_menu_theme()
 
     def _apply_output_window_theme(self):
         style = ttk.Style(self.root)
@@ -129,6 +130,20 @@ class PDFLinkCheckApp:
             selectbackground=bg,
             selectforeground=fg
         )
+
+    def _apply_menu_theme(self):
+        style = ttk.Style(self.root)
+
+        bg = style.lookup("TFrame", "background")
+        fg = style.lookup("TLabel", "foreground")
+
+        for menu in (self.menubar, self.tools_menu):
+            menu.configure(
+                background=bg,
+                foreground=fg,
+                activebackground=fg,
+                activeforeground=bg
+            )
 
     def _set_icon(self):
         icon_dir = files("pdflinkcheck.data.icons")
@@ -149,21 +164,24 @@ class PDFLinkCheckApp:
 
     def _initialize_menubar(self):
         """Builds the application menu bar."""
-        menubar = tk.Menu(self.root)
-        self.root.config(menu=menubar)
+        logger.debug("initialize_menubar()")
+        self.menubar = tk.Menu(self.root)
+        self.root.config(menu=self.menubar)
 
-        tools_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Tools", menu=tools_menu)
+        self.tools_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="Tools", menu=self.tools_menu)
+        logger.debug(f"{self.tools_menu=}")
+        logger.debug(f"{self.menubar=}")
 
-        tools_menu.add_command(label="Toggle Theme", command=self._toggle_theme)
-        tools_menu.add_command(label="Clear Output Window", command=self._clear_output_window)
-        tools_menu.add_command(label="Copy Output to Clipboard", command=self._copy_output_to_clipboard)
-        tools_menu.add_command(label="Recheck PDF Libraries", command=self._recheck_pdf_library_cache)
+        self.tools_menu.add_command(label="Toggle Theme", command=self._toggle_theme)
+        self.tools_menu.add_command(label="Clear Output Window", command=self._clear_output_window)
+        self.tools_menu.add_command(label="Copy Output to Clipboard", command=self._copy_output_to_clipboard)
+        self.tools_menu.add_command(label="Recheck PDF Libraries", command=self._recheck_pdf_library_cache)
 
-        tools_menu.add_separator()
-        tools_menu.add_command(label="License", command=self._show_license)
-        tools_menu.add_command(label="Readme", command=self._show_readme)
-        tools_menu.add_command(label="I Have Questions", command=self._show_i_have_questions)
+        self.tools_menu.add_separator()
+        self.tools_menu.add_command(label="License", command=self._show_license)
+        self.tools_menu.add_command(label="Readme", command=self._show_readme)
+        self.tools_menu.add_command(label="I Have Questions", command=self._show_i_have_questions)
 
     # --- UI Component Building ---
 
