@@ -13,6 +13,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.9] - 2026-07-24
+### Added:
+- Fix placement of ondir _internal in build.yml
+
+---
+
 ## [1.5.8] - 2026-07-02
 ### Added:
 - flatpak manifest YAML in root and related github runner .github/workflows/flatpak.yml
