@@ -142,13 +142,29 @@ jobs:
           $bytes = [System.Convert]::FromBase64String("${{ secrets.CERT_PFX_PC }}")
           [IO.File]::WriteAllBytes("cert.pfx", $bytes)
 
-      - name: Export public certificate
+      - name: Export public certificate, defunct
         shell: pwsh
+        if: false
         run: |
           $cert = Get-PfxCertificate cert.pfx
           Export-Certificate `
             -Cert $cert `
-            -FilePath pdflinkcheck*.cer `
+            -FilePath pdflinkcheck.cer `
+            -Force
+
+      - name: Export public certificate
+        shell: pwsh
+        run: |
+          $password = ConvertTo-SecureString "${{ secrets.PFX_PASSWORD }}" -AsPlainText -Force
+
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(
+              "cert.pfx",
+              $password
+          )
+
+          Export-Certificate `
+            -Cert $cert `
+            -FilePath pdflinkcheck.cer `
             -Force
 
       - name: Remove unversioned manifest file
