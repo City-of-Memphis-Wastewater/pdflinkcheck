@@ -148,11 +148,9 @@ jobs:
       - name: Export public certificate
         shell: pwsh
         run: |
-          $password = ConvertTo-SecureString "${{ secrets.PFX_PASSWORD }}" -AsPlainText -Force
-
-          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(
+          $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2::new(
               "cert.pfx",
-              $password
+              "${{ secrets.PFX_PASSWORD }}"
           )
 
           Export-Certificate `
@@ -294,8 +292,8 @@ jobs:
         with:
           name: release-assets
           path: |
-            $env:MSIX_NAME
-            $env:CER_NAME
+            ${{ env:MSIX_NAME }}
+            ${{ env:CER_NAME }}
 
       - name: Calculate SHA-256 Checksum
         shell: pwsh
@@ -309,8 +307,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            $env:MSIX_NAME
-            $enc:CER_NAME
+            ${{ env:MSIX_NAME }}
+            ${{ env:CER_NAME }}
 
           # This appends the hash to the release notes body
           body: |
