@@ -162,9 +162,10 @@ jobs:
       - name: Export public certificate
         shell: pwsh
         run: |
+          $password = "${{ secrets.CERT_PASSWORD_PC }}"
           $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new(
               "cert.pfx",
-              "${{ secrets.PFX_PASSWORD }}"
+              $password
           )
 
           Export-Certificate `
