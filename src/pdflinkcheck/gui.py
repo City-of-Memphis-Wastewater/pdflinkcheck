@@ -112,9 +112,9 @@ class PDFLinkCheckApp:
         elif style.theme_use() == "forest-dark":
             style.theme_use("forest-light")
 
-        self._apply_output_theme()
+        self._apply_output_window_theme()
 
-    def _apply_output_theme(self):
+    def _apply_output_window_theme(self):
         style = ttk.Style(self.root)
 
         bg = style.lookup("TFrame", "background")
