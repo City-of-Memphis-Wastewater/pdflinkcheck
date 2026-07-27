@@ -249,7 +249,7 @@ def analyze_pdf(
 
 @app.command(name="serve")
 def serve(
-    host: str = typer.Option("0.0.0.0", "--host", "-h", help="Host to bind (use 0.0.0.0 for network access)"),
+    host: str = typer.Option("127.0.0.1", "--host", "-h", help="Host to bind (use 127.0.0.1 for network access)"),
     port: int = typer.Option(8000, "--port", "-p", help="Port to listen on"),
     reload: bool = typer.Option(False, "--reload", is_flag=True, help="Auto-reload on code changes (dev only)"),
 ):
