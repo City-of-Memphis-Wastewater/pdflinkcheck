@@ -13,6 +13,12 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.14] - 2026-07-28
+### Fixed:
+- Asset web references in readme need to be fully qualified.
+
+---
+
 ## [1.5.13] - 2026-07-28
 ### Added:
 - Dedicated github docs site at https://city-of-memphis-wastewater.github.io/pdflinkcheck/
