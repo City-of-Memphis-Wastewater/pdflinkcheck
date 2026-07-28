@@ -1,0 +1,60 @@
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@v7
+
+      - run: uv sync --extra crypto --extra docs
+
+      # Build wheel
+      - run: uv build
+
+      # Install CLI
+      - run: pip install dist/pdflinkcheck-*.whl
+
+      # Verify CLI
+      - run: pdflinkcheck --version
+
+      # Generate CLI docs
+      - run: |
+          chmod +x scripts/update_index_version.sh
+          ./scripts/update_index_version.sh
+
+      # Build documentation
+      - run: uv run mkdocs build --strict
+      # Upload site
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
