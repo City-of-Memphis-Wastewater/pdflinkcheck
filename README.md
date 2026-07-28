@@ -2,16 +2,6 @@
 
 PDFLinkCheck validates hyperlinks and navigation destinations inside PDF documents. It is available as a Python library, command-line tool, and desktop GUI.
 
-PDFLinkCheck analyzes PDF files for:
-
-- External web links (`http`, `https`)
-- Internal PDF destinations (`GoTo`)
-- External PDF destinations (`GoToR`)
-- Broken and unresolved references
-- Link inventory and reporting
-
-Designed for documentation QA, publishing pipelines, engineering document control, and automated validation.
-
 ## Metadata
 
 **Type:** Python library + CLI + GUI
@@ -25,6 +15,19 @@ Designed for documentation QA, publishing pipelines, engineering document contro
 **Platforms:** Windows, Linux, macOS
 
 **Python:** 3.9+
+
+## Use Cases
+
+PDFLinkCheck analyzes PDF files for:
+
+- External web links (`http`, `https`)
+- Internal PDF destinations (`GoTo`)
+- External PDF destinations (`GoToR`)
+- Broken and unresolved references
+- Link inventory and reporting
+
+Designed for documentation QA, publishing pipelines, engineering document control, and automated validation.
+
 
 ## Install
 
@@ -50,6 +53,14 @@ or
 
 ```bash
 pdflinkcheck analyze document.pdf
+```
+
+or
+
+```python
+import pdflinkcheck
+
+# script pdf analysis and expoet handling ...
 ```
 
 ## Documentation
