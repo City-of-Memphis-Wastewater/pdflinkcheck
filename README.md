@@ -1,6 +1,6 @@
 # PDFLinkCheck
 
-PDFLinkCheck is a command-line tool, a GUI tool, and a Python library for validating hyperlinks and navigation destinations inside PDF documents.
+PDFLinkCheck validates hyperlinks and navigation destinations inside PDF documents. It is available as a Python library, command-line tool, and desktop GUI.
 
 PDFLinkCheck analyzes PDF files for:
 
