@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 from pdflinkcheck.report import run_report_request
 from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
+from pdflinkcheck.logging_setup import configure_logging_for_gui
 from pdflinkcheck.environment import (
     pymupdf_is_available,  
     pdfium_is_available, 
@@ -189,14 +190,30 @@ class PDFLinkCheckApp:
         self.tools_menu.add_command(label="Readme", command=self._show_readme)
         self.tools_menu.add_command(label="I Have Questions", command=self._show_i_have_questions)
 
+    # ---
     def _initialize_logging(self):
+        # Attach your existing logging setup to the GUI text widget
+        configure_logging_for_gui(self.output_text, debug=self.debug_logging_enabled)
+
+    def _toggle_debug_logging(self):
+        self.debug_logging_enabled = not self.debug_logging_enabled
+
+        # Re-configure existing loggers with updated level
+        configure_logging_for_gui(self.output_text, debug=self.debug_logging_enabled)
+
+        label = "Turn Debug Logging Off" if self.debug_logging_enabled else "Turn Debug Logging On"
+        self.tools_menu.entryconfig(self.debug_menu_index, label=label)
+        
+        logger.debug(f"Debug logging set to {self.debug_logging_enabled}")
+    # ---
+    def _initialize_logging_defunct(self):
         level = logging.DEBUG if self.debug_logging_var.get() else logging.INFO
 
         logging.basicConfig(
             level=level,
             format="%(asctime)s %(levelname)s %(name)s: %(message)s"
         )
-    def _toggle_debug_logging(self):
+    def _toggle_debug_logging_defunct(self):
         self.debug_logging_enabled = not self.debug_logging_enabled
 
         if self.debug_logging_enabled:
@@ -212,7 +229,7 @@ class PDFLinkCheckApp:
         )
 
         logger.debug("Debug logging enabled")
-        
+    # ---
     # --- UI Component Building ---
 
     def _create_widgets(self):
@@ -263,8 +280,12 @@ class PDFLinkCheckApp:
         self.btn_open_browser_to_files.pack(side=tk.LEFT, padx=3, pady=1)
         
         # === Row 3: Action Buttons ===
-        run_analysis_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton', width=16)
-        run_analysis_btn.grid(row=3, column=0, columnspan=2, pady=6, sticky='ew', padx=(0, 3))
+        self.run_analysis_btn = ttk.Button(control_frame, text="▶ Run Analysis", command=self._run_report_gui, style='Accent.TButton', width=16)
+        self.run_analysis_btn.grid(row=3, column=0, columnspan=2, pady=6, sticky='ew', padx=(0, 3))
+
+        # Progress bar (starts hidden)
+        self.progress_bar = ttk.Progressbar(control_frame, mode="indeterminate", length=140)
+        # Note: Don't grid() it here yet—it will be shown dynamically when analysis starts!
 
         clear_window_btn = ttk.Button(control_frame, text="Clear Output Window", command=self._clear_output_window, width=18)
         clear_window_btn.grid(row=3, column=2, pady=6, sticky='ew', padx=3)
@@ -345,8 +366,79 @@ class PDFLinkCheckApp:
     
     def _get_check_external_links_selection(self) -> bool:
         return self.do_check_external_links.get()
-        
+
     def _run_report_gui(self):
+        pdf_path_str = self._assess_pdf_path_str()
+        if not pdf_path_str:
+            return
+
+        export_format = self._get_export_format_selection()
+        pdf_library = self._get_pdf_engine_selection()
+        check_external = self._get_check_external_links_selection()
+
+        # 1. Clear output window and disable Run button
+        self.output_text.config(state=tk.NORMAL)
+        self.output_text.delete('1.0', tk.END)
+        self.run_analysis_btn.config(state=tk.DISABLED)
+
+        # 2. Show and start the progress bar in column 1
+        #self.progress_bar.grid(row=4, column=1, pady=6, padx=3, sticky='ew')
+        self.progress_bar.grid(row=4, column=0, columnspan=3, pady=(4,8), padx=2, sticky='ew')
+        self.progress_bar.start(10)  # Pulse every 10ms
+
+        request = ReportRequest(
+            pdf_path=pdf_path_str,
+            export_format=export_format,
+            pdf_library=pdf_library,
+            check_external=check_external
+        )
+
+        # 3. Define the background worker
+        def worker():
+            original_stdout = sys.stdout
+            sys.stdout = RedirectText(self.output_text)
+            print("Running PDF analysis ...")
+
+            try:
+                report_results = run_report_request(request)
+
+                # Queue successful UI updates back onto the main Tkinter thread
+                def on_success():
+                    self.current_report_text = report_results.get("text-lines", "")
+                    self.current_report_data = report_results.get("data", {})
+
+                    self.last_json_path = report_results.get("export_files", {}).get("export_path_json")
+                    self.last_txt_path = report_results.get("export_files", {}).get("export_path_txt")
+                    self.last_xlsx_path = report_results.get("export_files", {}).get("export_path_xlsx")
+
+                self.root.after(0, on_success)
+
+            except Exception as e:
+                # Queue error handling back onto main thread
+                def on_error():
+                    messagebox.showinfo(
+                        "Engine Fallback",
+                        f"Error encountered with {pdf_library}: {e}\n\nFalling back to automated library selection."
+                    )
+                    self.pdf_library_var.set(PdfEngine.resolve_auto_flag().name)
+
+                self.root.after(0, on_error)
+
+            finally:
+                # Always restore stdout and stop progress bar on the main thread
+                def cleanup():
+                    sys.stdout = original_stdout
+                    self.output_text.config(state=tk.DISABLED)
+                    self.progress_bar.stop()
+                    self.progress_bar.grid_forget()  # Hide progress bar
+                    self.run_analysis_btn.config(state=tk.NORMAL)
+
+                self.root.after(0, cleanup)
+
+        # 4. Kick off the worker thread
+        threading.Thread(target=worker, daemon=True).start()
+
+    def _run_report_gui_stable(self):
 
         pdf_path_str = self._assess_pdf_path_str()
         if not pdf_path_str:
@@ -405,6 +497,8 @@ class PDFLinkCheckApp:
         try:
             target_dir = get_export_path()
             pyhabitat.show_system_explorer(path = target_dir)
+            logger.debug("Show System Explorer")
+            logger.info("System explorer triggered by pyhabitat")
         except Exception as e:
             # The GUI catches the error to show a user-friendly popup
             messagebox.showerror("Error", f"Could not open system explorer: {e}")
