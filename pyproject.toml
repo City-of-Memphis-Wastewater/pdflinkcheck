@@ -90,6 +90,12 @@ dev = [
     "pytest-cov>=4.1.0",
 ]
 
+docs = [
+    "mkdocs>=1.5,<2",
+    "mkdocs-material>=9.5",
+    "pymdown-extensions>=10.0",
+]
+
 
 [build-system]
 requires = ["setuptools>=64", "wheel"]
