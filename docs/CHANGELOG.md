@@ -13,6 +13,15 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.13] - 2026-07-28
+### Added:
+- Dedicated github docs site at https://city-of-memphis-wastewater.github.io/pdflinkcheck/
+
+### Changed:
+- Readme simplified for AI consumability.
+
+---
+
 ## [1.5.12] - 2026-07-24
 ### Fixed:
 - CER password ref for MSIX
