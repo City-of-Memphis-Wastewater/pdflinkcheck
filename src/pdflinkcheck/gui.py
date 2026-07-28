@@ -184,6 +184,14 @@ class PDFLinkCheckApp:
         self.tools_menu.add_command(label="Readme", command=self._show_readme)
         self.tools_menu.add_command(label="I Have Questions", command=self._show_i_have_questions)
 
+    def _initialize_logging(self):
+        level = logging.DEBUG if self.debug_logging_var.get() else logging.INFO
+
+        logging.basicConfig(
+            level=level,
+            format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+        )
+        
     # --- UI Component Building ---
 
     def _create_widgets(self):
