@@ -1,8 +1,8 @@
-site_name: Dworshak
-site_description: Configuration and credential waterfall with user-in-the-loop prompting and CLI access.
-site_url: https://city-of-memphis-wastewater.github.io/dworshak
-repo_url: https://github.com/City-of-Memphis-Wastewater/dworshak
-repo_name: City-of-Memphis-Wastewater/dworshak
+site_name: PDFLinkCheck
+site_description: PDFLinkCheck validates external hyperlinks and internal PDF navigation links, producing reports for automated documentation quality assurance.
+site_url: https://city-of-memphis-wastewater.github.io/pdflinkcheck
+repo_url: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck
+repo_name: City-of-Memphis-Wastewater/pdflinkcheck
 
 theme:
   name: material
@@ -45,4 +45,4 @@ plugins:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/City-of-Memphis-Wastewater/dworshak
+      link: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck
