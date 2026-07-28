@@ -16,7 +16,7 @@ PDFLinkCheck validates hyperlinks and navigation destinations inside PDF documen
 
 **Python:** 3.9+
 
-## Use Cases
+## Features
 
 PDFLinkCheck analyzes PDF files for:
 
@@ -45,22 +45,30 @@ pip install "pdflinkcheck[pdfium]"
 
 ## Quick Start
 
+GUI
+
 ```bash
 pdflinkcheck gui
 ```
 
-or
+CLI
 
 ```bash
 pdflinkcheck analyze document.pdf
 ```
 
-or
+Web App
+
+```bash
+pdflinkcheck --debug serve
+```
+
+Library usage
 
 ```python
 import pdflinkcheck
 
-# script pdf analysis and expoet handling ...
+# Script pdf analysis and export handling ...
 ```
 
 ## Documentation
