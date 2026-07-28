@@ -11,6 +11,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - I need to add a TargetDescription enum, for target_description in the JSON structure.
 - So that I can have 'target' be consistent key rather than some that say: destination_page or url or filename or whatever kind of target.
 - move summary line to top, so that lengthy pastes to an AI still hold the overarching sense.
+- Release to wimdows store once the debugging can be routed to the output window
  
 ---
 
