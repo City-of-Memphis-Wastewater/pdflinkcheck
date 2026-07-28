@@ -24,7 +24,7 @@ jobs:
 
       - uses: astral-sh/setup-uv@v7
 
-      - run: uv sync --extra crypto --extra docs
+      - run: uv sync --extra pdfium --group docs --group dev
 
       # Build wheel
       - run: uv build
