@@ -18,7 +18,6 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ## [1.5.15] - 2026-07-28
 ### Added:
 - Progress bar during analysis. Location, which causes contraction of the output window, is debatable.
-- Debug button in tool bar, though debugging doesnt come through until after a process is complete.
 
 ---
 
