@@ -1,291 +1,79 @@
-# pdflinkcheck
+# PDFLinkCheck
 
-A purpose-built tool for comprehensive analysis of hyperlinks and GoTo links within PDF documents. Users may choose between three different PDF analysis libraries. Use the CLI or the GUI or the localhost webapp to leverage this cross-platform PDF hyperlink and navigation analysis toolkit.
+PDFLinkCheck is a command-line tool, a GUI tool, and a Python library for validating hyperlinks and navigation destinations inside PDF documents.
 
+PDFLinkCheck analyzes PDF files for:
 
-[![Get it from the Microsoft Store](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/ms_store_badge_en-us-light.svg)](https://apps.microsoft.com/store/detail/9n11hxvls1wg) 
+- External web links (`http`, `https`)
+- Internal PDF destinations (`GoTo`)
+- External PDF destinations (`GoToR`)
+- Broken and unresolved references
+- Link inventory and reporting
 
-[![Socket Badge](https://badge.socket.dev/pypi/package/pdflinkcheck)](https://socket.dev/pypi/package/pdflinkcheck)
------
+Designed for documentation QA, publishing pipelines, engineering document control, and automated validation.
 
-![Screenshot of the pdflinkcheck GUI](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.3.3.png)
+## Metadata
 
------
+**Type:** Python library + CLI + GUI
 
-## 📥 Access and Installation
+**Primary purpose:** Validate hyperlinks and navigation inside PDF documents.
 
-The recommended way to use `pdflinkcheck` is to either install the CLI with `pipx` or to download the appropriate latest binary for your system from [Releases](https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/releases/).
+**Input:** PDF files
 
-### 🚀 Release Artifact Files (EXE, PYZ, ELF)
+**Output:** Link validation reports, in JSON, XLSX, and TXT.
 
-For the most user-typical experience, download the single-file binary matching your OS.
+**Platforms:** Windows, Linux, macOS
 
-| **File Type** | **Primary Use Case** | **Recommended Launch Method** |
-| :--- | :--- | :--- |
-| **Executable (.exe, .elf)** | **GUI** | Double-click the file. |
-| **PYZ (Python Zip App)** | **CLI** or **GUI** | Run using your system's `python` command: `python pdflinkcheck-VERSION.pyz --help` | 
+**Python:** 3.9+
 
-### Installation via pipx
+## Install
 
-For an isolated environment where you can access `pdflinkcheck` from any terminal:
+CLI application:
 
 ```bash
-# Ensure you have pipx installed first (if not, run: pip install pipx)
-pipx install pdflinkcheck[pdfium,pymupdf]
-
-# On Termux
-pipx install pdflinkcheck
-
+pipx install "pdflinkcheck[pdfium]"
 ```
 
------
+Python library:
 
-## 💻 Graphical User Interface (GUI)
-
-The tool can be run as simple cross-platform graphical interface (Tkinter).
-
-### Launching the GUI
-
-Ways to launch the GUI interface:
-1.  **Implicit Launch:** Run the tool or file with no arguments, subcommands, or flags. (Note: PyInstaller builds use the --windowed (or -noconsole) flag, except for on Termux.)
-2.  **Explicit Command:** Use the dedicated GUI subcommand (`pdflinkcheck gui`).
-
------
-
-## 🚀 CLI Usage
-
-The core functionality is accessed via the `analyze` command. 
-
-`pdflinkcheck --help`:
-![Screenshot of the pdflinkcheck CLI Tree Help](https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_cli_v1.4.4.png)
-
-
-See the `pdflinkcheck` Typer CLI structure.
-
+```bash
+pip install "pdflinkcheck[pdfium]"
 ```
+
+## Quick Start
+
+```bash
+pdflinkcheck gui
+```
+
+or
+
+```bash
+pdflinkcheck analyze document.pdf
+```
+
+## Documentation
+
+Documentation:
+
+https://city-of-memphis-wastewater.github.io/pdflinkcheck/
+
+## CLI
+
+```bash
 pdflinkcheck helptree
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.5.7_helptree.svg" width="100%" alt="Screenshot of the pdflinkcheck CLI helptree">
+<img src="assets/pdflinkcheck_v1.5.12_helptree.svg" width="100%">
 </p>
-`helptree` is a utility function for Typer CLIs, imported from the `typer-helptree` library.
 
-- GitHub: https://github.com/City-of-Memphis-Wastewater/typer-helptree
-- PyPI: https://pypi.org/project/typer-helptree/
+## Screenshot
 
+<p align="center">
+<img src="assets/pdflinkcheck_gui_v1.3.3.png" width="900">
+</p>
 
+## License
 
-### Available Commands
-
-|**Command**|**Description**|
-|---|---|
-|`pdflinkcheck analyze`|Analyzes a PDF file for links and validates their reasonableness.|
-|`pdflinkcheck gui`|Explicitly launch the Graphical User Interface.|
-|`pdflinkcheck docs`|Access documentation, including the README and AGPLv3+ license.|
-|`pdflinkcheck serve`|Serve a basic local web app which uses only the Python standard library.|
-|`pdflinkcheck tools`|Access additional tools, like `--clear-cache`.|
-
-### `analyze` Command Options
-
-|**Option**|**Description**|**Default**|
-|---|---|---|
-|`<PDF_PATH>`|**Required.** The path to the PDF file to analyze.|N/A|
-|`--pdf-library / -p`|Select engine: `pymupdf` or `pypdf`.|`pypdf`|
-|`--format / -f`|Export to `JSON`, `TXT`, `XLSX`, and/or `None` to suppress file output.|`JSON`|
-
-### `gui` Command Options
-
-| **Option**             | **Description**                                                                                               | **Default**    |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- | -------------- |
-| `--auto-close INTEGER` | **(For testing/automation only).** Delay in milliseconds after which the GUI window will automatically close. | `0` (Disabled) |
-
-#### Example Runs
-
-```bash 
-# Analyze a document, show all links, and save the report as XLSX, JSON, and TXT
-pdflinkcheck analyze "TE Maxson WWTF O&M Manual.pdf" --format xlsx -f json -f txt
-
-# Show the GUI for only a moment, like in a build check
-pdflinkcheck gui --auto-close 3000 
-
-# Show both the LICENSE and README.md docs
-pdflinkcheck docs --license --readme 
-```
-
------
-
-## 📦 Library Access (Advanced)
-
-For developers importing `pdflinkcheck` into other Python projects, the core analysis functions are exposed directly in the root namespace. The various `analysis_pdf_*` functions each use a different library to extract the target PDF's internal TOC, external links, and metadata.
-
-|**Function**|**Library**|**Description**|
-|---|---|---|
-|`run_report()`|pdflinkcheck | **(Primary function)** Performs the full analysis, prints to console, and handles file export.|
-|`analyze_pdf_pdfium()`| pypdfium2 | Fast, ~10 mb, Permissively licensed |
-|`analyze_pdf_pymupdf()`| PyMuPDF | Fast, ~30 mb, AGPL3+ licensed |
-|`analyze_pdf_pypdf()`| pypdf library | Slow, ~2 mb, Permissively licensed |
-
-Example:
-
-```python
-from pdflinkcheck import ( run_report,
-                          analyze_pdf_pymupdf, 
-                          analyze_pdf_pypdf, 
-                          analyze_pdf_pdfium, 
-                          )
-
-file = "document1.pdf"
-report_data = run_report(file)
-links_pdfium = analyze_pdf_pdfium(file)
-links_pypdf = analyze_pdf_pypdf(file)
-```
-
------
-
-## ✨ Features
-
-  * **Active Link Extraction:** Identifies and categorizes all programmed links (External URIs, Internal GoTo/Destinations, Remote Jumps).
-  * **Anchor Text Retrieval:** Extracts the visible text corresponding to each link's bounding box.
-  * **Structural TOC:** Extracts the PDF's internal Table of Contents (bookmarks/outline).
-
------
-
-## 🥚 Optional REPL‑Friendly GUI Access (Easter Egg)
-
-For users who prefer exploring tools interactively—especially those coming from MATLAB or other REPL‑first environments—`pdflinkcheck` includes an optional Easter egg that exposes the GUI launcher directly in the library namespace.
-
-This feature is **disabled by default** and has **no effect on normal imports**.
-
-### Enabling the Easter Egg
-
-Set the environment variable before importing the library:
-
-```bash
-export PDFLINKCHECK_GUI_EASTEREGG=true
-```
-or
-
-```python
-import os
-os.environ["PDFLINKCHECK_GUI_EASTEREGG"] = "true"
-```
-
-and then 
-
-```python
-import pdflinkcheck
-pdflinkcheck.start_gui()
-```
-
-Accepted values include: `true`, `1`, `yes`, `on` (case‑insensitive).
-
-### Purpose
-
-This opt‑in behavior is designed to make the library feel welcoming to beginners who are experimenting in a Python REPL for the first time. When enabled, the `start_gui()` function becomes available at the top level:
-
-```python
-pdflinkcheck.start_gui()
-```
-
-If the `PDFLINKCHECK_GUI_EASTEREGG` environment variable is not set—or if GUI support is unavailable—`pdflinkcheck` behaves as a normal library with no GUI functions exposed.
-
------
-
-## ⚠️ Compatibility Notes
-
-### Termux Compatibility as a Key Goal
-A key goal of City-of-Memphis-Wastewater is to release all software as Termux-compatible.
-
-Termux compatibility is important in the modern age, because Android devices are common among technicians, field engineers, and maintenance staff. 
-Android is the most common operating system in the Global South. 
-We aim to produce stable software that can do the most possible good. 
-
-Now `pdflinkcheck` can run on Termux by using the `pypdf` engine and the `pdfium` engine. 
-Benefits:
-- `pypdf`-only artifacts, to reduce size to about 6% compared to artifacts that include `PyMuPDF`.
-- Web-stack GUI as an alternative to the Tkinter GUI, which can be run locally on Termux or as a web app.
-
-
-### PDF Library Selection
-`PyMuPDF` is an optional dependency. All testing comparing `pypdf` and `PyMuPDF` has shown identical validation performance. However `PyMuPDF` is much faster. The benefit of `pypdf` is small size of packages and cross-platform compatibility. We have recently added a PDFium option, which circumvents the AGPL3+.
-
-It is expected that all binaries and artifacts contain PyMuPDF, unless they are built on Android. The GUI and CLI interfaces both allow selection of the library; if PyMuPDF is selected but is not available, the user will be warned.
-
-To install the complete version use one of these options:
-
-```bash
-pip install "pdflinkcheck[pymupdf]"
-pipx install "pdflinkcheck[pdfium]"
-uv tool install "pdflinkcheck[pdfium]"
-uv add "pdflinkcheck[pdfium]"
-```
-
----
-
-### Document Compatibility: 
-Not all PDF files can be processed successfully. This tool is designed primarily for digitally generated (vector-based) PDFs.
-
-Processing may fail or yield incomplete results for:
-* **Scanned PDFs** (images of text) that lack an accessible text layer.
-* **Encrypted or Password-Protected** documents.
-* **Malformed or non-standard** PDF files.
-
------
-
-## Run from Source (Developers)
-
-```bash
-git clone http://github.com/city-of-memphis-wastewater/pdflinkcheck.git
-cd pdflinkcheck
-
-# To include the PyMuPDF dependency in the installation:
-uv sync --extras pdfium --extra pymupdf
-
-# On Termux, to not include PyMuPDF:
-uv sync --extra pdfium
-
-# To include developer dependencies:
-uv sync --all-extras --group dev
-
-# Run the CLI
-uv run python -m pdflinkcheck.cli --help
-
-# Run a basic webapp and Termux-facing browser-based interface
-uv run python -m pdflinkcheck.stdlib_server
-```
-
------
-
-## 📜 License Implications (PyMuPDF)
-
-Please see the LICENSE file, the NOTICE file, and the PyMuPDf sourcecode.
-
-
-|**Build Type**|**License Outcome**|
-|---|---|
-|Core + pypdf|MIT|
-|Core + PDFium|MIT|
-|Core + PyMuPDF|AGPL obligations apply|
-
-It is entirely optional to include `PyMuPDF` as a dependency of `pdflinkcheck`. Leverage pyproject.toml `--extra` flags to choose what is included.
-The source code itself for `pdflinkcheck` is licensed under the `MIT`. 
-
-> **Before deploying or modifying this tool for organizational use, especially for internal web services or distribution, please ensure compliance with the PyMuPDG terms.**
-
-Because of the strong copyleft AGPLv3+ license associated with PyMuPDF, which is an optional, extra dependency of this project, any version of `pdflinkcheck` that includes AGPL‑licensed components (such as `PyMuPDF`) must be distributed as a whole under AGPLv3+. This means that for those versions, anyone who distributes the application — or makes a modified version available over a network — must also provide the complete corresponding source code under the same terms.
-
-Links:
-- pdflinkcheck ource code: https://github.com/City-of-Memphis-Wastewater/pdflinkcheck/  
-- PyMuPDF source code: https://github.com/pymupdf/PyMuPDF/
-- pypdfium2 source code: https://github.com/pypdfium2-team/pypdfium2
-- pypdf source code: https://github.com/py-pdf/pypdf/
-
----
-
-## Alternative PDF Link Analysis Solutions
-
-- https://evermap.com/Tutorial-ABM-AutoBookmark-PDF-Link-Checker.asp
-- https://www.powermapper.com/products/sortsite/ads/links-link-checker/
-- https://bootlin.com/blog/pdf-link-checker/
-
+MIT
