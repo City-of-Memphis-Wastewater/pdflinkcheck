@@ -9,7 +9,7 @@ pdflinkcheck helptree
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.5.7_helptree.svg" width="100%" alt="helptree">>
+  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.5.13_helptree.svg" width="100%" alt="helptree">>
 </p>
 
 

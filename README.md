@@ -84,7 +84,7 @@ pdflinkcheck helptree
 ```
 
 <p align="center">
-<img src="assets/pdflinkcheck_v1.5.12_helptree.svg" width="100%">
+<img src="assets/pdflinkcheck_v1.5.13_helptree.svg" width="100%">
 </p>
 
 ## Screenshot
