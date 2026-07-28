@@ -10,15 +10,12 @@ import unicodedata
 import logging
 logger = logging.getLogger(__name__)
 
-from pyhabitat import check_executable_path
-
 from .logging_setup import error_logger    
 from .paths import LOG_FILE_PATH
 
 from pdflinkcheck.io import (
     export_report_json, 
     export_report_txt, 
-    get_first_pdf_in_cwd, 
     get_friendly_path, 
 )
 from pdflinkcheck.validate import run_validation
@@ -201,11 +198,11 @@ def run_report_core(
 
         # each of these needs a GUID and to be nested in a step further, with a details section, a validation section, and a risk section
         base_data_dict = {
+            "validation_summary": EMPTY_VALIDATION_SUMMARY.copy(),
             "external_links": [k for k in extracted_links if k.get('details', {}).get('link_type') == LinkType.EXTERNAL.value], 
             "internal_links": [k for k in extracted_links if k.get('details', {}).get('link_type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 
             #"links": extracted_links,
             "toc": structural_toc,
-            "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()
         }
 
         intermediate_results = {
@@ -309,7 +306,7 @@ def _print_report_algorithm(report_buffer: list, report_buffer_overview: list, p
 def _build_empty_report_dict(name: str, pages: int, path: str, engine_name: str, buffer: list) -> dict:
     """Factory helper providing fully structured empty states safely."""
     return {
-        "data": {"external_links": [], "internal_links": [], "toc": [], "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()},
+        "data": {"validation_summary": EMPTY_VALIDATION_SUMMARY.copy(), "external_links": [], "internal_links": [], "toc": []},
         #"data": {"links": [], "toc": [], "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()},
         "text-lines": buffer,
         "summary_metadata": {
