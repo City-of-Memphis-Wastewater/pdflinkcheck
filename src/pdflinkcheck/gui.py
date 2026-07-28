@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 from pdflinkcheck.report import run_report_request
 from pdflinkcheck._version import get_version
 from pdflinkcheck.io import get_first_pdf_in_cwd, get_friendly_path
-from pdflinkcheck.logging_setup import configure_logging_for_gui
 from pdflinkcheck.environment import (
     pymupdf_is_available,  
     pdfium_is_available, 
@@ -77,8 +76,6 @@ class PDFLinkCheckApp:
         self._create_widgets()
         self._initialize_menubar()
         self._apply_menu_theme()
-        self.debug_logging_enabled = False
-        self.debug_menu_index = self.tools_menu.index("end")
 
     def _initialize_vars(self):
         """Logic that takes time but doesn't need a UI yet."""
@@ -181,55 +178,11 @@ class PDFLinkCheckApp:
         self.tools_menu.add_command(label="Clear Output Window", command=self._clear_output_window)
         self.tools_menu.add_command(label="Copy Output to Clipboard", command=self._copy_output_to_clipboard)
         self.tools_menu.add_command(label="Recheck PDF Libraries", command=self._recheck_pdf_library_cache)
-        self.tools_menu.add_command(
-            label="Turn Debug Logging On",
-            command=self._toggle_debug_logging
-        )
         self.tools_menu.add_separator()
         self.tools_menu.add_command(label="License", command=self._show_license)
         self.tools_menu.add_command(label="Readme", command=self._show_readme)
         self.tools_menu.add_command(label="I Have Questions", command=self._show_i_have_questions)
 
-    # ---
-    def _initialize_logging(self):
-        # Attach your existing logging setup to the GUI text widget
-        configure_logging_for_gui(self.output_text, debug=self.debug_logging_enabled)
-
-    def _toggle_debug_logging(self):
-        self.debug_logging_enabled = not self.debug_logging_enabled
-
-        # Re-configure existing loggers with updated level
-        configure_logging_for_gui(self.output_text, debug=self.debug_logging_enabled)
-
-        label = "Turn Debug Logging Off" if self.debug_logging_enabled else "Turn Debug Logging On"
-        self.tools_menu.entryconfig(self.debug_menu_index, label=label)
-        
-        logger.debug(f"Debug logging set to {self.debug_logging_enabled}")
-    # ---
-    def _initialize_logging_defunct(self):
-        level = logging.DEBUG if self.debug_logging_var.get() else logging.INFO
-
-        logging.basicConfig(
-            level=level,
-            format="%(asctime)s %(levelname)s %(name)s: %(message)s"
-        )
-    def _toggle_debug_logging_defunct(self):
-        self.debug_logging_enabled = not self.debug_logging_enabled
-
-        if self.debug_logging_enabled:
-            logging.getLogger("pdflinkcheck").setLevel(logging.DEBUG)
-            label = "Turn Debug Logging Off"
-        else:
-            logging.getLogger("pdflinkcheck").setLevel(logging.INFO)
-            label = "Turn Debug Logging On"
-
-        self.tools_menu.entryconfig(
-            self.debug_menu_index,
-            label=label
-        )
-
-        logger.debug("Debug logging enabled")
-    # ---
     # --- UI Component Building ---
 
     def _create_widgets(self):

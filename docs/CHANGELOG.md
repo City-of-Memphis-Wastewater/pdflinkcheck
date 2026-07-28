@@ -15,6 +15,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
  
 ---
 
+## [1.5.15] - 2026-07-28
+### Added:
+- Progress bar during analysis. Location, which causes contraction of the output window, is debatable.
+- Debug button in tool bar, though debugging doesnt come through until after a process is complete.
+
+---
+
 ## [1.5.14] - 2026-07-28
 ### Fixed:
 - Asset web references in readme need to be fully qualified.
