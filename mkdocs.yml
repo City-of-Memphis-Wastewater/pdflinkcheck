@@ -19,15 +19,10 @@ nav:
   - Quick Start: quickstart.md
 
   - Concepts:
-      - Obtain Pattern: concepts/obtain.md
-
-  - Ecosystem:
-      - Overview: ecosystem/index.md
-      - Secret Integration: ecosystem/secret.md
+      - PDF Link Types: concepts/pdf-link-types.md
 
   - Project:
       - Changelog: CHANGELOG.md
-      - CLI Protocol: cli-protocol.md
 
 markdown_extensions:
   - admonition
