@@ -54,6 +54,7 @@ class PDFLinkCheckApp:
 
         # NOW load the theme (this takes ~100-300ms)
         self._initialize_forest_theme()
+        self._initialize_custom_styles()
 
         # Apply the theme
         style = ttk.Style()
@@ -115,6 +116,66 @@ class PDFLinkCheckApp:
         self._apply_menu_theme()
         self._apply_progressbar_theme()
 
+    def _initialize_custom_styles_black(self):
+        """Call once during setup after loading the forest theme scripts."""
+        style = ttk.Style(self.root)
+        
+        # Define custom White progress bar for forest-dark
+        style.layout(
+            "White.Horizontal.TProgressbar",
+            [
+                (
+                    "Progressbar.trough",
+                    {
+                        "children": [
+                            ("Progressbar.pbar", {"side": "left", "sticky": "ns"})
+                        ],
+                        "sticky": "nswe",
+                    },
+                )
+            ],
+        )
+        style.configure(
+            "White.Horizontal.TProgressbar",
+            troughcolor="#2b2b2b",
+            background="#ffffff",
+            bordercolor="#2b2b2b",
+            lightcolor="#ffffff",
+            darkcolor="#ffffff",
+            thickness=6,  # Matches standard Forest bar height (adjust to 8 if needed)
+        )
+
+    def _initialize_custom_styles(self):
+        """Create a custom progressbar style using Forest's exact Tcl layout."""
+        # Query the exact image Forest uses for its trough/pbar elements
+        style = ttk.Style(self.root)
+
+        # Create a solid white 1x1 image in Tcl to swap into the progressbar element
+        self.root.tk.call("image", "create", "photo", "pbar_white", "-width", "16", "-height", "6")
+        self.root.tk.call("pbar_white", "put", "#ffffff", "-to", "0", "0", "16", "6")
+
+        self.root.tk.call("image", "create", "photo", "pbar_trough_dark", "-width", "1", "-height", "6")
+        self.root.tk.call("pbar_trough_dark", "put", "#2b2b2b", "-to", "0", "0", "1", "6")
+
+        # Map our Tcl white image directly to a custom Ttk style that retains Forest layout bounds
+        style.element_create("White.Progressbar.pbar", "image", "pbar_white")
+        style.element_create("White.Progressbar.trough", "image", "pbar_trough_dark")
+
+        style.layout(
+            "White.Horizontal.TProgressbar",
+            [
+                (
+                    "White.Progressbar.trough",
+                    {
+                        "children": [
+                            ("White.Progressbar.pbar", {"side": "left", "sticky": "ns"})
+                        ],
+                        "sticky": "nswe",
+                    },
+                )
+            ],
+        )
+
     def _apply_output_window_theme(self):
         style = ttk.Style(self.root)
 
@@ -145,20 +206,55 @@ class PDFLinkCheckApp:
                 activeforeground=bg
             )
 
-    def _apply_progressbar_theme(self):
+    def _apply_progressbar_theme_stable(self):
+        logger.debug("_apply_progressbar_theme()")
         style = ttk.Style(self.root)
-        if style.theme_use() == "forest-dark":
-            style.layout("White.Horizontal.TProgressbar", [
-                ('Horizontal.Progressbar.trough', {
-                    'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})],
-                    'sticky': 'nswe'
-                })
-            ])
-            style.configure("White.Horizontal.TProgressbar", background="#ffffff", troughcolor="#2b2b2b", thickness=6)
+        current_theme = style.theme_use()
+
+        if current_theme == "forest-dark":
+            # Re-map layout to default basic elements so color parameters aren't ignored by image maps
+            style.layout(
+                "Horizontal.TProgressbar",
+                [
+                    (
+                        "Progressbar.trough",
+                        {
+                            "children": [
+                                (
+                                    "Progressbar.pbar",
+                                    {"side": "left", "sticky": "ns"},
+                                )
+                            ],
+                            "sticky": "nswe",
+                        },
+                    )
+                ],
+            )
+            style.configure(
+                "Horizontal.TProgressbar",
+                troughcolor="#1c1c1c",
+                background="#ffffff",
+                bordercolor="#1c1c1c",
+                lightcolor="#ffffff",
+                darkcolor="#ffffff",
+            )
+        else:
+            # Re-apply Forest theme's native TCL layout & image bindings
+            self.root.tk.call("Forest::init")  # Resets default style mappings
+            style.theme_use("forest-light")
+
+    def _apply_progressbar_theme(self):
+        logger.debug("_apply_progressbar_theme()")
+        style = ttk.Style(self.root)
+        current_theme = style.theme_use()
+
+        if current_theme == "forest-dark":
             self.progress_bar.config(style="White.Horizontal.TProgressbar")
         else:
+            # Standard Forest theme image-based progressbar style
             self.progress_bar.config(style="Horizontal.TProgressbar")
 
+    
     def _set_icon(self):
         icon_dir = files("pdflinkcheck.data.icons")
         try:
