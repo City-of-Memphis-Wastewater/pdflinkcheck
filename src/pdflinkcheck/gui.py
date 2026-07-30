@@ -368,7 +368,9 @@ class PDFLinkCheckApp:
         sys.stdout = RedirectText(self.output_text)
 
         print("Running PDF analysis ...")
-        
+        if self.do_check_external_links:
+            print("ping is enabled, this could take a while...")
+
         # Add input field later
         #check_external = False
         
