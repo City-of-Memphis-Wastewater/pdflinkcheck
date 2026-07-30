@@ -48,12 +48,23 @@ EMPTY_VALIDATION_SUMMARY = {
         "total_pages": 0
     }
 
+EMPTY_RISK_DETAILS = {
+    "risk_summary": {
+            "total_external": 0,
+            "scored": 0,
+            "high_risk": 0,
+            "medium_risk": 0,
+            "low_risk": 0,
+            "zero_risk": 0
+    }
+}
+
 class Report:
     def __init__(self):
         self.links = []
         self.toc = []
         self.validation_summary = EMPTY_VALIDATION_SUMMARY.copy()
-        self.risk_block = {}
+        self.risk_details = EMPTY_RISK_DETAILS.copy()
         self.summary_metadata = {}
         self.export_files = {}
 
@@ -199,6 +210,7 @@ def run_report_core(
         # each of these needs a GUID and to be nested in a step further, with a details section, a validation section, and a risk section
         base_data_dict = {
             "validation_summary": EMPTY_VALIDATION_SUMMARY.copy(),
+            "risk_details": EMPTY_RISK_DETAILS.copy(),
             "external_links": [k for k in extracted_links if k.get('details', {}).get('link_type') == LinkType.EXTERNAL.value], 
             "internal_links": [k for k in extracted_links if k.get('details', {}).get('link_type') in [LinkType.INTERNAL_GOTO.value, LinkType.INTERNAL_RESOLVED.value]], 
             #"links": extracted_links,
@@ -228,7 +240,7 @@ def run_report_core(
             log(line, overview=True)
 
         # Assemble finalized payload architecture
-        report_results["data"]["risk_block"] = compute_risk(report_results)
+        report_results["data"]["risk_details"] = compute_risk(report_results)
         report_results["data"]["validation_summary"].update(validation_results)
         report_results["text-lines"] = report_buffer
 
@@ -306,8 +318,7 @@ def _print_report_algorithm(report_buffer: list, report_buffer_overview: list, p
 def _build_empty_report_dict(name: str, pages: int, path: str, engine_name: str, buffer: list) -> dict:
     """Factory helper providing fully structured empty states safely."""
     return {
-        "data": {"validation_summary": EMPTY_VALIDATION_SUMMARY.copy(), "external_links": [], "internal_links": [], "toc": []},
-        #"data": {"links": [], "toc": [], "validation_summary": EMPTY_VALIDATION_SUMMARY.copy()},
+        "data": {"validation_summary": EMPTY_VALIDATION_SUMMARY.copy(), "risk_details": EMPTY_RISK_DETAILS.copy(), "external_links": [], "internal_links": [], "toc": []},
         "text-lines": buffer,
         "summary_metadata": {
             "file_overview": {"pdf_name": name, "total_pages": pages, "source_path": path, "processing_path": path},
