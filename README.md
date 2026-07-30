@@ -90,7 +90,7 @@ pdflinkcheck helptree
 ## Screenshot
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.3.3.png" width="900">
+<img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_gui_v1.5.16_dark.png" width="900">
 </p>
 
 ## License
