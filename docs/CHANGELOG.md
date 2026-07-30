@@ -19,6 +19,7 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ### Added:
 - Progress bar during analysis. Location, which causes contraction of the output window, is debatable.
 - Add print for ping awareness and increased wait time to gui.
+- Increase typer-helptree to 0.2.11 and pyhabitat to 1.3.7
 
 ---
 
