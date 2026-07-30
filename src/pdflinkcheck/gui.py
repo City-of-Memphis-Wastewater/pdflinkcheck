@@ -222,12 +222,6 @@ class PDFLinkCheckApp:
         
         self.export_actions_frame = ttk.LabelFrame(control_frame, text="Open Report Files:")
         self.export_actions_frame.grid(row=1, column=2, padx=3, pady=3, sticky='nsew')
-        
-        self.btn_open_json = ttk.Button(self.export_actions_frame, text="Open JSON", command=lambda: self._open_export_file("json"), width=10)
-        #self.btn_open_json.pack(side=tk.LEFT, padx=3, pady=1)
-
-        self.btn_open_txt = ttk.Button(self.export_actions_frame, text="Open TXT", command=lambda: self._open_export_file("txt"), width=10)
-        #self.btn_open_txt.pack(side=tk.LEFT, padx=3, pady=1)
 
         self.btn_open_browser_to_files = ttk.Button(self.export_actions_frame, text="Show System Explorer", command=lambda: self._show_system_explorer_gui(), width=20)
         self.btn_open_browser_to_files.pack(side=tk.LEFT, padx=3, pady=1)
@@ -407,35 +401,6 @@ class PDFLinkCheckApp:
             # The GUI catches the error to show a user-friendly popup
             messagebox.showerror("Error", f"Could not open system explorer: {e}")
 
-    # fallow
-    def _open_export_file(self, file_type: str):
-        target_path = self.last_json_path if file_type == "json" else self.last_txt_path
-
-        if not target_path or not Path(target_path).exists():
-            messagebox.showwarning(
-                "File Not Found",
-                f"The {file_type.upper()} report file does not exist.\n\n"
-                "Please click 'Run Analysis' to generate one."
-            )
-            return
-
-        try:
-
-            # Non-Windows: use pyhabitat's robust cross-platform logic
-            threading.Thread(
-                target=lambda: pyhabitat.edit_textfile(target_path),
-                daemon=True
-            ).start()
-        except Exception as e:
-            # Log for debugging
-            with open(r"C:\Users\user\Desktop\edit_log.txt", "a") as f:
-                f.write(f"Open {file_type} failed: {e}\n")
-
-            messagebox.showerror(
-                "Open Error",
-                f"Failed to open {file_type.upper()} report:\n{e}"
-            )
-            
     def _assess_pdf_path_str(self):
         pdf_path_str = self.pdf_path.get().strip()
         if not pdf_path_str:
