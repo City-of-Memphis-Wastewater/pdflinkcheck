@@ -1,82 +1,36 @@
 # src/pdflinkcheck/tk_utils.py
 import tkinter as tk
-import subprocess
 import re
 import platform
 import logging
 logger = logging.getLogger(__name__)
 
-def get_primary_monitor_geometry():
-    """ 
-    Queries xrandr to find the actual primary monitor's dimensions and offsets.
-    Returns (width, height, x_offset, y_offset) or None.
-
-    Not used.
+def run_xrandr_query():
     """
-    try:
-        # Query xrandr for the primary monitor
-        result = subprocess.run(['xrandr', '--query'], capture_output=True, text=True, check=True)
-        # Look for a line like: "DP-0 connected primary 1920x1080+1200+0"
-        match = re.search(r'(\d+)x(\d+)\+(\d+)\+(\d+)', re.search(r'^.*primary.*$', result.stdout, re.M).group())
-        if match:
-            return map(int, match.groups())
-    except Exception:
-        return None
+    Execute `xrandr --query` to detect monitor geometry on Linux/X11.
 
-def center_window_on_primary_stable(window: tk.Toplevel | tk.Tk, width: int, height: int):
+    No shell is used, no user input is passed to the command, and the
+    output is parsed only to determine monitor positions.
     """
-    Docstring for center_window_on_primary_stable
-    
-    :param window: Description
-    :type window: tk.Toplevel | tk.Tk
-    :param width: Description
-    :type width: int
-    :param height: Description
-    :type height: int
-
-    Not used.
-    """
-    window.update_idletasks()
-    
-    # 1. Try to assess via X11/XRandR (Best for WSL2)
-    geom = get_primary_monitor_geometry()
-    
-    if geom:
-        pw, ph, px, py = geom
-        logger.debug(f"XRandR Primary: {pw}x{ph} at +{px}+{py}")
-    else:
-        # 2. Fallback: Center on Mouse Pointer (Best for Multi-monitor without XRandR)
-        # Since we can't find 'Primary', we put it where the user's attention is.
-        pw, ph = window.winfo_screenwidth(), window.winfo_screenheight()
-        px, py = 0, 0
-        
-        # If it's a giant span, let's just use the pointer as the anchor
-        if pw > 2500:
-            pointer_x = window.winfo_pointerx()
-            pointer_y = window.winfo_pointery()
-            # We treat a 1920x1080 box around the pointer as our 'virtual primary'
-            px, py = pointer_x - 960, pointer_y - 540
-            pw, ph = 1920, 1080
-
-    # 3. Final Math
-    x = px + (pw // 2) - (width // 2)
-    y = py + (ph // 2) - (height // 2)
-    
-    # Final clamp to ensure it's not off-screen
-    x = max(0, x)
-    y = max(0, y)
-    
-    logger.debug(f"Final Positioning: x={x}, y={y}")
-    window.geometry(f"{width}x{height}+{int(x)}+{int(y)}")
-
+    import subprocess
+    # Query xrandr for the primary monitor
+    result = subprocess.run(['xrandr', '--query'], capture_output=True, text=True, check=True)
+    return result
 
 def get_monitor_geometries():
     """
     Queries xrandr to find all connected monitor dimensions and offsets.
     Returns a list of dicts: [{'w', 'h', 'x', 'y', 'is_primary'}]
     Essential for WSL2/WSLg multi-monitor accuracy.
-    
-    Active.
+
+    Return the geometry of all detected monitors.
+
+    Each monitor is represented as a dictionary containing its width,
+    height, origin, and whether it is marked as the primary display.
+
+    Returns:
+        list[dict]: A list of monitor geometry dictionaries. Returns an
+        empty list if monitor information cannot be determined.
     """
     monitors = []
     os_name = platform.system()
@@ -85,8 +39,7 @@ def get_monitor_geometries():
     if os_name == "Linux":
         try:
             # Run xrandr
-            xrandr_result = subprocess.run(['xrandr', '--query'], capture_output=True, text=True, check=True)
-            #logger.debug(f"xrandr_result = {xrandr_result}")
+            xrandr_result = run_xrandr_query()
             # Regex to find: "1920x1080+1920+0" or "1920x1080+0+0"
             # We look for lines that contain 'connected' and a geometry string
             lines = xrandr_result.stdout.splitlines()
@@ -113,54 +66,20 @@ def get_monitor_geometries():
         
     return monitors
 
-def center_window_on_primary_goose(window: tk.Toplevel | tk.Tk, width: int, height: int):
-    """
-    Standardizes window centering by identifying the physical monitor 
-    bounds and offsets.
-    
-    :param window: Description
-    :type window: tk.Toplevel | tk.Tk
-    :param width: Description
-    :type width: int
-    :param height: Description
-    :type height: int
-    
-    Active.
-    """
-    window.update_idletasks()
-    
-    monitors = get_monitor_geometries()
-    target_monitor = None
-
-    if monitors:
-        # 1. Prefer the one explicitly marked 'primary'
-        target_monitor = next((m for m in monitors if m['is_primary']), None)
-        
-        # 2. Fallback to the first monitor (usually the one at +0+0)
-        if not target_monitor:
-            target_monitor = monitors[0]
-            
-        logger.debug(f"Assessed Monitor: {target_monitor['w']}x{target_monitor['h']} at +{target_monitor['x']}+{target_monitor['y']}")
-    else:
-        logger.debug("No monitors found via xrandr. Falling back to screenwidth.")
-        # Total fallback: use winfo_screenwidth but assume 1080p width 
-        # to avoid the L-gap if it's clearly a massive span.
-        sw = window.winfo_screenwidth()
-        sh = window.winfo_screenheight()
-        target_monitor = {
-            'w': 1920 if sw > 2500 else sw,
-            'h': 1080 if sh > 2000 else sh,
-            'x': 0, 'y': 0
-        }
-
-    # 3. Calculate Center relative to the identified monitor's geometry
-    x = target_monitor['x'] + (target_monitor['w'] // 2) - (width // 2)
-    y = target_monitor['y'] + (target_monitor['h'] // 2) - (height // 2)
-
-    logger.debug(f"Final Positioning: x={x}, y={y}")
-    window.geometry(f"{width}x{height}+{int(x)}+{int(y)}")
-
 def center_window_on_primary(window: tk.Toplevel | tk.Tk, width: int, height: int):
+    """
+    Center a Tkinter window on the primary monitor.
+
+    On Linux/X11, monitor geometry is obtained from ``xrandr`` so the
+    window is centered on the physical primary display rather than the
+    combined virtual desktop. On other platforms, or if monitor
+    information is unavailable, Tkinter's screen metrics are used as a
+    fallback.
+
+    :param window: The Tkinter window to position.
+    :param width: Desired window width in pixels.
+    :param height: Desired window height in pixels.
+    """
     window.update_idletasks()
     monitors = get_monitor_geometries()
     
