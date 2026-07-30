@@ -351,6 +351,8 @@ class PDFLinkCheckApp:
             original_stdout = sys.stdout
             sys.stdout = RedirectText(self.output_text)
             print("Running PDF analysis ...")
+            if self.do_check_external_links:
+                print("Ping is being used, this could take a while...")
 
             try:
                 report_results = run_report_request(request)
@@ -390,59 +392,6 @@ class PDFLinkCheckApp:
 
         # 4. Kick off the worker thread
         threading.Thread(target=worker, daemon=True).start()
-
-    def _run_report_gui_stable(self):
-
-        pdf_path_str = self._assess_pdf_path_str()
-        if not pdf_path_str:
-            return
-
-        # Parse the GUI checkbox export format boolean variables into a type-safe ExportFormat enum
-        export_format = self._get_export_format_selection()
-        
-        # Parse the GUI radio PDF engine selection string variable straight back into a type-safe PdfEngine enum
-        pdf_library = self._get_pdf_engine_selection()
-        
-        # Should we ping external links?
-        check_external = self._get_check_external_links_selection()
-        
-        self.output_text.config(state=tk.NORMAL)
-        self.output_text.delete('1.0', tk.END)
-
-        original_stdout = sys.stdout
-        sys.stdout = RedirectText(self.output_text)
-
-        print("Running PDF analysis ...")
-        if self.do_check_external_links:
-            print("ping is enabled, this could take a while...")
-
-        # Add input field later
-        #check_external = False
-        
-        try:
-            request = ReportRequest(
-                pdf_path=pdf_path_str,
-                export_format=export_format,
-                pdf_library=pdf_library,
-                check_external= check_external
-            )
-            report_results = run_report_request(request)
-            self.current_report_text = report_results.get("text-lines", "")
-            self.current_report_data = report_results.get("data", {})
-
-            self.last_json_path = report_results.get("export_files", {}).get("export_path_json")
-            self.last_txt_path = report_results.get("export_files", {}).get("export_path_txt")
-            self.last_xlsx_path = report_results.get("export_files", {}).get("export_path_xlsx")
-            
-        except Exception as e:
-            messagebox.showinfo(
-                "Engine Fallback",
-                f"Error encountered with {pdf_library}: {e}\n\nFalling back to automated library selection."
-            )
-            self.pdf_library_var.set(PdfEngine.resolve_auto_flag().name)
-        finally:
-            sys.stdout = original_stdout
-            self.output_text.config(state=tk.DISABLED)
 
     def _show_system_explorer_gui(self) -> None:
         """
