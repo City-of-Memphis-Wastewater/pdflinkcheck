@@ -271,7 +271,7 @@ def _generate_report_text_layers(extracted_links: list, structural_toc: list, pd
     log_fn("\n" + "=" * SEP_COUNT, overview=True)
     log_fn(f"--- Link Analysis Results for {pdf_name} ---", overview=True)
     log_fn(f"Total active links: {len(extracted_links)} (External: {len(external_uri)}, Internal Jumps: {total_internal}, Other: {len(other_links)})", overview=True)
-    log_fn(f"Total **structural TOC entries (bookmarks)** found: {len(structural_toc)}", overview=True)
+    log_fn(f"Total structural TOC entries (bookmarks) found: {len(structural_toc)}", overview=True)
     log_fn("=" * SEP_COUNT, overview=True)
 
     log_fn(get_structural_toc(structural_toc))
