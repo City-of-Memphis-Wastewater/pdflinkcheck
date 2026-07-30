@@ -43,7 +43,6 @@ class RedirectText:
         pass
 
 class PDFLinkCheckApp:
-
     # --- Lifecycle & Initialization ---
 
     def __init__(self, root: tk.Tk):
@@ -76,6 +75,7 @@ class PDFLinkCheckApp:
         self._create_widgets()
         self._initialize_menubar()
         self._apply_menu_theme()
+        self._apply_progressbar_theme()
 
     def _initialize_vars(self):
         """Logic that takes time but doesn't need a UI yet."""
@@ -98,8 +98,6 @@ class PDFLinkCheckApp:
         # Engine detection 
         self.pdf_library_var = tk.StringVar(value=PdfEngine.resolve_auto_flag().name)
 
-
-    
     # --- Theme & Visual Initialization ---
     def _initialize_forest_theme(self):
         theme_dir = files("pdflinkcheck.data.themes.forest")
@@ -115,6 +113,7 @@ class PDFLinkCheckApp:
 
         self._apply_output_window_theme()
         self._apply_menu_theme()
+        self._apply_progressbar_theme()
 
     def _apply_output_window_theme(self):
         style = ttk.Style(self.root)
@@ -146,6 +145,20 @@ class PDFLinkCheckApp:
                 activeforeground=bg
             )
 
+    def _apply_progressbar_theme(self):
+        style = ttk.Style(self.root)
+        if style.theme_use() == "forest-dark":
+            style.layout("White.Horizontal.TProgressbar", [
+                ('Horizontal.Progressbar.trough', {
+                    'children': [('Horizontal.Progressbar.pbar', {'side': 'left', 'sticky': 'ns'})],
+                    'sticky': 'nswe'
+                })
+            ])
+            style.configure("White.Horizontal.TProgressbar", background="#ffffff", troughcolor="#2b2b2b", thickness=6)
+            self.progress_bar.config(style="White.Horizontal.TProgressbar")
+        else:
+            self.progress_bar.config(style="Horizontal.TProgressbar")
+
     def _set_icon(self):
         icon_dir = files("pdflinkcheck.data.icons")
         try:
@@ -171,8 +184,6 @@ class PDFLinkCheckApp:
 
         self.tools_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Tools", menu=self.tools_menu)
-        #logger.debug(f"{self.tools_menu=}")
-        #logger.debug(f"{self.menubar=}")
 
         self.tools_menu.add_command(label="Toggle Theme", command=self._toggle_theme)
         self.tools_menu.add_command(label="Clear Output Window", command=self._clear_output_window)
@@ -482,7 +493,6 @@ class PDFLinkCheckApp:
             return
 
         content = sanitize_glyphs_for_tkinter(content)
-        #content = sanitize_glyphs_for_compatibility(content)
 
         win = tk.Toplevel(self.root)
         win.title(title)
@@ -508,30 +518,6 @@ def sanitize_glyphs_for_tkinter(text: str) -> str:
     sanitized = normalized.encode('ascii', 'ignore').decode('utf-8')
     return sanitized.replace('  ', ' ')
 
-def sanitize_glyphs_for_compatibility(text: str) -> str:
-    """
-    Replaces problematic glyphs with ASCII equivalents for WSL2/gedit compatibility.
-    Does not require external libraries like unidecode.
-    """
-    # Define a explicit mapping for your validation glyphs
-    glyph_mapping = {
-        '✅': '[PASS]',
-        '🌐': '[WEB]',
-        '⚠️': '[WARN]',
-        '❌': '[FAIL]',
-        'ℹ️': '[INFO]'
-    }
-    
-    # 1. Manual replacement for known report glyphs
-    for glyph, replacement in glyph_mapping.items():
-        text = text.replace(glyph, replacement)
-    
-    # 2. Normalize and strip remaining non-ASCII (NFKD decomposes characters)
-    normalized = unicodedata.normalize('NFKD', text)
-    sanitized = normalized.encode('ascii', 'ignore').decode('utf-8')
-    
-    # 3. Clean up double spaces created by the stripping
-    return sanitized.replace('  ', ' ')
 
 def start_gui(time_auto_close: int = 0):
     # 1. Initialize Root and Splash instantly
@@ -542,7 +528,6 @@ def start_gui(time_auto_close: int = 0):
     splash = SplashFrame(root)
     root.update() # Force drawing the splash screen
     
-    # app = PDFLinkCheckApp(root=root)
     # App Initialization
     logger.debug("Run PDF Link Check Engine")
     try:
@@ -578,11 +563,8 @@ def start_gui(time_auto_close: int = 0):
         
 
         root.config(cursor="arrow")
-
-        
         root.deiconify()
        
-
         # Focus is safer than 'topmost' for the mouse cursor
         root.focus_force()
 
@@ -605,7 +587,6 @@ def start_gui(time_auto_close: int = 0):
         if time_auto_close > 0:
             root.after(time_auto_close, root.destroy)
             
-        
         root.mainloop()
     logger.debug("pdflinkcheck: gui closed.")
 
