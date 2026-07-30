@@ -386,7 +386,8 @@ class PDFLinkCheckApp:
             original_stdout = sys.stdout
             sys.stdout = RedirectText(self.output_text)
             print("Running PDF analysis ...")
-            if self.do_check_external_links:
+            logger.debug(f"{self._get_check_external_links_selection()=}")
+            if self._get_check_external_links_selection():
                 print("Ping is being used, this could take a while...")
 
             try:
