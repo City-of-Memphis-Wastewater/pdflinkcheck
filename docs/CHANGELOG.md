@@ -13,10 +13,11 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
-## [1.5.16] - 2026-07-29
+## [1.5.16] - 2026-07-30
 ### Added:
 - Progress bar is now white while the theme is black, for clarity.
 - validation_summary and risk_block moved to top of JSON export, for ease of AI consumption.
+- Screenshot assets for GUI, light and dark mode.
 
 ### Fixed:
 - Ping now properly identified in GUI with _get_check_external_links_selection()
