@@ -1,4 +1,4 @@
-# src/dworshak_secret/logging_setup.py
+# src/pdflinkcheck/logging_setup.py
 from __future__ import annotations
 import logging
 import sys
