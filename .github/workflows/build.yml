@@ -51,7 +51,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          uv sync --group dev --group standard
+          uv sync --group dev --extra gui --extra pdfium
           uv pip install pyinstaller # assurance
 
       - name: Build wheel & sdist
