@@ -29,6 +29,13 @@ from pdflinkcheck.helpers import get_export_path, ExportFormat, PdfEngine, Repor
 
 APP_BANNER_TITLE = "PDF Link Check"
 
+def import_maxson_gui_utils_resource_path():
+    try:
+        from maxson_gui_utils.resources import resource_path
+        return resource_path
+    except:
+    print("Please ensure maxson-gui-utils is included in the venv.")
+
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
     def __init__(self, text_widget):
@@ -101,7 +108,9 @@ class PDFLinkCheckApp:
 
     # --- Theme & Visual Initialization ---
     def _initialize_forest_theme(self):
-        theme_dir = files("pdflinkcheck.data.themes.forest")
+        resource_path = import_maxson_gui_utils_resource_path()
+        theme_dir = resource_path("themes", "forest")
+        #theme_dir = files("pdflinkcheck.data.themes.forest")
         self.root.tk.call("source", str(theme_dir / "forest-light.tcl"))
         self.root.tk.call("source", str(theme_dir / "forest-dark.tcl"))
 
@@ -190,7 +199,9 @@ class PDFLinkCheckApp:
 
     
     def _set_icon(self):
-        icon_dir = files("pdflinkcheck.data.icons")
+        resource_path = import_maxson_gui_utils_resource_path()
+        icon_dir = resource_path("icons")
+        #icon_dir = files("pdflinkcheck.data.icons")
         try:
             png_path = icon_dir.joinpath("Logo-150x150.png")
             if png_path.exists():
