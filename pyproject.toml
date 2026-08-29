@@ -92,7 +92,8 @@ dev = [
     "pytest-cov>=4.1.0",
 ]
 standard = [
-    "pdflinkcheck[gui,pdfium]",
+    "pypdfium2>=5.2.0,<6.0.0",
+    "maxson-gui-utils>=0.1.11",
 ]
 docs = [
     "mkdocs>=1.5,<2",
