@@ -34,7 +34,7 @@ def import_maxson_gui_utils_resource_path():
         from maxson_gui_utils.resources import resource_path
         return resource_path
     except:
-    print("Please ensure maxson-gui-utils is included in the venv.")
+        print("Please ensure maxson-gui-utils is included in the venv.")
 
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
