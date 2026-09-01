@@ -11,7 +11,6 @@ import datetime
 import time
 import pyhabitat
 import os
-from datetime import datetime, date
 import unicodedata
 from enum import Enum
 import logging
@@ -119,7 +118,7 @@ def make_json_safe(obj: Any) -> Any:
         return sanitize_string(obj.decode("utf-8", errors="replace"))
 
     # Dates and Times
-    if isinstance(obj, (datetime, date)):
+    if isinstance(obj, (datetime.datetime, datetime.date)):
         return obj.isoformat()
 
     # Path Objects
