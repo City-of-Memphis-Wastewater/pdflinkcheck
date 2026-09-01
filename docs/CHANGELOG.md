@@ -14,6 +14,9 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 ---
 
 ## [1.5.17] - 2026-09-01
+### Changed:
+- Adjust json dump handling, with ensure_asci = True.
+
 ### Added:
 - Implement blindwindow, with maxson-gui-utils as a dependency; this will come to rely on standard blindwindow dep.
 - Modularize icon and theme management, with maxson-gui-utils, with extra gui dep.
