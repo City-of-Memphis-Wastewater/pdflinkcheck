@@ -11,6 +11,8 @@ import datetime
 import time
 import pyhabitat
 import os
+from datetime import datetime, date
+import unicodedata
 from enum import Enum
 import logging
 
@@ -54,8 +56,7 @@ def export_report_json(
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             safe_payload = make_json_safe(report_data)
-            json.dump(safe_payload, f, indent=4, ensure_ascii=False)
-            #json.dump(safe_payload, f, indent=4)
+            json.dump(safe_payload, f, indent=4, ensure_ascii=True)
         print(f"JSON report exported: {get_friendly_path(output_path)}")
         return output_path
     except Exception as e:
@@ -85,27 +86,67 @@ def export_report_txt(
         error_logger.error(f"TXT export failed: {e}", exc_info=True)
         raise RuntimeError(f"TXT export failed: {e}")
 
-def make_json_safe(obj):
+def sanitize_string(s: str) -> str:
     """
-    Recursively convert non-JSON-safe objects into serializable primitives.
+    Normalizes Unicode strings and strips unprintable control characters.
+    Preserves standard whitespace characters (newlines, tabs, carriage returns).
     """
+    # Normalize Unicode to canonical composition (NFC)
+    s = unicodedata.normalize("NFC", s)
+    
+    # Strip unprintable control characters (Cc category) except \n, \r, \t
+    cleaned = "".join(
+        ch for ch in s 
+        if unicodedata.category(ch) != "Cc" or ch in ("\n", "\r", "\t")
+    )
+    return cleaned
 
+def make_json_safe(obj: Any) -> Any:
+    """
+    Recursively convert non-JSON-safe objects into serializable primitives with
+    character/encoding safety for PDF extract data.
+    """
+    # Base Primitives
+    if obj is None or isinstance(obj, (bool, int, float)):
+        return obj
+
+    # String Sanitization
+    if isinstance(obj, str):
+        return sanitize_string(obj)
+
+    # Bytes handling (decode gracefully with replacement for bad bytes)
+    if isinstance(obj, (bytes, bytearray)):
+        return sanitize_string(obj.decode("utf-8", errors="replace"))
+
+    # Dates and Times
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+
+    # Path Objects
     if isinstance(obj, Path):
-        return str(obj)
+        return sanitize_string(str(obj))
 
+    # Enum Handling
     if isinstance(obj, Enum):
         return obj.name.lower()
 
+    # Dictionary Handling
     if isinstance(obj, dict):
         return {
-            str(k): make_json_safe(v)
+            sanitize_string(str(k)): make_json_safe(v)
             for k, v in obj.items()
         }
 
+    # Iterables (lists, tuples, sets)
     if isinstance(obj, (list, tuple, set)):
         return [make_json_safe(v) for v in obj]
 
-    return obj
+    # Custom objects with __dict__ or fallback to str representation
+    if hasattr(obj, "__dict__"):
+        return make_json_safe(vars(obj))
+
+    return sanitize_string(str(obj))
+
 
 
 # --- helpers ---
