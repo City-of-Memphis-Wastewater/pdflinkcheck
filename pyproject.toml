@@ -107,7 +107,7 @@ build-backend = "setuptools.build_meta"
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }
 #pyhabitat = { path = "../pyhabitat/dist/pyhabitat-1.2.3-py3-none-any.whl" }
-#maxson_gui_utils = { path = "../maxson-gui-utils/dist/maxson_gui_utils-0.1.12-py3-none-any.whl" }
+#maxson_gui_utils = { path = "../maxson-gui-utils/dist/maxson_gui_utils-0.1.14-py3-none-any.whl" }
 
 [tool.setuptools.dynamic]
 version = {file = "src/pdflinkcheck/VERSION"}
