@@ -18,6 +18,10 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 - Implement blindwindow, with maxson-gui-utils as a dependency; this will come to rely on standard blindwindow dep.
 - Modularize icon and theme management, with maxson-gui-utils, with extra gui dep.
 
+### Internal:
+- blindwindow and dworshak-config cli sub commands would be great, sort of like adding helptree commands with a function in the cli.py file.
+- See MBU for successful use of dworshak-config subcommand (should be modularized into that repo).
+
 ---
 
 ## [1.5.16] - 2026-07-30
