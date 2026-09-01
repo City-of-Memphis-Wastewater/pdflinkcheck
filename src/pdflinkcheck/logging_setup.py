@@ -5,7 +5,7 @@ import sys
 import traceback
 from rich.logging import RichHandler
 #from rich.console import Console
-from maxson_gui_utils.console import Console
+from maxson_gui_utils.blindwindow.console import Console
 
 #console = Console(stderr=True)
 # Swap out rich's Console for maxson_gui_utils Console

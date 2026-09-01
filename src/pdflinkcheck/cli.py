@@ -6,7 +6,9 @@ import typer
 from typing import Literal, List
 from typer.models import OptionInfo
 #from rich.console import Console
-from maxson_gui_utils.console import Console
+from maxson_gui_utils.blindwindow.console import Console
+from maxson_gui_utils.blindwindow.streams import install_stream_wrappers
+
 from pathlib import Path
 from typing import Dict, Optional, Union, List
 import pyhabitat
@@ -35,6 +37,13 @@ console = Console(stderr=False, tee_sys=True)
 os.environ["FORCE_COLOR"] = "1"
 # Optional but helpful for full terminal feature detection
 os.environ["TERM"] = "xterm-256color"
+
+try:
+    # Capture process-level prints & Typer help screens
+    install_stream_wrappers()
+except:
+    print("blindwindow failed to install stream wrappers.")
+
 
 app = typer.Typer(
     name="pdflinkcheck",

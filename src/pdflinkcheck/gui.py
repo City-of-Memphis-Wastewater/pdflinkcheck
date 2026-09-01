@@ -43,6 +43,7 @@ from pdflinkcheck.context import IMPORT_NAME
 
 APP_BANNER_TITLE = "PDF Link Check"
 
+
 class RedirectText:
     """A class to redirect sys.stdout messages to a Tkinter Text widget."""
     def __init__(self, text_widget):
