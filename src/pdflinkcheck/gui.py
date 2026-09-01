@@ -9,11 +9,19 @@ from pathlib import Path
 from typing import Optional
 import unicodedata
 from importlib.resources import files
+from importlib.resources.abc import Traversable
 import pyhabitat
 import ctypes
 import threading
 import logging
 logger = logging.getLogger(__name__)
+
+from maxson_gui_utils import (
+    get_default_local_icon_dir,
+    resource_path,
+    set_tk_iconbitmap
+)
+
 # --- Core Imports ---
 from pdflinkcheck.report import run_report_request
 from pdflinkcheck._version import get_version
@@ -26,6 +34,7 @@ from pdflinkcheck.environment import (
 )
 from pdflinkcheck.tk_utils import center_window_on_primary
 from pdflinkcheck.helpers import get_export_path, ExportFormat, PdfEngine, ReportRequest
+from pdflinkcheck.context import IMPORT_NAME
 
 APP_BANNER_TITLE = "PDF Link Check"
 
@@ -199,23 +208,87 @@ class PDFLinkCheckApp:
 
     
     def _set_icon(self):
-        resource_path = import_maxson_gui_utils_resource_path()
-        icon_dir = resource_path("icons")
-        #icon_dir = files("pdflinkcheck.data.icons")
+        filename="Logo-150x150.png"
+        set_tk_iconphoto(root=self.root,icon_dir = get_default_local_icon_dir(package_import_name=IMPORT_NAME),filename = filename) # modularize file() call
+        #resource_path = import_maxson_gui_utils_resource_path() # generic approach, generic icons
+        #icon_dir = resource_path("icons")ls
+        #icon_dir = files(f"{IMPORT_NAME}.data.icons")
+        #try:
+        #    filename="Logo-150x150.png"
+        #    png_path = icon_dir.joinpath(filename)
+        #    if png_path.exists():
+        #        self.icon_img = PhotoImage(file=str(png_path))
+        #        self.root.iconphoto(True, self.icon_img)
+        #    else:
+        #        logger.debug(f"{filename} not found.")
+        #except Exception:
+        #    pass
+        filename="red_pdf_512px.ico"
+        set_tk_iconbitmap(root=self.root,icon_dir = get_default_local_icon_dir(package_import_name=IMPORT_NAME),filename = filename) # modularize file() call
+        #try:    
+            #set_tk_iconbitmap(root=self.root,icon_dir = files(f"{IMPORT_NAME}.data.icons"),filename = "red_pdf_512px.ico") # more explicit, fine for scaffolding
+            
+            #filename="red_pdf_512px.ico"
+            #icon_path = icon_dir.joinpath(filename)
+            #if icon_path.exists():
+            #    self.root.iconbitmap(str(icon_path))
+            #else:
+            #    logger.debug(f"{filename} not found")
+        #except Exception:
+        #    pass
+
+    
+    def get_default_local_icon_dir(package_import_name:str)->Traversable:
+        """opinionated maxson-gui-utils library functon showing where icon files are expected, in src/*/data/icons/"""
+        return files(f"{package_import_name}.data.icons")
+    
+    def set_tk_iconbitmap(root:tk.Tk,icon_dir:Path|Traversable,filename:str)->None:
+        """maxson-gui-utils library functon for consumption, to either use project iconbitmap or fall back to default in MGU"""
         try:
-            png_path = icon_dir.joinpath("Logo-150x150.png")
-            if png_path.exists():
-                self.icon_img = PhotoImage(file=str(png_path))
-                self.root.iconphoto(True, self.icon_img)
-        except Exception:
-            pass
-        try:
-            icon_path = icon_dir.joinpath("red_pdf_512px.ico")
-            if icon_path.exists():
-                self.root.iconbitmap(str(icon_path))
-        except Exception:
+            filepath = icon_dir.joinpath(filename)
+            if not filepath.exists():
+                filepath = get_default_tk_iconbitmap_filepath()
+            if filepath.exists():
+                return root.iconbitmap(str(filepath))
+            else:
+                logger.debug(f"{filename} not found.")
+        except Exception as e:
             pass
 
+    def set_tk_iconphoto(root:tk.Tk,icon_dir:Path|Traversable,filename:str)->None:
+        """maxson-gui-utils library functon for consumption, to either use project iconphoto or fall back to default in MGU"""
+        try:
+            filepath = icon_dir.joinpath(filename)
+            if not filepath.exists():
+                filepath = get_default_tk_iconphoto_filepath()
+            if filepath.exists():
+                img = tk.PhotoImage(file=str(filepath))
+                root._icon_img = img  # Store reference on root instance
+                #root.iconphoto(True, img)
+                root.iconphoto(True, root._icon_img)
+            else:
+                logger.debug(f"{filename} not found.")
+        except Exception as e:
+            pass
+                
+
+    FILENAME_TK_ICONBITMAP_ICO_DEFAULT="default_512px.ico"
+    def get_default_tk_iconbitmap_filepath(filename:str=FILENAME_TK_ICONBITMAP_ICO_DEFAULT): # for maxson_build_utils library
+        """Intended to be used with no args and to use for default path, but filename string can be used for modularity."""
+        return get_mgu_icon_file(filename)
+
+    FILENAME_TK_ICONPHOTO_PNG_DEFAULT="default_150px.png"
+    def get_default_tk_iconphoto_filepath(filename:str=FILENAME_TK_ICONPHOTO_PNG_DEFAULT): # for maxson_build_utils library
+        """Intended to be used with no args and to use default path, but filename string can be used for modularity."""
+        return get_mgu_icon_file(filename)
+
+    def get_mgu_icon_file(filename:str)->Traversable: 
+        from maxson_gui_utils.resources import resource_path
+        icon_dir = resource_path("icons") # Traversible
+        return icon_dir.joinpath(filename) # Traversible
+
+    
+    
 
     def _initialize_menubar(self):
         """Builds the application menu bar."""

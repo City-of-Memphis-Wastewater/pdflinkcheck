@@ -427,7 +427,7 @@ class APIHandler(http.server.BaseHTTPRequestHandler):
 
     def _send_json(self, payload: dict, status: int = 200) -> None:
         safe_payload = make_json_safe(payload)
-        body = json.dumps(safe_payload, indent=2, ensure_ascii=False).encode("utf-8")
+        body = json.dumps(safe_payload, indent=2, ensure_ascii=True).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
