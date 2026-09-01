@@ -4,8 +4,13 @@ import logging
 import sys
 import traceback
 from rich.logging import RichHandler
-from rich.console import Console
-console = Console(stderr=True)
+#from rich.console import Console
+from maxson_gui_utils.console import Console
+
+#console = Console(stderr=True)
+# Swap out rich's Console for maxson_gui_utils Console
+# stderr=True automatically assigns tag="stderr" to all RichHandler log outputs
+console = Console(stderr=True, tee_sys=True)
 
 logger = logging.getLogger("pdflinkcheck")
 

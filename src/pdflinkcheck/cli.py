@@ -5,7 +5,8 @@ from __future__ import annotations
 import typer
 from typing import Literal, List
 from typer.models import OptionInfo
-from rich.console import Console
+#from rich.console import Console
+from maxson_gui_utils.console import Console
 from pathlib import Path
 from typing import Dict, Optional, Union, List
 import pyhabitat
@@ -27,7 +28,8 @@ from .helpers import ExportFormat, ExportFormatChoice, PdfEngine, PdfEngineChoic
 from .logging_setup import configure_logging_for_application
 
 logger = logging.getLogger(__name__)
-console = Console() # to be above the tkinter check, in case of console.print
+#console = Console() # to be above the tkinter check, in case of console.print
+console = Console(stderr=False, tee_sys=True)
 
 # Force Rich to always enable colors, even when running from a .pyz bundle
 os.environ["FORCE_COLOR"] = "1"
