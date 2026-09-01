@@ -84,7 +84,7 @@ pdflinkcheck helptree
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.5.16_helptree.svg" width="100%" alt="SVG of the pdflinkcheck CLI helptree">
+  <img src="https://raw.githubusercontent.com/City-of-Memphis-Wastewater/pdflinkcheck/main/assets/pdflinkcheck_v1.5.17_helptree.svg" width="100%" alt="SVG of the pdflinkcheck CLI helptree">
 </p>
 
 ## Screenshot
