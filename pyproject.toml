@@ -13,7 +13,7 @@ dependencies = [
     "typer>=0.20.0",
     "typer-helptree>=0.2.11",
     "click>=8.1.8",
-    "maxson-gui-utils>=0.1.14" # change to blindwindow as required dep once it is isolated from MGU, then with gui extra for MGU
+    "maxson-gui-utils>=0.1.15" # change to blindwindow as required dep once it is isolated from MGU, then with gui extra for MGU
 ]
 
 license = "MIT"
@@ -80,7 +80,7 @@ pdflinkcheck = "pdflinkcheck.cli:app"
 pymupdf = ["pymupdf>=1.24.0,<2.0.0"] # fails on termux # If you choose to include PyMuPDF, you must comply with the AGPL3
 pdfium = ["pypdfium2>=5.2.0,<6.0.0"]
 gui = [
-    "maxson-gui-utils>=0.1.14",
+    "maxson-gui-utils>=0.1.15",
 ]
 
 # add with `uv sync --group dev`, plus other extras, like `--extra pdfium`
@@ -107,7 +107,7 @@ build-backend = "setuptools.build_meta"
 [tool.uv.sources]
 pdflinkcheck = { path = "src/pdflinkcheck" }
 #pyhabitat = { path = "../pyhabitat/dist/pyhabitat-1.2.3-py3-none-any.whl" }
-#maxson_gui_utils = { path = "../maxson-gui-utils/dist/maxson_gui_utils-0.1.14-py3-none-any.whl" }
+#maxson_gui_utils = { path = "../maxson-gui-utils/dist/maxson_gui_utils-0.1.15-py3-none-any.whl" }
 
 [tool.setuptools.dynamic]
 version = {file = "src/pdflinkcheck/VERSION"}
