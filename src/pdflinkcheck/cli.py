@@ -6,8 +6,11 @@ import typer
 from typing import Literal, List
 from typer.models import OptionInfo
 #from rich.console import Console
-from maxson_gui_utils.blindwindow.console import Console
-from maxson_gui_utils.blindwindow.streams import install_stream_wrappers
+from maxson_gui_utils.blindwindow import (
+    Console,
+    get_spool_path,
+    install_stream_wrappers,
+)
 
 from pathlib import Path
 from typing import Dict, Optional, Union, List
@@ -40,7 +43,8 @@ os.environ["TERM"] = "xterm-256color"
 
 try:
     # Capture process-level prints & Typer help screens
-    install_stream_wrappers()
+    install_stream_wrappers() # defaults to same path as get_spool_path()
+    logger.debug("[CLI] Installed stream wrappers targeting default spool: %s", get_spool_path())
 except:
     print("blindwindow failed to install stream wrappers.")
 
@@ -50,7 +54,7 @@ app = typer.Typer(
     help=f"A command-line tool for comprehensive PDF link analysis and reporting. (v{__version__})",
     add_completion=False,
     invoke_without_command = True, 
-    no_args_is_help = False,
+ logger.debug("[CLI] Installed stream wrappers targeting spool: %s", get_spool_path())   no_args_is_help = False,
     context_settings={"ignore_unknown_options": True,
                       "allow_extra_args": True,
                       "help_option_names": ["-h", "--help"]},
