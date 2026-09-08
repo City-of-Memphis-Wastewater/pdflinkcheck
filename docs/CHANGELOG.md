@@ -13,6 +13,13 @@ The format is (read: strives to be) based on [Keep a Changelog](https://keepacha
 
 ---
 
+## [1.5.18] - 2026-09-08
+### Changed:
+- Consume blindwindow from maxson-gui-utils v0.1.17, which uses only the JSON spool file.
+- The refactoring from network-based IPC (sockets/pipes) to a file-backed binary/JSON spool design cleanly eliminates cross-platform IPC edge cases like Windows Firewall popups, UDS length limits, and network interface bindings.
+
+---
+
 ## [1.5.17] - 2026-09-01
 ### Changed:
 - Adjust json dump handling, with ensure_asci = True.
