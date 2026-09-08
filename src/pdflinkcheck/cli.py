@@ -54,7 +54,7 @@ app = typer.Typer(
     help=f"A command-line tool for comprehensive PDF link analysis and reporting. (v{__version__})",
     add_completion=False,
     invoke_without_command = True, 
- logger.debug("[CLI] Installed stream wrappers targeting spool: %s", get_spool_path())   no_args_is_help = False,
+    no_args_is_help = False,
     context_settings={"ignore_unknown_options": True,
                       "allow_extra_args": True,
                       "help_option_names": ["-h", "--help"]},
